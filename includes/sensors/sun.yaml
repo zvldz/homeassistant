@@ -1,0 +1,12 @@
+- platform: template
+  sensors:
+    sun_dusk:
+      friendly_name: "Закат"
+      value_template: "{{ as_timestamp(states.sun.sun.attributes.next_dusk) | timestamp_custom('%H:%M') }}"
+
+- platform: template
+  sensors:
+    sun_dawn:
+      friendly_name: "Рассвет"
+      value_template: "{{ as_timestamp(states.sun.sun.attributes.next_dawn) | timestamp_custom('%H:%M') }}"
+

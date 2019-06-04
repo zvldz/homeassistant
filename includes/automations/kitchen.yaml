@@ -1,0 +1,60 @@
+- alias: Respond to single left button click kitchen
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d00022addd4_click
+    to: 'right_single'
+  action:
+    - service: light.toggle
+      entity_id: light.kitchen_lamp
+
+- alias: Respond to double left button click kitchen
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d00022addd4_click
+    to: 'right_double'
+  action:
+#   - service: light.turn_on
+#     entity_id: light.kitchen_lamp
+#     data:
+#        brightness_pct: 90
+#        kelvin: 4000
+    - service: light.toggle
+      entity_id: light.kitchen_lamp
+
+- alias: Turn on lights in kitchen if movement
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d00022515fe
+      to: 'on'
+  condition:
+    condition: and
+    conditions:
+      - condition: template
+        value_template: "{{ states.sun.sun.attributes.elevation  | int < 10 }}"
+      - condition: state
+        entity_id: switch.0x00158d00022addd4_switch_left
+        state: 'off'
+        for:
+          minutes: 2
+  action:
+    - service: switch.turn_on
+      entity_id:
+        - switch.0x00158d00022addd4_switch_left
+
+- alias: Turn off lights in kitchen after last movement 10 min ago
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.motion_sensor_158d00022515fe
+    to: 'off'
+    for:
+      minutes: 15
+  action:
+    - service: switch.turn_off
+      entity_id: switch.0x00158d00022addd4_switch_left
+    - service: light.turn_off
+      entity_id: light.kitchen_lamp
+

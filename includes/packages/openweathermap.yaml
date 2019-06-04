@@ -1,0 +1,11 @@
+weather:
+  - platform: openweathermap
+    api_key: !secret openweather_key
+    name: weather
+
+sensor:
+  - platform: openweathermap
+    api_key: !secret openweather_key
+    language: ru
+    monitored_conditions:
+      - weather

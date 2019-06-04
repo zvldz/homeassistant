@@ -1,0 +1,186 @@
+sensor.date:
+  friendly_name: Дата
+
+sensor.time:
+  friendly_name: Время
+
+sun.sun:
+  friendly_name: Солнце
+
+sensor.bt1_battery:
+  friendly_name: Кухня
+
+sensor.bt1_temperature:
+  friendly_name: Кухня
+
+sensor.bt1_humidity:
+  friendly_name: Кухня
+
+sensor.bt2_battery:
+  friendly_name: Зал
+
+sensor.bt2_temperature:
+  friendly_name: Зал
+
+sensor.bt2_humidity:
+  friendly_name: Зал
+
+binary_sensor.door_window_sensor_158d00024de627:
+  friendly_name: WC ДО
+
+binary_sensor.door_window_sensor_158d0002537042:
+  friendly_name: Кладовка ДО
+
+binary_sensor.motion_sensor_158d00022515fe:
+  friendly_name: Кухня ДД
+
+sensor.illumination_158d00022515fe:
+  friendly_name: Кухня ДО
+
+binary_sensor.switch_158d0001a66df0:
+  friendly_name: Кнопка Vacuum
+
+binary_sensor.wall_switch_158d000183d2d5:
+  friendly_name: Балкон Общий 1
+
+binary_sensor.wall_switch_158d000183dd12:
+  friendly_name: Балкон Общий 2
+
+binary_sensor.water_leak_sensor_158d000232989c:
+  friendly_name: Кухня ДП
+
+binary_sensor.water_leak_sensor_158d000233ddf2:
+  friendly_name: Ванная ДП
+
+binary_sensor.water_leak_sensor_158d00023aa420:
+  friendly_name: WC ДП
+
+sensor.pressure_158d0002ca0395:
+  friendly_name: Кухня
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d0002ca0395:
+  friendly_name: Кухня
+
+sensor.humidity_158d0002ca0395:
+  friendly_name: Кухня
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d0002bfe958:
+  friendly_name: Зал
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d0002bfe958:
+  friendly_name: Зал
+
+sensor.humidity_158d0002bfe958:
+  friendly_name: Зал
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d0001ab2a27:
+  friendly_name: Спальня 2
+
+sensor.humidity_158d0001ab2a27:
+  friendly_name: Спальня 2
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d0001ab2a27:
+  friendly_name: Спальня 2
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d000231f03e:
+  friendly_name: Коридор
+
+sensor.humidity_158d000231f03e:
+  friendly_name: Коридор
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d000231f03e:
+  friendly_name: Коридор
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d0002323856:
+  friendly_name: Спальня 1
+
+sensor.humidity_158d0002323856:
+  friendly_name: Спальня 1
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d0002323856:
+  friendly_name: Спальня 1
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d00027300cc:
+  friendly_name: Балкон
+
+sensor.humidity_158d00027300cc:
+  friendly_name: Балкон
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d00027300cc:
+  friendly_name: Балкон
+  battery_sensor_creation_disabled: yes
+
+sensor.temperature_158d000273011f:
+  friendly_name: Улица
+
+sensor.humidity_158d000273011f:
+  friendly_name: Улица
+  battery_sensor_creation_disabled: yes
+
+sensor.pressure_158d000273011f:
+  friendly_name: Улица
+  battery_sensor_creation_disabled: yes
+
+sensor.illumination_7811dcb245b2:
+  friendly_name: Коридор ДО
+
+sensor.illumination_7c49eb1ce708:
+  friendly_name: Спальня 1 ДО
+
+switch.wall_switch_ln_158d000211434a:
+  friendly_name: Зал Выключатель
+  battery_sensor_creation_disabled: yes
+
+binary_sensor.wall_switch_both_158d0002b49c73:
+  battery_sensor_creation_disabled: yes
+
+binary_sensor.wall_switch_right_158d0002b49c73:
+  battery_sensor_creation_disabled: yes
+
+sensor.ring_front_door_battery:
+  friendly_name: Заряд батареи
+
+sensor.ring_front_door_volume:
+  friendly_name: Громкость
+
+sensor.ring_front_door_wifi_signal_category:
+  friendly_name: Уровень сигнала WiFi
+
+sensor.ring_front_door_wifi_signal_strength:
+  friendly_name: Сила сигнала WiFi
+
+binary_sensor.ring_front_door_ding:
+  friendly_name: Датчик Звонка
+
+binary_sensor.ring_front_door_motion:
+  friendly_name: Датчик Движения
+
+binary_sensor.door_window_sensor_158d0002fd4381:
+  friendly_name: Ванная ДО
+
+binary_sensor.door_window_sensor_158d00032b7db7:
+  friendly_name: Дверь ДО
+
+binary_sensor.kitchen_lamp_nightlight:
+  friendly_name: Кухня Лампа Ночник
+
+binary_sensor.living_room_lamp_nightlight:
+  friendly_name: Зал Лампа Ночник
+
+binary_sensor.master_bedroom_lamp_nightlight:
+  friendly_name: Спальня 1 Лампа Ночник
+
+binary_sensor.bedroom_lamp_nightlight:
+  friendly_name: Спальня 2 Лампа Ночник
+

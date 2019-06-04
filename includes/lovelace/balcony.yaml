@@ -1,0 +1,18 @@
+title: Балкон
+icon: mdi:wall
+cards:
+  - type: entities
+    title: Выключатели
+    entities:
+      - switch.wall_switch_ln_158d00022ab4bf
+      - switch.wall_switch_ln_158d0001f9aa37
+      - switch.wall_switch_ln_158d0002114338
+      - switch.wall_switch_ln_158d0002235125
+
+  - type: entities
+    title: Сенсоры
+    show_header_toggle: false
+    entities:
+      - binary_sensor.wall_switch_158d000183d2d5
+      - binary_sensor.wall_switch_158d000183dd12
+      - binary_sensor.door_window_sensor_158d0002537042

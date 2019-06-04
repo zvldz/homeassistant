@@ -1,0 +1,35 @@
+- platform: xiaomi_miio
+  name: living_room_spot_left_1
+  host: 192.168.1.19
+  token: 162ba29b0ab3a213658fea972fb1960c
+  model: philips.light.downlight
+
+- platform: xiaomi_miio
+  name: living_room_spot_left_2
+  host: 192.168.1.23
+  token: 367a5357585d2993ec5f14e8875eaafd
+  model: philips.light.downlight
+
+- platform: xiaomi_miio
+  name: living_room_spot_left_3
+  host: 192.168.1.24
+  token: 1b94ffb052f3b1f3d9fd000c0f6ecae7
+  model: philips.light.downlight
+
+- platform: xiaomi_miio
+  name: living_room_spot_right_1
+  host: 192.168.1.20
+  token: 967813f4ba59b67e60993a1ac686d9bc
+  model: philips.light.downlight
+
+- platform: xiaomi_miio
+  name: living_room_spot_right_2
+  host: 192.168.1.22
+  token: 014d3f6bcea3d67cada4465fc0abd66c
+  model: philips.light.downlight
+
+- platform: xiaomi_miio
+  name: living_room_spot_right_3
+  host: 192.168.1.21
+  token: 7cb0ff053c9b27ce4b9825d065020e3a
+  model: philips.light.downlight

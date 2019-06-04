@@ -1,0 +1,23 @@
+title: Спальня 1
+icon: mdi:hotel
+cards:
+  - type: light
+    entity: light.master_bedroom_lamp
+
+  - type: light
+    entity: light.bedside
+
+  - type: light
+    entity: light.gateway_light_7c49eb1ce708
+
+  - type: entities
+    title: Выключатели
+    entities:
+      - switch.0x00158d0001f9aa24_switch
+
+  - type: entities
+    title: Сенсоры
+    show_header_toggle: false
+    entities:
+      - sensor.illumination_7c49eb1ce708
+      - binary_sensor.master_bedroom_lamp_nightlight

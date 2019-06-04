@@ -1,0 +1,82 @@
+
+- alias: Respond to single button click
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d000211434a_click
+    to: 'single'
+  action:
+    - service: light.toggle
+      entity_id: light.living_room_lamp
+
+- alias: Respond to double button click
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d000211434a_click
+    to: 'double'
+  action:
+    - service: light.toggle
+      entity_id: light.living_room_lamp
+
+- alias: Respond to left button click
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d00022b3ea0_click
+    to: 'left_single'
+  action:
+    - service: light.toggle
+      entity_id: group.living_room_spot_left
+
+- alias: Respond to right button click
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d00022b3ea0_click
+    to: 'right_single'
+  action:
+    - service: light.toggle
+      entity_id: group.living_room_spot_right
+
+- alias: Respond to both buttons click
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d00022b3ea0_click
+    to: 'both_single'
+  action:
+    - service: light.toggle
+      entity_id:
+        - group.living_room_spot_right
+        - group.living_room_spot_left
+
+
+####
+
+#- alias: Brightness of light in livingroom
+#  initial_state: true
+#  trigger:
+#    - platform: state
+#      entity_id: light.living_room_lamp
+#      to: 'on'
+#  action:
+#    - service: light.turn_on
+#      entity_id:
+#        - light.living_room_lamp
+#      data_template:
+#         brightness_pct: >
+#           {% set hour = now().hour | int %}
+#           {%- if hour >= 0 and hour < 6  -%}
+#           20
+#           {%- elif hour >= 6 and hour < 8  -%}
+#           65
+#           {%- elif hour >= 8 and hour < 20  -%}
+#           90
+#           {%- elif hour >= 20 and hour < 23  -%}
+#           65
+#           {%- elif hour >= 23 and hour < 24  -%}
+#           20
+#           {% endif %}
+#         kelvin: 4000
+

@@ -1,0 +1,110 @@
+ring:
+  username: !secret ring_user
+  password: !secret ring_pass
+
+binary_sensor:
+  - platform: ring
+    scan_interval: 45
+    monitored_conditions:
+      - ding
+      - motion
+
+sensor:
+  - platform: ring
+    scan_interval: 45
+    monitored_conditions:
+      - battery
+      - last_activity
+      - last_ding
+      - last_motion
+      - volume
+      - wifi_signal_category
+      - wifi_signal_strength
+
+  - platform: template
+    sensors:
+      ring_front_door_last_activity_date:
+        friendly_name: Последняя активность
+        value_template: "{{ states.sensor.ring_front_door_last_activity.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+
+  - platform: template
+    sensors:
+      ring_front_door_last_ding_date:
+        friendly_name: Последний звонок
+        value_template: "{{ states.sensor.ring_front_door_last_ding.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+
+  - platform: template
+    sensors:
+      ring_front_door_last_motion_date:
+        friendly_name: Последние движение
+        value_template: "{{ states.sensor.ring_front_door_last_motion.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+
+ffmpeg:
+
+camera:
+  - platform: ring
+    scan_interval: 45
+    ffmpeg_arguments: -pred 1 -q:v 2
+
+downloader:
+  download_dir: downloads
+
+group:
+  doorbell:
+    view: yes
+    name: Дверной звонок
+    icon: mdi:bell-ring
+    entities:
+      - group.doorbell_all
+
+  doorbell_all:
+    control: hidden
+    name: Дверной Звонок
+    view: no
+    entities:
+      - binary_sensor.ring_front_door_ding
+      - binary_sensor.ring_front_door_motion
+      - sensor.ring_front_door_battery
+      - sensor.ring_front_door_last_activity_date
+      - sensor.ring_front_door_last_ding_date
+      - sensor.ring_front_door_last_motion_date
+      - sensor.ring_front_door_volume
+      - sensor.ring_front_door_wifi_signal_category
+      - sensor.ring_front_door_wifi_signal_strength
+
+automation:
+  - alias: Ring DoorBell
+    initial_state: 'on'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.ring_front_door_ding
+      to: 'on'
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Звонок в дверь'
+      - service: xiaomi_aqara.play_ringtone
+        data:
+          gw_mac: !secret xgate_1_mac
+          ringtone_id: 10
+          ringtone_vol: 90
+      - service: xiaomi_aqara.play_ringtone
+        data:
+          gw_mac: !secret xgate_2_mac
+          ringtone_id: 10
+          ringtone_vol: 90
+
+  - alias: Ring Video Download
+    initial_state: 'on'
+    trigger:
+      platform: template
+      value_template: "{{ is_state_attr('sensor.ring_front_door_last_activity', 'recording_status', 'ready') }}"
+    action:
+      - service: downloader.download_file
+        data_template:
+          subdir: "ring_{{ now().strftime('%Y_%m_%d') }}"
+          filename: "motion_{{ now().strftime('%Y_%m_%d_%H_%M') }}.mpg"
+          overwrite: true
+          url: "{{ states.camera.front_door.attributes.video_url }}"
+
+

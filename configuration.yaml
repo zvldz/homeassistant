@@ -1,0 +1,156 @@
+homeassistant:
+  name: Home
+  unit_system: metric
+  latitude:   !secret home_latitude
+  longitude:  !secret home_longitude
+  elevation:  !secret home_elevation
+  time_zone:  !secret home_timezone
+  customize:  !include_dir_merge_named includes/customizations
+  packages:   !include_dir_named includes/packages
+
+lovelace:
+  mode: yaml
+
+http:
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+
+frontend:
+  themes: !include includes/themes.yaml
+
+config:
+
+system_health:
+
+discovery:
+  ignore:
+    - igd
+    - yeelight
+
+conversation:
+
+history:
+
+recorder:
+  db_url: !secret db_mysql
+  purge_keep_days: 7
+  purge_interval: 1
+
+logbook:
+  exclude:
+    entities:
+      - sensor.uptime
+      - sensor.time
+      - sensor.date
+
+#logger:
+#  default: debug
+
+map:
+
+sun:
+
+tts:
+  - platform: google_translate
+    service_name: google_say
+    language: 'ru'
+
+api:
+  api_password: !secret api_pass
+
+google_assistant:
+  project_id: !secret google_home_id
+  api_key: !secret google_home_api
+  exposed_domains:
+    - light
+    - vacuum
+    - switch
+    - script
+
+mqtt:
+  broker: 127.0.0.1
+  discovery: true
+  discovery_prefix: homeassistant
+  birth_message:
+    topic: 'hass/status'
+    payload: 'online'
+  will_message:
+    topic: 'hass/status'
+    payload: 'offline'
+
+device_tracker:
+  - platform: snmp
+    host: !secret mikrotik_ip
+    community: public
+    baseoid: 1.3.6.1.2.1.4.22.1.2
+    track_new_devices: false
+    interval_seconds: 30
+    consider_home: 180
+
+xiaomi_aqara:
+  discovery_retry: 10
+  gateways:
+    - mac: !secret xgate_1_mac
+      key: !secret xgate_1_key
+    - mac: !secret xgate_2_mac
+      key: !secret xgate_2_key
+
+switch:
+  - platform: broadlink
+    host: !secret broadlink_ip
+    mac: !secret broadlink_mac
+    timeout: 15
+    switches:
+      samsung_tv:
+        friendly_name: Samsung TV Power
+        command_on: 'JgBGAJaTFDYVNxQ2FRIVERUSFREVEhU1FjYVNhUSFBIVEhQSFRISOBYSFBIVNhU2FRIVERU3FBEWNhU2FRIUEhU3FDYVEhUADQUAAA=='
+        command_off: 'JgBGAJSWEzcUOBQ3FBIUERQTEhIUExI4EzkTNxUSExIUEhMSFBIUERQTExEVNxQ3FBITEhQ4EzcUOBM3FBITEhQ4EzcVEhMADQUAAA=='
+#      shield_tv:
+#        friendly_name: "Nvidia Shield TV Power"
+#        command_on: 'JgBIAAABJpMTEhMSExITERMSExITEhM2ExITNhM2EzYTNhM2FDYTEhI3EhMSNxISExITEhM2ExISExI3ExISNxI3EjcTEhM2EwANBQ=='
+#        command_off: 'JgBIAAABJ5MTEhITEhITEhMSEhITEhM2ExITNhM3EjcSNxI3EjcTEhM2ExITEhMSEhITEhM2ExISExI3EjcTNhM2EzcSEhM2EwANBQ=='
+
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_bot_api_key
+    allowed_chat_ids:
+      - !secret telegram_bot_allowed_chat_id1
+
+notify:
+  - name: telegram
+    platform: telegram
+    chat_id: !secret telegram_bot_allowed_chat_id1
+
+panel_iframe:
+  cacti:
+    title: Cacti
+    icon: mdi:chart-areaspline
+    url: /cacti/
+  ring:
+    title: Ring
+    icon: mdi:bell-ring
+    url: /downloads/ring.php
+  trasmission:
+    title: Trasmission
+    icon: mdi:download-network
+    url: /transmission/
+
+custom_updater:
+  card_urls:
+    - https://raw.githubusercontent.com/kalkih/mini-media-player/master/tracker.json
+    - https://raw.githubusercontent.com/nervetattoo/banner-card/master/tracker.json
+    - https://raw.githubusercontent.com/kalkih/mini-graph-card/master/tracker.json
+
+sensor: !include_dir_merge_list includes/sensors
+light: !include_dir_merge_list includes/lights
+yeelight: !include includes/yeelight.yaml
+group: !include groups.yaml
+automation: !include_dir_merge_list includes/automations
+script: !include_dir_merge_list includes/scripts
+input_boolean: !include includes/input_boolean.yaml
+input_number: !include includes/input_number.yaml
+input_select: !include includes/input_select.yaml
+

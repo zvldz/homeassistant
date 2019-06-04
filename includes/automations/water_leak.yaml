@@ -1,0 +1,117 @@
+- alias: Water leak in kitchen
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d000232989c
+    to: 'on'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Утечка воды на кухне'
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+
+- alias: Water leak off in kitchen
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d000232989c
+    from: 'on'
+    to: 'off'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Устранена утечка воды на кухне'
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+
+- alias: Water leak in bathroom
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d000233ddf2
+    to: 'on'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Утечка воды в ванной'
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+
+- alias: Water leak off in bathroom
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d000233ddf2
+    from: 'on'
+    to: 'off'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Устранена утечка воды в ванной'
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+
+- alias: Water leak in WC
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d00023aa420
+    to: 'on'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Утечка воды в туалете'
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+        ringtone_id: 0
+        ringtone_vol: 80
+
+- alias: Water leak off in WC
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.water_leak_sensor_158d00023aa420
+    from: 'on'
+    to: 'off'
+  action:
+    - service: notify.telegram
+      data:
+        message: 'Устранена утечка воды в туалете'
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_1_mac
+    - service: xiaomi_aqara.stop_ringtone
+      data:
+        gw_mac: !secret xgate_2_mac
+

@@ -1,0 +1,87 @@
+title: Пылесос
+icon: mdi:robot-vacuum
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Статус"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.vacuum_status
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Карта"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: picture-elements
+            show_header_toggle: false
+            camera_image: camera.rockrobo_map
+            elements:
+              - type: icon
+                icon: mdi:bell-ring
+                tap_action:
+                  action: call-service
+                  service: vacuum.locate
+                  service_data:
+                    entity_id: vacuum.xiaomi_vacuum_cleaner
+                style:
+                  top: 95%
+                  left: 30%
+                  "--paper-item-icon-color": rgb(115, 122, 130)
+              - type: icon
+                icon: mdi:home
+                tap_action:
+                  action: call-service
+                  service: vacuum.return_to_base
+                  sevice_data:
+                    entity_id: vacuum.xiaomi_vacuum_cleaner
+                style:
+                  top: 95%
+                  left: 40%
+                  "--paper-item-icon-color": rgb(115, 122, 130)
+              - type: icon
+                icon: mdi:play
+                tap_action:
+                  action: call-service
+                  service: vacuum.start
+                  service_data:
+                    entity_id: vacuum.xiaomi_vacuum_cleaner
+                style:
+                  top: 95%
+                  left: 50%
+                  "--paper-item-icon-color": rgb(115, 122, 130)
+              - type: icon
+                icon: mdi:stop
+                tap_action:
+                  action: call-service
+                  service: vacuum.stop
+                  service_data:
+                    entity_id: vacuum.xiaomi_vacuum_cleaner
+                style:
+                  top: 95%
+                  left: 60%
+                  "--paper-item-icon-color": rgb(115, 122, 130)
+              - type: icon
+                icon: mdi:pause
+                tap_action:
+                  action: call-service
+                  service: vacuum.pause
+                  service_data:
+                    entity_id: vacuum.xiaomi_vacuum_cleaner
+                style:
+                  top: 95%
+                  left: 70%
+                  "--paper-item-icon-color": rgb(115, 122, 130)
+
+          - type: entities
+            title: Зональная Уборка
+            show_header_toggle: false
+            entities:
+              - input_select.vacuum_room
+

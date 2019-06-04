@@ -1,0 +1,64 @@
+title: Система
+icon: mdi:heart-pulse
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Система"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - sensor.last_boot
+              - sensor.ha_uptime
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: CPU temp
+                entities:
+                  - sensor.cpu_temperature
+                hour24: true
+                line_color: red
+              - type: custom:mini-graph-card
+                name: CPU use
+                entities:
+                  - sensor.processor_use
+                hour24: true
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: RAM
+                entities:
+                  - sensor.memory_use_percent
+                hour24: true
+                line_color: red
+              - type: custom:mini-graph-card
+                name: SWAP
+                entities:
+                  - sensor.swap_use_percent
+                hour24: true
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: HDD
+                entities:
+                  - sensor.disk_use_percent
+                hour24: true
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Zigbee2mqtt"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.zigbee_group
+
+      - type: custom:tracker-card

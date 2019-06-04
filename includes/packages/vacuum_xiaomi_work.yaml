@@ -1,0 +1,348 @@
+vacuum:
+  - platform: xiaomi_miio
+    host: !secret xiaomi_vacuum_ip
+    token: !secret xiaomi_vacuum_token
+
+input_select:
+  vacuum_room:
+    name: Choose a room to clean
+    options:
+      - Select Room
+      - All Except Balcony
+      - Entryway
+      - Hallway
+      - Kitchen
+      - Living Room
+      - Master Bedroom
+      - Bedroom
+    initial: Select Room
+
+sensor:
+  - platform: template
+    sensors:
+      vacuum_cleaner_error_sensor:
+        friendly_name: Последняя ошибка
+        value_template: >
+          {% if states.vacuum.xiaomi_vacuum_cleaner.attributes.error is defined %}
+            {{states.vacuum.xiaomi_vacuum_cleaner.attributes.error}}
+          {% else %}
+            Нет Ошибок
+          {% endif %}
+
+      vacuum_cleaner_status_sensor:
+        friendly_name: Состояние
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.status }}"
+
+      vacuum_cleaner_battery_level:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.battery_level }}"
+        friendly_name: Уровень заряда
+        unit_of_measurement: '%'
+
+      vacuum_cleaner_cleaned_area:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area }}"
+        friendly_name: Убранная территория
+        unit_of_measurement: 'м²'
+
+      vacuum_cleaner_cleaning_time:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time }}"
+        friendly_name: Время уборки
+        unit_of_measurement: 'мин'
+
+      vacuum_cleaner_main_brush_left:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.main_brush_left }}"
+        friendly_name: Время до замены главной щетки
+        unit_of_measurement: 'часов'
+
+      vacuum_cleaner_side_brush_left:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.side_brush_left }}"
+        friendly_name: Время до замены боковой щетки
+        unit_of_measurement: 'часов'
+
+      vacuum_cleaner_filter_left:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.filter_left }}"
+        friendly_name: Время до замены фильтра
+        unit_of_measurement: 'часов'
+
+      vacuum_cleaner_dirty_left:
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.sensor_dirty_left }}"
+        friendly_name: Время до протирки сенсоров
+        unit_of_measurement: 'часов'
+
+automation:
+  - alias: 'Vacuum Time Clean 1'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: '13:00'
+    condition:
+      condition: and
+      conditions:
+        - condition: time
+          weekday:
+            - tue
+            - thu
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_all_except_balcony
+
+  - alias: 'Vacuum Time Clean 2'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: '13:00'
+    condition:
+      condition: and
+      conditions:
+        - condition: time
+          weekday:
+            - mon
+            - wed
+            - fri
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_living_room
+
+  - alias: 'Vacuum Cleaning'
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: vacuum.xiaomi_vacuum_cleaner
+        to: 'cleaning'
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Пылесос начал уборку'
+
+  - alias: 'Vacuum Returning'
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: vacuum.xiaomi_vacuum_cleaner
+        to: 'returning'
+    action:
+       - service: notify.telegram
+         data_template:
+           message: "Пылесос завершил уборку и возвращается на станцию. Время уборки: {{states.sensor.vacuum_cleaner_cleaning_time.state}} минут. Общая площадь уборки: {{states.sensor.vacuum_cleaner_cleaned_area.state}} м²"
+
+  - alias: 'Vacuum Docked'
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: vacuum.xiaomi_vacuum_cleaner
+        to: 'docked'
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Пылесос прибыл на станцию и заряжается'
+
+  - alias: 'Vacuum Cleaner Error'
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: sensor.vacuum_cleaner_status_sensor
+        to: 'Error'
+      - platform: state
+        entity_id: sensor.vacuum_cleaner_status_sensor
+        to: 'In Error'
+      - platform: state
+        entity_id: sensor.vacuum_cleaner_status_sensor
+        to: 'Charging Error'
+    action:
+      - service: notify.telegram
+        data:
+          message: >
+            {% if is_state('sensor.vacuum_cleaner_error_sensor', 'Нет Ошибок')  %}
+              {{states.sensor.vacuum_cleaner_status_sensor.state}}
+            {% else %}
+              {{states.sensor.vacuum_cleaner_error_sensor.state}}
+            {% endif %}
+
+  - alias: 'Vacuum Cleaner Error Solved'
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: sensor.vacuum_cleaner_error_sensor
+        to: 'Нет Ошибок'
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Пылесос вне опасности'
+
+  - alias: 'Start Cleaning Room'
+    initial_state: 'on'
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.vacuum_room
+        from: 'Select Room'
+    action:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state("input_select.vacuum_room", "All Except Balcony") %}
+             script.vacuum_all_except_balcony
+            {% elif is_state("input_select.vacuum_room", "Entryway") %}
+              script.vacuum_entryway
+            {% elif is_state("input_select.vacuum_room", "Hallway") %}
+              script.vacuum_hallway
+            {% elif is_state("input_select.vacuum_room", "Kitchen") %}
+              script.vacuum_kitchen
+            {% elif is_state("input_select.vacuum_room", "Living Room") %}
+              script.vacuum_living_room
+            {% elif is_state("input_select.vacuum_room", "Master Bedroom") %}
+              script.vacuum_master_bedroom
+            {% elif is_state("input_select.vacuum_room", "Bedroom") %}
+              script.vacuum_bedroom
+            {% endif %}
+      - service: input_select.select_option
+        entity_id: input_select.vacuum_room
+        data_template:
+          option: 'Select Room'
+
+  - alias: 'Hallway Button Click Single'
+    initial_state: 'on'
+    trigger:
+      platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d0001a66df0
+        click_type: single
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_entryway
+
+  - alias: 'Hallway Button Click Double'
+    initial_state: 'on'
+    trigger:
+      platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d0001a66df0
+        click_type: double
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_hallway
+
+script:
+  vacuum_all_except_balcony:
+    alias: 'Vacuum All Except Balcony'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+#         params: [ [32705,32955,37175,35580,1], [31035,31320,32875,34525,2], [33320,28625,37140,32785,1], [31170,27155,32910,31455,1], [33045,25145,37345,28385,1], [28860,27215,31260,28265,1], [24615,25215,28765,28225,1] ]
+          params: [ [32705,32955,37175,35580,2], [31035,31320,32875,34525,2], [33320,28625,37140,32785,2], [31170,27155,32910,31455,1], [33045,25145,37345,28385,1]]
+      - service: notify.telegram
+        data:
+          message: 'Уборка Всей Квартиры Кроме Балкона'
+
+  vacuum_master_bedroom:
+    alias: 'Clean Up Master Bedroom'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [33045,25145,37345,28385,1] ]
+      - service: notify.telegram
+        data:
+          message: 'Уборка Главной Спальни'
+
+  vacuum_bedroom:
+    alias: 'Clean Up Bedroom'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [24555,25215,28715,28250,1] ]
+      - service: notify.telegram
+        data:
+           message: 'Уборка Спальни'
+
+  vacuum_entryway:
+    alias: 'Clean Up Entryway'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [31035,31320,32875,34525,2] ]
+      - service: notify.telegram
+        data:
+           message: 'Уборка Прихожей'
+
+  vacuum_hallway:
+    alias: 'Clean Up Hallway'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [31034,31317,32875,34523,2], [31170,27155,32910,31455,1], [28680,27155,31270,28145,1] ]
+      - service: notify.telegram
+        data:
+           message: 'Уборка Коридора'
+
+  vacuum_kitchen:
+    alias: 'Clean Up Kitchen'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [32705,32955,37175,35580,2] ]
+      - service: notify.telegram
+        data:
+           message: 'Уборка Кухни'
+
+  vacuum_living_room:
+    alias: 'Clean Up Living Room'
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [33320,28625,37140,32785,2] ]
+      - service: notify.telegram
+        data:
+           message: 'Уборка Гостиной'
+
+group:
+  vacuum:
+    view: yes
+    icon: mdi:robot-vacuum
+    name: Пылесос
+    entities:
+      - group.vacuum_status
+      - group.vacuum_zone
+      - group.vacuum_map
+
+  vacuum_status:
+    name: Статусы Пылесоса
+    control: hidden
+    entities:
+      - vacuum.xiaomi_vacuum_cleaner
+      - sensor.vacuum_cleaner_status_sensor
+      - sensor.vacuum_cleaner_error_sensor
+      - sensor.vacuum_cleaner_battery_level
+      - sensor.vacuum_cleaner_cleaned_area
+      - sensor.vacuum_cleaner_cleaning_time
+      - sensor.vacuum_cleaner_main_brush_left
+      - sensor.vacuum_cleaner_side_brush_left
+      - sensor.vacuum_cleaner_filter_left
+      - sensor.vacuum_cleaner_dirty_left
+
+  vacuum_map:
+    name: Карта
+    control: hidden
+    entities:
+      - camera.rockrobo_map
+
+  vacuum_zone:
+    name: Зональная Уборка
+    control: hidden
+    entities:
+      - input_select.vacuum_room
+

@@ -1,0 +1,26 @@
+title: Дверной звонок
+icon: mdi:bell-ring
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Дверной Звонок"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.doorbell_all
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Камера"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: picture-glance
+            show_header_toggle: false
+            entities:
+              - sensor.ring_front_door_battery
+            camera_image: camera.front_door

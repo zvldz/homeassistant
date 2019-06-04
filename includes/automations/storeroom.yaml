@@ -1,0 +1,20 @@
+- alias: Door opened in storeroom
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.door_window_sensor_158d0002537042
+    to: 'on'
+  action:
+    service: switch.turn_on
+    entity_id: switch.wall_switch_ln_158d0002235125
+
+- alias: Door closed in storeroom
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.door_window_sensor_158d0002537042
+    to: 'off'
+  action:
+    service: switch.turn_off
+    entity_id: switch.wall_switch_ln_158d0002235125
+

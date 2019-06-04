@@ -1,0 +1,29 @@
+- alias: Door opened in WC
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+    to: 'on'
+  condition:
+    condition: state
+    entity_id: switch.wall_switch_ln_left_158d00022a8150
+    state: 'off'
+  action:
+    service: switch.turn_on
+    entity_id: switch.wall_switch_ln_left_158d00022a8150
+
+- alias: Turn off Bathroom lights 20 minutes after turn on
+  initial_state: 'on'
+  trigger:
+    platform: time_pattern
+    minutes: '/1'
+    seconds: 00
+  condition:
+    condition: state
+    entity_id: switch.wall_switch_ln_left_158d00022a8150
+    state: 'on'
+    for:
+      minutes: 20
+  action:
+    service: switch.turn_off
+    entity_id: switch.wall_switch_ln_left_158d00022a8150

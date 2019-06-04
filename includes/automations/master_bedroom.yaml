@@ -1,0 +1,58 @@
+- alias: Respond to single button click bedroom1
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d0001f9aa24_click
+    to: 'single'
+  action:
+#   - service: yeelight.set_mode
+#     data:
+#       entity_id: light.master_bedroom_lamp
+#       mode: normal
+    - service: light.toggle
+      entity_id: light.master_bedroom_lamp
+
+- alias: Respond to double button click bedroom1
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d0001f9aa24_click
+    to: 'double'
+  action:
+#   - service: light.turn_on
+#     entity_id: light.master_bedroom_lamp
+#     data:
+#        brightness_pct: 90
+#        kelvin: 4000
+    - service: light.toggle
+      entity_id: light.master_bedroom_lamp
+
+- alias: Turn on bedside lamp
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: +01:00:00
+  condition:
+    condition: state
+    state: 'off'
+    entity_id: light.bedside
+    #for:
+    #  minutes: 180
+  action:
+    service: light.turn_on
+    entity_id: light.bedside
+
+- alias: Turn off bedside lamp
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '02:00:00'
+  condition:
+    condition: state
+    entity_id: light.bedside
+    state: 'on'
+  action:
+    service: light.turn_off
+    entity_id: light.bedside
+

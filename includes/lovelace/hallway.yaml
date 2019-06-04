@@ -1,0 +1,26 @@
+title: Коридор
+icon: mdi:swap-vertical-variant
+cards:
+  - type: light
+    entity: light.gateway_light_7811dcb245b2
+
+  - type: entities
+    title: Выключатели
+    entities:
+      - switch.wall_switch_ln_158d0001f9aaae
+      - switch.wall_switch_ln_158d0002112b1e
+      - switch.wall_switch_ln_right_158d00022a8150
+      - switch.wall_switch_ln_158d00022360fe
+      - switch.wall_switch_ln_left_158d00022a8150
+
+  - type: entities
+    title: Сенсоры
+    show_header_toggle: false
+    entities:
+      - binary_sensor.switch_158d0001a66df0
+      - binary_sensor.water_leak_sensor_158d00023aa420
+      - binary_sensor.water_leak_sensor_158d000233ddf2
+      - binary_sensor.door_window_sensor_158d00024de627
+      - binary_sensor.door_window_sensor_158d0002fd4381
+      - binary_sensor.door_window_sensor_158d00032b7db7
+      - sensor.illumination_7811dcb245b2

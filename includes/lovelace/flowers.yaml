@@ -1,0 +1,35 @@
+title: Цветы
+icon: mdi:flower
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Цветок 1"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.flower1
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Цветок 2"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.flower2
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Цветок 3"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.flower3

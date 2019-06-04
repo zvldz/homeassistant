@@ -1,0 +1,71 @@
+sensor:
+  - platform: miflora
+    name: miflore1
+    mac: 'C4:7C:8D:67:10:18'
+    force_update: true
+    median: 1
+
+  - platform: miflora
+    name: miflore2
+    mac: 'C4:7C:8D:67:0F:2E'
+    force_update: true
+    median: 1
+
+  - platform: miflora
+    name: miflore3
+    mac: 'C4:7C:8D:67:10:10'
+    force_update: true
+    median: 1
+
+group:
+  flowers:
+    view: yes
+    icon: mdi:flower
+    name: Цветы
+    control: hidden
+    entities:
+      - group.flower1
+      - group.flower2
+      - group.flower3
+
+  flower1:
+    name: Цветок 1
+    control: hidden
+    entities:
+      - sensor.miflore1_temperature
+      - sensor.miflore1_light_intensity
+      - sensor.miflore1_moisture
+      - sensor.miflore1_conductivity
+      - sensor.miflore1_battery
+
+  flower2:
+    name: Цветок 2
+    control: hidden
+    entities:
+      - sensor.miflore2_temperature
+      - sensor.miflore2_light_intensity
+      - sensor.miflore2_moisture
+      - sensor.miflore2_conductivity
+      - sensor.miflore2_battery
+
+  flower3:
+    name: Цветок 3
+    control: hidden
+    entities:
+      - sensor.miflore3_temperature
+      - sensor.miflore3_light_intensity
+      - sensor.miflore3_moisture
+      - sensor.miflore3_conductivity
+      - sensor.miflore3_battery
+
+automation:
+  - alias: Plant Data Update
+    initial_state: 'on'
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.miflore1_moisture, sensor.miflore2_moisture, sensor.miflore3_moisture
+        below: 30
+    action:
+      - service: notify.telegram
+        data_template:
+          message: "Этому цветку необходима вода - '{{ trigger.from_state.attributes.friendly_name }}', влажность {{ trigger.from_state.state }} "

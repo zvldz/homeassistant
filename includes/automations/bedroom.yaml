@@ -1,0 +1,20 @@
+- alias: Respond to single button click bedroom2
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d0002113ace_click
+    to: 'single'
+  action:
+    - service: light.toggle
+      entity_id: light.bedroom_lamp
+
+- alias: Respond to double button click bedroom2
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d0002113ace_click
+    to: 'double'
+  action:
+    - service: light.toggle
+      entity_id: light.bedroom_lamp
+

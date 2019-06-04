@@ -1,0 +1,24 @@
+title: Automation
+icon: mdi:flash-auto
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Automations"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.all_automations
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Scripts"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.all_scripts

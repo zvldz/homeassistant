@@ -1,0 +1,35 @@
+- platform: systemmonitor
+  resources:
+    - type: last_boot
+    - type: load_1m
+    - type: load_5m
+    - type: load_15m
+    - type: processor_use
+    - type: memory_use
+    - type: memory_free
+    - type: memory_use_percent
+    - type: swap_use_percent
+    - type: swap_use
+    - type: swap_free
+    - type: disk_use_percent
+      arg: /
+    - type: disk_use
+      arg: /
+    - type: disk_free
+      arg: /
+
+- platform: command_line
+  name: CPU Temperature
+  command: 'cat /sys/class/thermal/thermal_zone0/temp'
+  unit_of_measurement: '°C'
+  value_template: '{{ value | multiply(0.001) }}'
+
+- platform: uptime
+  name: Home Assistant Uptime
+
+- platform: template
+  sensors:
+    ha_uptime:
+      friendly_name: Home Assistant Uptime
+      value_template: "{{ states.sensor.home_assistant_uptime.state }}"
+      unit_of_measurement: 'д. назад'

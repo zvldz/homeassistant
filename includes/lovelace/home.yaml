@@ -1,0 +1,63 @@
+title: Home
+icon: mdi:home-assistant
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Температура"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.climate_temperature
+
+      - type: markdown
+        content: "## Погода"
+
+      - type: weather-forecast
+        show_header_toggle: false
+        entity: weather.weather
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Влажность"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.climate_humidity
+
+      - type: markdown
+        content: "## День"
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - sun.sun
+          - sensor.date
+          - sensor.time
+          - sensor.sun_dawn
+          - sensor.sun_dusk
+
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "## Давление"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:group-card
+            show_header_toggle: false
+            group: group.climate_pressure
+
+      - type: markdown
+        content: "## Кто Дома"
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - device_tracker.redmi4
+          - device_tracker.galaxy_a5

@@ -1,0 +1,20 @@
+title: Кухня
+icon: mdi:silverware-fork-knife
+cards:
+  - type: light
+    entity: light.kitchen_lamp
+
+  - type: entities
+    title: Выключатели
+    entities:
+      - switch.0x00158d00022addd4_switch_right
+      - switch.0x00158d00022addd4_switch_left
+
+  - type: entities
+    title: Сенсоры
+    show_header_toggle: false
+    entities:
+      - binary_sensor.water_leak_sensor_158d000232989c
+      - binary_sensor.motion_sensor_158d00022515fe
+      - binary_sensor.kitchen_lamp_nightlight
+      - sensor.illumination_158d00022515fe

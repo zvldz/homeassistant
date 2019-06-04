@@ -1,21 +1,21 @@
 sensor:
   - platform: miflora
     name: miflore1
-    mac: 'C4:7C:8D:67:10:18'
-    force_update: true
-    median: 1
+    mac: !secret miflore1_mac
+    force_update: false
+    median: 3
 
   - platform: miflora
     name: miflore2
-    mac: 'C4:7C:8D:67:0F:2E'
-    force_update: true
-    median: 1
+    mac: !secret miflore2_mac
+    force_update: false
+    median: 3
 
   - platform: miflora
     name: miflore3
-    mac: 'C4:7C:8D:67:10:10'
-    force_update: true
-    median: 1
+    mac: !secret miflore3_mac
+    force_update: false
+    median: 3
 
 group:
   flowers:

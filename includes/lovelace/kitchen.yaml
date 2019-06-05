@@ -9,6 +9,7 @@ cards:
     entities:
       - switch.0x00158d00022addd4_switch_right
       - switch.0x00158d00022addd4_switch_left
+      - switch.kitchen_tv_power
 
   - type: entities
     title: Сенсоры

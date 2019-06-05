@@ -1,33 +1,89 @@
 title: Мультимедия
 icon: mdi:television
 cards:
-  - type: custom:mini-media-player
-    entity: media_player.home_mini
-    icon: mdi:dots-horizontal-circle
-    power_color: true
-    show_progress: true
-    show_source: true
-    show_tts: google
 
-  - type: custom:mini-media-player
-    entity: media_player.shield_tv
-    show_source: true
-    artwork: cover
-    source: full
-    power: true
-    show_tts: google
+  - type: conditional
+    conditions:
+      - entity: media_player.home_mini
+        state_not: "unavailable"
+    card:
+      type: custom:mini-media-player
+      entity: media_player.home_mini
+      icon: mdi:dots-horizontal-circle
+      power_color: true
+      show_progress: true
+      show_source: true
+      show_tts: google
 
-  - type: custom:mini-media-player
-    entity: media_player.zal_tv_ue49mu6402
+  - type: conditional
+    conditions:
+      - entity: media_player.home_mini
+        state_not: "unavailable"
+    card:
+      type: media-control
+      entity: media_player.home_mini
 
-  - type: custom:mini-media-player
-    entity: media_player.android_tv
+  - type: conditional
+    conditions:
+      - entity: media_player.shield_tv
+        state_not: "unavailable"
+    card:
+      type: custom:mini-media-player
+      entity: media_player.shield_tv
+      show_source: true
+      artwork: cover
+      source: full
+      power: true
+      show_tts: google
 
-  - type: media-control
-    entity: media_player.shield_tv
-  - type: media-control
-    entity: media_player.home_mini
-  - type: media-control
-    entity: media_player.zal_tv_ue49mu6402
-  - type: media-control
-    entity: media_player.android_tv
+  - type: conditional
+    conditions:
+      - entity: media_player.shield_tv
+        state_not: "unavailable"
+    card:
+      type: media-control
+      entity: media_player.shield_tv
+
+
+  - type: conditional
+    conditions:
+      - entity: media_player.zal_tv_ue49mu6402
+        state_not: "unavailable"
+    card:
+      type: custom:mini-media-player
+      entity: media_player.zal_tv_ue49mu6402
+      show_source: true
+      artwork: cover
+      source: full
+      power: true
+      show_tts: google
+
+  - type: conditional
+    conditions:
+      - entity: media_player.zal_tv_ue49mu6402
+        state_not: "unavailable"
+    card:
+      type: media-control
+      entity: media_player.zal_tv_ue49mu6402
+
+  - type: conditional
+    conditions:
+      - entity: media_player.android_tv
+        state_not: "unavailable"
+    card:
+      type: custom:mini-media-player
+      entity: media_player.android_tv
+      show_source: true
+      artwork: cover
+      source: full
+      power: true
+      show_tts: google
+
+  - type: conditional
+    conditions:
+      - entity: media_player.android_tv
+        state_not: "unavailable"
+    card:
+      type: media-control
+      entity: media_player.android_tv
+

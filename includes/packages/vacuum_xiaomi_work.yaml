@@ -147,6 +147,9 @@ automation:
       - platform: state
         entity_id: sensor.vacuum_cleaner_status_sensor
         to: 'Charging Error'
+      - platform: state
+        entity_id: sensor.vacuum_cleaner_status_sensor
+        to: 'Ошибка'
     action:
       - service: notify.telegram
         data:

@@ -52,7 +52,7 @@ logbook:
       - sensor.time
       - sensor.date
 
-#logger:
+logger:
 #  default: debug
 
 tts:
@@ -125,11 +125,8 @@ panel_iframe:
     icon: mdi:download-network
     url: /transmission/
 
-custom_updater:
-  card_urls:
-    - https://raw.githubusercontent.com/kalkih/mini-media-player/master/tracker.json
-    - https://raw.githubusercontent.com/nervetattoo/banner-card/master/tracker.json
-    - https://raw.githubusercontent.com/kalkih/mini-graph-card/master/tracker.json
+hacs:
+  token: !secret my_github_access_token
 
 switch: !include_dir_merge_list includes/switches
 sensor: !include_dir_merge_list includes/sensors

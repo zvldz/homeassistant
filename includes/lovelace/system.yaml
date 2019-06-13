@@ -75,5 +75,3 @@ cards:
 #             - input_select.zigbee2mqtt_log_level
 #             - automation.zigbee2mqtt_log_level
 
-      - type: custom:tracker-card
-

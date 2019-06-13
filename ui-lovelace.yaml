@@ -1,18 +1,4 @@
 resources:
-# - url: /local/custom-lovelace/monster-card/monster-card.js
-#   type: js
-# - url: /local/tracker-card.js?track=true
-#   type: module
-# - url: /local/custom-lovelace/group-card/group-card.js
-#   type: js
-# - url: /local/vertical-stack-in-card.js
-#   type: js
-# - url: /local/banner-card.js?track=true
-#   type: module
-# - url: /local/mini-media-player-bundle.js
-#   type: module
-# - url: /local/mini-graph-card-bundle.js
-#   type: module
   - url: /community_plugin/group-card/group-card.js
     type: js
   - url: /community_plugin/vertical-stack-in-card/vertical-stack-in-card.js

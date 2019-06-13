@@ -1,4 +1,3 @@
-
 - alias: Respond to single button click
   initial_state: true
   trigger:
@@ -51,32 +50,15 @@
         - group.living_room_spot_right
         - group.living_room_spot_left
 
-
-####
-
-#- alias: Brightness of light in livingroom
-#  initial_state: true
-#  trigger:
-#    - platform: state
-#      entity_id: light.living_room_lamp
-#      to: 'on'
-#  action:
-#    - service: light.turn_on
-#      entity_id:
-#        - light.living_room_lamp
-#      data_template:
-#         brightness_pct: >
-#           {% set hour = now().hour | int %}
-#           {%- if hour >= 0 and hour < 6  -%}
-#           20
-#           {%- elif hour >= 6 and hour < 8  -%}
-#           65
-#           {%- elif hour >= 8 and hour < 20  -%}
-#           90
-#           {%- elif hour >= 20 and hour < 23  -%}
-#           65
-#           {%- elif hour >= 23 and hour < 24  -%}
-#           20
-#           {% endif %}
-#         kelvin: 4000
+- alias: Set brightness for lamp in living-room
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: light.living_room_lamp
+    to: 'on'
+  action:
+    - service: yeelight.set_mode
+      data:
+        entity_id: light.living_room_lamp
+        mode: normal
 

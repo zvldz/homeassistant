@@ -15,11 +15,6 @@
     entity_id: sensor.0x00158d00022addd4_click
     to: 'right_double'
   action:
-#   - service: light.turn_on
-#     entity_id: light.kitchen_lamp
-#     data:
-#        brightness_pct: 90
-#        kelvin: 4000
     - service: light.toggle
       entity_id: light.kitchen_lamp
 
@@ -58,3 +53,14 @@
     - service: light.turn_off
       entity_id: light.kitchen_lamp
 
+- alias: Set brightness for lamp in kitchen
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: light.kitchen_lamp
+    to: 'on'
+  action:
+    - service: yeelight.set_mode
+      data:
+        entity_id: light.kitchen_lamp
+        mode: normal

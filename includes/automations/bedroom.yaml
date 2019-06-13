@@ -18,3 +18,14 @@
     - service: light.toggle
       entity_id: light.bedroom_lamp
 
+- alias: Set brightness for lamp in bedroom2
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: light.bedroom_lamp
+    to: 'on'
+  action:
+    - service: yeelight.set_mode
+      data:
+        entity_id: light.bedroom_lamp
+        mode: normal

@@ -166,6 +166,9 @@ automation:
       - platform: state
         entity_id: sensor.vacuum_cleaner_error_sensor
         to: 'Нет Ошибок'
+    condition:
+      condition: template
+      value_template: "{{ states.sensor.ha_uptime_min.state  | int > 10 }}"
     action:
       - service: notify.telegram
         data:

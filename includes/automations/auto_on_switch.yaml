@@ -12,6 +12,7 @@
 #    service: automation.turn_on
 
 - alias: After HA Start turn on switch automation
+  initial_state: 'on'
   trigger:
     - platform: homeassistant
       event: start

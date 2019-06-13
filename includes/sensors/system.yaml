@@ -25,11 +25,16 @@
   value_template: '{{ value | multiply(0.001) }}'
 
 - platform: uptime
-  name: Home Assistant Uptime
+  name: ha_uptime_days
+  unit_of_measurement: days
+
+- platform: uptime
+  name: ha_uptime_min
+  unit_of_measurement: minutes
 
 - platform: template
   sensors:
     ha_uptime:
       friendly_name: Home Assistant Uptime
-      value_template: "{{ states.sensor.home_assistant_uptime.state }}"
+      value_template: "{{ states.sensor.ha_uptime_days.state }}"
       unit_of_measurement: 'д. назад'

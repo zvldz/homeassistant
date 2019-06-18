@@ -128,13 +128,15 @@ panel_iframe:
 hacs:
   token: !secret my_github_access_token
 
+group: !include groups.yaml
 switch: !include_dir_merge_list includes/switches
 sensor: !include_dir_merge_list includes/sensors
 light: !include_dir_merge_list includes/lights
+media_player: !include includes/media_player.yaml
 yeelight: !include includes/yeelight.yaml
-group: !include groups.yaml
 automation: !include_dir_merge_list includes/automations
 script: !include_dir_merge_list includes/scripts
+
 input_boolean: !include includes/input_boolean.yaml
 input_number: !include includes/input_number.yaml
 input_select: !include includes/input_select.yaml

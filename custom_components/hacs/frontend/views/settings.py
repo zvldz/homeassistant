@@ -7,7 +7,7 @@ from homeassistant.const import __version__ as HAVERSION
 from ...blueprints import HacsViewBase
 from ...const import ISSUE_URL, NAME_LONG
 
-_LOGGER = logging.getLogger('custom_components.hacs.frontend')
+_LOGGER = logging.getLogger("custom_components.hacs.frontend")
 
 
 class HacsSettingsView(HacsViewBase):
@@ -23,8 +23,7 @@ class HacsSettingsView(HacsViewBase):
         """Serve HacsOverviewView."""
         try:
             # We use these later:
-            integrations = []
-            plugins = []
+            repository_lines = []
             hidden = []
             hacs = self.repositories.get("172733314")
 
@@ -40,7 +39,7 @@ class HacsSettingsView(HacsViewBase):
                                 <div class="card-panel orange darken-4">
                                     <div class="card-content white-text">
                                         <span>
-                                            You need to restart Home Assisant to start using the latest version of HACS.
+                                            You need to restart Home Assistant to start using the latest version of HACS.
                                         </span>
                                     </div>
                                 </div>
@@ -69,13 +68,18 @@ class HacsSettingsView(HacsViewBase):
 
                                     <div class="card-action">
                                         <a href="{}/repository_install/172733314" onclick="ShowProgressBar()">UPGRADE</a>
-                                        <a href="https://github.com/custom-components/hacs/releases/tag/{}" target="_blank">CHANGELOG</a>
+                                        <a rel='noreferrer' href="https://github.com/custom-components/hacs/releases/tag/{}" target="_blank">CHANGELOG</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                """.format(hacs.version_installed, hacs.last_release_tag, self.url_path["api"], hacs.last_release_tag)
+                """.format(
+                    hacs.version_installed,
+                    hacs.last_release_tag,
+                    self.url_path["api"],
+                    hacs.last_release_tag,
+                )
             else:
                 hacs_update = ""
 
@@ -94,10 +98,11 @@ class HacsSettingsView(HacsViewBase):
                             </div>
                         </div>
                     </div>
-                """.format(message)
+                """.format(
+                    message
+                )
             else:
                 custom_message = ""
-
 
             # Repos:
             for repository in self.repositories_list_repo:
@@ -107,7 +112,13 @@ class HacsSettingsView(HacsViewBase):
                         <a href="{}/repository_unhide/{}">
                         <i title="Unhide" class="fas fa-plus-circle" style="padding-right: 8px"></i></a> 
                         {}
-                    """.format(self.url_path["api"], repository.repository_id, repository.repository_name)
+                        <span class="repository-list-badge">{}</span>
+                    """.format(
+                        self.url_path["api"],
+                        repository.repository_id,
+                        repository.repository_name,
+                        repository.repository_type,
+                    )
                     line += "</div></li>"
                     hidden.append(line)
 
@@ -116,28 +127,32 @@ class HacsSettingsView(HacsViewBase):
 
                 line = '<li class="collection-item hacscolor hacslist"><div>'
                 line += """
-                    <a href="{}/{}">{}</a> 
-                """.format(self.url_path["repository"], repository.repository_id, repository.repository_name)
+                    <a href="{}/{}"><span class="repository-list-badge">{}</span> {}</a> 
+                """.format(
+                    self.url_path["repository"],
+                    repository.repository_id,
+                    repository.repository_type,
+                    repository.repository_name,
+                )
 
                 if repository.installed:
                     remove = """
                         <i title="Remove is not possible when {} is installed." class="secondary-content fas fa-trash-alt disabledaction"></i>
-                    """.format(repository.repository_type)
+                    """.format(
+                        repository.repository_type
+                    )
                 else:
                     remove = """
                         <a href={}/repository_remove/{} onclick="ShowProgressBar()" class="secondary-content" style="color: var(--primary-color)">
                             <i title="Remove." class="fas fa-trash-alt"></i>
                         </a>
-                    """.format(self.url_path["api"], repository.repository_id)
+                    """.format(
+                        self.url_path["api"], repository.repository_id
+                    )
                 line += remove
                 line += "</div></li>"
 
-
-                if repository.repository_type == "integration":
-                    integrations.append(line)
-
-                elif repository.repository_type == "plugin":
-                    plugins.append(line)
+                repository_lines.append(line)
 
             # Generate content to display
             content = self.base_content
@@ -147,7 +162,9 @@ class HacsSettingsView(HacsViewBase):
                     {}
                     {}
                 </div>
-            """.format(hacs_restart, hacs_update, custom_message)
+            """.format(
+                hacs_restart, hacs_update, custom_message
+            )
 
             # HACS card
             content += """
@@ -159,7 +176,12 @@ class HacsSettingsView(HacsViewBase):
                         <b>Home Assistant version:</b> {}</br>
                     </div>
                 </div>
-            """.format(NAME_LONG, hacs.version_installed, " <b>(RESTART PENDING!)</b>" if hacs.pending_restart else "", HAVERSION)
+            """.format(
+                NAME_LONG,
+                hacs.version_installed,
+                " <b>(RESTART PENDING!)</b>" if hacs.pending_restart else "",
+                HAVERSION,
+            )
 
             # The buttons, must have buttons
             content += """
@@ -170,64 +192,50 @@ class HacsSettingsView(HacsViewBase):
                     <a href='{}/new/choose' class='waves-effect waves-light btn right hacsbutton' target="_blank">
                         OPEN ISSUE
                     </a>
-                    <a href='https://github.com/custom-components/hacs' class='waves-effect waves-light btn right hacsbutton' target="_blank">
+                    <a rel='noreferrer' href='https://github.com/custom-components/hacs' class='waves-effect waves-light btn right hacsbutton' target="_blank">
                         HACS REPO
                     </a>
                     <a href="{}/log/get" class='waves-effect waves-light btn right hacsbutton' onclick="ShowProgressBar()">
                         OPEN LOG
                     </a>
                 </div>
-            """.format(self.url_path["api"], ISSUE_URL, self.url_path["api"])
+            """.format(
+                self.url_path["api"], ISSUE_URL, self.url_path["api"]
+            )
 
             ## Integration URL's
             content += """
                 <div class='hacs-overview-container'>
                     <div class="row">
                         <ul class="collection with-header hacslist">
-                            <li class="collection-header hacscolor hacslist"><h5>CUSTOM INTEGRATION REPOSITORIES</h5></li>
+                            <li class="collection-header hacscolor hacslist"><h5>CUSTOM REPOSITORIES</h5></li>
             """
-            for line in integrations:
+            for line in repository_lines:
                 content += line
             content += """
                         </ul>
-                        <form action="{}/repository_register/integration" 
+                        <form action="{}/repository_register/new" 
                                 method="post" accept-charset="utf-8"
                                 enctype="application/x-www-form-urlencoded">
                             <input id="custom_url" type="text" name="custom_url" 
-                                    placeholder="ADD CUSTOM INTEGRATION REPOSITORY" style="width: 90%; color: var(--primary-text-color)">
-                                <button class="btn waves-effect waves-light right" 
-                                        type="submit" name="add" onclick="ShowProgressBar()" style="background-color: var(--primary-color)">
-                                    <i class="fas fa-save"></i>
-                                </button>
-                        </form>
-                    </div>
-                </div>
-            """.format(self.url_path["api"])
+                                    placeholder="ADD CUSTOM REPOSITORY" style="width: 70%; color: var(--primary-text-color)">
 
-            ## Plugin URL's
-            content += """
-                <div class='hacs-overview-container'>
-                    <div class="row">
-                        <ul class="collection with-header hacslist">
-                            <li class="collection-header hacscolor hacslist"><h5>CUSTOM PLUGIN REPOSITORIES</h5></li>
-            """
-            for line in plugins:
-                content += line
-            content += """
-                        </ul>
-                        <form action="{}/repository_register/plugin" 
-                                method="post" accept-charset="utf-8"
-                                enctype="application/x-www-form-urlencoded">
-                            <input id="custom_url" type="text" name="custom_url" 
-                                    placeholder="ADD CUSTOM PLUGIN REPOSITORY" style="width: 90%; color: var(--primary-text-color)">
-                                <button class="btn waves-effect waves-light right" 
-                                        type="submit" name="add" onclick="ShowProgressBar()" style="background-color: var(--primary-color)">
-                                    <i class="fas fa-save"></i>
-                                </button>
+                            <select name="repository_type" class="repository-select">
+                                <option disabled selected value>type</option>
+                                <option value="integration">Integration</option>
+                                <option value="plugin">Plugin</option>
+                            </select>
+
+                            <button class="btn waves-effect waves-light right" 
+                                    type="submit" name="add" onclick="ShowProgressBar()" style="background-color: var(--primary-color); height: 44px;">
+                                <i class="fas fa-save"></i>
+                            </button>
                         </form>
                     </div>
                 </div>
-            """.format(self.url_path["api"])
+            """.format(
+                self.url_path["api"]
+            )
 
             ## Hidden repositories
             if hidden:

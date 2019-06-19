@@ -52,7 +52,7 @@ logbook:
       - sensor.time
       - sensor.date
 
-logger:
+#logger:
 #  default: debug
 
 tts:

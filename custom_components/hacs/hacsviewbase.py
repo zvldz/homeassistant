@@ -5,6 +5,7 @@ from .hacsbase import HacsBase
 
 class HacsViewBase(HomeAssistantView, HacsBase):
     """Base View Class for HACS."""
+
     requires_auth = False
 
     @property
@@ -18,18 +19,22 @@ class HacsViewBase(HomeAssistantView, HacsBase):
             {}
             <div id="main" class="hacs-content">
             {}
-        """.format(self.imports, self.header, self.progress_bar)
+        """.format(
+            self.imports, self.header, self.progress_bar
+        )
 
     @property
     def imports(self):
         """Load imports."""
         return """
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"/></script>
-        <link rel="stylesheet" href="{}/hacs.css">
-        <script src="{}/hacs.js"></script>
-        """.format(self.url_path["static"], self.url_path["static"])
+        <link rel="stylesheet" href="{static}/materialize.min.css.gz">
+        <link rel="stylesheet" href="{static}/all.min.css.gz">
+        <script src="{static}/materialize.min.js.gz"></script>
+        <link rel="stylesheet" href="{static}/hacs.css">
+        <script src="{static}/hacs.js"></script>
+        """.format(
+            static=self.url_path["static"]
+        )
 
     @property
     def header(self):
@@ -46,7 +51,9 @@ class HacsViewBase(HomeAssistantView, HacsBase):
             </div>
           </nav>
         </div>
-        """.format(self.url_path["overview"], self.url_path["store"], self.url_path["settings"])
+        """.format(
+            self.url_path["overview"], self.url_path["store"], self.url_path["settings"]
+        )
 
     @property
     def progress_bar(self):
@@ -61,7 +68,9 @@ class HacsViewBase(HomeAssistantView, HacsBase):
         <div class="progress hacs-bar-background" id="progressbar" style="display: {}">
             <div class="indeterminate hacs-bar"></div>
         </div>
-        """.format(display, display)
+        """.format(
+            display, display
+        )
 
     @property
     def footer(self):

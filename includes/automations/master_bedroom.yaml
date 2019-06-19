@@ -39,9 +39,14 @@
     below: 7
     above: 5
   condition:
-    condition: state
-    state: 'off'
-    entity_id: light.bedside
+      condition: and
+      conditions:
+        - condition: state
+          state: 'off'
+          entity_id: light.bedside
+        - condition: time
+          after: '17:00:00'
+          before: '22:00:00'
   action:
     service: light.turn_on
     entity_id: light.bedside

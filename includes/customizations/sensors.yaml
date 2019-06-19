@@ -149,13 +149,13 @@ binary_sensor.wall_switch_right_158d0002b49c73:
   battery_sensor_creation_disabled: yes
 
 sensor.ring_front_door_battery:
-  friendly_name: Заряд батареи
+  friendly_name: Ring Заряд Батареи
 
 sensor.ring_front_door_volume:
-  friendly_name: Громкость
+  friendly_name: Ring Громкость
 
 sensor.ring_front_door_wifi_signal_category:
-  friendly_name: Уровень сигнала WiFi
+  friendly_name: Ring Уровень Сигнала WiFi
 
 sensor.ring_front_door_wifi_signal_strength:
   friendly_name: Сила сигнала WiFi

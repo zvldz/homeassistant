@@ -17,7 +17,7 @@
     - platform: homeassistant
       event: start
   action:
-    - delay: 00:07:00
+    - delay: 00:03:00
     - service: automation.turn_on
       entity_id:
         - automation.turn_on_main_switch_livingroom

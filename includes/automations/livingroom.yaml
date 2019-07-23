@@ -1,15 +1,50 @@
-- alias: Respond to single button click
-  initial_state: true
+#- alias: Respond to single button click
+#  initial_state: 'on'
+#  trigger:
+#    platform: state
+#    entity_id: sensor.0x00158d000211434a_click
+#    to: 'single'
+#  action:
+#    - service: light.toggle
+#      entity_id: light.living_room_lamp
+
+- alias: Respond to single button click main switch 1
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d000211434a_click
     to: 'single'
+  condition:
+      condition: state
+      entity_id: light.living_room_lamp
+      state: 'off'
   action:
-    - service: light.toggle
+    - service: light.turn_on
+      data_template:
+        entity_id: light.living_room_lamp
+        brightness_pct: >
+          {% if now().hour > 0 and now().hour < 6 %}
+            1
+          {% else %}
+            80
+          {% endif %}
+
+- alias: Respond to single button click main switch 2
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: sensor.0x00158d000211434a_click
+    to: 'single'
+  condition:
+      condition: state
+      entity_id: light.living_room_lamp
+      state: 'on'
+  action:
+    - service: light.turn_off
       entity_id: light.living_room_lamp
 
-- alias: Respond to double button click
-  initial_state: true
+- alias: Respond to double button click main switch
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d000211434a_click
@@ -19,7 +54,7 @@
       entity_id: light.living_room_lamp
 
 - alias: Respond to left button click
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d00022b3ea0_click
@@ -29,7 +64,7 @@
       entity_id: group.living_room_spot_left
 
 - alias: Respond to right button click
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d00022b3ea0_click
@@ -39,7 +74,7 @@
       entity_id: group.living_room_spot_right
 
 - alias: Respond to both buttons click
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d00022b3ea0_click
@@ -50,15 +85,16 @@
         - group.living_room_spot_right
         - group.living_room_spot_left
 
-- alias: Set brightness for lamp in living-room
-  initial_state: true
-  trigger:
-    platform: state
-    entity_id: light.living_room_lamp
-    to: 'on'
-  action:
-    - service: yeelight.set_mode
-      data:
-        entity_id: light.living_room_lamp
-        mode: normal
+#- alias: Set brightness for lamp in living-room
+#  initial_state: 'on'
+#  trigger:
+#    platform: state
+#    entity_id: light.living_room_lamp
+#    from: 'off'
+#    to: 'on'
+#  action:
+#    - service: yeelight.set_mode
+#      data:
+#        entity_id: light.living_room_lamp
+#        mode: normal
 

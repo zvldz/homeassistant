@@ -1,0 +1,9 @@
+#- platform: samsungtv
+#  name: livingroom_tv
+#  host: !secret livingroom_tv_ip
+#  mac: !secret livingroom_tv_mac
+#  port: 8001
+
+#- platform: androidtv
+#  name: kitchen_tv
+#  host: !secret kitchen_tv_ip

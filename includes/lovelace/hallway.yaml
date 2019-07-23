@@ -12,6 +12,9 @@ cards:
       - switch.wall_switch_ln_right_158d00022a8150
       - switch.wall_switch_ln_158d00022360fe
       - switch.wall_switch_ln_left_158d00022a8150
+      - switch.sonoff_br1
+      - switch.sonoff_br2
+      - switch.sonoff_wc
 
   - type: entities
     title: Сенсоры

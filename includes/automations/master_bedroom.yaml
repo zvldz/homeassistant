@@ -1,5 +1,5 @@
 - alias: Respond to single button click bedroom1
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d0001f9aa24_click
@@ -9,7 +9,7 @@
       entity_id: light.master_bedroom_lamp
 
 - alias: Respond to double button click bedroom1
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: sensor.0x00158d0001f9aa24_click
@@ -19,10 +19,11 @@
       entity_id: light.master_bedroom_lamp
 
 - alias: Set brightness for lamp in bedroom1
-  initial_state: true
+  initial_state: 'on'
   trigger:
     platform: state
     entity_id: light.master_bedroom_lamp
+    from: 'off'
     to: 'on'
   action:
     - service: yeelight.set_mode

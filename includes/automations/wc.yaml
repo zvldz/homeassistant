@@ -1,59 +1,59 @@
 - alias: Door opened in WC
-	initial_state: 'on'
-	trigger:
-		platform: state
-		entity_id: binary_sensor.door_window_sensor_158d00024de627
-		to: 'on'
-	condition:
-		condition: state
-		entity_id: switch.wall_switch_ln_158d00022360fe
-		state: 'off'
-	action:
-		service: switch.turn_on
-		entity_id: switch.wall_switch_ln_158d00022360fe
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.door_window_sensor_158d00024de627
+    to: 'on'
+  condition:
+    condition: state
+    entity_id: switch.wall_switch_ln_158d00022360fe
+    state: 'off'
+  action:
+    service: switch.turn_on
+    entity_id: switch.wall_switch_ln_158d00022360fe
 
 - alias: Turn off WC lights 10 minutes after turn on
-	initial_state: 'on'
-	trigger:
-		platform: time_pattern
-		minutes: '/1'
-		seconds: 00
-	condition:
-		condition: state
-		entity_id: switch.wall_switch_ln_158d00022360fe
-		state: 'on'
-		for:
-			minutes: 10
-	action:
-		service: switch.turn_off
-		entity_id: switch.wall_switch_ln_158d00022360fe
+  initial_state: 'on'
+  trigger:
+    platform: time_pattern
+    minutes: '/1'
+    seconds: 00
+  condition:
+    condition: state
+    entity_id: switch.wall_switch_ln_158d00022360fe
+    state: 'on'
+    for:
+      minutes: 10
+  action:
+    service: switch.turn_off
+    entity_id: switch.wall_switch_ln_158d00022360fe
 
 - alias: Turn off WC fan 15 minutes after turn on
-	initial_state: 'on'
-	trigger:
-		platform: time_pattern
-		minutes: '/1'
-		seconds: 00
-	condition:
-		condition: state
-		entity_id: switch.sonoff_wc
-		state: 'on'
-		for:
-			minutes: 15
-	action:
-		service: switch.turn_off
-		entity_id: switch.sonoff_wc
+  initial_state: 'on'
+  trigger:
+    platform: time_pattern
+    minutes: '/1'
+    seconds: 00
+  condition:
+    condition: state
+    entity_id: switch.sonoff_wc
+    state: 'on'
+    for:
+      minutes: 15
+  action:
+    service: switch.turn_off
+    entity_id: switch.sonoff_wc
 
 - alias: Turn on WC fan
-	initial_state: 'on'
-	trigger:
-		- platform: time
-			at: '07:30'
-		- platform: time
-			at: '13:00'
-		- platform: time
-			at: '18:00'
-	action:
-		service: switch.turn_on
-		entity_id: switch.sonoff_wc
+  initial_state: 'on'
+  trigger:
+    - platform: time
+      at: '07:30'
+    - platform: time
+      at: '13:00'
+    - platform: time
+      at: '18:00'
+  action:
+    service: switch.turn_on
+    entity_id: switch.sonoff_wc
 

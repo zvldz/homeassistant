@@ -17,6 +17,11 @@ input_select:
       - Bedroom
     initial: Select Room
 
+input_boolean:
+  vacuum_schedule:
+    name: Включить регулярную уборку
+    icon: mdi:timer
+
 sensor:
   - platform: template
     sensors:
@@ -77,6 +82,9 @@ automation:
     condition:
       condition: and
       conditions:
+        - condition: state
+          entity_id: input_boolean.vacuum_schedule
+          state: 'on'
         - condition: time
           weekday:
             - tue
@@ -93,6 +101,9 @@ automation:
     condition:
       condition: and
       conditions:
+        - condition: state
+          entity_id: input_boolean.vacuum_schedule
+          state: 'on'
         - condition: time
           weekday:
             - mon
@@ -339,6 +350,7 @@ group:
       - sensor.vacuum_cleaner_side_brush_left
       - sensor.vacuum_cleaner_filter_left
       - sensor.vacuum_cleaner_dirty_left
+      - input_boolean.vacuum_schedule
 
   vacuum_map:
     name: Карта

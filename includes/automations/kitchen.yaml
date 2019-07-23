@@ -47,6 +47,12 @@
     to: 'off'
     for:
       minutes: 15
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.vacuum_schedule
+        state: 'on'
   action:
     - service: switch.turn_off
       entity_id: switch.0x00158d00022addd4_switch_left

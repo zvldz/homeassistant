@@ -19,11 +19,16 @@
     minutes: '/1'
     seconds: 00
   condition:
-    condition: state
-    entity_id: switch.wall_switch_ln_158d00022360fe
-    state: 'on'
-    for:
-      minutes: 10
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.auto_turn_off_lights
+        state: 'on'
+      - condition: state
+        entity_id: switch.wall_switch_ln_158d00022360fe
+        state: 'on'
+        for:
+          minutes: 10
   action:
     service: switch.turn_off
     entity_id: switch.wall_switch_ln_158d00022360fe

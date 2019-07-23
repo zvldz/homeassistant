@@ -22,3 +22,14 @@ cards:
           - type: custom:group-card
             show_header_toggle: false
             group: group.all_scripts
+
+      - type: markdown
+        content: "## Settings"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - input_boolean.auto_turn_off_lights
+

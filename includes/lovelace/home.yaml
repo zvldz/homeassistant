@@ -41,6 +41,7 @@ cards:
           - sensor.time
           - sensor.sun_dawn
           - sensor.sun_dusk
+          - sensor.sun_elevation
 
   - type: vertical-stack
     cards:
@@ -61,3 +62,5 @@ cards:
         entities:
           - device_tracker.redmi4
           - device_tracker.galaxy_a5
+
+

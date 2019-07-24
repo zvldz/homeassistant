@@ -10,3 +10,9 @@
       friendly_name: "Рассвет"
       value_template: "{{ as_timestamp(states.sun.sun.attributes.next_dawn) | timestamp_custom('%H:%M') }}"
 
+- platform: template
+  sensors:
+    sun_elevation:
+      friendly_name: "Высота солнца над горизонтом"
+      value_template: "{{ states.sun.sun.attributes.elevation }}"
+

@@ -1,0 +1,8 @@
+{
+        "domain": "midea",
+        "name": "Midea Aircon",
+        "documentation": "",
+        "requirements": ["midea-andersonshatch==0.1.11", "pycryptodome"],
+        "dependencies": [],
+        "codeowners": ["@andersonshatch"]
+}

@@ -28,7 +28,7 @@
     condition: and
     conditions:
       - condition: template
-        value_template: "{{ states.sun.sun.attributes.elevation | int < 10 }}"
+        value_template: "{{ states.sun.sun.attributes.elevation | int < 12 }}"
       - condition: state
         entity_id: switch.0x00158d00022addd4_switch_left
         state: 'off'
@@ -51,7 +51,7 @@
     condition: and
     conditions:
       - condition: state
-        entity_id: input_boolean.vacuum_schedule
+        entity_id: input_boolean.auto_turn_off_lights
         state: 'on'
   action:
     - service: switch.turn_off

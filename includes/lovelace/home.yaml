@@ -36,11 +36,11 @@ cards:
       - type: entities
         show_header_toggle: false
         entities:
-          - sun.sun
           - sensor.date
           - sensor.time
           - sensor.sun_dawn
           - sensor.sun_dusk
+          - sun.sun
           - sensor.sun_elevation
 
   - type: vertical-stack

@@ -1,0 +1,79 @@
+substitutions:
+  device_name: sonoff_br
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  ap:
+    ssid: ${device_name}
+    password: !secret wifi_pass
+
+logger:
+
+api:
+
+ota:
+
+web_server:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "${device_name} button 1"
+    on_press:
+      - switch.toggle: relay_1
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "${device_name} button 2"
+    on_press:
+      - switch.toggle: relay_2
+
+  - platform: status
+    name: "${device_name} status"
+
+switch:
+  - platform: gpio
+    name: "${device_name} relay 1"
+    pin: GPIO12
+    id: relay_1
+  - platform: gpio
+    name: "${device_name} relay 2"
+    pin: GPIO5
+    id: relay_2
+
+output:
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: true
+
+light:
+  - platform: monochromatic
+    name: "${device_name} blue led"
+    output: blue_led
+    internal: true
+    id: blue_led_light
+
+sensor:
+  - platform: wifi_signal
+    name: "${device_name} wifi signal"
+    update_interval: 60s
+
+  - platform: uptime
+    name: "${device_name} uptime"
+
+text_sensor:
+  - platform: version
+    name: "${device_name} ESPHome version"
+

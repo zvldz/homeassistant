@@ -1,0 +1,91 @@
+esphome:
+  name: sonoff_br
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  ap:
+    ssid: sonoff_wc
+    password: !secret wifi_pass
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+web_server:
+
+output:
+  - platform: esp8266_pwm
+    id: sonoff_blue_led
+    pin:
+      number: GPIO13
+      inverted: True
+
+light:
+  - platform: monochromatic
+    name: "sonoff_br Blue LED"
+    output: sonoff_blue_led
+    id: blue_led
+
+switch:
+  - platform: gpio
+    pin: GPIO12
+    id: relay_1
+  - platform: template
+    name: "sonoff_br relay 1"
+    optimistic: true
+    id: relayandled_1
+    turn_on_action:
+      - switch.turn_on: relay_1
+      - light.turn_on: blue_led
+    turn_off_action:
+      - switch.turn_off: relay_1
+      - light.turn_off: blue_led
+  - platform: gpio
+    pin: GPIO5
+    id: relay_2
+  - platform: template
+    name: "sonoff_br relay 2"
+    optimistic: true
+    id: relayandled_2
+    turn_on_action:
+      - switch.turn_on: relay_2
+      - light.turn_on: blue_led
+    turn_off_action:
+      - switch.turn_off: relay_2
+      - light.turn_off: blue_led
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "sonoff_br button 1"
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "sonoff_br button 2"
+  - platform: status
+    name: "sonoff_br status"
+
+sensor:
+  - platform: wifi_signal
+    name: "sonoff_br WiFi signal"
+    update_interval: 60s
+
+  - platform: uptime
+    name: "sonoff_br uptime"
+
+text_sensor:
+  - platform: version
+    name: "sonoff_br ESPHome version"
+

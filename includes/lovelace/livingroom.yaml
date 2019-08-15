@@ -25,7 +25,7 @@ cards:
     title: Выключатели
     entities:
       - switch.samsung_tv
-      - switch.0x00158d000211434a_switch
+#     - switch.0x00158d000211434a_switch
       - switch.0x00158d00022b3ea0_switch_left
       - switch.0x00158d00022b3ea0_switch_right
       - switch.plug_158d0002677c89

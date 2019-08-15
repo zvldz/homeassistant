@@ -41,13 +41,13 @@
     seconds: 00
   condition:
     condition: state
-    entity_id: switch.sonoff_br1
+    entity_id: switch.sonoff_br_relay_1
     state: 'on'
     for:
       minutes: 20
   action:
     service: switch.turn_off
-    entity_id: switch.sonoff_br1
+    entity_id: switch.sonoff_br_relay_1
 
 - alias: Turn on Bathroom fan
   initial_state: 'on'
@@ -60,5 +60,5 @@
       at: '18:00'
   action:
     service: switch.turn_on
-    entity_id: switch.sonoff_br1
+    entity_id: switch.sonoff_br_relay_1
 

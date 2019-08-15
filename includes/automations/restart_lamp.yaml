@@ -1,18 +1,18 @@
 # Перезагрузка зависшей лампочки в гостинной
-- alias: Living room lamp reboot
-  initial_state: 'on'
-  trigger:
-    - platform: state
-      entity_id: light.living_room_lamp
-      to: 'unavailable'
-      for:
-        minutes: 5
-  action:
-    - service: notify.telegram
-      data:
-        message: "Потеря контроля в течении 5 минут - лампочка в гостинной. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
-    - service: switch.turn_off
-      entity_id: switch.0x00158d000211434a_switch
+#- alias: Living room lamp reboot
+#  initial_state: 'on'
+#  trigger:
+#    - platform: state
+#      entity_id: light.living_room_lamp
+#      to: 'unavailable'
+#      for:
+#        minutes: 5
+#  action:
+#    - service: notify.telegram
+#      data:
+#        message: "Потеря контроля в течении 5 минут - лампочка в гостинной. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
+#    - service: switch.turn_off
+#      entity_id: switch.0x00158d000211434a_switch
 
 # Перезагрузка зависшей лампочки на кухне
 - alias: Kitchen lamp reboot

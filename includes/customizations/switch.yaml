@@ -8,17 +8,17 @@ switch.sonoff:
   icon: "mdi:power-socket-eu"
   battery_sensor_creation_disabled: yes
 
-switch.sonoff_wc:
+switch.sonoff_wc_relay:
   friendly_name: WC
   icon: "mdi:light-switch"
   battery_sensor_creation_disabled: yes
 
-switch.sonoff_br1:
+switch.sonoff_br_relay_1:
   friendly_name: Ванная Левый
   icon: "mdi:light-switch"
   battery_sensor_creation_disabled: yes
 
-switch.sonoff_br2:
+switch.sonoff_br_relay_2:
   friendly_name: Ванная Правый
   icon: "mdi:light-switch"
   battery_sensor_creation_disabled: yes
@@ -28,10 +28,10 @@ switch.wall_switch_ln_158d000211434a:
   icon: "mdi:light-switch"
   battery_sensor_creation_disabled: yes
 
-switch.0x00158d000211434a_switch:
-  friendly_name: Зал Выключатель
-  icon: "mdi:light-switch"
-  battery_sensor_creation_disabled: yes
+#switch.0x00158d000211434a_switch:
+#  friendly_name: Зал Выключатель
+#  icon: "mdi:light-switch"
+#  battery_sensor_creation_disabled: yes
 
 switch.wall_switch_ln_right_158d00022b3ea0:
   friendly_name: Зал Выключатель Левый

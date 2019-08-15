@@ -11,7 +11,7 @@
           # спальня 2
         - switch.0x00158d0002113ace_switch
           # зал
-        - switch.0x00158d000211434a_switch
+#       - switch.0x00158d000211434a_switch
           # балкон
         - switch.wall_switch_ln_158d00022ab4bf
           # кухня
@@ -39,7 +39,7 @@
           # спальня 2
         - switch.0x00158d0002113ace_switch
           # зал
-        - switch.0x00158d000211434a_switch
+#       - switch.0x00158d000211434a_switch
           # балкон
         - switch.wall_switch_ln_158d00022ab4bf
           # кухня

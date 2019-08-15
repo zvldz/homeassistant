@@ -2,7 +2,7 @@
 A climate platform that adds support for Midea air conditioning units.
 
 For more details about this platform, please refer to the documentation
-https://github.com/NeoAcheron/midea-ac-py
+https://github.com/andersonshatch/midea-ac-py
 
 This is still early work in progress
 """
@@ -13,7 +13,8 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
 from homeassistant.components.climate.const import (
-    SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE)
+    SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE,
+    SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST)
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, TEMP_CELSIUS, \
     ATTR_TEMPERATURE
 
@@ -24,17 +25,19 @@ _LOGGER = logging.getLogger(__name__)
 CONF_APP_KEY = 'app_key'
 CONF_TEMP_STEP = 'temp_step'
 CONF_INCLUDE_OFF_AS_STATE = 'include_off_as_state'
+CONF_USE_FAN_ONLY_WORKAROUND = 'use_fan_only_workaround'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_APP_KEY): cv.string,
     vol.Required(CONF_USERNAME): cv.string,
     vol.Required(CONF_PASSWORD): cv.string,
     vol.Optional(CONF_TEMP_STEP, default=1.0): vol.Coerce(float),
-    vol.Optional(CONF_INCLUDE_OFF_AS_STATE, default=True): vol.Coerce(bool)
+    vol.Optional(CONF_INCLUDE_OFF_AS_STATE, default=True): vol.Coerce(bool),
+    vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND, default=False): vol.Coerce(bool)
 })
 
 SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE \
-                | SUPPORT_SWING_MODE
+                | SUPPORT_SWING_MODE | SUPPORT_PRESET_MODE
 
 
 async def async_setup_platform(hass, config, async_add_entities,
@@ -48,6 +51,7 @@ async def async_setup_platform(hass, config, async_add_entities,
     password = config.get(CONF_PASSWORD)
     temp_step = config.get(CONF_TEMP_STEP)
     include_off_as_state = config.get(CONF_INCLUDE_OFF_AS_STATE)
+    use_fan_only_workaround = config.get(CONF_USE_FAN_ONLY_WORKAROUND)
 
     client = midea_client(app_key, username, password)
     devices = client.devices()
@@ -55,7 +59,8 @@ async def async_setup_platform(hass, config, async_add_entities,
     for device in devices:
         if device.type == 0xAC:
             entities.append(MideaClimateACDevice(
-                hass, device, temp_step, include_off_as_state))
+                hass, device, temp_step, include_off_as_state,
+                use_fan_only_workaround))
         else:
             _LOGGER.error(
                 "Unsupported device type: 0x{:02x}".format(device.type))
@@ -67,7 +72,7 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     """Representation of a Midea climate AC device."""
 
     def __init__(self, hass, device, temp_step: float,
-                 include_off_as_state: bool):
+                 include_off_as_state: bool, use_fan_only_workaround: bool):
         """Initialize the climate device."""
         from midea.device import air_conditioning_device as ac
 
@@ -81,6 +86,7 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
         self._unit_of_measurement = TEMP_CELSIUS
         self._target_temperature_step = temp_step
         self._include_off_as_state = include_off_as_state
+        self._use_fan_only_workaround = use_fan_only_workaround
 
         self.hass = hass
         self._old_state = None
@@ -100,8 +106,9 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
         if self._changed:
             await self.hass.async_add_executor_job(self._device.apply)
             self._changed = False
-        #else:
-        #await self.hass.async_add_executor_job(self._device.refresh)
+        elif not self._use_fan_only_workaround:
+            self._old_state = None
+            await self.hass.async_add_executor_job(self._device.refresh)
 
     async def async_added_to_hass(self):
         """Run when entity about to be added."""
@@ -133,36 +140,27 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     @property
     def hvac_modes(self):
         """Return the list of available operation modes."""
-        if self._old_state is not None:
-            return self._old_state.attributes['hvac_modes']
-
         return self._operation_list
 
     @property
     def fan_modes(self):
         """Return the list of available fan modes."""
-        if self._old_state is not None:
-            return self._old_state.attributes['fan_modes']
-
         return self._fan_list
 
     @property
     def swing_modes(self):
         """List of available swing modes."""
-        if self._old_state is not None:
-            return self._old_state.attributes['swing_modes']
-
         return self._swing_list
 
     @property
     def assumed_state(self):
         """Assume state rather than refresh to workaround fan_only bug."""
-        return True
+        return self._use_fan_only_workaround
 
     @property
     def should_poll(self):
         """Poll the appliance for changes, there is no notification capability in the Midea API"""
-        return False
+        return not self._use_fan_only_workaround
 
     @property
     def unique_id(self):
@@ -182,14 +180,14 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     def current_temperature(self):
         """Return the current temperature."""
         if self._old_state is not None:
-            return self._old_state.attributes['current_temperature']
+            return self._old_state.attributes.get('current_temperature')
 
         return self._device.indoor_temperature
 
     @property
     def target_temperature(self):
         """Return the temperature we try to reach."""
-        if self._old_state is not None:
+        if self._old_state is not None and 'temperature' in self._old_state.attributes:
             self._device.target_temperature = self._old_state.attributes['temperature']
             return self._old_state.attributes['temperature']
 
@@ -201,7 +199,7 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
         if self._old_state is not None:
             from midea.device import air_conditioning_device as ac
             self._device.power_state = self._include_off_as_state and self._old_state.state != 'off'
-            if self._old_state.state != 'off':
+            if self._old_state.state in ac.operational_mode_enum.list():
                 self._device.operational_mode = ac.operational_mode_enum[self._old_state.state]
             return self._old_state.state
 
@@ -212,7 +210,7 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     @property
     def fan_mode(self):
         """Return the fan setting."""
-        if self._old_state is not None:
+        if self._old_state is not None and 'fan_mode' in self._old_state.attributes:
             from midea.device import air_conditioning_device as ac
             self._device.fan_speed = ac.fan_speed_enum[self._old_state.attributes['fan_mode']]
             return self._old_state.attributes['fan_mode']
@@ -222,17 +220,12 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     @property
     def swing_mode(self):
         """Return the swing setting."""
-        if self._old_state is not None:
+        if self._old_state is not None and 'swing_mode' in self._old_state.attributes:
             from midea.device import air_conditioning_device as ac
             self._device.swing_mode = ac.swing_mode_enum[self._old_state.attributes['swing_mode']]
             return self._old_state.attributes['swing_mode']
 
         return self._device.swing_mode.name
-
-    @property
-    def is_away_mode_on(self):
-        """Return if away mode is on."""
-        return self._device.eco_mode
 
     @property
     def is_on(self):
@@ -272,17 +265,43 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
         self._changed = True
         await self.apply_changes()
 
-    async def async_turn_away_mode_on(self):
-        """Turn away mode on."""
-        self._device.eco_mode = True
+    async def async_set_preset_mode(self, preset_mode: str):
+        if preset_mode == PRESET_NONE:
+            self._device.eco_mode = False
+            self._device.turbo_mode = False
+        elif preset_mode == PRESET_BOOST:
+            self._device.eco_mode = False
+            self._device.turbo_mode = True
+        elif preset_mode == PRESET_ECO:
+            self._device.turbo_mode = False
+            self._device.eco_mode = True
+
         self._changed = True
         await self.apply_changes()
 
-    async def async_turn_away_mode_off(self):
-        """Turn away mode off."""
-        self._device.eco_mode = False
-        self._changed = True
-        await self.apply_changes()
+    @property
+    def preset_modes(self):
+        return [PRESET_NONE, PRESET_ECO, PRESET_BOOST]
+
+    @property
+    def preset_mode(self):
+        if self._old_state is not None and 'preset_mode' in self._old_state.attributes:
+            preset_mode = self._old_state.attributes['preset_mode']
+            if preset_mode == PRESET_ECO:
+                self._device.eco_mode = True
+                self._device.turbo_mode = False
+            elif preset_mode == PRESET_BOOST:
+                self._device.turbo_mode = True
+                self._device.eco_mode = False
+
+            return preset_mode
+
+        if self._device.eco_mode:
+            return PRESET_ECO
+        elif self._device.turbo_mode:
+            return PRESET_BOOST
+        else:
+            return PRESET_NONE
 
     async def async_turn_on(self):
         """Turn on."""

@@ -4,5 +4,6 @@
         "documentation": "",
         "requirements": ["midea-andersonshatch==0.1.11", "pycryptodome"],
         "dependencies": [],
-        "codeowners": ["@andersonshatch"]
+        "codeowners": ["@andersonshatch"],
+        "homeassistant": "0.96.0"
 }

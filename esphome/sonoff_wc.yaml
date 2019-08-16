@@ -1,5 +1,5 @@
 substitutions:
-  device_name: sonoff_br
+  device_name: sonoff_wc
 
 esphome:
   name: ${device_name}

@@ -29,7 +29,7 @@ cards:
       - switch.0x00158d00022b3ea0_switch_left
       - switch.0x00158d00022b3ea0_switch_right
       - switch.plug_158d0002677c89
-      - switch.sonoff
+      - switch.sonoff_plug_1_relay
 
   - type: entities
     title: Сенсоры

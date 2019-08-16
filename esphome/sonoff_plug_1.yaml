@@ -25,14 +25,23 @@ ota:
 
 web_server:
 
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
 binary_sensor:
   - platform: gpio
     id: button
     internal: true
     pin:
       number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: true
     on_press:
       - switch.toggle: relay
+  - platform: status
+    name: ${device_name} status
+
 
 output:
   - platform: gpio
@@ -45,6 +54,7 @@ switch:
     pin: GPIO15
     id: relay
     name: '${device_name} relay'
+    restore_mode: ALWAYS_ON
     on_turn_on:
       - output.turn_on: led
     on_turn_off:
@@ -62,14 +72,9 @@ text_sensor:
 sensor:
   - platform: uptime
     name: '${device_name} uptime'
-    unit_of_measurement: days
-    update_interval: 300s
-    filters:
-      - multiply: 0.000011574
 
   - platform: wifi_signal
     name: '${device_name} wifi signal'
-    update_interval: 300s
 
   - platform: hlw8012
     sel_pin:

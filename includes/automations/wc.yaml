@@ -58,6 +58,12 @@
       at: '13:00'
     - platform: time
       at: '18:00'
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.auto_fan
+        state: 'on'
   action:
     service: switch.turn_on
     entity_id: switch.sonoff_wc_relay

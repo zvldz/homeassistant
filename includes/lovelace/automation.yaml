@@ -32,4 +32,6 @@ cards:
             show_header_toggle: false
             entities:
               - input_boolean.auto_turn_off_lights
+              - input_boolean.auto_fan
+              - input_boolean.vacuum_schedule
 

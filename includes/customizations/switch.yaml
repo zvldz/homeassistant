@@ -3,7 +3,7 @@ switch.plug_158d0002677c89:
   icon: "mdi:power-socket-au"
   battery_sensor_creation_disabled: yes
 
-switch.sonoff:
+switch.sonoff_plug_1_relay:
   friendly_name: Розетка 2
   icon: "mdi:power-socket-eu"
   battery_sensor_creation_disabled: yes

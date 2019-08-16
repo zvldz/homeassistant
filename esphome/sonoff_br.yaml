@@ -38,7 +38,6 @@ binary_sensor:
     name: "${device_name} button 2"
     on_press:
       - switch.toggle: relay_2
-
   - platform: status
     name: "${device_name} status"
 

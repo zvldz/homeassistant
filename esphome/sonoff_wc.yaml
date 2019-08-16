@@ -13,10 +13,8 @@ wifi:
     ssid: ${device_name}
     password: !secret wifi_pass
 
-# Enable logging
 logger:
 
-# Enable Home Assistant API
 api:
 
 ota:
@@ -60,6 +58,8 @@ binary_sensor:
     name: "${device_name} button"
     on_press:
       - switch.toggle: relay
+  - platform: status
+    name: ${device_name} status
 
 sensor:
   - platform: wifi_signal

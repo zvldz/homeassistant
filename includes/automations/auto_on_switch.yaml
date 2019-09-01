@@ -20,7 +20,7 @@
     - delay: 00:03:00
     - service: automation.turn_on
       entity_id:
-        - automation.turn_on_main_switch_livingroom
+#       - automation.turn_on_main_switch_livingroom
         - automation.turn_on_left_switch_livingroom
         - automation.turn_on_right_switch_livingroom
         - automation.turn_on_right_switch_kitchen

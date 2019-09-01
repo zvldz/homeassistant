@@ -1,0 +1,63 @@
+# Перезагрузка зависшей лампочки в гостинной
+#- alias: Living room lamp reboot
+#  initial_state: 'on'
+#  trigger:
+#    - platform: state
+#      entity_id: light.living_room_lamp
+#      to: 'unavailable'
+#      for:
+#        minutes: 5
+#  action:
+#    - service: notify.telegram
+#      data:
+#        message: "Потеря контроля в течении 5 минут - лампочка в гостинной. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
+#    - service: switch.turn_off
+#      entity_id: switch.0x00158d000211434a_switch
+
+# Перезагрузка зависшей лампочки на кухне
+- alias: Kitchen lamp reboot
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'unavailable'
+      for:
+        minutes: 5
+  action:
+    - service: notify.telegram
+      data:
+        message: "Потеря контроля в течении 5 минут - лампочка на кухне. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
+    - service: switch.turn_off
+      entity_id: switch.0x00158d00022addd4_switch_right
+
+# Перезагрузка зависшей лампочки в главной спальне
+- alias: Master bedroom lamp reboot
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: light.master_bedroom_lamp
+      to: 'unavailable'
+      for:
+        minutes: 5
+  action:
+    - service: notify.telegram
+      data:
+        message: "Потеря контроля в течении 5 минут - лампочка в главной спальне. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
+    - service: switch.turn_off
+      entity_id: switch.0x00158d0001f9aa24_switch
+
+# Перезагрузка зависшей лампочки в спальне
+- alias: Bedroom lamp reboot
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: light.bedroom_lamp
+      to: 'unavailable'
+      for:
+        minutes: 5
+  action:
+      - service: notify.telegram
+        data:
+          message: "Потеря контроля в течении 5 минут - лампочка в спальне. Время события - {{ states('sensor.time_date') }} . Инициирована перезагрузка"
+      - service: switch.turn_off
+        entity_id: switch.0x00158d0002113ace_switch

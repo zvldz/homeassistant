@@ -1,9 +1,3 @@
-person_info:
-  control: hidden
-  name: Дом
-  entities:
-    - device_tracker.redmi4
-
 living_room_spot_left:
   name: Левые Споты
   entities:

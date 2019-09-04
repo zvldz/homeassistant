@@ -23,55 +23,6 @@ input_boolean:
     icon: mdi:timer
 
 sensor:
-  - platform: template
-    sensors:
-      vacuum_cleaner_error_sensor:
-        friendly_name: Последняя ошибка
-        value_template: >
-          {% if states.vacuum.xiaomi_vacuum_cleaner.attributes.error is defined %}
-            {{states.vacuum.xiaomi_vacuum_cleaner.attributes.error}}
-          {% else %}
-            Нет Ошибок
-          {% endif %}
-
-      vacuum_cleaner_status_sensor:
-        friendly_name: Состояние
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.status }}"
-
-      vacuum_cleaner_battery_level:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.battery_level }}"
-        friendly_name: Уровень заряда
-        unit_of_measurement: '%'
-
-      vacuum_cleaner_cleaned_area:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area }}"
-        friendly_name: Убранная территория
-        unit_of_measurement: 'м²'
-
-      vacuum_cleaner_cleaning_time:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time }}"
-        friendly_name: Время уборки
-        unit_of_measurement: 'мин'
-
-      vacuum_cleaner_main_brush_left:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.main_brush_left }}"
-        friendly_name: Время до замены главной щетки
-        unit_of_measurement: 'часов'
-
-      vacuum_cleaner_side_brush_left:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.side_brush_left }}"
-        friendly_name: Время до замены боковой щетки
-        unit_of_measurement: 'часов'
-
-      vacuum_cleaner_filter_left:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.filter_left }}"
-        friendly_name: Время до замены фильтра
-        unit_of_measurement: 'часов'
-
-      vacuum_cleaner_dirty_left:
-        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.sensor_dirty_left }}"
-        friendly_name: Время до протирки сенсоров
-        unit_of_measurement: 'часов'
 
 automation:
   - alias: 'Vacuum Time Clean 1'
@@ -325,42 +276,4 @@ script:
       - service: notify.telegram
         data:
            message: 'Уборка Гостиной'
-
-group:
-  vacuum:
-    view: yes
-    icon: mdi:robot-vacuum
-    name: Пылесос
-    entities:
-      - group.vacuum_status
-      - group.vacuum_zone
-      - group.vacuum_map
-
-  vacuum_status:
-    name: Статусы Пылесоса
-    control: hidden
-    entities:
-      - vacuum.xiaomi_vacuum_cleaner
-      - sensor.vacuum_cleaner_status_sensor
-      - sensor.vacuum_cleaner_error_sensor
-      - sensor.vacuum_cleaner_battery_level
-      - sensor.vacuum_cleaner_cleaned_area
-      - sensor.vacuum_cleaner_cleaning_time
-      - sensor.vacuum_cleaner_main_brush_left
-      - sensor.vacuum_cleaner_side_brush_left
-      - sensor.vacuum_cleaner_filter_left
-      - sensor.vacuum_cleaner_dirty_left
-      - input_boolean.vacuum_schedule
-
-  vacuum_map:
-    name: Карта
-    control: hidden
-    entities:
-      - camera.rockrobo_map
-
-  vacuum_zone:
-    name: Зональная Уборка
-    control: hidden
-    entities:
-      - input_select.vacuum_room
 

@@ -8,9 +8,38 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
+          - type: entities
             show_header_toggle: false
-            group: group.vacuum_status
+            entities:
+              - vacuum.xiaomi_vacuum_cleaner
+              - input_boolean.vacuum_schedule
+
+      - type: custom:xiaomi-vacuum-card
+        entity: vacuum.xiaomi_vacuum_cleaner
+        name: Xiaomi Vacuum
+        buttons: true
+        labels:
+          status: Состояние
+          battery: Батарея
+          mode: Режим
+          main_brush: Главная щетка
+          side_brush: Боковая щетка
+          filter: Фильтр
+          sensor: Сенсор
+          hours: ч
+
+      - type: custom:xiaomi-vacuum-map-card
+        entity: vacuum.xiaomi_vacuum
+        map_image: '/local/img/vacuum_map.png'
+        debug: true
+        base_position:
+          x: 1889
+          y: 1600
+        reference_point:
+         x: 1625
+         y: 1336
+        zones:
+          - [[25500, 25500, 26500, 26500]]
 
   - type: vertical-stack
     cards:
@@ -19,69 +48,24 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: picture-elements
+          - type: picture-glance
             show_header_toggle: false
             camera_image: camera.rockrobo_map
-            elements:
-              - type: icon
-                icon: mdi:bell-ring
-                tap_action:
-                  action: call-service
-                  service: vacuum.locate
-                  service_data:
-                    entity_id: vacuum.xiaomi_vacuum_cleaner
-                style:
-                  top: 95%
-                  left: 30%
-                  "--paper-item-icon-color": rgb(115, 122, 130)
-              - type: icon
-                icon: mdi:home
-                tap_action:
-                  action: call-service
-                  service: vacuum.return_to_base
-                  sevice_data:
-                    entity_id: vacuum.xiaomi_vacuum_cleaner
-                style:
-                  top: 95%
-                  left: 40%
-                  "--paper-item-icon-color": rgb(115, 122, 130)
-              - type: icon
-                icon: mdi:play
-                tap_action:
-                  action: call-service
-                  service: vacuum.start
-                  service_data:
-                    entity_id: vacuum.xiaomi_vacuum_cleaner
-                style:
-                  top: 95%
-                  left: 50%
-                  "--paper-item-icon-color": rgb(115, 122, 130)
-              - type: icon
-                icon: mdi:stop
-                tap_action:
-                  action: call-service
-                  service: vacuum.stop
-                  service_data:
-                    entity_id: vacuum.xiaomi_vacuum_cleaner
-                style:
-                  top: 95%
-                  left: 60%
-                  "--paper-item-icon-color": rgb(115, 122, 130)
-              - type: icon
-                icon: mdi:pause
-                tap_action:
-                  action: call-service
-                  service: vacuum.pause
-                  service_data:
-                    entity_id: vacuum.xiaomi_vacuum_cleaner
-                style:
-                  top: 95%
-                  left: 70%
-                  "--paper-item-icon-color": rgb(115, 122, 130)
+            entities: []
 
           - type: entities
             title: Зональная Уборка
             show_header_toggle: false
             entities:
               - input_select.vacuum_room
+
+#         - type: custom:valetudo-map-card
+#           entity: sensor.xiaomi_map
+#           rotate: 0
+#           crop:
+#             top: 0
+#             bottom: 0
+#             left: 0
+#             right: 0
+
 

@@ -193,7 +193,7 @@ automation:
 
 script:
   vacuum_all_except_balcony:
-    alias: 'Vacuum All Except Balcony'
+    alias: 'Clean Up All Except Balcony'
     sequence:
       - service: vacuum.send_command
         data:

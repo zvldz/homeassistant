@@ -50,6 +50,8 @@ switch:
     name: "${device_name} relay 2"
     pin: GPIO5
     id: relay_2
+  - platform: restart
+    name: "${device_name} restart"
 
 output:
   - platform: esp8266_pwm

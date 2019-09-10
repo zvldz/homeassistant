@@ -1,0 +1,167 @@
+switch:
+  - platform: mqtt
+    name: "RF 1"
+    command_topic: "sonoff_rf_bridge/cmnd/RfKey1"
+    state_topic: "sonoff_rf_bridge/stat/RfKey1"
+    qos: 2
+    payload_on: ""
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF 2"
+    command_topic: "sonoff_rf_bridge/cmnd/RfKey2"
+    state_topic: "sonoff_rf_bridge/stat/RfKey2"
+    qos: 2
+    payload_on: ""
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF 3"
+    command_topic: "sonoff_rf_bridge/cmnd/RfKey3"
+    state_topic: "sonoff_rf_bridge/stat/RfKey3"
+    qos: 2
+    payload_on: ""
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF 4"
+    command_topic: "sonoff_rf_bridge/cmnd/RfKey4"
+    state_topic: "sonoff_rf_bridge/stat/RfKey4"
+    qos: 2
+    payload_on: ""
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF code 1"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    value_template: '{{value_json.RfCode}}'
+    qos: 2
+    payload_on: "RfSync 10270; RfLow 360; RfHigh 1010; RfCode #0B0994"
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF code 2"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    value_template: '{{value_json.RfCode}}'
+    qos: 2
+    payload_on: "RfSync 9800; RfLow 340; RfHigh 1010; RfCode #035F04"
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF code 3"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    value_template: '{{value_json.RfCode}}'
+    qos: 2
+    payload_on: "RfSync 9930; RfLow 340; RfHigh 1020; RfCode #E7E008"
+    payload_off: ""
+    retain: true
+
+  - platform: mqtt
+    name: "RF code 4"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    value_template: '{{value_json.RfCode}}'
+    qos: 2
+    payload_on: "RfSync 10270; RfLow 360; RfHigh 1010; RfCode #2E1A18"
+    payload_off: ""
+    retain: true
+
+binary_sensor:
+  - platform: mqtt
+    name: "RF key 1"
+    payload_on: "1"
+    payload_off: "key1_off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{ value_json.RfReceived.RfKey }}'
+
+  - platform: mqtt
+    name: "RF key 2"
+    payload_on: "2"
+    payload_off: "key2_off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{ value_json.RfReceived.RfKey }}'
+
+  - platform: mqtt
+    name: "RF key 3"
+    payload_on: "3"
+    payload_off: "key3_off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{ value_json.RfReceived.RfKey }}'
+
+  - platform: mqtt
+    name: "RF key 4"
+    payload_on: "4"
+    payload_off: "key4_off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{ value_json.RfReceived.RfKey }}'
+
+automation:
+  - alias: "Power state sonoff on HA start-up"
+    initial_state: 'on'
+    trigger:
+      platform: homeassistant
+      event: start
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "sonoffs/cmnd/state"
+          payload: ""
+
+  - alias: "Enable MQTT discovery for all sonoff devices"
+    initial_state: 'on'
+    trigger:
+      platform: homeassistant
+      event: start
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "cmnd/sonoffs/SetOption19"
+          payload: "1"
+
+script:
+  rf_send_key_1:
+    alias: 'RF Send 1'
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: "sonoff_rf_bridge/cmnd/RfKey1"
+          payload: ""
+          qos: 2
+
+  rf_send_key_2:
+    alias: 'RF Send 2'
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: "sonoff_rf_bridge/cmnd/RfKey2"
+          payload: ""
+          qos: 2
+
+  rf_send_key_3:
+    alias: 'RF Send 3'
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: "sonoff_rf_bridge/cmnd/RfKey3"
+          payload: ""
+          qos: 2
+
+  rf_send_key_4:
+    alias: 'RF Send 4'
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: "sonoff_rf_bridge/cmnd/RfKey4"
+          payload: ""
+          qos: 2
+
+

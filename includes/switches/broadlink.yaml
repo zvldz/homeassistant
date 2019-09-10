@@ -1,6 +1,7 @@
 - platform: broadlink
   host: !secret broadlink_ip
   mac: !secret broadlink_mac
+# type: rm2_pro_plus
   timeout: 15
   switches:
     samsung_tv:

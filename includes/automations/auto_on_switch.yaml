@@ -20,29 +20,9 @@
     - delay: 00:03:00
     - service: automation.turn_on
       entity_id:
-#       - automation.turn_on_main_switch_livingroom
         - automation.turn_on_left_switch_livingroom
         - automation.turn_on_right_switch_livingroom
         - automation.turn_on_right_switch_kitchen
-        - automation.turn_on_main_switch_master_bedroom
-        - automation.turn_on_main_switch_bedroom
-
-#- alias: Turn on main switch in livingroom if it is off
-#- alias: turn_on_main_switch_livingroom
-#  initial_state: 'off'
-#  trigger:
-#    - platform: time_pattern
-#      minutes: '/1'
-#      seconds: 00
-#  condition:
-#    condition: state
-#    entity_id: switch.0x00158d000211434a_switch
-#    state: 'off'
-#    for:
-#      minutes: 2
-#  action:
-#    - service: switch.turn_on
-#      entity_id: switch.0x00158d000211434a_switch
 
 #- alias: Turn on left switch in livingroom if it is off
 - alias: turn_on_left_switch_livingroom
@@ -94,38 +74,4 @@
   action:
     - service: switch.turn_on
       entity_id: switch.0x00158d00022addd4_switch_right
-
-#- alias: Turn on main switch in master bedroom if it is off
-- alias: turn_on_main_switch_master_bedroom
-  initial_state: 'off'
-  trigger:
-    - platform: time_pattern
-      minutes: '/1'
-      seconds: 00
-  condition:
-    condition: state
-    entity_id:  switch.0x00158d0001f9aa24_switch
-    state: 'off'
-    for:
-      minutes: 2
-  action:
-    - service: switch.turn_on
-      entity_id: switch.0x00158d0001f9aa24_switch
-
-#- alias: Turn on main switch in bedroom if it is off
-- alias: turn_on_main_switch_bedroom
-  initial_state: 'off'
-  trigger:
-    - platform: time_pattern
-      minutes: '/1'
-      seconds: 00
-  condition:
-    condition: state
-    entity_id: switch.0x00158d0002113ace_switch
-    state: 'off'
-    for:
-      minutes: 2
-  action:
-    - service: switch.turn_on
-      entity_id: switch.0x00158d0002113ace_switch
 

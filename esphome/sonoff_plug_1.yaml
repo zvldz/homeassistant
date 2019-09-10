@@ -59,6 +59,8 @@ switch:
       - output.turn_on: led
     on_turn_off:
       - output.turn_off: led
+  - platform: restart
+    name: "${device_name} restart"
 
 status_led:
   pin:
@@ -68,6 +70,11 @@ status_led:
 text_sensor:
   - platform: version
     name: "${device_name} ESPHome version"
+  - platform: wifi_info
+    ip_address:
+      name: "${device_name} IP Address"
+    ssid:
+      name: "${device_name} Connected SSID"
 
 sensor:
   - platform: uptime

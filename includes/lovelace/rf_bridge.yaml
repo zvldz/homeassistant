@@ -1,0 +1,69 @@
+title: Sonoff RF Bridge
+icon: mdi:radio-tower
+cards:
+  - type: vertical-stack
+    cards:
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - sensor.sonoff_bridge_rf_1_status
+              - switch.sonoff_rf_1_relay
+
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: Sensors
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.rf_key_1
+          - binary_sensor.rf_key_2
+          - binary_sensor.rf_key_3
+          - binary_sensor.rf_key_4
+
+      - type: "custom:button-card"
+        name: Switch Script
+      - type: horizontal-stack
+        cards:
+          - type: "custom:button-card"
+            entity: script.rf_send_key_1
+            icon: mdi:access-point-network
+          - type: "custom:button-card"
+            entity: script.rf_send_key_2
+            icon: mdi:lock-open
+          - type: "custom:button-card"
+            entity: script.rf_send_key_3
+            icon: mdi:lock-open-outline
+          - type: "custom:button-card"
+            entity: script.rf_send_key_4
+            icon: mdi:crop-square
+
+      - type: "custom:button-card"
+        name: Switch Key
+      - type: horizontal-stack
+        cards:
+          - type: "custom:button-card"
+            entity: switch.rf_1
+          - type: "custom:button-card"
+            entity: switch.rf_2
+          - type: "custom:button-card"
+            entity: switch.rf_3
+          - type: "custom:button-card"
+            entity: switch.rf_4
+
+      - type: "custom:button-card"
+        name: Switch Code
+      - type: horizontal-stack
+        cards:
+          - type: "custom:button-card"
+            entity: switch.rf_code_1
+          - type: "custom:button-card"
+            entity: switch.rf_code_2
+          - type: "custom:button-card"
+            entity: switch.rf_code_3
+          - type: "custom:button-card"
+            entity: switch.rf_code_4
+
+

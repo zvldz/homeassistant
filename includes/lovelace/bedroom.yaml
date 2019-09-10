@@ -5,11 +5,6 @@ cards:
     entity: light.bedroom_lamp
 
   - type: entities
-    title: Выключатели
-    entities:
-      - switch.0x00158d0002113ace_switch
-
-  - type: entities
     title: Сенсоры
     show_header_toggle: false
     entities:

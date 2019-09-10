@@ -7,6 +7,8 @@ resources:
     type: module
   - url: /community_plugin/mini-graph-card/mini-graph-card.js
     type: module
+  - url: /community_plugin/button-card/button-card.js
+    type: module
   - url: /community_plugin/lovelace-xiaomi-vacuum-card/xiaomi-vacuum-card.js
     type: js
   - url: /community_plugin/lovelace-xiaomi-vacuum-map-card/xiaomi-vacuum-map-card.js
@@ -28,5 +30,6 @@ views:
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/flowers.yaml
   - !include includes/lovelace/vacuum.yaml
+  - !include includes/lovelace/rf_bridge.yaml
   - !include includes/lovelace/automation.yaml
 

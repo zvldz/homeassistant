@@ -130,21 +130,22 @@ panel_iframe:
 hacs:
   token: !secret my_github_access_token
 
-climate:
-  - platform: midea
-    app_key: 3742e9e5842d4ad59c2db887e12449f9
-    username: !secret midea_user
-    password: !secret midea_pass
-    use_fan_only_workaround: true
+#climate:
+#  - platform: midea
+#    app_key: 3742e9e5842d4ad59c2db887e12449f9
+#    username: !secret midea_user
+#    password: !secret midea_pass
+#    #use_fan_only_workaround: true
 
 group: !include groups.yaml
 switch: !include_dir_merge_list includes/switches
 sensor: !include_dir_merge_list includes/sensors
+binary_sensor: !include_dir_merge_list includes/binary_sensors
 light: !include_dir_merge_list includes/lights
 media_player: !include includes/media_player.yaml
 yeelight: !include includes/yeelight.yaml
 automation: !include_dir_merge_list includes/automations
-script: !include_dir_merge_list includes/scripts
+script: !include includes/scripts.yaml
 
 input_boolean: !include includes/input_boolean.yaml
 input_number: !include includes/input_number.yaml

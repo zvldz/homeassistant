@@ -5,6 +5,8 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp01_1m
+  #arduino_version: dev
+  arduino_version: 2.4.2
 
 wifi:
   ssid: !secret wifi_ssid
@@ -48,6 +50,8 @@ switch:
     turn_off_action:
       - switch.turn_off: relay
       - light.turn_off: led
+  - platform: restart
+    name: "${device_name} restart"
 
 binary_sensor:
   - platform: gpio
@@ -72,3 +76,8 @@ sensor:
 text_sensor:
   - platform: version
     name: "${device_name} ESPHome version"
+  - platform: wifi_info
+    ip_address:
+      name: "${device_name} IP Address"
+    ssid:
+      name: "${device_name} Connected SSID"

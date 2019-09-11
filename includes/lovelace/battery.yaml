@@ -3,22 +3,41 @@ icon: mdi:battery-alert
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Уровень Заряда"
-
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.battery_status
+      - type: "custom:button-card"
+        name: "Уровень Заряда"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:monster-card
+        show_empty: false
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "*battery"
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Alert"
-
+      - type: "custom:button-card"
+        name: "Контроль"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
+          - type: entities
             show_header_toggle: false
-            group: group.battery_alert
+            entities:
+              - input_boolean.low_batteries
+              - input_number.battery_alert_threshold_min
+              - input_number.battery_alert_threshold_max
+              - input_text.delete_battery_sensor
+              - input_text.notifier_name
+              - input_select.notifier_format
+              - automation.battery_persistent_notification
+              - automation.battery_persistent_notification_clear
+              - automation.battery_notification_default
+              - automation.battery_notification_slack
+              - automation.battery_sensor_from_attributes
+              - automation.update_battery_status_group_members
+              - automation.delete_battery_sensor

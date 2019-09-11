@@ -3,36 +3,59 @@ icon: mdi:home-assistant
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Температура"
-
+      - type: "custom:button-card"
+        name: "Температура"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.climate_temperature
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.temperature*"
+              exclude:
+                - entity_id: "*battery"
 
-      - type: markdown
-        content: "## Погода"
-
+      - type: "custom:button-card"
+        name: "Погода"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: weather-forecast
         show_header_toggle: false
         entity: weather.weather
+      - type: weather-forecast
+        show_header_toggle: false
+        entity: weather.gismeteo
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Влажность"
-
+      - type: "custom:button-card"
+        name: "Влажность"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.climate_humidity
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.humidity*"
+              exclude:
+                - entity_id: "*battery"
 
-      - type: markdown
-        content: "## День"
-
+      - type: "custom:button-card"
+        name: "День"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: entities
         show_header_toggle: false
         entities:
@@ -45,22 +68,31 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Давление"
-
+      - type: "custom:button-card"
+        name: "Давление"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.climate_pressure
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.pressure*"
+              exclude:
+                - entity_id: "*battery"
 
-      - type: markdown
-        content: "## Кто Дома"
-
-      - type: entities
+      - type: "custom:button-card"
+        name: "Кто Дома"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
         show_header_toggle: false
         entities:
           - device_tracker.redmi4
           - device_tracker.galaxy_a5
-
 

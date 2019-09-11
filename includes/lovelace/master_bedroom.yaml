@@ -1,18 +1,33 @@
 title: Спальня 1
 icon: mdi:hotel
 cards:
-  - type: light
-    entity: light.master_bedroom_lamp
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Лампы"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: light
+                entity: light.master_bedroom_lamp
+              - type: light
+                entity: light.bedside
+              - type: light
+                entity: light.gateway_light_7c49eb1ce708
 
-  - type: light
-    entity: light.bedside
-
-  - type: light
-    entity: light.gateway_light_7c49eb1ce708
-
-  - type: entities
-    title: Сенсоры
-    show_header_toggle: false
-    entities:
-      - sensor.illumination_7c49eb1ce708
-      - binary_sensor.master_bedroom_lamp_nightlight
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.master_bedroom_lamp_nightlight
+          - sensor.illumination_7c49eb1ce708

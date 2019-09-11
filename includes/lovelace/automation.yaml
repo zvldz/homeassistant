@@ -1,31 +1,47 @@
 title: Automation
-icon: mdi:flash-auto
+#icon: mdi:flash-auto
+icon: mdi:home-automation
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Automations"
+      - type: "custom:button-card"
+        name: "Automations"
+        styles:
+          card:
+            - background-color: "#203040"
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.all_automations
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "automation.*"
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Scripts"
-
+      - type: "custom:button-card"
+        name: "Scripts"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.all_scripts
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "script.*"
 
-      - type: markdown
-        content: "## Settings"
-
+      - type: "custom:button-card"
+        name: "Settings"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
           - type: entities

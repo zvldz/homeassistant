@@ -51,7 +51,7 @@ output:
 
 switch:
   - platform: gpio
-    pin: GPIO15
+    pin: GPIO14
     id: relay
     name: '${device_name} relay'
     restore_mode: ALWAYS_ON
@@ -87,8 +87,8 @@ sensor:
     sel_pin:
       number: GPIO12
       inverted: true
-    cf_pin: GPIO05
-    cf1_pin: GPIO14
+    cf_pin: GPIO04
+    cf1_pin: GPIO05
     current_resistor: ${current_res}
     voltage_divider: ${voltage_div}
     current:

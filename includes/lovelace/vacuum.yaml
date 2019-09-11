@@ -3,8 +3,11 @@ icon: mdi:robot-vacuum
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Статус"
+      - type: "custom:button-card"
+        name: "Статус"
+        styles:
+          card:
+            - background-color: "#203040"
 
       - type: custom:vertical-stack-in-card
         cards:
@@ -28,6 +31,27 @@ cards:
           sensor: Сенсор
           hours: ч
 
+      - type: entities
+        title: Зональная Уборка
+        show_header_toggle: false
+        entities:
+          - input_select.vacuum_room
+
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Карта"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: picture-glance
+            show_header_toggle: false
+            camera_image: camera.rockrobo_map
+            entities: []
+
       - type: custom:xiaomi-vacuum-map-card
         entity: vacuum.xiaomi_vacuum
         map_image: '/local/img/vacuum_map.png'
@@ -40,32 +64,5 @@ cards:
          y: 1336
         zones:
           - [[25500, 25500, 26500, 26500]]
-
-  - type: vertical-stack
-    cards:
-      - type: markdown
-        content: "## Карта"
-
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: picture-glance
-            show_header_toggle: false
-            camera_image: camera.rockrobo_map
-            entities: []
-
-          - type: entities
-            title: Зональная Уборка
-            show_header_toggle: false
-            entities:
-              - input_select.vacuum_room
-
-#         - type: custom:valetudo-map-card
-#           entity: sensor.xiaomi_map
-#           rotate: 0
-#           crop:
-#             top: 0
-#             bottom: 0
-#             left: 0
-#             right: 0
 
 

@@ -19,7 +19,7 @@ input_select:
 
 input_boolean:
   vacuum_schedule:
-    name: Включить регулярную уборку
+    name: Регулярная уборку роботом
     icon: mdi:timer
 
 sensor:

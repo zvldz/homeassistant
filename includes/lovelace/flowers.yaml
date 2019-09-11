@@ -3,33 +3,52 @@ icon: mdi:flower
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Цветок 1"
-
+      - type: "custom:button-card"
+        name: "Цветок 1"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.flower1
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.miflore1*"
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Цветок 2"
-
+      - type: "custom:button-card"
+        name: "Цветок 2"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.flower2
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.miflore2*"
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Цветок 3"
-
+      - type: "custom:button-card"
+        name: "Цветок 3"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
-            show_header_toggle: false
-            group: group.flower3
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.miflore3*"
+

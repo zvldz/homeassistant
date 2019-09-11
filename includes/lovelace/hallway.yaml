@@ -1,29 +1,110 @@
 title: Коридор
 icon: mdi:swap-vertical-variant
 cards:
-  - type: light
-    entity: light.gateway_light_7811dcb245b2
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Лампы"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: light
+                entity: light.gateway_light_7811dcb245b2
 
-  - type: entities
-    title: Выключатели
-    entities:
-      - switch.wall_switch_ln_158d0001f9aaae
-      - switch.wall_switch_ln_158d0002112b1e
-      - switch.wall_switch_ln_right_158d00022a8150
-      - switch.wall_switch_ln_158d00022360fe
-      - switch.wall_switch_ln_left_158d00022a8150
-      - switch.sonoff_br_relay_1
-      - switch.sonoff_br_relay_2
-      - switch.sonoff_wc_relay
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.switch_158d0001a66df0
+          - sensor.illumination_7811dcb245b2
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.water_leak_sensor_158d00023aa420
+          - binary_sensor.water_leak_sensor_158d000233ddf2
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.door_window_sensor_158d00024de627
+          - binary_sensor.door_window_sensor_158d0002fd4381
+          - binary_sensor.door_window_sensor_158d00032b7db7
 
-  - type: entities
-    title: Сенсоры
-    show_header_toggle: false
-    entities:
-      - binary_sensor.switch_158d0001a66df0
-      - binary_sensor.water_leak_sensor_158d00023aa420
-      - binary_sensor.water_leak_sensor_158d000233ddf2
-      - binary_sensor.door_window_sensor_158d00024de627
-      - binary_sensor.door_window_sensor_158d0002fd4381
-      - binary_sensor.door_window_sensor_158d00032b7db7
-      - sensor.illumination_7811dcb245b2
+      - type: "custom:button-card"
+        name: "Выключатели"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.wall_switch_ln_158d0001f9aaae
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.wall_switch_ln_158d0002112b1e
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.wall_switch_ln_right_158d00022a8150
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.wall_switch_ln_158d00022360fe
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.wall_switch_ln_left_158d00022a8150
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.sonoff_br_relay_2
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.sonoff_br_relay_1
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.sonoff_wc_relay
+                size: 20%
+                styles:
+                  card:
+                    - font-size: 14px
+

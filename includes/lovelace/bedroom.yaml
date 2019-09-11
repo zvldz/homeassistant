@@ -1,11 +1,29 @@
 title: Спальня 2
 icon: mdi:bed-empty
 cards:
-  - type: light
-    entity: light.bedroom_lamp
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Лампы"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: light
+                entity: light.bedroom_lamp
 
-  - type: entities
-    title: Сенсоры
-    show_header_toggle: false
-    entities:
-      - binary_sensor.bedroom_lamp_nightlight
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.bedroom_lamp_nightlight
+

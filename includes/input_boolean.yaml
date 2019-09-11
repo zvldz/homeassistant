@@ -1,7 +1,7 @@
 auto_turn_off_lights:
-  name: Включить автовыключение света
+  name: Автовыключение света
   icon: mdi:timer
 
 auto_fan:
-  name: Включить периодическое проветривание WC и ванной
+  name: Периодическое проветривание
   icon: mdi:timer

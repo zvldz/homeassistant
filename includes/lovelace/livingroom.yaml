@@ -1,38 +1,117 @@
 title: Зал
 icon: mdi:sofa
 cards:
-  - type: light
-    entity: light.living_room_lamp
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Лампы"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: light
+                entity: light.living_room_lamp
+              - type: light
+                entity: light.living_room_lamp_ambilight
 
-  - type: light
-    entity: light.living_room_lamp_ambilight
+      - type: "custom:button-card"
+        name: "Группа Спотов"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - group.living_room_spot_left
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - group.living_room_spot_right
 
-  - type: entities
-    title: Левые Споты
-    entities:
-      - light.living_room_spot_left_1
-      - light.living_room_spot_left_2
-      - light.living_room_spot_left_3
+      - type: "custom:button-card"
+        name: "Споты"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - light.living_room_spot_left_1
+                  - light.living_room_spot_left_2
+                  - light.living_room_spot_left_3
+                  - light.living_room_spot_right_1
+                  - light.living_room_spot_right_2
+                  - light.living_room_spot_right_3
 
-  - type: entities
-    title: Правые Споты
-    entities:
-      - light.living_room_spot_right_1
-      - light.living_room_spot_right_2
-      - light.living_room_spot_right_3
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.living_room_lamp_nightlight
 
-  - type: entities
-    title: Выключатели
-    entities:
-      - switch.samsung_tv
-#     - switch.0x00158d000211434a_switch
-      - switch.0x00158d00022b3ea0_switch_left
-      - switch.0x00158d00022b3ea0_switch_right
-      - switch.plug_158d0002677c89
-      - switch.sonoff_plug_1_relay
+      - type: "custom:button-card"
+        name: "Выключатели"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.samsung_tv
+                size: 10%
+                styles:
+                  card:
+                    - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.0x00158d00022b3ea0_switch_left
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.0x00158d00022b3ea0_switch_right
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: "custom:button-card"
+                entity: switch.plug_158d0002677c89
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
+              - type: "custom:button-card"
+                entity: switch.sonoff_plug_1_relay
+                size: 15%
+                styles:
+                  card:
+                    - font-size: 14px
 
-  - type: entities
-    title: Сенсоры
-    show_header_toggle: false
-    entities:
-      - binary_sensor.living_room_lamp_nightlight

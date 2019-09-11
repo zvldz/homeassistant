@@ -3,19 +3,34 @@ icon: mdi:bell-ring
 cards:
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Дверной Звонок"
+      - type: "custom:button-card"
+        name: "Дверной Звонок"
+        styles:
+          card:
+            - background-color: "#203040"
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:group-card
+          - type: entities
             show_header_toggle: false
-            group: group.doorbell_all
+            entities:
+              - binary_sensor.ring_front_door_ding
+              - binary_sensor.ring_front_door_motion
+              - sensor.ring_front_door_battery
+              - sensor.ring_front_door_last_activity_date
+              - sensor.ring_front_door_last_ding_date
+              - sensor.ring_front_door_last_motion_date
+              - sensor.ring_front_door_volume
+              - sensor.ring_front_door_wifi_signal_category
+              - sensor.ring_front_door_wifi_signal_strength
 
   - type: vertical-stack
     cards:
-      - type: markdown
-        content: "## Камера"
+      - type: "custom:button-card"
+        name: "Камера"
+        styles:
+          card:
+            - background-color: "#203040"
 
       - type: custom:vertical-stack-in-card
         cards:

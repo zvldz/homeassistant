@@ -49,29 +49,6 @@ camera:
 downloader:
   download_dir: downloads
 
-group:
-  doorbell:
-    view: yes
-    name: Дверной звонок
-    icon: mdi:bell-ring
-    entities:
-      - group.doorbell_all
-
-  doorbell_all:
-    control: hidden
-    name: Дверной Звонок
-    view: no
-    entities:
-      - binary_sensor.ring_front_door_ding
-      - binary_sensor.ring_front_door_motion
-      - sensor.ring_front_door_battery
-      - sensor.ring_front_door_last_activity_date
-      - sensor.ring_front_door_last_ding_date
-      - sensor.ring_front_door_last_motion_date
-      - sensor.ring_front_door_volume
-      - sensor.ring_front_door_wifi_signal_category
-      - sensor.ring_front_door_wifi_signal_strength
-
 automation:
   - alias: Ring DoorBell
     initial_state: 'on'

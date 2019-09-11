@@ -3,11 +3,14 @@ icon: mdi:radio-tower
 cards:
   - type: vertical-stack
     cards:
+      - type: "custom:button-card"
+        name: "Devices"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: "custom:button-card"
-            name: Devices
-          - type: entities
+          - type: glance
             show_header_toggle: false
             entities:
               - sensor.sonoff_bridge_rf_1_status
@@ -16,7 +19,10 @@ cards:
   - type: vertical-stack
     cards:
       - type: "custom:button-card"
-        name: Sensors
+        name: "Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
       - type: glance
         show_header_toggle: false
         entities:
@@ -27,6 +33,9 @@ cards:
 
       - type: "custom:button-card"
         name: Switch Script
+        styles:
+          card:
+            - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: "custom:button-card"
@@ -44,6 +53,9 @@ cards:
 
       - type: "custom:button-card"
         name: Switch Key
+        styles:
+          card:
+            - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: "custom:button-card"
@@ -57,6 +69,9 @@ cards:
 
       - type: "custom:button-card"
         name: Switch Code
+        styles:
+          card:
+            - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: "custom:button-card"

@@ -17,7 +17,7 @@ resources:
 title: Home
 views:
   - !include includes/lovelace/home.yaml
-  - !include includes/lovelace/climate.yaml
+# - !include includes/lovelace/climate.yaml
   - !include includes/lovelace/media.yaml
   - !include includes/lovelace/livingroom.yaml
   - !include includes/lovelace/kitchen.yaml

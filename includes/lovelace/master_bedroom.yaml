@@ -10,14 +10,12 @@ cards:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: light
-                entity: light.master_bedroom_lamp
-              - type: light
-                entity: light.bedside
-              - type: light
-                entity: light.gateway_light_7c49eb1ce708
+          - type: light
+            entity: light.master_bedroom_lamp
+          - type: light
+            entity: light.bedside
+          - type: light
+            entity: light.gateway_light_7c49eb1ce708
 
   - type: vertical-stack
     cards:

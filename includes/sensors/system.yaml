@@ -24,7 +24,8 @@
       value_template: "{{ state_attr('binary_sensor.updater', 'newest_version') }}"
 
 - platform: rest
-  resource: https://s3.amazonaws.com/hassio-version/stable.json
+  #resource: https://s3.amazonaws.com/hassio-version/stable.json
+  resource: https://version.home-assistant.io/stable.json
   name: HA Latest
   value_template: "{{ value_json.homeassistant.default }}"
   scan_interval: 1800

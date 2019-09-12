@@ -1,22 +1,11 @@
 - platform: systemmonitor
   resources:
     - type: last_boot
-#   - type: load_1m
-#   - type: load_5m
-#   - type: load_15m
     - type: processor_use
-#   - type: memory_use
-#   - type: memory_free
     - type: memory_use_percent
     - type: swap_use_percent
-#   - type: swap_use
-#   - type: swap_free
     - type: disk_use_percent
       arg: /
-#   - type: disk_use
-#     arg: /
-#   - type: disk_free
-#     arg: /
 
 - platform: command_line
   name: CPU Temperature
@@ -24,17 +13,89 @@
   unit_of_measurement: '°C'
   value_template: '{{ value | multiply(0.001) }}'
 
-- platform: uptime
-  name: ha_uptime_days
-  unit_of_measurement: days
+- platform: version
+  name: HA Current
+  scan_interval: 1800
+
+- platform: template
+  sensors:
+    ha_latest2:
+      friendly_name: "HA Latest"
+      value_template: "{{ state_attr('binary_sensor.updater', 'newest_version') }}"
+
+- platform: rest
+  resource: https://s3.amazonaws.com/hassio-version/stable.json
+  name: HA Latest
+  value_template: "{{ value_json.homeassistant.default }}"
+  scan_interval: 1800
+
+- platform: command_line
+  name: HA Init
+  command: cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$"
+  scan_interval: 60
+  unit_of_measurement: сек
 
 - platform: uptime
-  name: ha_uptime_min
+  name: online
   unit_of_measurement: minutes
 
 - platform: template
   sensors:
-    ha_uptime:
-      friendly_name: Home Assistant Uptime
-      value_template: "{{ states.sensor.ha_uptime_days.state }}"
-      unit_of_measurement: 'д. назад'
+    online_custom:
+      friendly_name: "HA Uptime"
+      value_template: >
+        {% set uptime = states.sensor.online.state | int %}
+        {% set minutes = (( uptime % 60) / 1) | int %}
+        {% set hours = ((uptime % 1440) / 60) | int %}
+        {% set days = (uptime / 1440) | int %}
+          {% if uptime < 1 %}
+            Меньше минуты
+          {% else %}
+            {% if days > 0 %}
+              {{ days }} д.
+            {% endif %}
+            {% if hours > 0 %}
+              {% if days > 0 %}
+                {{ ' ' }}
+              {% endif %}
+              {{ hours }} ч.
+            {% endif %}
+            {% if minutes > 0 %}
+              {% if days > 0 or hours > 0 %}
+                {{ ' ' }}
+              {% endif %}
+                {{ minutes }} м.
+            {% endif %}
+          {% endif %}
+
+- platform: template
+  sensors:
+    last_boot_custom:
+      friendly_name: "Host Uptime"
+      entity_id:
+        - sensor.time
+      value_template: >
+         {% set uptime = as_timestamp (now()) -as_timestamp(states.sensor.last_boot.state) | int %}
+         {% set minutes = (( uptime % 3600) / 60) | int %}
+         {% set hours = ((uptime % 86400) / 3600) | int %}
+         {% set days = (uptime / 86400) | int %}
+           {% if uptime < 1 %}
+             Меньше минуты
+           {% else %}
+             {% if days > 0 %}
+               {{ days }} д.
+             {% endif %}
+             {% if hours > 0 %}
+               {% if days > 0 %}
+                 {{ ' ' }}
+               {% endif %}
+               {{ hours }} ч.
+             {% endif %}
+             {% if minutes > 0 %}
+               {% if days > 0 or hours > 0 %}
+                 {{ ' ' }}
+               {% endif %}
+                 {{ minutes }} м.
+             {% endif %}
+           {% endif %}
+      icon_template: mdi:clock

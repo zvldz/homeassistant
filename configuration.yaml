@@ -26,18 +26,15 @@ discovery:
     - igd
     - yeelight
 
+updater:
+  reporting: false
+
 config:
-
 system_health:
-
 conversation:
-
 history:
-
 wake_on_lan:
-
 map:
-
 sun:
 
 recorder:
@@ -137,7 +134,7 @@ hacs:
 #    password: !secret midea_pass
 #    #use_fan_only_workaround: true
 
-group: !include groups.yaml
+group: !include includes/groups.yaml
 switch: !include_dir_merge_list includes/switches
 sensor: !include_dir_merge_list includes/sensors
 binary_sensor: !include_dir_merge_list includes/binary_sensors

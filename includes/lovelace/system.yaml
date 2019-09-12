@@ -11,11 +11,14 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: entities
+          - type: glance
             show_header_toggle: false
             entities:
-              - sensor.last_boot
-              - sensor.ha_uptime
+              - sensor.last_boot_custom
+              - sensor.online_custom
+              - sensor.ha_init
+              - sensor.ha_current
+              - sensor.ha_latest
 
           - type: horizontal-stack
             cards:

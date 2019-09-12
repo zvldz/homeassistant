@@ -16,21 +16,6 @@ cards:
               - sensor.sonoff_bridge_rf_1_status
               - switch.sonoff_rf_1_relay
 
-  - type: vertical-stack
-    cards:
-      - type: "custom:button-card"
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.rf_key_1
-          - binary_sensor.rf_key_2
-          - binary_sensor.rf_key_3
-          - binary_sensor.rf_key_4
-
       - type: "custom:button-card"
         name: Switch Script
         styles:
@@ -82,5 +67,34 @@ cards:
             entity: switch.rf_code_3
           - type: "custom:button-card"
             entity: switch.rf_code_4
+
+
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Sensor Key"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.rf_key_1
+          - binary_sensor.rf_key_2
+          - binary_sensor.rf_key_3
+          - binary_sensor.rf_key_4
+
+      - type: "custom:button-card"
+        name: "Sensor Code"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.rf_code_1
+          - binary_sensor.rf_code_2
+          - binary_sensor.rf_code_3
+          - binary_sensor.rf_code_4
 
 

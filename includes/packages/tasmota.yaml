@@ -36,7 +36,7 @@ switch:
     retain: true
 
   - platform: mqtt
-    name: "RF code 1"
+    name: "RF Code 1"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     command_topic: "sonoff_rf_bridge/cmnd/Backlog"
     value_template: '{{value_json.RfCode}}'
@@ -46,7 +46,7 @@ switch:
     retain: true
 
   - platform: mqtt
-    name: "RF code 2"
+    name: "RF Code 2"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     command_topic: "sonoff_rf_bridge/cmnd/Backlog"
     value_template: '{{value_json.RfCode}}'
@@ -56,7 +56,7 @@ switch:
     retain: true
 
   - platform: mqtt
-    name: "RF code 3"
+    name: "RF Code 3"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     command_topic: "sonoff_rf_bridge/cmnd/Backlog"
     value_template: '{{value_json.RfCode}}'
@@ -66,7 +66,7 @@ switch:
     retain: true
 
   - platform: mqtt
-    name: "RF code 4"
+    name: "RF Code 4"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     command_topic: "sonoff_rf_bridge/cmnd/Backlog"
     value_template: '{{value_json.RfCode}}'
@@ -77,32 +77,60 @@ switch:
 
 binary_sensor:
   - platform: mqtt
-    name: "RF key 1"
+    name: "RF Key 1"
     payload_on: "1"
     payload_off: "key1_off"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.RfKey }}'
 
   - platform: mqtt
-    name: "RF key 2"
+    name: "RF Key 2"
     payload_on: "2"
     payload_off: "key2_off"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.RfKey }}'
 
   - platform: mqtt
-    name: "RF key 3"
+    name: "RF Key 3"
     payload_on: "3"
     payload_off: "key3_off"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.RfKey }}'
 
   - platform: mqtt
-    name: "RF key 4"
+    name: "RF Key 4"
     payload_on: "4"
     payload_off: "key4_off"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.RfKey }}'
+
+  - platform: mqtt
+    name: "RF Code 1"
+    payload_on: "0B0994"
+    payload_off: "0B0994off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{value_json.RfReceived.Data}}'
+
+  - platform: mqtt
+    name: "RF Code 2"
+    payload_on: "035F04"
+    payload_off: "035F04off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{value_json.RfReceived.Data}}'
+
+  - platform: mqtt
+    name: "RF Code 3"
+    payload_on: "E7E008"
+    payload_off: "E7E008off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{value_json.RfReceived.Data}}'
+
+  - platform: mqtt
+    name: "RF Code 4"
+    payload_on: "2E1A18"
+    payload_off: "2E1A18off"
+    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    value_template: '{{value_json.RfReceived.Data}}'
 
 automation:
   - alias: "Power state sonoff on HA start-up"

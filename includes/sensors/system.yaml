@@ -32,7 +32,7 @@
 - platform: command_line
   name: HA Init
   command: cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$"
-  scan_interval: 60
+  scan_interval: 180
   unit_of_measurement: сек
 
 - platform: uptime
@@ -43,6 +43,7 @@
   sensors:
     online_custom:
       friendly_name: "HA Uptime"
+      icon_template: mdi:clock-outline
       value_template: >
         {% set uptime = states.sensor.online.state | int %}
         {% set minutes = (( uptime % 60) / 1) | int %}

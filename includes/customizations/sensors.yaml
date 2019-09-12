@@ -7,24 +7,6 @@ sensor.time:
 sun.sun:
   friendly_name: Солнце
 
-sensor.bt1_battery:
-  friendly_name: Кухня
-
-sensor.bt1_temperature:
-  friendly_name: Кухня
-
-sensor.bt1_humidity:
-  friendly_name: Кухня
-
-sensor.bt2_battery:
-  friendly_name: Зал
-
-sensor.bt2_temperature:
-  friendly_name: Зал
-
-sensor.bt2_humidity:
-  friendly_name: Зал
-
 binary_sensor.door_window_sensor_158d00024de627:
   friendly_name: WC ДО
 
@@ -138,10 +120,6 @@ sensor.illumination_7811dcb245b2:
 sensor.illumination_7c49eb1ce708:
   friendly_name: Спальня 1 ДО
 
-switch.wall_switch_ln_158d000211434a:
-  friendly_name: Зал Выключатель
-  battery_sensor_creation_disabled: yes
-
 binary_sensor.wall_switch_both_158d0002b49c73:
   battery_sensor_creation_disabled: yes
 
@@ -184,3 +162,8 @@ binary_sensor.master_bedroom_lamp_nightlight:
 binary_sensor.bedroom_lamp_nightlight:
   friendly_name: Спальня 2 Лампа Ночник
 
+sensor.ha_init:
+  icon: mdi:clock-check
+
+sensor.ha_latest:
+  icon: mdi:package-down

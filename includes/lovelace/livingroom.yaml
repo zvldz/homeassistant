@@ -50,6 +50,7 @@ cards:
                   - light.living_room_spot_left_1
                   - light.living_room_spot_left_2
                   - light.living_room_spot_left_3
+                  - type: divider
                   - light.living_room_spot_right_1
                   - light.living_room_spot_right_2
                   - light.living_room_spot_right_3

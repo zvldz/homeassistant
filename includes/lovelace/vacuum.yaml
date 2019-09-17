@@ -45,13 +45,6 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: picture-glance
-            show_header_toggle: false
-            camera_image: camera.rockrobo_map
-            entities: []
-
       - type: custom:xiaomi-vacuum-map-card
         entity: vacuum.xiaomi_vacuum
         map_image: '/local/img/vacuum_map.png'
@@ -64,5 +57,4 @@ cards:
          y: 1336
         zones:
           - [[25500, 25500, 26500, 26500]]
-
 

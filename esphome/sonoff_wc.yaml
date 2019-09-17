@@ -6,7 +6,7 @@ esphome:
   platform: ESP8266
   board: esp01_1m
   #arduino_version: dev
-  arduino_version: 2.4.2
+  #arduino_version: 2.4.2
 
 wifi:
   ssid: !secret wifi_ssid
@@ -32,7 +32,7 @@ output:
 
 light:
   - platform: monochromatic
-    name: "${device_name} blue led"
+    name: ${device_name}_blue_led
     output: sonoff_blue_led
     id: led
 
@@ -40,8 +40,9 @@ switch:
   - platform: gpio
     pin: GPIO12
     id: relay
+
   - platform: template
-    name: "${device_name} relay"
+    name: ${device_name}_relay
     optimistic: true
     id: relayandled
     turn_on_action:
@@ -50,34 +51,36 @@ switch:
     turn_off_action:
       - switch.turn_off: relay
       - light.turn_off: led
+
   - platform: restart
-    name: "${device_name} restart"
+    name: ${device_name}_restart"
 
 binary_sensor:
   - platform: gpio
     pin:
-      number: GPIO0
+      number: GPIO00
       mode: INPUT_PULLUP
       inverted: true
-    name: "${device_name} button"
+    name: ${device_name}_button
     on_press:
       - switch.toggle: relay
+
   - platform: status
-    name: ${device_name} status
+    name: ${device_name}_status
 
 sensor:
-  - platform: wifi_signal
-    name: "${device_name} wifi signal"
-    update_interval: 60s
-
   - platform: uptime
-    name: "${device_name} uptime"
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
 
 text_sensor:
   - platform: version
-    name: "${device_name} ESPHome version"
+    name: ${device_name}_esphome_version
+
   - platform: wifi_info
     ip_address:
-      name: "${device_name} IP Address"
+      name: ${device_name}_ip_address
     ssid:
-      name: "${device_name} Connected SSID"
+      name: ${device_name}_connected_ssid

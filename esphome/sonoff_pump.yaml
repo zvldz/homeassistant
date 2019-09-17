@@ -1,6 +1,7 @@
 substitutions:
-  device_name: sonoff_rf_1
+  device_name: sonoff_pump
 
+#sonoff pow r2
 esphome:
   name: ${device_name}
   platform: ESP8266
@@ -10,19 +11,26 @@ wifi:
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass
-    - ssid: !secret wifi_ssid_2
-      password: !secret wifi_pass_2
   ap:
     ssid: ${device_name}
     password: !secret wifi_pass
 
 logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
 
 api:
 
 ota:
 
 web_server:
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
 
 binary_sensor:
   - platform: gpio
@@ -58,18 +66,50 @@ switch:
 
 output:
   - platform: esp8266_pwm
-    id: basic_green_led
+    id: pow_blue_led
     pin:
       number: GPIO13
       inverted: true
 
 light:
   - platform: monochromatic
-    name: ${device_name}_green_led
-    output: basic_green_led
+    name: ${device_name}_blue_led
+    output: pow_blue_led
     id: led
 
 sensor:
+  - platform: cse7766
+    current:
+      name: ${device_name}_current
+      icon: mdi:current-ac
+      unit_of_measurement: A
+    voltage:
+      name: ${device_name}_voltage
+      icon: mdi:flash-circle
+      unit_of_measurement: V
+    power:
+      name: ${device_name}_power
+      icon: mdi:flash-outline
+      unit_of_measurement: W
+      id: ${device_name}_power
+      on_value_range:
+        - above: 4.0
+          then:
+            - light.turn_on: led
+        - below: 3.0
+          then:
+            - light.turn_off: led
+    update_interval: 10s
+
+  - platform: total_daily_energy
+    name: ${device_name}_daily_energy
+    icon: mdi:circle-slice-3
+    power_id: ${device_name}_power
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+    unit_of_measurement: kWh
+
   - platform: wifi_signal
     name: ${device_name}_wifi_signal
 

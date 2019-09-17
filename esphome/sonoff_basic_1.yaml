@@ -24,31 +24,34 @@ web_server:
 binary_sensor:
   - platform: gpio
     pin:
-      number: GPIO0
+      number: GPIO00
       mode: INPUT_PULLUP
       inverted: true
-    name: "${device_name} button"
+    name: ${device_name}_button
     on_press:
       - switch.toggle: fakebutton
+
   - platform: status
-    name: ${device_name} status
+    name: ${device_name}_status
 
 switch:
   - platform: template
-    name: "${device_name} relay"
+    name: ${device_name}_relay
     optimistic: true
     id: fakebutton
     turn_on_action:
-    - switch.turn_on: relay
-    - light.turn_on: led
+      - switch.turn_on: relay
+      - light.turn_on: led
     turn_off_action:
-    - switch.turn_off: relay
-    - light.turn_off: led
+      - switch.turn_off: relay
+      - light.turn_off: led
+
   - platform: gpio
     id: relay
     pin: GPIO12
+
   - platform: restart
-    name: "${device_name} restart"
+    name: ${device_name}_restart
 
 output:
   - platform: esp8266_pwm
@@ -59,17 +62,24 @@ output:
 
 light:
   - platform: monochromatic
-    name: "${device_name} green led"
+    name: ${device_name}_green_led
     output: basic_green_led
     id: led
 
 sensor:
-  - platform: wifi_signal
-    name: "${device_name} wifi signal"
-    update_interval: 60s
   - platform: uptime
-    name: "${device_name} uptime"
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
 
 text_sensor:
   - platform: version
-    name: "${device_name} ESPHome version"
+    name: ${device_name}_esphome_version
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+    ssid:
+      name: ${device_name}_connected_ssid
+

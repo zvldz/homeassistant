@@ -1,0 +1,37 @@
+title: Отопление
+icon: mdi:radiator
+cards:
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Насос Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: glance
+            show_header_toggle: false
+            entities:
+              - binary_sensor.sonoff_pump_status
+              - sensor.sonoff_pump_uptime
+              - sensor.sonoff_pump_wifi_signal
+          - type: glance
+            show_header_toggle: false
+            entities:
+              - sensor.sonoff_pump_voltage
+              - sensor.sonoff_pump_power
+              - sensor.sonoff_pump_current
+
+      - type: "custom:button-card"
+        name: "Насос Выключатели"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: horizontal-stack
+        cards:
+          - type: "custom:button-card"
+            entity: switch.sonoff_pump_relay
+          - type: "custom:button-card"
+            entity: switch.sonoff_pump_restart
+

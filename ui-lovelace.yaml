@@ -25,11 +25,12 @@ views:
   - !include includes/lovelace/bedroom.yaml
   - !include includes/lovelace/hallway.yaml
   - !include includes/lovelace/balcony.yaml
-  - !include includes/lovelace/battery.yaml
-  - !include includes/lovelace/system.yaml
+  - !include includes/lovelace/vacuum.yaml
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/flowers.yaml
-  - !include includes/lovelace/vacuum.yaml
+  - !include includes/lovelace/heating.yaml
   - !include includes/lovelace/rf_bridge.yaml
+  - !include includes/lovelace/battery.yaml
+  - !include includes/lovelace/system.yaml
   - !include includes/lovelace/automation.yaml
 

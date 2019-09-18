@@ -45,16 +45,40 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:xiaomi-vacuum-map-card
+      - type: "custom:valetudo-map-card"
+        entity: sensor.xiaomi_map
+        rotate: 0
+        map_scale: 1.5
+        crop:
+          top: 80
+          bottom: 30
+          left: 100
+          right: 0
+
+      - type: "custom:xiaomi-vacuum-map-card"
         entity: vacuum.xiaomi_vacuum
         map_image: '/local/img/vacuum_map.png'
         debug: true
-        base_position:
-          x: 1889
-          y: 1600
-        reference_point:
-         x: 1625
-         y: 1336
+        calibration_points:
+          - vacuum:
+              x: 25500
+              y: 25500
+            map:
+              x: 466
+              y: 1889
+          - vacuum:
+              x: 26500
+              y: 26500
+            map:
+              x: 730
+              y: 1625
+          - vacuum:
+              x: 25500
+              y: 26500
+            map:
+              x: 466
+              y: 1625
         zones:
           - [[25500, 25500, 26500, 26500]]
+
 

@@ -41,6 +41,9 @@ recorder:
   db_url: !secret db_mysql
   purge_keep_days: 7
   purge_interval: 1
+  exclude:
+    entities:
+      - sensor.xiaomi_map
 
 logbook:
   exclude:

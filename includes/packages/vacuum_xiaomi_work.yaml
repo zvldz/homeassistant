@@ -23,6 +23,19 @@ input_boolean:
     icon: mdi:timer
 
 sensor:
+  - platform: rest
+    resource: !secret xiaomi_vacuum_map
+    name: xiaomi_map
+    json_attributes:
+      - image
+      - path
+      - charger
+      - robot
+    value_template: 'OK'
+    scan_interval: 5
+    #authentication: basic
+    #username: !secret xiaomi_map_username
+    #password: !secret xiaomi_map_password
 
 automation:
   - alias: 'Vacuum Time Clean 1'

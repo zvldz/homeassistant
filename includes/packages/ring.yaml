@@ -60,16 +60,6 @@ automation:
       - service: notify.telegram
         data:
           message: 'Звонок в дверь'
-#     - service: xiaomi_aqara.play_ringtone
-#       data:
-#         gw_mac: !secret xgate_1_mac
-#         ringtone_id: 10
-#         ringtone_vol: 90
-#     - service: xiaomi_aqara.play_ringtone
-#       data:
-#         gw_mac: !secret xgate_2_mac
-#         ringtone_id: 10
-#         ringtone_vol: 90
 
   - alias: Ring Video Download
     initial_state: 'on'

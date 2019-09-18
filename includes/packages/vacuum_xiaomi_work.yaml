@@ -23,6 +23,21 @@ input_boolean:
     icon: mdi:timer
 
 sensor:
+  - platform: template
+    sensors:
+      vacuum_cleaner_status_sensor:
+        friendly_name: Vacuum Cleaner Status Sensor
+        value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.status }}"
+
+      vacuum_cleaner_error_sensor:
+        friendly_name: Vacuum Cleaner Error Sensor
+        value_template: >-
+          {% if states.vacuum.xiaomi_vacuum_cleaner.attributes.error is defined %}
+            {{states.vacuum.xiaomi_vacuum_cleaner.attributes.error}}
+          {% else %}
+            No Error
+          {% endif %}
+
   - platform: rest
     resource: !secret xiaomi_vacuum_map
     name: xiaomi_map
@@ -33,9 +48,6 @@ sensor:
       - robot
     value_template: 'OK'
     scan_interval: 5
-    #authentication: basic
-    #username: !secret xiaomi_map_username
-    #password: !secret xiaomi_map_password
 
 automation:
   - alias: 'Vacuum Time Clean 1'
@@ -97,7 +109,7 @@ automation:
     action:
        - service: notify.telegram
          data_template:
-           message: "Пылесос завершил уборку и возвращается на станцию. Время уборки: {{states.sensor.vacuum_cleaner_cleaning_time.state}} минут. Общая площадь уборки: {{states.sensor.vacuum_cleaner_cleaned_area.state}} м²"
+           message: "Пылесос завершил уборку и возвращается на станцию. Время уборки: {{states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time}} минут. Общая площадь уборки: {{states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area}} м²"
 
   - alias: 'Vacuum Docked'
     initial_state: 'on'
@@ -122,15 +134,12 @@ automation:
       - platform: state
         entity_id: sensor.vacuum_cleaner_status_sensor
         to: 'Charging Error'
-      - platform: state
-        entity_id: sensor.vacuum_cleaner_status_sensor
-        to: 'Ошибка'
     action:
       - service: notify.telegram
         data:
           message: >
-            {% if is_state('sensor.vacuum_cleaner_error_sensor', 'Нет Ошибок')  %}
-              {{states.sensor.vacuum_cleaner_status_sensor.state}}
+            {% if is_state('sensor.vacuum_cleaner_error_sensor', 'No Error')  %}
+              {{states.vacuum.xiaomi_vacuum_cleaner.attributes.status}}
             {% else %}
               {{states.sensor.vacuum_cleaner_error_sensor.state}}
             {% endif %}
@@ -140,7 +149,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.vacuum_cleaner_error_sensor
-        to: 'Нет Ошибок'
+        to: 'No Error'
     condition:
       condition: template
       value_template: "{{ states.sensor.ha_uptime_min.state  | int > 10 }}"

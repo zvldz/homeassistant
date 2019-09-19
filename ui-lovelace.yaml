@@ -15,6 +15,8 @@ resources:
     type: module
   - url: /community_plugin/lovelace-valetudo-map-card/valetudo-map-card.js
     type: js
+  - url: /community_plugin/entity-attributes-card/entity-attributes-card.js
+    type: js
 
 title: Home
 views:
@@ -31,8 +33,9 @@ views:
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/flowers.yaml
   - !include includes/lovelace/heating.yaml
-  - !include includes/lovelace/rf_bridge.yaml
   - !include includes/lovelace/battery.yaml
+  - !include includes/lovelace/rf_bridge.yaml
+  - !include includes/lovelace/sonoff.yaml
   - !include includes/lovelace/system.yaml
   - !include includes/lovelace/automation.yaml
 

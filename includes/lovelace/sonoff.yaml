@@ -1,0 +1,99 @@
+title: Sonoff
+icon: mdi:chip
+cards:
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Binary Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: glance
+            filter:
+              include:
+                - entity_id: "binary_sensor.sonoff_*"
+
+      - type: "custom:button-card"
+        name: "Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "sensor.sonoff_*ip_address"
+                - entity_id: "sensor.sonoff_*wifi_signal"
+                - entity_id: "sensor.sonoff_*uptime"
+                - entity_id: "sensor.sonoff_*version"
+                - entity_id: "sensor.sonoff_*current"
+                - entity_id: "sensor.sonoff_*voltage"
+                - entity_id: "sensor.sonoff_*power"
+                - entity_id: "sensor.sonoff_*daily_energy"
+
+  - type: vertical-stack
+    cards:
+      - type: "custom:button-card"
+        name: "Sonoff RF Bridge"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:entity-attributes-card
+            entity: sensor.sonoff_bridge_rf_1_status
+            filter:
+              include:
+                - key: sensor.sonoff_bridge_rf_1_status.*
+
+      - type: "custom:button-card"
+        name: "Switches"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "switch.sonoff_*"
+              exclude:
+                - entity_id: "*restart"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "switch.sonoff_*restart"
+
+      - type: "custom:button-card"
+        name: "Lights"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:monster-card
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "light.sonoff_*"

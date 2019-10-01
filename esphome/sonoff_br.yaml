@@ -24,7 +24,7 @@ web_server:
 binary_sensor:
   - platform: gpio
     pin:
-      number: GPIO0
+      number: GPIO00
       mode: INPUT_PULLUP
       inverted: true
     name: ${device_name}_button_1
@@ -33,7 +33,7 @@ binary_sensor:
 
   - platform: gpio
     pin:
-      number: GPIO9
+      number: GPIO09
       mode: INPUT_PULLUP
       inverted: true
     name: ${device_name}_button_2
@@ -80,6 +80,7 @@ sensor:
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
+    icon: mdi:chip
 
   - platform: wifi_info
     ip_address:

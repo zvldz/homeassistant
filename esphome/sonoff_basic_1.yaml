@@ -7,8 +7,11 @@ esphome:
   board: esp01_1m
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_pass
+    - ssid: !secret wifi_ssid_2
+      password: !secret wifi_pass_2
   ap:
     ssid: ${device_name}
     password: !secret wifi_pass
@@ -76,6 +79,7 @@ sensor:
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
+    icon: mdi:chip
 
   - platform: wifi_info
     ip_address:

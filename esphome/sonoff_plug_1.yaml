@@ -116,6 +116,7 @@ sensor:
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
+    icon: mdi:chip
 
   - platform: wifi_info
     ip_address:

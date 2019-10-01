@@ -53,7 +53,7 @@ switch:
       - light.turn_off: led
 
   - platform: restart
-    name: ${device_name}_restart"
+    name: ${device_name}_restart
 
 binary_sensor:
   - platform: gpio
@@ -78,6 +78,7 @@ sensor:
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
+    icon: mdi:chip
 
   - platform: wifi_info
     ip_address:

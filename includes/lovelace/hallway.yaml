@@ -25,8 +25,10 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.switch_158d0001a66df0
           - sensor.illumination_7811dcb245b2
+          - binary_sensor.switch_158d0001a66df0
+          - binary_sensor.sonoff_wc_button
+          - entity: input_boolean.wc_manaul_fun_on
       - type: glance
         show_header_toggle: false
         entities:

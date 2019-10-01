@@ -44,7 +44,6 @@ cards:
       type: media-control
       entity: media_player.shield_tv
 
-
   - type: conditional
     conditions:
       - entity: media_player.zal_tv_ue49mu6402

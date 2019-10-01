@@ -1,5 +1,4 @@
 title: Automation
-#icon: mdi:flash-auto
 icon: mdi:home-automation
 cards:
   - type: vertical-stack

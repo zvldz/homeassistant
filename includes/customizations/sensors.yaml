@@ -19,7 +19,7 @@ binary_sensor.motion_sensor_158d00022515fe:
 sensor.illumination_158d00022515fe:
   friendly_name: Кухня ДО
 
-binary_sensor.switch_158d0001a66df0:
+binary_sensor.switch_158d0002e22617:
   friendly_name: Кнопка Vacuum
 
 binary_sensor.wall_switch_158d000183d2d5:

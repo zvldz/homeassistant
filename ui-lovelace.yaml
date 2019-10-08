@@ -5,8 +5,8 @@ resources:
     type: module
   - url: /community_plugin/monster-card/monster-card.js
     type: js
-  - url: /community_plugin/mini-media-player/mini-media-player.js
-    type: module
+# - url: /community_plugin/mini-media-player/mini-media-player.js
+#   type: module
   - url: /community_plugin/mini-graph-card/mini-graph-card.js
     type: module
   - url: /community_plugin/lovelace-xiaomi-vacuum-card/xiaomi-vacuum-card.js
@@ -18,6 +18,8 @@ resources:
   - url: /community_plugin/entity-attributes-card/entity-attributes-card.js
     type: js
   - url: /community_plugin/miflora-card/miflora-card.js
+    type: js
+  - url: /community_plugin/lovelace-home-feed-card/lovelace-home-feed-card.js
     type: js
 
 title: Home

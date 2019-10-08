@@ -5,3 +5,12 @@ auto_turn_off_lights:
 auto_fan:
   name: Периодическое проветривание
   icon: mdi:timer
+
+wc_manaul_fun_on:
+  name: Ручное включения проветривания в WC
+  icon: mdi:timer
+
+br_manaul_fun_on:
+  name: Ручное включения проветривания в ванной
+  icon: mdi:timer
+

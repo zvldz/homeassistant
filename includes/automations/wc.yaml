@@ -9,8 +9,8 @@
     entity_id: switch.wall_switch_ln_158d00022360fe
     state: 'off'
   action:
-    service: switch.turn_on
-    entity_id: switch.wall_switch_ln_158d00022360fe
+    - service: switch.turn_on
+      entity_id: switch.wall_switch_ln_158d00022360fe
 
 - alias: Turn off WC lights 10 minutes after turn on
   initial_state: 'on'
@@ -30,30 +30,58 @@
         for:
           minutes: 10
   action:
-    service: switch.turn_off
-    entity_id: switch.wall_switch_ln_158d00022360fe
+    - service: switch.turn_off
+      entity_id: switch.wall_switch_ln_158d00022360fe
 
-- alias: Turn off WC fan 15 minutes after turn on
+- alias: Turn off auto WC fan 5 minutes after turn on
   initial_state: 'on'
   trigger:
     platform: time_pattern
     minutes: '/1'
     seconds: 00
   condition:
-    condition: state
-    entity_id: switch.sonoff_wc_relay
-    state: 'on'
-    for:
-      minutes: 15
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: switch.sonoff_wc_relay
+        state: 'on'
+        for:
+          minutes: 5
+      - condition: state
+        entity_id: input_boolean.wc_manaul_fun_on
+        state: 'off'
   action:
-    service: switch.turn_off
-    entity_id: switch.sonoff_wc_relay
+    - service: switch.turn_off
+      entity_id: switch.sonoff_wc_relay
+
+- alias: Turn off manual WC fan 15 minutes after turn on
+  initial_state: 'on'
+  trigger:
+    platform: time_pattern
+    minutes: '/1'
+    seconds: 00
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: switch.sonoff_wc_relay
+        state: 'on'
+        for:
+          minutes: 15
+      - condition: state
+        entity_id: input_boolean.wc_manaul_fun_on
+        state: 'on'
+  action:
+    - service: switch.turn_off
+      entity_id: switch.sonoff_wc_relay
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.wc_manaul_fun_on
 
 - alias: Turn on WC fan
   initial_state: 'on'
   trigger:
     - platform: time
-      at: '07:30'
+      at: '07:45'
     - platform: time
       at: '13:00'
     - platform: time
@@ -65,6 +93,34 @@
         entity_id: input_boolean.auto_fan
         state: 'on'
   action:
-    service: switch.turn_on
+    - service: switch.turn_on
+      entity_id: switch.sonoff_wc_relay
+
+- alias: WC fan button is pressed to on
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.sonoff_wc_button
+    to: 'on'
+  condition:
+    condition: state
     entity_id: switch.sonoff_wc_relay
+    state: 'on'
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.wc_manaul_fun_on
+
+- alias: WC fan button is pressed to off
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.sonoff_wc_button
+    to: 'off'
+  condition:
+    condition: state
+    entity_id: switch.sonoff_wc_relay
+    state: 'off'
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.wc_manaul_fun_on
 

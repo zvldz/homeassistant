@@ -14,7 +14,7 @@ cards:
             show_header_toggle: false
             entities:
               - sensor.sonoff_bridge_rf_1_status
-              - switch.sonoff_rf_1_relay
+#             - switch.sonoff_rf_1_relay
 
       - type: "custom:button-card"
         name: Switch Script
@@ -78,6 +78,7 @@ cards:
             - background-color: "#203040"
       - type: glance
         show_header_toggle: false
+        show_last_changed: true
         entities:
           - binary_sensor.rf_key_1
           - binary_sensor.rf_key_2

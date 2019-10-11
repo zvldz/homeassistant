@@ -31,7 +31,7 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "sensor.sonoff_*ip_address"
+                - entity_id: "sensor.sonoff_*ip_address*"
                 - entity_id: "sensor.sonoff_*wifi_signal"
                 - entity_id: "sensor.sonoff_*uptime"
                 - entity_id: "sensor.sonoff_*version"

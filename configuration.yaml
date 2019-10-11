@@ -130,8 +130,8 @@ panel_iframe:
 hacs:
   token: !secret my_github_access_token
   theme: true
-  options:
-    experimental: true
+# options:
+#   experimental: true
 
 #climate:
 #  - platform: midea

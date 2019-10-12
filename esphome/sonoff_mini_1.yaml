@@ -1,0 +1,81 @@
+substitutions:
+  device_name: sonoff_mini_1
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_pass
+    - ssid: !secret wifi_ssid_2
+      password: !secret wifi_pass_2
+  ap:
+    ssid: ${device_name}
+    password: !secret wifi_pass
+
+logger:
+
+api:
+
+ota:
+
+web_server:
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO00
+    id: reset
+    internal: true
+    filters:
+      - invert:
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle:
+          id: relay
+
+  - platform: gpio
+    name: ${device_name}_switch
+    pin: GPIO04
+    id: switch1
+    on_press:
+      then:
+        - switch.turn_on:
+            id: relay
+    on_release:
+      then:
+        - switch.turn_off:
+            id: relay
+
+switch:
+  - platform: gpio
+    name: ${device_name}_relay
+    icon: mdi:lightbulb_outline
+    pin: GPIO12
+    id: relay
+    restore_mode: restore_default_off
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: true
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:chip
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+    ssid:
+      name: ${device_name}_connected_ssid

@@ -116,3 +116,30 @@ cards:
                   card:
                     - font-size: 14px
 
+      - type: "custom:button-card"
+        name: "Климат"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Температура'
+                refresh_interval: 300
+                entities:
+                  - sensor.temperature_158d0002bfe958
+                  - sensor.living_room_bt_temperature
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Влажность'
+                refresh_interval: 300
+                entities:
+                  - sensor.humidity_158d0002bfe958
+                  - sensor.living_room_bt_humidity
+

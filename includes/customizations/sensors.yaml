@@ -114,6 +114,20 @@ sensor.pressure_158d000273011f:
   friendly_name: Улица
   battery_sensor_creation_disabled: yes
 
+sensor.living_room_bt_temperature:
+  friendly_name: Зал (BT)
+
+sensor.living_room_bt_humidity:
+  friendly_name: Зал (BT)
+  battery_sensor_creation_disabled: yes
+
+sensor.kitchen_bt_temperature:
+  friendly_name: Кухня
+
+sensor.kitchen_bt_humidity:
+  friendly_name: Кухня
+  battery_sensor_creation_disabled: yes
+
 sensor.illumination_7811dcb245b2:
   friendly_name: Коридор ДО
 

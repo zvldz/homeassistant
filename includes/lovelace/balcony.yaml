@@ -58,3 +58,31 @@ cards:
           - binary_sensor.wall_switch_158d000183d2d5
           - binary_sensor.wall_switch_158d000183dd12
           - binary_sensor.door_window_sensor_158d0002537042
+
+      - type: "custom:button-card"
+        name: "Климат"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Температура'
+                refresh_interval: 300
+                entities:
+                  - sensor.temperature_158d00027300cc
+                  - sensor.temperature_158d000273011f
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Влажность'
+                refresh_interval: 300
+                entities:
+                  - sensor.humidity_158d00027300cc
+                  - sensor.humidity_158d000273011f
+

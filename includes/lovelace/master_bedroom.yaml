@@ -29,3 +29,28 @@ cards:
         entities:
           - binary_sensor.master_bedroom_lamp_nightlight
           - sensor.illumination_7c49eb1ce708
+
+      - type: "custom:button-card"
+        name: "Климат"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Температура'
+                refresh_interval: 300
+                entities:
+                  - sensor.temperature_158d0002323856
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: history-graph
+                title: 'Влажность'
+                refresh_interval: 300
+                entities:
+                  - sensor.humidity_158d0002323856

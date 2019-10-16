@@ -16,6 +16,7 @@ cards:
             entities:
               - vacuum.xiaomi_vacuum_cleaner
               - input_boolean.vacuum_schedule
+              - input_boolean.vacuum_notification
 
       - type: custom:xiaomi-vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner

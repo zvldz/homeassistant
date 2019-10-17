@@ -126,20 +126,21 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: history-graph
-                title: 'Температура'
-                refresh_interval: 300
+              - type: custom:mini-graph-card
+                name: 'Температура'
+                hour24: true
                 entities:
-                  - sensor.temperature_158d0002bfe958
-                  - sensor.living_room_bt_temperature
+                  - entity: sensor.temperature_158d0002bfe958
+                  - entity: sensor.living_room_bt_temperature
+                    color: red
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
             cards:
-              - type: history-graph
-                title: 'Влажность'
-                refresh_interval: 300
+              - type: custom:mini-graph-card
+                name: 'Влажность'
+                hour24: true
                 entities:
-                  - sensor.humidity_158d0002bfe958
-                  - sensor.living_room_bt_humidity
-
+                  - entity: sensor.humidity_158d0002bfe958
+                  - entity: sensor.living_room_bt_humidity
+                    color: red

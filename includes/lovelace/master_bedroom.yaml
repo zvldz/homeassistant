@@ -40,17 +40,17 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: history-graph
-                title: 'Температура'
-                refresh_interval: 300
+              - type: custom:mini-graph-card
+                name: 'Температура'
+                hour24: true
                 entities:
                   - sensor.temperature_158d0002323856
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
             cards:
-              - type: history-graph
-                title: 'Влажность'
-                refresh_interval: 300
+              - type: custom:mini-graph-card
+                name: 'Влажность'
+                hour24: true
                 entities:
                   - sensor.humidity_158d0002323856

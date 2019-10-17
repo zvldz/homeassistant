@@ -30,9 +30,9 @@ cards:
                 line_color: red
               - type: custom:mini-graph-card
                 name: CPU use
+                hour24: true
                 entities:
                   - sensor.processor_use
-                hour24: true
 
           - type: horizontal-stack
             cards:
@@ -44,17 +44,17 @@ cards:
                 line_color: red
               - type: custom:mini-graph-card
                 name: SWAP
+                hour24: true
                 entities:
                   - sensor.swap_use_percent
-                hour24: true
 
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
                 name: HDD
+                hour24: true
                 entities:
                   - sensor.disk_use_percent
-                hour24: true
 
   - type: vertical-stack
     cards:

@@ -122,10 +122,10 @@ sensor.living_room_bt_humidity:
   battery_sensor_creation_disabled: yes
 
 sensor.kitchen_bt_temperature:
-  friendly_name: Кухня
+  friendly_name: Кухня (BT)
 
 sensor.kitchen_bt_humidity:
-  friendly_name: Кухня
+  friendly_name: Кухня (BT)
   battery_sensor_creation_disabled: yes
 
 sensor.illumination_7811dcb245b2:

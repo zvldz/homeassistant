@@ -13,19 +13,16 @@ wifi:
   password: !secret wifi_pass
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
-
-logger:
-
-api:
-
-ota:
-
-web_server:
+    password: !secret wifi_pass_2
 
 time:
   - platform: homeassistant
     id: homeassistant_time
+
+logger:
+api:
+ota:
+web_server:
 
 binary_sensor:
   - platform: gpio
@@ -39,39 +36,6 @@ binary_sensor:
 
   - platform: status
     name: ${device_name} status
-
-switch:
-  - platform: gpio
-    id: relay
-    name: ${device_name}_relay
-    icon: mdi:power-socket-eu
-    restore_mode: ALWAYS_ON
-    pin: GPIO14
-    on_turn_on:
-      - switch.turn_on: blue_led
-    on_turn_off:
-      - switch.turn_off: blue_led
-
-  - platform: gpio
-    id: blue_led
-    name: ${device_name}_led_blue
-    icon: mdi:led-on
-    restore_mode: ALWAYS_ON
-    pin:
-      number: GPIO01
-      inverted: true
-
-  - platform: gpio
-    id: red_led
-    name: ${device_name}_led_red
-    icon: mdi:led-on
-    restore_mode: ALWAYS_OFF
-    pin:
-      number: GPIO13
-      inverted: true
-
-  - platform: restart
-    name: ${device_name}_restart
 
 sensor:
   - platform: hlw8012
@@ -123,4 +87,38 @@ text_sensor:
       name: ${device_name}_ip_address
     ssid:
       name: ${device_name}_connected_ssid
+
+switch:
+  - platform: gpio
+    id: relay
+    name: ${device_name}_relay
+    icon: mdi:power-socket-eu
+    restore_mode: ALWAYS_ON
+    pin: GPIO14
+    on_turn_on:
+      - switch.turn_on: blue_led
+    on_turn_off:
+      - switch.turn_off: blue_led
+
+  - platform: gpio
+    id: blue_led
+    name: ${device_name}_led_blue
+    icon: mdi:led-on
+    restore_mode: ALWAYS_ON
+    pin:
+      number: GPIO01
+      inverted: true
+
+  - platform: gpio
+    id: red_led
+    name: ${device_name}_led_red
+    icon: mdi:led-on
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO13
+      inverted: true
+
+  - platform: restart
+    name: ${device_name}_restart
+
 

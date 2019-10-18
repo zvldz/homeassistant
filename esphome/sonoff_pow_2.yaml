@@ -15,24 +15,22 @@ wifi:
       password: !secret wifi_pass_2
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_pass_2
 
-logger:
-  baud_rate: 0
+time:
+  - platform: homeassistant
+    id: homeassistant_time
 
 uart:
   rx_pin: RX
   baud_rate: 4800
 
+logger:
+  baud_rate: 0
+
 api:
-
 ota:
-
 web_server:
-
-time:
-  - platform: homeassistant
-    id: homeassistant_time
 
 binary_sensor:
   - platform: gpio
@@ -46,38 +44,6 @@ binary_sensor:
 
   - platform: status
     name: ${device_name}_status
-
-switch:
-  - platform: template
-    name: ${device_name}_relay
-    optimistic: true
-    id: fakebutton
-    turn_on_action:
-      - switch.turn_on: relay
-      - light.turn_on: led
-    turn_off_action:
-      - switch.turn_off: relay
-      - light.turn_off: led
-
-  - platform: gpio
-    id: relay
-    pin: GPIO12
-
-  - platform: restart
-    name: ${device_name}_restart
-
-output:
-  - platform: esp8266_pwm
-    id: pow_blue_led
-    pin:
-      number: GPIO13
-      inverted: true
-
-light:
-  - platform: monochromatic
-    name: ${device_name}_blue_led
-    output: pow_blue_led
-    id: led
 
 sensor:
   - platform: cse7766
@@ -128,3 +94,36 @@ text_sensor:
       name: ${device_name}_ip_address
     ssid:
       name: ${device_name}_connected_ssid
+
+switch:
+  - platform: template
+    name: ${device_name}_relay
+    optimistic: true
+    id: fakebutton
+    turn_on_action:
+      - switch.turn_on: relay
+      - light.turn_on: led
+    turn_off_action:
+      - switch.turn_off: relay
+      - light.turn_off: led
+
+  - platform: gpio
+    id: relay
+    pin: GPIO12
+
+  - platform: restart
+    name: ${device_name}_restart
+
+output:
+  - platform: esp8266_pwm
+    id: pow_blue_led
+    pin:
+      number: GPIO13
+      inverted: true
+
+light:
+  - platform: monochromatic
+    name: ${device_name}_blue_led
+    output: pow_blue_led
+    id: led
+

@@ -14,7 +14,7 @@ cards:
             show_header_toggle: false
             entities:
               - sensor.sonoff_bridge_rf_1_status
-#             - switch.sonoff_rf_1_relay
+              - switch.sonoff_rf_1_relay
 
       - type: "custom:button-card"
         name: Switch Script
@@ -53,20 +53,20 @@ cards:
             entity: switch.rf_4
 
       - type: "custom:button-card"
-        name: Switch Code
+        name: ESPHome Switch
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: "custom:button-card"
-            entity: switch.rf_code_1
+            entity: switch.sonoff_rf_br_1_sb_rf
           - type: "custom:button-card"
-            entity: switch.rf_code_2
+            entity: switch.sonoff_rf_br_1_gate1
           - type: "custom:button-card"
-            entity: switch.rf_code_3
+            entity: switch.sonoff_rf_br_1_gate2
           - type: "custom:button-card"
-            entity: switch.rf_code_4
+            entity: switch.sonoff_rf_br_1_key4
 
 
   - type: vertical-stack
@@ -98,4 +98,15 @@ cards:
           - binary_sensor.rf_code_3
           - binary_sensor.rf_code_4
 
-
+      - type: "custom:button-card"
+        name: "ESPHome Sensor"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_rf_br_1_sb_rf
+          - binary_sensor.sonoff_rf_br_1_gate1
+          - binary_sensor.sonoff_rf_br_1_gate2
+          - binary_sensor.sonoff_rf_br_1_key4

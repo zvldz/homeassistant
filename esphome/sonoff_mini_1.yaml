@@ -14,14 +14,11 @@ wifi:
       password: !secret wifi_pass_2
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_pass_2
 
 logger:
-
 api:
-
 ota:
-
 web_server:
 
 binary_sensor:
@@ -49,19 +46,6 @@ binary_sensor:
         - switch.turn_off:
             id: relay
 
-switch:
-  - platform: gpio
-    name: ${device_name}_relay
-    icon: mdi:lightbulb_outline
-    pin: GPIO12
-    id: relay
-    restore_mode: restore_default_off
-
-status_led:
-  pin:
-    number: GPIO13
-    inverted: true
-
 sensor:
   - platform: uptime
     name: ${device_name}_uptime
@@ -79,3 +63,17 @@ text_sensor:
       name: ${device_name}_ip_address
     ssid:
       name: ${device_name}_connected_ssid
+
+switch:
+  - platform: gpio
+    name: ${device_name}_relay
+    icon: mdi:lightbulb_outline
+    pin: GPIO12
+    id: relay
+    restore_mode: restore_default_off
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: true
+

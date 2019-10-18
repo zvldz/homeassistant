@@ -13,24 +13,22 @@ wifi:
       password: !secret wifi_pass
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_pass_2
 
-logger:
-  baud_rate: 0
+time:
+  - platform: homeassistant
+    id: homeassistant_time
 
 uart:
   rx_pin: RX
   baud_rate: 4800
 
+logger:
+  baud_rate: 0
+
 api:
-
 ota:
-
 web_server:
-
-time:
-  - platform: homeassistant
-    id: homeassistant_time
 
 binary_sensor:
   - platform: gpio

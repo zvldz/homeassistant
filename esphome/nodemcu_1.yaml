@@ -11,29 +11,19 @@ wifi:
   password: !secret wifi_pass
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_pass_2
 
 logger:
-
 api:
-
 ota:
-
 web_server:
-
-esp32_ble_tracker:
-  scan_interval: 300s
-
-switch:
-  - platform: restart
-    name: ${device_name}_restart
 
 binary_sensor:
   - platform: status
     name: ${device_name}_status
 
 sensor:
-  - platform: xiaomi_mijia
+  - platform: xiaomi_lywsdcgq
     mac_address: !secret kitchen_bt_mac
     temperature:
       name: kitchen_bt_temperature
@@ -42,7 +32,7 @@ sensor:
     battery_level:
       name: kitchen_bt_battery_level
 
-  - platform: xiaomi_mijia
+  - platform: xiaomi_lywsdcgq
     mac_address: !secret living_room_bt_mac
     temperature:
       name: living_room_bt_temperature
@@ -50,7 +40,6 @@ sensor:
       name: living_room_bt_humidity
     battery_level:
       name: living_room_bt_battery_level
-
 
   - platform: uptime
     name: ${device_name}_uptime
@@ -68,3 +57,12 @@ text_sensor:
       name: ${device_name}_ip_address
     ssid:
       name: ${device_name}_connected_ssid
+
+switch:
+  - platform: restart
+    name: ${device_name}_restart
+
+esp32_ble_tracker:
+  scan_interval: 300s
+
+

@@ -15,14 +15,11 @@ wifi:
       password: !secret wifi_pass_2
   ap:
     ssid: ${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_pass_2
 
 logger:
-
 api:
-
 ota:
-
 web_server:
 
 binary_sensor:
@@ -38,6 +35,24 @@ binary_sensor:
 
   - platform: status
     name: ${device_name}_status
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:chip
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+    ssid:
+      name: ${device_name}_connected_ssid
 
 switch:
   - platform: gpio
@@ -64,22 +79,4 @@ light:
     name: ${device_name}_blue_led
     output: basic_blue_led
     id: led
-
-sensor:
-  - platform: uptime
-    name: ${device_name}_uptime
-
-  - platform: wifi_signal
-    name: ${device_name}_wifi_signal
-
-text_sensor:
-  - platform: version
-    name: ${device_name}_esphome_version
-    icon: mdi:chip
-
-  - platform: wifi_info
-    ip_address:
-      name: ${device_name}_ip_address
-    ssid:
-      name: ${device_name}_connected_ssid
 

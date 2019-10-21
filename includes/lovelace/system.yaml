@@ -80,7 +80,7 @@ cards:
               - automation.zigbee2mqtt_log_level
 
       - type: custom:home-feed-card
-        title: Home Feed
+        title: HACS Updates
         id_filter: ^home_feed_.*
         entities:
           - entity: sensor.hacs

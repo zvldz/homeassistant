@@ -7,10 +7,10 @@ auto_fan:
   icon: mdi:timer
 
 wc_manaul_fun_on:
-  name: Ручное включения проветривания в WC
+  name: Проветривания в WC
   icon: mdi:timer
 
 br_manaul_fun_on:
-  name: Ручное включения проветривания в ванной
+  name: Проветривания в Ванной
   icon: mdi:timer
 

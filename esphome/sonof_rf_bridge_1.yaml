@@ -40,7 +40,7 @@ binary_sensor:
     name: ${device_name}_gate1
     device_class: door
     rc_switch_raw:
-      code: '000011010111110000010000'
+      code: '000000110101111100000100'
       protocol: 1
     filters:
       delayed_off: 5s
@@ -99,7 +99,7 @@ switch:
     name: ${device_name}_gate1
     turn_on_action:
       - remote_transmitter.transmit_rc_switch_raw:
-          code: '000011010111110000010000'
+          code: '000000110101111100000100'
           protocol: 1
           repeat:
             wait_time: ${repeat_wait}

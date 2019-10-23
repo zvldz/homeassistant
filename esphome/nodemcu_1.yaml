@@ -63,6 +63,6 @@ switch:
     name: ${device_name}_restart
 
 esp32_ble_tracker:
-  scan_interval: 300s
+# scan_interval: 300s
 
 

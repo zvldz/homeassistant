@@ -14,6 +14,7 @@ cards:
             show_header_toggle: false
             entities:
               - sensor.sonoff_bridge_rf_1_status
+              - binary_sensor.sonoff_rf_br_1_status
               - switch.sonoff_rf_1_relay
 
       - type: "custom:button-card"

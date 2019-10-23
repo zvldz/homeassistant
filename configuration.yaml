@@ -117,15 +117,19 @@ panel_iframe:
   cacti:
     title: Cacti
     icon: mdi:chart-areaspline
-    url: /cacti/
-  ring:
-    title: Ring
-    icon: mdi:bell-ring
-    url: /downloads/ring.php
+    url: !secret cacti_url
+  portainer:
+    title: Portainer
+    icon: mdi:docker
+    url: !secret portainer_url
   trasmission:
     title: Trasmission
     icon: mdi:download-network
-    url: /transmission/
+    url: !secret trasmission_url
+  ring:
+    title: Ring
+    icon: mdi:bell-ring
+    url: !secret ring_url
 
 hacs:
   token: !secret my_github_access_token

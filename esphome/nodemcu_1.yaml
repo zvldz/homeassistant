@@ -24,6 +24,7 @@ binary_sensor:
 
 sensor:
   - platform: xiaomi_lywsdcgq
+# - platform: xiaomi_mijia
     mac_address: !secret kitchen_bt_mac
     temperature:
       name: kitchen_bt_temperature
@@ -33,6 +34,7 @@ sensor:
       name: kitchen_bt_battery_level
 
   - platform: xiaomi_lywsdcgq
+# - platform: xiaomi_mijia
     mac_address: !secret living_room_bt_mac
     temperature:
       name: living_room_bt_temperature

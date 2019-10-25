@@ -121,6 +121,6 @@
     entity_id: switch.sonoff_wc_relay
     state: 'off'
   action:
-    - service: input_boolean.turn_on
+    - service: input_boolean.turn_off
       entity_id: input_boolean.wc_manaul_fun_on
 

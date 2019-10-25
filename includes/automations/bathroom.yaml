@@ -121,6 +121,6 @@
     entity_id: switch.sonoff_br_relay_1
     state: 'off'
   action:
-    - service: input_boolean.turn_on
+    - service: input_boolean.turn_off
       entity_id: input_boolean.br_manaul_fun_on
 

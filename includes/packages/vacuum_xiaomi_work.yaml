@@ -49,6 +49,8 @@ sensor:
       - path
       - charger
       - robot
+      - virtual_walls
+      - no_go_areas
     value_template: 'OK'
     scan_interval: 5
 

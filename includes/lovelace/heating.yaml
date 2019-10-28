@@ -35,3 +35,14 @@ cards:
           - type: "custom:button-card"
             entity: switch.sonoff_pump_restart
 
+      - type: "custom:button-card"
+        name: "Settings"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - input_boolean.pump_schedule

@@ -49,4 +49,4 @@ cards:
               - input_boolean.auto_turn_off_lights
               - input_boolean.auto_fan
               - input_boolean.vacuum_schedule
-
+              - input_boolean.pump_schedule

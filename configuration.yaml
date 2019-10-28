@@ -122,10 +122,10 @@ panel_iframe:
     title: Portainer
     icon: mdi:docker
     url: !secret portainer_url
-  trasmission:
-    title: Trasmission
+  transmission:
+    title: Transmission
     icon: mdi:download-network
-    url: !secret trasmission_url
+    url: !secret transmission_url
   ring:
     title: Ring
     icon: mdi:bell-ring

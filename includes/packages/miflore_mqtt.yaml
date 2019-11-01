@@ -3,7 +3,7 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: numeric_state
-        entity_id: sensor.miflore1_moisture, sensor.miflore2_moisture, sensor.miflore3_moisture
+        entity_id: sensor.miflora1_moisture, sensor.miflora2_moisture, sensor.miflora3_moisture
         below: 30
     action:
       - service: notify.telegram

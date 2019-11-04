@@ -19,13 +19,15 @@ ota:
 web_server:
 esp32_ble_tracker:
 
+dallas:
+  - pin: GPIO23
+
 binary_sensor:
   - platform: status
     name: ${device_name}_status
 
 sensor:
   - platform: xiaomi_lywsdcgq
-# - platform: xiaomi_mijia
     mac_address: !secret kitchen_bt_mac
     temperature:
       name: kitchen_bt_temperature
@@ -35,7 +37,6 @@ sensor:
       name: kitchen_bt_battery_level
 
   - platform: xiaomi_lywsdcgq
-# - platform: xiaomi_mijia
     mac_address: !secret living_room_bt_mac
     temperature:
       name: living_room_bt_temperature
@@ -43,6 +44,43 @@ sensor:
       name: living_room_bt_humidity
     battery_level:
       name: living_room_bt_battery_level
+
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora1
+    temperature:
+      name: mf1_temperature
+    moisture:
+      name: mf1_moisture
+    illuminance:
+      name: mf1_illuminance
+    conductivity:
+      name: mf1_soil
+
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora2
+    temperature:
+      name: mf2_temperature
+    moisture:
+      name: mf2_moisture
+    illuminance:
+      name: mf2_illuminance
+    conductivity:
+      name: mf2_soil
+
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora3
+    temperature:
+      name: mf3_temperature
+    moisture:
+      name: mf3_moisture
+    illuminance:
+      name: mf3_illuminance
+    conductivity:
+      name: mf3_soil
+
+  - platform: dallas
+    address: !secret dallas_1
+    name: outdoor_tmperature
 
   - platform: uptime
     name: ${device_name}_uptime

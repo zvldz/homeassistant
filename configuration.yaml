@@ -19,7 +19,7 @@ http:
     - 127.0.0.1
 
 frontend:
-  themes: !include includes/themes.yaml
+  themes: !include_dir_merge_named themes
 
 discovery:
   ignore:
@@ -39,7 +39,7 @@ sun:
 
 recorder:
   db_url: !secret db_mysql
-  purge_keep_days: 7
+  purge_keep_days: 30
   purge_interval: 1
   exclude:
     entities:

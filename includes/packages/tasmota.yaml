@@ -1,41 +1,5 @@
 switch:
   - platform: mqtt
-    name: "RF 1"
-    command_topic: "sonoff_rf_bridge/cmnd/RfKey1"
-    state_topic: "sonoff_rf_bridge/stat/RfKey1"
-    qos: 2
-    payload_on: ""
-    payload_off: ""
-    retain: true
-
-  - platform: mqtt
-    name: "RF 2"
-    command_topic: "sonoff_rf_bridge/cmnd/RfKey2"
-    state_topic: "sonoff_rf_bridge/stat/RfKey2"
-    qos: 2
-    payload_on: ""
-    payload_off: ""
-    retain: true
-
-  - platform: mqtt
-    name: "RF 3"
-    command_topic: "sonoff_rf_bridge/cmnd/RfKey3"
-    state_topic: "sonoff_rf_bridge/stat/RfKey3"
-    qos: 2
-    payload_on: ""
-    payload_off: ""
-    retain: true
-
-  - platform: mqtt
-    name: "RF 4"
-    command_topic: "sonoff_rf_bridge/cmnd/RfKey4"
-    state_topic: "sonoff_rf_bridge/stat/RfKey4"
-    qos: 2
-    payload_on: ""
-    payload_off: ""
-    retain: true
-
-  - platform: mqtt
     name: "RF Code 1"
     state_topic: "sonoff_rf_bridge/tele/RESULT"
     command_topic: "sonoff_rf_bridge/cmnd/Backlog"
@@ -76,42 +40,6 @@ switch:
     retain: true
 
 binary_sensor:
-  - platform: mqtt
-    name: "RF Key 1"
-    payload_on: "1"
-    payload_off: "key1_off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    value_template: '{{ value_json.RfReceived.RfKey }}'
-    off_delay: 5
-    force_update: true
-
-  - platform: mqtt
-    name: "RF Key 2"
-    payload_on: "2"
-    payload_off: "key2_off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    value_template: '{{ value_json.RfReceived.RfKey }}'
-    off_delay: 5
-    force_update: true
-
-  - platform: mqtt
-    name: "RF Key 3"
-    payload_on: "3"
-    payload_off: "key3_off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    value_template: '{{ value_json.RfReceived.RfKey }}'
-    off_delay: 5
-    force_update: true
-
-  - platform: mqtt
-    name: "RF Key 4"
-    payload_on: "4"
-    payload_off: "key4_off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    value_template: '{{ value_json.RfReceived.RfKey }}'
-    off_delay: 5
-    force_update: true
-
   - platform: mqtt
     name: "RF Code 1"
     payload_on: "0B0994"
@@ -171,41 +99,12 @@ automation:
           topic: "cmnd/sonoffs/SetOption19"
           payload: "1"
 
-script:
-  rf_send_key_1:
-    alias: 'RF Send 1'
-    sequence:
+  - alias: "Enable MQTT discovery for all devices"
+    trigger:
+      platform: homeassistant
+      event: start
+    action:
       - service: mqtt.publish
         data:
-          topic: "sonoff_rf_bridge/cmnd/RfKey1"
-          payload: ""
-          qos: 2
-
-  rf_send_key_2:
-    alias: 'RF Send 2'
-    sequence:
-      - service: mqtt.publish
-        data:
-          topic: "sonoff_rf_bridge/cmnd/RfKey2"
-          payload: ""
-          qos: 2
-
-  rf_send_key_3:
-    alias: 'RF Send 3'
-    sequence:
-      - service: mqtt.publish
-        data:
-          topic: "sonoff_rf_bridge/cmnd/RfKey3"
-          payload: ""
-          qos: 2
-
-  rf_send_key_4:
-    alias: 'RF Send 4'
-    sequence:
-      - service: mqtt.publish
-        data:
-          topic: "sonoff_rf_bridge/cmnd/RfKey4"
-          payload: ""
-          qos: 2
-
-
+          topic: "cmnd/tasmotas/SetOption19"
+          payload: "1"

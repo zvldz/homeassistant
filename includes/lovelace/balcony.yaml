@@ -53,11 +53,11 @@ cards:
         min_conductivity: 350
         min_temperature: 12
         entities:
-          - moisture:sensor.miflora1_moisture
-          - intensity:sensor.miflora1_light
-          - temperature:sensor.miflora1_temperature
-          - conductivity:sensor.miflora1_conductivity
-          - battery:sensor.miflora1_battery
+          - moisture:sensor.mf1_moisture
+          - intensity:sensor.mf1_illuminance
+          - temperature:sensor.mf1_temperature
+          - conductivity:sensor.mf1_soil
+          - battery:sensor.mf1_battery_level
 
       - type: custom:miflora-card
         title: 'Цветок 2'
@@ -67,11 +67,11 @@ cards:
         min_conductivity: 350
         min_temperature: 12
         entities:
-          - moisture:sensor.miflora2_moisture
-          - intensity:sensor.miflora2_light
-          - temperature:sensor.miflora2_temperature
-          - conductivity:sensor.miflora2_conductivity
-          - battery:sensor.miflora2_battery
+          - moisture:sensor.mf2_moisture
+          - intensity:sensor.mf2_illuminance
+          - temperature:sensor.mf2_temperature
+          - conductivity:sensor.mf2_soil
+          - battery:sensor.mf2_battery_level
 
       - type: custom:miflora-card
         title: 'Цветок 3'
@@ -81,11 +81,11 @@ cards:
         min_conductivity: 350
         min_temperature: 12
         entities:
-          - moisture:sensor.miflora3_moisture
-          - intensity:sensor.miflora3_light
-          - temperature:sensor.miflora3_temperature
-          - conductivity:sensor.miflora3_conductivity
-          - battery:sensor.miflora3_battery
+          - moisture:sensor.mf3_moisture
+          - intensity:sensor.mf3_illuminance
+          - temperature:sensor.mf3_temperature
+          - conductivity:sensor.mf3_soil
+          - battery:sensor.mf3_battery_level
 
   - type: vertical-stack
     cards:

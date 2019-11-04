@@ -1,4 +1,4 @@
-title: Sonoff
+title: ESP
 icon: mdi:chip
 cards:
   - type: vertical-stack
@@ -32,9 +32,13 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.sonoff_*ip_address*"
+                - entity_id: "sensor.nodemcu_*ip_address*"
                 - entity_id: "sensor.sonoff_*wifi_signal"
+                - entity_id: "sensor.nodemcu_*wifi_signal"
                 - entity_id: "sensor.sonoff_*uptime"
+                - entity_id: "sensor.nodemcu_*uptime"
                 - entity_id: "sensor.sonoff_*version"
+                - entity_id: "sensor.nodemcu_*version"
                 - entity_id: "sensor.sonoff_*current"
                 - entity_id: "sensor.sonoff_*voltage"
                 - entity_id: "sensor.sonoff_*power"
@@ -70,6 +74,7 @@ cards:
             filter:
               include:
                 - entity_id: "switch.sonoff_*"
+                - entity_id: "switch.nodemcu_*"
               exclude:
                 - entity_id: "*restart"
 
@@ -82,6 +87,7 @@ cards:
             filter:
               include:
                 - entity_id: "switch.sonoff_*restart"
+                - entity_id: "switch.nodemcu_*restart"
 
       - type: "custom:button-card"
         name: "Lights"

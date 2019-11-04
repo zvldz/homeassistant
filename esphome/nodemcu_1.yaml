@@ -55,6 +55,8 @@ sensor:
       name: mf1_illuminance
     conductivity:
       name: mf1_soil
+    battery_level:
+      name: mf1_battery_level
 
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora2
@@ -66,6 +68,8 @@ sensor:
       name: mf2_illuminance
     conductivity:
       name: mf2_soil
+    battery_level:
+      name: mf2_battery_level
 
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora3
@@ -77,6 +81,8 @@ sensor:
       name: mf3_illuminance
     conductivity:
       name: mf3_soil
+    battery_level:
+      name: mf3_battery_level
 
   - platform: dallas
     address: !secret dallas_1

@@ -15,27 +15,6 @@ cards:
             entities:
               - sensor.sonoff_bridge_rf_1_status
               - binary_sensor.sonoff_rf_br_1_status
-              - switch.sonoff_rf_1_relay
-
-      - type: "custom:button-card"
-        name: Switch Script
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: horizontal-stack
-        cards:
-          - type: "custom:button-card"
-            entity: script.rf_send_key_1
-            icon: mdi:access-point-network
-          - type: "custom:button-card"
-            entity: script.rf_send_key_2
-            icon: mdi:lock-open
-          - type: "custom:button-card"
-            entity: script.rf_send_key_3
-            icon: mdi:lock-open-outline
-          - type: "custom:button-card"
-            entity: script.rf_send_key_4
-            icon: mdi:crop-square
 
       - type: "custom:button-card"
         name: Switch Key
@@ -72,20 +51,6 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
-        name: "Sensor Key"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: glance
-        show_header_toggle: false
-        show_last_changed: true
-        entities:
-          - binary_sensor.rf_key_1
-          - binary_sensor.rf_key_2
-          - binary_sensor.rf_key_3
-          - binary_sensor.rf_key_4
-
       - type: "custom:button-card"
         name: "Sensor Code"
         styles:

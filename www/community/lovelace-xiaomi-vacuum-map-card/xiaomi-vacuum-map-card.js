@@ -1,13 +1,14 @@
 import CoordinatesConverter from './coordinates-converter.js';
 import style from './style.js';
 import {
-    textMode,
-    textGoToTarget,
-    textZonedCleanup,
-    textZones,
-    textRun,
-    textRepeats,
-    textConfirmation
+    mode,
+    goToTarget,
+    zonedCleanup,
+    zones,
+    run,
+    repeats,
+    confirmation,
+    texts
 } from './texts.js'
 
 const LitElement = Object.getPrototypeOf(
@@ -32,8 +33,8 @@ class XiaomiVacuumMapCard extends LitElement {
 
     static get properties() {
         return {
-            hass: {},
-            config: {},
+            _hass: {},
+            _config: {},
             isMouseDown: {},
             rectangles: {},
             selectedRectangle: {},
@@ -52,19 +53,23 @@ class XiaomiVacuumMapCard extends LitElement {
 
     setConfig(config) {
         const availableModes = new Map();
-        availableModes.set("go_to_target", textGoToTarget);
-        availableModes.set("zoned_cleanup", textZonedCleanup);
-        availableModes.set("predefined_zones", textZones);
+        this._language = config.language || "en";
+        availableModes.set("go_to_target", texts[this._language][goToTarget]);
+        availableModes.set("zoned_cleanup", texts[this._language][zonedCleanup]);
+        availableModes.set("predefined_zones", texts[this._language][zones]);
 
         if (!config.entity) {
             throw new Error("Missing configuration: entity");
         }
-        if (!config.map_image) {
-            throw new Error("Missing configuration: map_image");
+        if (!config.map_image && !config.map_camera) {
+            throw new Error("Missing configuration: map_image or map_camera");
+        }
+        if (config.map_image && config.map_camera) {
+            throw new Error("Only one of following properties is allowed: map_image or map_camera");
         }
         if (config.base_position || config.reference_point) {
             this.outdatedConfig = true;
-            this.config = config;
+            this._config = config;
             return;
         }
         if (!config.calibration_points || !Array.isArray(config.calibration_points)) {
@@ -110,10 +115,14 @@ class XiaomiVacuumMapCard extends LitElement {
                 this.modes.push(availableModes.get(mode));
             }
         } else {
-            this.modes = [textGoToTarget, textZonedCleanup, textZones];
+            this.modes = [
+                texts[this._language][goToTarget],
+                texts[this._language][zonedCleanup],
+                texts[this._language][zones]
+            ];
         }
-        if (!config.zones || !Array.isArray(config.zones) || config.zones.length === 0 && this.modes.includes(textZones)) {
-            this.modes.splice(this.modes.indexOf(textZones), 1);
+        if (!config.zones || !Array.isArray(config.zones) || config.zones.length === 0 && this.modes.includes(texts[this._language][zones])) {
+            this.modes.splice(this.modes.indexOf(texts[this._language][zones]), 1);
         }
         if (config.default_mode) {
             if (!availableModes.has(config.default_mode) || !this.modes.includes(availableModes.get(config.default_mode))) {
@@ -130,7 +139,11 @@ class XiaomiVacuumMapCard extends LitElement {
             this.service_domain = "vacuum";
             this.service_method = "send_command";
         }
-        this.config = config;
+        if (config.map_image) {
+            this.map_image = config.map_image;
+        }
+        this._map_refresh_interval = (config.camera_refresh_interval || 5) * 1000;
+        this._config = config;
     }
 
     getConfigurationMigration(config) {
@@ -193,7 +206,10 @@ class XiaomiVacuumMapCard extends LitElement {
 
     render() {
         if (this.outdatedConfig) {
-            return this.getConfigurationMigration(this.config);
+            return this.getConfigurationMigration(this._config);
+        }
+        if (!this.map_image) {
+            this.updateCameraImage();
         }
         const modesDropdown = this.modes.map(m => html`<paper-item>${m}</paper-item>`);
         const rendered = html`
@@ -201,7 +217,7 @@ class XiaomiVacuumMapCard extends LitElement {
         <ha-card id="xiaomiCard">
             <div id="mapWrapper">
                 <div id="map">
-                    <img id="mapBackground" @load="${() => this.calculateScale()}" src="${this.config.map_image}">
+                    <img id="mapBackground" @load="${() => this.calculateScale()}" src="${this.map_image}">
                     <canvas id="mapDrawing" style="${this.getCanvasStyle()}"
                         @mousemove="${e => this.onMouseMove(e)}"
                         @mousedown="${e => this.onMouseDown(e)}"
@@ -212,17 +228,17 @@ class XiaomiVacuumMapCard extends LitElement {
                 </div>
             </div>
             <div class="dropdownWrapper">
-                <paper-dropdown-menu label="${textMode}" @value-changed="${e => this.modeSelected(e)}" class="vacuumDropdown" selected="${this.defaultMode}">
+                <paper-dropdown-menu label="${texts[this._language][mode]}" @value-changed="${e => this.modeSelected(e)}" class="vacuumDropdown" selected="${this.defaultMode}">
                     <paper-listbox slot="dropdown-content" class="dropdown-content" selected="${this.defaultMode}">
                         ${modesDropdown}
                     </paper-listbox>
                 </paper-dropdown-menu>
             </div>
             <p class="buttonsWrapper">
-                <span id="increaseButton" hidden><mwc-button @click="${() => this.vacuumZonedIncreaseButton()}">${textRepeats} ${this.vacuumZonedCleanupRepeats}</mwc-button></span>
-                <mwc-button class="vacuumRunButton" @click="${() => this.vacuumStartButton(true)}">${textRun}</mwc-button>
+                <span id="increaseButton" hidden><mwc-button @click="${() => this.vacuumZonedIncreaseButton()}">${texts[this._language][repeats]} ${this.vacuumZonedCleanupRepeats}</mwc-button></span>
+                <mwc-button class="vacuumRunButton" @click="${() => this.vacuumStartButton(true)}">${texts[this._language][run]}</mwc-button>
             </p>
-            <div id="toast"><div id="img"><ha-icon icon="mdi:check" style="vertical-align: center"></ha-icon></div><div id="desc">${textConfirmation}</div></div>
+            <div id="toast"><div id="img"><ha-icon icon="mdi:check" style="vertical-align: center"></ha-icon></div><div id="desc">${texts[this._language][confirmation]}</div></div>
         </ha-card>
         `;
         if (this.getMapImage()) {
@@ -254,6 +270,8 @@ class XiaomiVacuumMapCard extends LitElement {
             this.currRectangle.y = pos.y;
             if (shouldDelete) {
                 this.rectangles.splice(selected, 1);
+                this.selectedRectangle = -1;
+                this.isMouseDown = false;
                 this.drawCanvas();
                 return;
             }
@@ -278,7 +296,7 @@ class XiaomiVacuumMapCard extends LitElement {
                 if (this.selectedZones.includes(selectedZone)) {
                     this.selectedZones.splice(this.selectedZones.indexOf(selectedZone), 1);
                 } else {
-                    if (this.selectedZones.length < 5 || this.config.ignore_zones_limit) {
+                    if (this.selectedZones.length < 5 || this._config.ignore_zones_limit) {
                         this.selectedZones.push(selectedZone);
                     }
                 }
@@ -289,7 +307,7 @@ class XiaomiVacuumMapCard extends LitElement {
 
     onMouseUp(e) {
         this.isMouseDown = false;
-        if (this.selectedRectangle >= 0 || this.mode !== 2 || this.mode === 2 && this.rectangles.length >= 5 && !this.config.ignore_zones_limit) {
+        if (this.selectedRectangle >= 0 || this.mode !== 2 || this.mode === 2 && this.rectangles.length >= 5 && !this._config.ignore_zones_limit) {
             this.selectedRectangle = -1;
             this.drawCanvas();
             return;
@@ -341,11 +359,11 @@ class XiaomiVacuumMapCard extends LitElement {
     modeSelected(e) {
         const selected = e.detail.value;
         this.mode = 0;
-        if (selected === textGoToTarget) {
+        if (selected === texts[this._language][goToTarget]) {
             this.mode = 1;
-        } else if (selected === textZonedCleanup) {
+        } else if (selected === texts[this._language][zonedCleanup]) {
             this.mode = 2;
-        } else if (selected === textZones) {
+        } else if (selected === texts[this._language][zones]) {
             this.mode = 3;
         }
         this.getPredefinedZonesIncreaseButton().hidden = this.mode !== 3 && this.mode !== 2;
@@ -373,8 +391,8 @@ class XiaomiVacuumMapCard extends LitElement {
         const context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.translate(0.5, 0.5);
-        if (this.config.debug) {
-            for (const calibration_point of this.config.calibration_points) {
+        if (this._config.debug) {
+            for (const calibration_point of this._config.calibration_points) {
                 const {x, y} = this.convertVacuumToMapCoordinates(calibration_point.vacuum.x, calibration_point.vacuum.y);
                 this.drawCircle(context, x, y, 4, 'red', 1);
             }
@@ -409,8 +427,8 @@ class XiaomiVacuumMapCard extends LitElement {
                 context.stroke();
             }
         } else if (this.mode === 3) {
-            for (let i = 0; i < this.config.zones.length; i++) {
-                const zone = this.config.zones[i];
+            for (let i = 0; i < this._config.zones.length; i++) {
+                const zone = this._config.zones[i];
                 for (const rect of zone) {
                     const {x, y, w, h} = this.convertVacuumToMapZone(rect[0], rect[1], rect[2], rect[3]);
                     context.beginPath();
@@ -493,8 +511,8 @@ class XiaomiVacuumMapCard extends LitElement {
 
     getSelectedZone(mx, my) {
         let selected = -1;
-        for (let i = 0; i < this.config.zones.length && selected === -1; i++) {
-            const zone = this.config.zones[i];
+        for (let i = 0; i < this._config.zones.length && selected === -1; i++) {
+            const zone = this._config.zones[i];
             for (const rect of zone) {
                 const {x, y, w, h} = this.convertVacuumToMapZone(rect[0], rect[1], rect[2], rect[3]);
                 if (mx >= x && my >= y && mx <= x + w && my <= y + h) {
@@ -513,11 +531,11 @@ class XiaomiVacuumMapCard extends LitElement {
 
     vacuumGoToPoint(debug) {
         const mapPos = this.convertMapToVacuumCoordinates(this.currPoint.x, this.currPoint.y);
-        if (debug && this.config.debug) {
+        if (debug && this._config.debug) {
             alert(JSON.stringify([mapPos.x, mapPos.y]));
         } else {
             this._hass.callService(this.service_domain, this.service_method, {
-                entity_id: this.config.entity,
+                entity_id: this._config.entity,
                 command: "app_goto_target",
                 params: [mapPos.x, mapPos.y]
             }).then(() => this.showToast());
@@ -529,11 +547,11 @@ class XiaomiVacuumMapCard extends LitElement {
         for (const rect of this.rectangles) {
             zone.push(this.convertMapToVacuumRect(rect, this.vacuumZonedCleanupRepeats));
         }
-        if (debug && this.config.debug) {
+        if (debug && this._config.debug) {
             alert(JSON.stringify(zone));
         } else {
             this._hass.callService(this.service_domain, this.service_method, {
-                entity_id: this.config.entity,
+                entity_id: this._config.entity,
                 command: "app_zoned_clean",
                 params: zone
             }).then(() => this.showToast());
@@ -544,16 +562,16 @@ class XiaomiVacuumMapCard extends LitElement {
         const zone = [];
         for (let i = 0; i < this.selectedZones.length; i++) {
             const selectedZone = this.selectedZones[i];
-            const preselectedZone = this.config.zones[selectedZone];
+            const preselectedZone = this._config.zones[selectedZone];
             for (const rect of preselectedZone) {
                 zone.push([rect[0], rect[1], rect[2], rect[3], this.vacuumZonedCleanupRepeats])
             }
         }
-        if (debug && this.config.debug) {
+        if (debug && this._config.debug) {
             alert(JSON.stringify(zone));
         } else {
             this._hass.callService(this.service_domain, this.service_method, {
-                entity_id: this.config.entity,
+                entity_id: this._config.entity,
                 command: "app_zoned_clean",
                 params: zone
             }).then(() => this.showToast());
@@ -636,6 +654,30 @@ class XiaomiVacuumMapCard extends LitElement {
         }, 2000);
     }
 
+    updateCameraImage() {
+        this._hass.callWS({
+            type: 'camera_thumbnail',
+            entity_id: this._config.map_camera,
+        }).then(val => {
+            const {content_type: contentType, content} = val;
+            this.map_image = `data:${contentType};base64, ${content}`;
+        })
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        if (this._config.map_camera) {
+            this.thumbUpdater = setInterval(() => this.updateCameraImage(), this._map_refresh_interval);
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this._config.map_camera) {
+            clearInterval(this.thumbUpdater);
+            this.map_image = null;
+        }
+    }
 }
 
 customElements.define('xiaomi-vacuum-map-card', XiaomiVacuumMapCard);

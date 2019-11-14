@@ -1,0 +1,105 @@
+substitutions:
+  device_name: nodemcu_3
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: nodemcu-32s
+# arduino_version: 1.0.2
+# platformio_options:
+#   upload_speed: 115200
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+  ap:
+    ssid: ${device_name}
+    password: !secret wifi_pass_2
+    ap_timeout: 3min
+
+logger:
+# level: VERBOSE
+
+api:
+ota:
+web_server:
+esp32_ble_tracker:
+  scan_parameters:
+#   interval: 320ms
+#   window: 30ms
+    interval: 512ms
+    window: 48ms
+
+dallas:
+  - pin: GPIO13
+
+binary_sensor:
+  - platform: status
+    name: ${device_name}_status
+
+sensor:
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora1
+    temperature:
+      name: mf1_temperature
+    moisture:
+      name: mf1_moisture
+    illuminance:
+      name: mf1_illuminance
+    conductivity:
+      name: mf1_soil
+    battery_level:
+      name: mf1_battery_level
+
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora2
+    temperature:
+      name: mf2_temperature
+    moisture:
+      name: mf2_moisture
+    illuminance:
+      name: mf2_illuminance
+    conductivity:
+      name: mf2_soil
+    battery_level:
+      name: mf2_battery_level
+
+  - platform: xiaomi_hhccjcy01
+    mac_address: !secret miflora3
+    temperature:
+      name: mf3_temperature
+    moisture:
+      name: mf3_moisture
+    illuminance:
+      name: mf3_illuminance
+    conductivity:
+      name: mf3_soil
+    battery_level:
+      name: mf3_battery_level
+
+  - platform: dallas
+    address: !secret dallas_2
+    name: ${device_name}_outdoor_tmperature
+
+  - platform: uptime
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:chip
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+    ssid:
+      name: ${device_name}_connected_ssid
+
+switch:
+  - platform: restart
+    name: ${device_name}_restart
+

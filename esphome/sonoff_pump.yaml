@@ -8,6 +8,7 @@ esphome:
   board: esp01_1m
 
 wifi:
+  output_power: 20dB
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass

@@ -9,6 +9,7 @@ esphome:
   #arduino_version: 2.4.2
 
 wifi:
+  output_power: 20dB
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
   ap:

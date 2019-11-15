@@ -29,6 +29,9 @@
         state: 'on'
         for:
           minutes: 10
+      - condition: state
+        entity_id: binary_sensor.door_window_sensor_158d00024de627
+        state: 'off'
   action:
     - service: switch.turn_off
       entity_id: switch.wall_switch_ln_158d00022360fe

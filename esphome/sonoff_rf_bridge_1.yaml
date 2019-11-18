@@ -33,7 +33,7 @@ binary_sensor:
     name: ${device_name}_sb_rf
     device_class: power
     rc_switch_raw:
-      code: '000010110000100110010100'
+      code: !secret rf_code_sonoff
       protocol: 1
     filters:
       delayed_off: 5s
@@ -42,7 +42,7 @@ binary_sensor:
     name: ${device_name}_gate1
     device_class: door
     rc_switch_raw:
-      code: '000000110101111100000100'
+      code: !secret rf_code_gate1
       protocol: 1
     filters:
       delayed_off: 5s
@@ -51,7 +51,7 @@ binary_sensor:
     name: ${device_name}_gate2
     device_class: door
     rc_switch_raw:
-      code: '111001111110000000001000'
+      code: !secret rf_code_gate2
       protocol: 1
     filters:
       delayed_off: 5s
@@ -60,7 +60,7 @@ binary_sensor:
     name: ${device_name}_key4
     device_class: power
     rc_switch_raw:
-      code: '001011100001101000011'
+      code: !secret rf_code_key4
       protocol: 1
     filters:
       delayed_off: 5s
@@ -91,7 +91,7 @@ switch:
     name: ${device_name}_sb_rf
     turn_on_action:
       - remote_transmitter.transmit_rc_switch_raw:
-          code: '000010110000100110010100'
+          code: !secret rf_code_sonoff
           protocol: 1
           repeat:
             wait_time: ${repeat_wait}
@@ -101,7 +101,7 @@ switch:
     name: ${device_name}_gate1
     turn_on_action:
       - remote_transmitter.transmit_rc_switch_raw:
-          code: '000000110101111100000100'
+          code: !secret rf_code_gate1
           protocol: 1
           repeat:
             wait_time: ${repeat_wait}
@@ -111,7 +111,7 @@ switch:
     name: ${device_name}_gate2
     turn_on_action:
       - remote_transmitter.transmit_rc_switch_raw:
-          code: '111001111110000000001000'
+          code: !secret rf_code_gate2
           protocol: 1
           repeat:
             wait_time: ${repeat_wait}
@@ -121,7 +121,7 @@ switch:
     name: ${device_name}_key4
     turn_on_action:
       - remote_transmitter.transmit_rc_switch_raw:
-          code: '001011100001101000011000'
+          code: !secret rf_code_key4
           protocol: 1
           repeat:
             wait_time: ${repeat_wait}

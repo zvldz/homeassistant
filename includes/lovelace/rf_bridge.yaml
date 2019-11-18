@@ -17,20 +17,20 @@ cards:
               - binary_sensor.sonoff_rf_br_1_status
 
       - type: "custom:button-card"
-        name: Switch Key
+        name: Tasmota Switch
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: "custom:button-card"
-            entity: switch.rf_1
+            entity: switch.rf_code_1
           - type: "custom:button-card"
-            entity: switch.rf_2
+            entity: switch.rf_code_2
           - type: "custom:button-card"
-            entity: switch.rf_3
+            entity: switch.rf_code_3
           - type: "custom:button-card"
-            entity: switch.rf_4
+            entity: switch.rf_code_4
 
       - type: "custom:button-card"
         name: ESPHome Switch
@@ -52,7 +52,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: "custom:button-card"
-        name: "Sensor Code"
+        name: "Tasmota Sensor"
         styles:
           card:
             - background-color: "#203040"

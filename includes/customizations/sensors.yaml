@@ -39,106 +39,84 @@ binary_sensor.water_leak_sensor_158d00023aa420:
 
 sensor.pressure_158d0002ca0395:
   friendly_name: Кухня
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d0002ca0395:
   friendly_name: Кухня
 
 sensor.humidity_158d0002ca0395:
   friendly_name: Кухня
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d0002bfe958:
   friendly_name: Зал
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d0002bfe958:
   friendly_name: Зал
 
 sensor.humidity_158d0002bfe958:
   friendly_name: Зал
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d0001ab2a27:
   friendly_name: Спальня 2
 
 sensor.humidity_158d0001ab2a27:
   friendly_name: Спальня 2
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d0001ab2a27:
   friendly_name: Спальня 2
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d000231f03e:
   friendly_name: Коридор
 
 sensor.humidity_158d000231f03e:
   friendly_name: Коридор
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d000231f03e:
   friendly_name: Коридор
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d0002323856:
   friendly_name: Спальня 1
 
 sensor.humidity_158d0002323856:
   friendly_name: Спальня 1
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d0002323856:
   friendly_name: Спальня 1
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d00027300cc:
   friendly_name: Балкон
 
 sensor.humidity_158d00027300cc:
   friendly_name: Балкон
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d00027300cc:
   friendly_name: Балкон
-  battery_sensor_creation_disabled: yes
 
 sensor.temperature_158d000273011f:
   friendly_name: Улица
 
 sensor.humidity_158d000273011f:
   friendly_name: Улица
-  battery_sensor_creation_disabled: yes
 
 sensor.pressure_158d000273011f:
   friendly_name: Улица
-  battery_sensor_creation_disabled: yes
 
 sensor.living_room_bt_temperature:
   friendly_name: Зал (BT)
 
 sensor.living_room_bt_humidity:
   friendly_name: Зал (BT)
-  battery_sensor_creation_disabled: yes
 
 sensor.kitchen_bt_temperature:
   friendly_name: Кухня (BT)
 
 sensor.kitchen_bt_humidity:
   friendly_name: Кухня (BT)
-  battery_sensor_creation_disabled: yes
 
 sensor.illumination_7811dcb245b2:
   friendly_name: Коридор ДО
 
 sensor.illumination_7c49eb1ce708:
   friendly_name: Спальня 1 ДО
-
-binary_sensor.wall_switch_both_158d0002b49c73:
-  battery_sensor_creation_disabled: yes
-
-binary_sensor.wall_switch_right_158d0002b49c73:
-  battery_sensor_creation_disabled: yes
 
 sensor.ring_front_door_battery:
   friendly_name: Ring Заряд Батареи
@@ -184,6 +162,18 @@ binary_sensor.sonoff_br_button_1:
 
 binary_sensor.sonoff_br_button_2:
   friendly_name: Ванная Кнопка 2
+
+binary_sensor.sonoff_rf_br_1_sb_rf:
+  friendly_name: RF Sonoff
+
+binary_sensor.sonoff_rf_br_1_key4:
+  friendly_name: RF Key 4
+
+binary_sensor.sonoff_rf_br_1_gate1:
+  friendly_name: RF Gate 1
+
+binary_sensor.sonoff_rf_br_1_gate2:
+  friendly_name: RF Gate 2
 
 sensor.ha_init:
   icon: mdi:clock-check

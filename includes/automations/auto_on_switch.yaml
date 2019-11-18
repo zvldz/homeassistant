@@ -20,11 +20,10 @@
     - delay: 00:03:00
     - service: automation.turn_on
       entity_id:
-        - automation.turn_on_left_switch_livingroom
-        - automation.turn_on_right_switch_livingroom
+#       - automation.turn_on_left_switch_livingroom
+#       - automation.turn_on_right_switch_livingroom
         - automation.turn_on_right_switch_kitchen
 
-#- alias: Turn on left switch in livingroom if it is off
 - alias: turn_on_left_switch_livingroom
   initial_state: 'off'
   trigger:
@@ -41,7 +40,6 @@
     - service: switch.turn_on
       entity_id: switch.0x00158d00022b3ea0_switch_left
 
-#- alias: Turn on right switch in livingroom if it is off
 - alias: turn_on_right_switch_livingroom
   initial_state: 'off'
   trigger:
@@ -58,7 +56,6 @@
     - service: switch.turn_on
       entity_id: switch.0x00158d00022b3ea0_switch_right
 
-#- alias: Turn on right switch in kitchen if it is off
 - alias: turn_on_right_switch_kitchen
   initial_state: 'off'
   trigger:

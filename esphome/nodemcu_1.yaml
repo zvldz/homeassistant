@@ -5,24 +5,23 @@ esphome:
   name: ${device_name}
   platform: ESP32
   board: nodemcu-32s
-  #arduino_version: 1.0.2
-  platformio_options:
-    upload_speed: 115200
+# arduino_version: 1.0.2
+# platformio_options:
+#   upload_speed: 115200
 
 wifi:
+  output_power: 20dB
+  fast_connect: true
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  fast_connect: true
-  ap:
-    ssid: ${device_name}
-    password: !secret wifi_pass_2
+# ap:
+#   ssid: ${device_name}
+#   password: !secret wifi_pass_2
 
 logger:
-# level: VERBOSE
-
 api:
 ota:
-web_server:
+#web_server:
 
 esp32_ble_tracker:
   scan_parameters:
@@ -75,4 +74,3 @@ text_sensor:
 switch:
   - platform: restart
     name: ${device_name}_restart
-

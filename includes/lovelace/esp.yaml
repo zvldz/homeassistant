@@ -17,6 +17,7 @@ cards:
             filter:
               include:
                 - entity_id: "binary_sensor.sonoff_*"
+                - entity_id: "binary_sensor.nodemcu_*"
 
       - type: "custom:button-card"
         name: "Sensors"

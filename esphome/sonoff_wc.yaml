@@ -10,19 +10,17 @@ esphome:
 
 wifi:
   output_power: 20dB
+  fast_connect: true
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  ap:
-    ssid: ${device_name}
-    password: !secret wifi_pass
+# ap:
+#   ssid: ${device_name}
+#   password: !secret wifi_pass
 
 logger:
-
 api:
-
 ota:
-
-web_server:
+#web_server:
 
 output:
   - platform: esp8266_pwm

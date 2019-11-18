@@ -10,20 +10,20 @@ esphome:
 #   upload_speed: 115200
 
 wifi:
+  output_power: 20dB
+  fast_connect: true
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  fast_connect: true
-  ap:
-    ssid: ${device_name}
-    password: !secret wifi_pass_2
-    ap_timeout: 3min
+# ap:
+#   ssid: ${device_name}
+#   password: !secret wifi_pass_2
+#   ap_timeout: 3min
 
 logger:
-# level: VERBOSE
-
 api:
 ota:
-web_server:
+#web_server:
+
 esp32_ble_tracker:
   scan_parameters:
 #   interval: 320ms

@@ -5,6 +5,7 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp01_1m
+  arduino_version: 2.4.2
 
 wifi:
   networks:

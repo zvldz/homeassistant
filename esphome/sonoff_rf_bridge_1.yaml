@@ -9,6 +9,7 @@ esphome:
   board: esp01_1m
 
 wifi:
+  output_power: 20dB
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass
@@ -21,7 +22,8 @@ wifi:
 logger:
 api:
 ota:
-web_server:
+captive_portal:
+#web_server:
 
 binary_sensor:
   - platform: status

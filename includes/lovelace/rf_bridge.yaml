@@ -15,6 +15,7 @@ cards:
             entities:
               - sensor.sonoff_bridge_rf_1_status
               - binary_sensor.sonoff_rf_br_1_status
+              - binary_sensor.sonoff_rf_br_2_status
 
       - type: "custom:button-card"
         name: Tasmota Switch
@@ -48,6 +49,21 @@ cards:
           - type: "custom:button-card"
             entity: switch.sonoff_rf_br_1_key4
 
+      - type: "custom:button-card"
+        name: ESPHome Switch 2
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: horizontal-stack
+        cards:
+          - type: "custom:button-card"
+            entity: switch.sonoff_rf_br_2_sb_rf
+          - type: "custom:button-card"
+            entity: switch.sonoff_rf_br_2_gate1
+          - type: "custom:button-card"
+            entity: switch.sonoff_rf_br_2_gate2
+          - type: "custom:button-card"
+            entity: switch.sonoff_rf_br_2_key4
 
   - type: vertical-stack
     cards:
@@ -76,3 +92,16 @@ cards:
           - binary_sensor.sonoff_rf_br_1_gate1
           - binary_sensor.sonoff_rf_br_1_gate2
           - binary_sensor.sonoff_rf_br_1_key4
+
+      - type: "custom:button-card"
+        name: "ESPHome Sensor 2"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_rf_br_2_sb_rf
+          - binary_sensor.sonoff_rf_br_2_gate1
+          - binary_sensor.sonoff_rf_br_2_gate2
+          - binary_sensor.sonoff_rf_br_2_key4

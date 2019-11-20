@@ -3,7 +3,7 @@ icon: mdi:wall
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Выключатели"
         styles:
           card:
@@ -12,7 +12,7 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002235125
                 size: 10%
                 styles:
@@ -23,21 +23,21 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022ab4bf
                 icon: mdi:light-switch
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0001f9aa37
                 icon: mdi:light-switch
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002114338
                 icon: mdi:light-switch
                 size: 20%
@@ -89,7 +89,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:
@@ -101,7 +101,7 @@ cards:
           - binary_sensor.wall_switch_158d000183dd12
           - binary_sensor.door_window_sensor_158d0002537042
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Климат"
         styles:
           card:

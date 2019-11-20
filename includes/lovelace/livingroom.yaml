@@ -3,7 +3,7 @@ icon: mdi:sofa
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Лампы"
         styles:
           card:
@@ -17,7 +17,7 @@ cards:
               - type: light
                 entity: light.living_room_lamp_ambilight
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Группа Спотов"
         styles:
           card:
@@ -35,7 +35,7 @@ cards:
                 entities:
                   - group.living_room_spot_right
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Споты"
         styles:
           card:
@@ -57,7 +57,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:
@@ -67,7 +67,7 @@ cards:
         entities:
           - binary_sensor.living_room_lamp_nightlight
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Выключатели"
         styles:
           card:
@@ -77,7 +77,7 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.samsung_tv
                 size: 10%
                 styles:
@@ -87,13 +87,13 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.0x00158d00022b3ea0_switch_right
                 size: 15%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.0x00158d00022b3ea0_switch_left
                 size: 15%
                 styles:
@@ -103,20 +103,20 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.plug_158d0002677c89
                 size: 15%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.sonoff_plug_1_relay
                 size: 15%
                 styles:
                   card:
                     - font-size: 14px
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Климат"
         styles:
           card:

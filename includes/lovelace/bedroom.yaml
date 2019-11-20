@@ -3,7 +3,7 @@ icon: mdi:bed-empty
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Лампы"
         styles:
           card:
@@ -17,7 +17,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:
@@ -27,7 +27,7 @@ cards:
         entities:
           - binary_sensor.bedroom_lamp_nightlight
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Климат"
         styles:
           card:

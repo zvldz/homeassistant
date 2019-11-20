@@ -3,7 +3,7 @@ icon: mdi:radio-tower
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Devices"
         styles:
           card:
@@ -17,57 +17,57 @@ cards:
               - binary_sensor.sonoff_rf_br_1_status
               - binary_sensor.sonoff_rf_br_2_status
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: Tasmota Switch
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.rf_code_1
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.rf_code_2
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.rf_code_3
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.rf_code_4
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: ESPHome Switch
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_1_sb_rf
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_1_gate1
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_1_gate2
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_1_key4
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: ESPHome Switch 2
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_2_sb_rf
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_2_gate1
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_2_gate2
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_rf_br_2_key4
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Tasmota Sensor"
         styles:
           card:
@@ -80,7 +80,7 @@ cards:
           - binary_sensor.rf_code_3
           - binary_sensor.rf_code_4
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "ESPHome Sensor"
         styles:
           card:
@@ -93,7 +93,7 @@ cards:
           - binary_sensor.sonoff_rf_br_1_gate2
           - binary_sensor.sonoff_rf_br_1_key4
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "ESPHome Sensor 2"
         styles:
           card:

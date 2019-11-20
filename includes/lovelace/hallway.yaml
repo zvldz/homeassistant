@@ -3,7 +3,7 @@ icon: mdi:swap-vertical-variant
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Лампы"
         styles:
           card:
@@ -15,7 +15,7 @@ cards:
               - type: light
                 entity: light.gateway_light_7811dcb245b2
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Выключатели"
         styles:
           card:
@@ -25,19 +25,19 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0001f9aaae
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002112b1e
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_right_158d00022a8150
                 size: 20%
                 styles:
@@ -48,13 +48,13 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022360fe
                 size: 15%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.wall_switch_ln_left_158d00022a8150
                 size: 15%
                 styles:
@@ -65,19 +65,19 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.sonoff_br_relay_2
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.sonoff_br_relay_1
                 size: 20%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.sonoff_wc_relay
                 size: 20%
                 styles:
@@ -86,7 +86,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:

@@ -3,7 +3,7 @@ icon: mdi:silverware-fork-knife
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Лампы"
         styles:
           card:
@@ -15,7 +15,7 @@ cards:
               - type: light
                 entity: light.kitchen_lamp
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Климат"
         styles:
           card:
@@ -46,7 +46,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:
@@ -59,7 +59,7 @@ cards:
           - sensor.illumination_158d00022515fe
           - binary_sensor.water_leak_sensor_158d000232989c
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Выключатели"
         styles:
           card:
@@ -69,7 +69,7 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.kitchen_tv_power
                 size: 10%
                 styles:
@@ -79,13 +79,13 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.0x00158d00022addd4_switch_right
                 size: 15%
                 styles:
                   card:
                     - font-size: 14px
-              - type: "custom:button-card"
+              - type: custom:button-card
                 entity: switch.0x00158d00022addd4_switch_left
                 size: 15%
                 styles:

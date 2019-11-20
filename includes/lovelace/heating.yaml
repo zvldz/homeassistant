@@ -3,7 +3,7 @@ icon: mdi:radiator
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Насос Сенсоры"
         styles:
           card:
@@ -23,19 +23,19 @@ cards:
               - sensor.sonoff_pump_power
               - sensor.sonoff_pump_current
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Насос Выключатели"
         styles:
           card:
             - background-color: "#203040"
       - type: horizontal-stack
         cards:
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_pump_relay
-          - type: "custom:button-card"
+          - type: custom:button-card
             entity: switch.sonoff_pump_restart
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Settings"
         styles:
           card:

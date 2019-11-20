@@ -3,7 +3,7 @@ icon: mdi:hotel
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Лампы"
         styles:
           card:
@@ -19,7 +19,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Сенсоры"
         styles:
           card:
@@ -30,7 +30,7 @@ cards:
           - binary_sensor.master_bedroom_lamp_nightlight
           - sensor.illumination_7c49eb1ce708
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Климат"
         styles:
           card:

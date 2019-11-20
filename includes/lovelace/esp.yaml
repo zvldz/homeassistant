@@ -3,14 +3,14 @@ icon: mdi:chip
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Binary Sensors"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: glance
@@ -19,14 +19,14 @@ cards:
                 - entity_id: "binary_sensor.sonoff_*"
                 - entity_id: "binary_sensor.nodemcu_*"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -47,7 +47,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Sonoff RF Bridge"
         styles:
           card:
@@ -60,7 +60,7 @@ cards:
               include:
                 - key: sensor.sonoff_bridge_rf_1_status.*
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Switches"
         styles:
           card:
@@ -68,7 +68,7 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -81,7 +81,7 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -90,14 +90,14 @@ cards:
                 - entity_id: "switch.sonoff_*restart"
                 - entity_id: "switch.nodemcu_*restart"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Lights"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities

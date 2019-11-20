@@ -3,7 +3,7 @@ icon: mdi:home-automation
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Automations"
         styles:
           card:
@@ -11,7 +11,7 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -21,14 +21,14 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Scripts"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -36,7 +36,7 @@ cards:
               include:
                 - entity_id: "script.*"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Settings"
         styles:
           card:

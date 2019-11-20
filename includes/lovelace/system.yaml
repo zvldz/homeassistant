@@ -3,7 +3,7 @@ icon: mdi:heart-pulse
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Система"
         styles:
           card:
@@ -58,7 +58,7 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Zigbee2mqtt"
         styles:
           card:

@@ -3,14 +3,14 @@ icon: mdi:home-assistant
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Температура"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -22,7 +22,7 @@ cards:
               exclude:
                 - entity_id: "*battery"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Погода"
         styles:
           card:
@@ -36,14 +36,14 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Влажность"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -55,7 +55,7 @@ cards:
               exclude:
                 - entity_id: "*battery"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "День"
         styles:
           card:
@@ -72,14 +72,14 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Давление"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: custom:monster-card
+          - type: custom:auto-entities
             show_empty: false
             card:
               type: entities
@@ -91,7 +91,7 @@ cards:
               exclude:
                 - entity_id: "*battery"
 
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Кто Дома"
         styles:
           card:

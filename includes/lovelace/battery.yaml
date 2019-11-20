@@ -3,12 +3,12 @@ icon: mdi:battery-alert
 cards:
   - type: vertical-stack
     cards:
-      - type: "custom:button-card"
+      - type: custom:button-card
         name: "Уровень Заряда"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:monster-card
+      - type: custom:auto-entities
         show_empty: false
         card:
           type: entities

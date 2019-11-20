@@ -80,6 +80,9 @@
         state: 'on'
         for:
           minutes: 6
+      - condition: state
+        entity_id: binary_sensor.door_window_sensor_158d00032b7db7
+        state: 'off'
   action:
     service: switch.turn_off
     entity_id:

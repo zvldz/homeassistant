@@ -19,6 +19,7 @@ cards:
                 - entity_id: "sensor.temperature*"
                   options:
                     secondary_info: last-changed
+                  sort: name
               exclude:
                 - entity_id: "*battery"
 
@@ -52,6 +53,7 @@ cards:
                 - entity_id: "sensor.humidity*"
                   options:
                     secondary_info: last-changed
+                  sort: name
               exclude:
                 - entity_id: "*battery"
 
@@ -88,6 +90,7 @@ cards:
                 - entity_id: "sensor.pressure*"
                   options:
                     secondary_info: last-changed
+                  sort: name
               exclude:
                 - entity_id: "*battery"
 

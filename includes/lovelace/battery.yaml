@@ -15,6 +15,7 @@ cards:
         filter:
           include:
             - entity_id: "*battery*"
+              sort: name
             - attributes:
                 battery:  '< 100'
             - attributes:

@@ -18,6 +18,7 @@ cards:
             filter:
               include:
                 - entity_id: "automation.*"
+                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -35,6 +36,7 @@ cards:
             filter:
               include:
                 - entity_id: "script.*"
+                  sort: entity_id
 
       - type: custom:button-card
         name: "Settings"

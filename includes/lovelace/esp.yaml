@@ -32,13 +32,21 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*ip_address*"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*wifi_signal"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*uptime"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*version"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*current"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*voltage"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*power"
+                  sort: entity_id
                 - entity_id: "sensor.(sonoff|nodemcu|bw)_*daily_energy"
+                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -70,6 +78,7 @@ cards:
             filter:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw)_*"
+                  sort: entity_id
               exclude:
                 - entity_id: "*restart"
 
@@ -82,6 +91,7 @@ cards:
             filter:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw)_*restart"
+                  sort: entity_id
 
       - type: custom:button-card
         name: "Lights"
@@ -97,3 +107,4 @@ cards:
             filter:
               include:
                 - entity_id: "light.(sonoff|nodemcu|bw)_*"
+                  sort: entity_id

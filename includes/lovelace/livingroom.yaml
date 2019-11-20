@@ -44,16 +44,17 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - light.living_room_spot_left_1
-                  - light.living_room_spot_left_2
-                  - light.living_room_spot_left_3
-                  - type: divider
-                  - light.living_room_spot_right_1
-                  - light.living_room_spot_right_2
-                  - light.living_room_spot_right_3
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                filter:
+                  include:
+                    - entity_id: "light.living_room_spot_left_*"
+                      sort: name
+                    - type: divider
+                    - entity_id: "light.living_room_spot_right_*"
+                      sort: name
 
   - type: vertical-stack
     cards:

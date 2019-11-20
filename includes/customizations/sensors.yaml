@@ -100,11 +100,17 @@ sensor.humidity_158d000273011f:
 sensor.pressure_158d000273011f:
   friendly_name: Улица
 
+sensor.living_room_bt_battery_level:
+  friendly_name: Зал (BT)
+
 sensor.living_room_bt_temperature:
   friendly_name: Зал (BT)
 
 sensor.living_room_bt_humidity:
   friendly_name: Зал (BT)
+
+sensor.kitchen_bt_battery_level:
+  friendly_name: Кухня (BT)
 
 sensor.kitchen_bt_temperature:
   friendly_name: Кухня (BT)

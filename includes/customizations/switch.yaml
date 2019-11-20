@@ -2,7 +2,7 @@ switch.plug_158d0002677c89:
   friendly_name: Розетка 1
   icon: "mdi:power-socket-au"
 
-switch.sonoff_plug_1_relay:
+switch.bw_plug_1_relay:
   friendly_name: Розетка 2
   icon: "mdi:power-socket-eu"
 

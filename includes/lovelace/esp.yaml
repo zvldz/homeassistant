@@ -16,8 +16,7 @@ cards:
               type: glance
             filter:
               include:
-                - entity_id: "binary_sensor.sonoff_*"
-                - entity_id: "binary_sensor.nodemcu_*"
+                - entity_id: "binary_sensor.(sonoff|nodemcu|bw)_*"
 
       - type: custom:button-card
         name: "Sensors"
@@ -32,18 +31,14 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "sensor.sonoff_*ip_address*"
-                - entity_id: "sensor.nodemcu_*ip_address*"
-                - entity_id: "sensor.sonoff_*wifi_signal"
-                - entity_id: "sensor.nodemcu_*wifi_signal"
-                - entity_id: "sensor.sonoff_*uptime"
-                - entity_id: "sensor.nodemcu_*uptime"
-                - entity_id: "sensor.sonoff_*version"
-                - entity_id: "sensor.nodemcu_*version"
-                - entity_id: "sensor.sonoff_*current"
-                - entity_id: "sensor.sonoff_*voltage"
-                - entity_id: "sensor.sonoff_*power"
-                - entity_id: "sensor.sonoff_*daily_energy"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*ip_address*"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*wifi_signal"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*uptime"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*version"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*current"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*voltage"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*power"
+                - entity_id: "sensor.(sonoff|nodemcu|bw)_*daily_energy"
 
   - type: vertical-stack
     cards:
@@ -74,8 +69,7 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "switch.sonoff_*"
-                - entity_id: "switch.nodemcu_*"
+                - entity_id: "switch.(sonoff|nodemcu|bw)_*"
               exclude:
                 - entity_id: "*restart"
 
@@ -87,8 +81,7 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "switch.sonoff_*restart"
-                - entity_id: "switch.nodemcu_*restart"
+                - entity_id: "switch.(sonoff|nodemcu|bw)_*restart"
 
       - type: custom:button-card
         name: "Lights"
@@ -103,4 +96,4 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "light.sonoff_*"
+                - entity_id: "light.(sonoff|nodemcu|bw)_*"

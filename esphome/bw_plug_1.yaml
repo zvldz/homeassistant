@@ -1,5 +1,6 @@
+# BlitzWolf BW-SHP2
 substitutions:
-  device_name: sonoff_plug_1
+  device_name: bw_plug_1
   current_res: '0.00221'
   voltage_div: '871'
 

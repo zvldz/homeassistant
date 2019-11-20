@@ -110,7 +110,7 @@ cards:
                   card:
                     - font-size: 14px
               - type: custom:button-card
-                entity: switch.sonoff_plug_1_relay
+                entity: switch.bw_plug_1_relay
                 size: 15%
                 styles:
                   card:

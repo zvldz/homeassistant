@@ -31,6 +31,9 @@
   action:
     service: light.turn_on
     entity_id: light.bedside
+    data_template:
+      brightness_pct: 70
+      kelvin: 6500
 
 - alias: Turn off bedside lamp
   initial_state: 'on'

@@ -12,6 +12,11 @@ lovelace:
   mode: yaml
 
 http:
+# base_url: !secret home_base_url
+# cors_allowed_origins:
+#   - https://google.com
+#   - https://www.home-assistant.io
+#   - !secret home_base_url
   ip_ban_enabled: true
   login_attempts_threshold: 5
   use_x_forwarded_for: true
@@ -144,17 +149,16 @@ hacs:
 #    password: !secret midea_pass
 #    #use_fan_only_workaround: true
 
-group: !include includes/groups.yaml
-switch: !include_dir_merge_list includes/switches
-sensor: !include_dir_merge_list includes/sensors
-binary_sensor: !include_dir_merge_list includes/binary_sensors
-light: !include_dir_merge_list includes/lights
-media_player: !include includes/media_player.yaml
-yeelight: !include includes/yeelight.yaml
-automation: !include_dir_merge_list includes/automations
-script: !include includes/scripts.yaml
-
-input_boolean: !include includes/input_boolean.yaml
-input_number: !include includes/input_number.yaml
-input_select: !include includes/input_select.yaml
+switch:         !include_dir_merge_list includes/switches
+sensor:         !include_dir_merge_list includes/sensors
+binary_sensor:  !include_dir_merge_list includes/binary_sensors
+light:          !include_dir_merge_list includes/lights
+automation:     !include_dir_merge_list includes/automations
+group:          !include includes/groups.yaml
+media_player:   !include includes/media_player.yaml
+yeelight:       !include includes/yeelight.yaml
+script:         !include includes/scripts.yaml
+input_boolean:  !include includes/input_boolean.yaml
+input_number:   !include includes/input_number.yaml
+input_select:   !include includes/input_select.yaml
 

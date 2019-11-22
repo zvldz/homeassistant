@@ -343,3 +343,38 @@ script:
         data:
            message: 'Уборка Гостиной'
 
+  vacuum_reset_main_brush:
+    alias: "Reset Main Brush"
+    sequence:
+      - service: vacuum.send_command
+        data_template:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: reset_consumable
+          params: main_brush_work_time
+
+  vacuum_reset_side_brush:
+    alias: "Reset Side Brush"
+    sequence:
+      - service: vacuum.send_command
+        data_template:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: reset_consumable
+          params: side_brush_work_time
+
+  vacuum_reset_filter:
+    alias: "Reset Filter"
+    sequence:
+      - service: vacuum.send_command
+        data_template:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: reset_consumable
+          params: filter_work_time
+
+  vacuum_reset_sensor:
+    alias: "Reset Sensor"
+    sequence:
+      - service: vacuum.send_command
+        data_template:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: reset_consumable
+          params: sensor_dirty_time

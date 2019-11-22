@@ -18,6 +18,60 @@ cards:
               - input_boolean.vacuum_schedule
               - input_boolean.vacuum_notification
 
+      - type: custom:button-card
+        name: "Сброс Счетчиков"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: entity-button
+                name: Главная Щетка
+                icon: mdi:autorenew
+                tap_action:
+                  confirmation: true
+                  action: call-service
+                  service: script.turn_on
+                  service_data:
+                    entity_id: script.vacuum_reset_main_brush
+                entity: script.vacuum_reset_main_brush
+
+              - type: entity-button
+                name: Боковая Щетка
+                icon: mdi:autorenew
+                tap_action:
+                  confirmation: true
+                  action: call-service
+                  service: script.turn_on
+                  service_data:
+                    entity_id: script.vacuum_reset_side_brush
+                entity: script.vacuum_reset_side_brush
+
+              - type: entity-button
+                name: Фильтр
+                icon: mdi:autorenew
+                tap_action:
+                  confirmation: true
+                  action: call-service
+                  service: script.turn_on
+                  service_data:
+                    entity_id: script.vacuum_reset_filter
+                entity: script.vacuum_reset_filter
+
+              - type: entity-button
+                name: Сенсоры
+                icon: mdi:autorenew
+                tap_action:
+                  confirmation: true
+                  action: call-service
+                  service: script.turn_on
+                  service_data:
+                    entity_id: script.vacuum_reset_sensor
+                entity: script.vacuum_reset_sensor
+
       - type: custom:xiaomi-vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner
         name: Xiaomi Vacuum

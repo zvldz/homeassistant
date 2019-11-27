@@ -91,6 +91,15 @@ sensor.humidity_158d00027300cc:
 sensor.pressure_158d00027300cc:
   friendly_name: Балкон
 
+sensor.nodemcu_3_outdoor_temperature:
+  friendly_name: Улица DS
+
+sensor.outdoor_humidity:
+  friendly_name: Улица DS
+
+sensor.outdoor_pressure:
+  friendly_name: Улица DS
+
 sensor.temperature_158d000273011f:
   friendly_name: Улица
 
@@ -186,3 +195,5 @@ sensor.ha_init:
 
 sensor.ha_latest:
   icon: mdi:package-down
+
+

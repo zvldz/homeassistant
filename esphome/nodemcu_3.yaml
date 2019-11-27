@@ -80,7 +80,7 @@ sensor:
 
   - platform: dallas
     address: !secret dallas_2
-    name: ${device_name}_outdoor_tmperature
+    name: ${device_name}_outdoor_temperature
 
   - platform: uptime
     name: ${device_name}_uptime

@@ -46,3 +46,14 @@
     - service: switch.turn_on
       entity_id: switch.sonoff_pump_relay
 
+- alias: Turn off heating if kitchen temp above 23
+  initial_state: 'on'
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.temperature_158d0002ca0395
+      above: 23
+  action:
+    - service: switch.turn_on
+      entity_id: switch.sonoff_pump_relay
+
+

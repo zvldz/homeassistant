@@ -109,6 +109,7 @@ cards:
           bottom: 30
           left: 100
           right: 0
+        min_height: 0
 
       - type: custom:xiaomi-vacuum-map-card
         entity: vacuum.xiaomi_vacuum

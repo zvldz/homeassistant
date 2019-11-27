@@ -1,0 +1,45 @@
+sensor:
+  - platform: template
+    sensors:
+      tessla_user:
+        value_template: !secret tessla_user
+      tessla_pass:
+        value_template: !secret tessla_pass
+      tessla_device_id:
+        value_template: !secret tessla_device_id
+      thermostat_current_temp:
+        friendly_name: 'Термостат Текущая'
+        value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_2') }}"
+        unit_of_measurement: '°C'
+      thermostat_set_temp:
+        friendly_name: 'Термостат Желаемая'
+        value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_1') }}"
+        unit_of_measurement: '°C'
+      thermostat_reley_status:
+        friendly_name: 'Термостат Реле
+        value_template: >
+          {% if is_state('sensor.thermostat_info', '4') %}
+            ON
+          {% elif is_state('sensor.thermostat_info', '3') %}
+            OFF
+          {% elif is_state('sensor.thermostat_info', 'RELE', '2') %}
+            DISABLED
+          {% else %}
+            UNKNOWN
+          {% endif %}
+
+# RELE - status of reley. 2 - disabled. 3 - turn off, 4 - turn on
+# ACTIVE - status of device. null - disabled, 5 - enabled
+
+  - platform: command_line
+    name: thermostat_info
+    command_timeout: 30
+    scan_interval: 60
+    value_template: '{{ value_json.RELE }}'
+    json_attributes:
+      - TEMPERATURE_1
+      - TEMPERATURE_2
+      - RELE
+      - ACTIVE
+    command: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --status"
+

@@ -14,11 +14,6 @@ cards:
             show_header_toggle: false
             entities:
               - binary_sensor.sonoff_pump_status
-              - sensor.sonoff_pump_uptime
-              - sensor.sonoff_pump_wifi_signal
-          - type: glance
-            show_header_toggle: false
-            entities:
               - sensor.sonoff_pump_voltage
               - sensor.sonoff_pump_power
               - sensor.sonoff_pump_current
@@ -46,3 +41,37 @@ cards:
             show_header_toggle: false
             entities:
               - input_boolean.pump_schedule
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Термостат Сенсоры"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: glance
+            show_header_toggle: false
+            entities:
+              - sensor.thermostat_current_temp
+              - sensor.thermostat_set_temp
+              - sensor.thermostat_reley_status
+
+      - type: custom:button-card
+        name: "Температура"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                hour24: true
+                name: ""
+                entities:
+                  - entity: sensor.thermostat_current_temp
+                  - entity: sensor.temperature_158d000231f03e
+                    color: red

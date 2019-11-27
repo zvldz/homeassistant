@@ -196,4 +196,17 @@ sensor.ha_init:
 sensor.ha_latest:
   icon: mdi:package-down
 
+binary_sensor.sonoff_pump_status:
+  friendly_name: Насос Статус
 
+sensor.sonoff_pump_uptime:
+  friendly_name: Насос Uptime
+
+sensor.sonoff_pump_voltage:
+  friendly_name: Насос Напряжение
+
+sensor.sonoff_pump_power:
+  friendly_name: Насос Мощность
+
+sensor.sonoff_pump_current:
+  friendly_name: Насос Ток

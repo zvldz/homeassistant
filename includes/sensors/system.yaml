@@ -47,7 +47,7 @@
       icon_template: mdi:clock-outline
       value_template: >
         {% set uptime = states.sensor.online.state | int %}
-        {% set minutes = (( uptime % 60) / 1) | int %}
+        {% set minutes = ((uptime % 60) / 1) | int %}
         {% set hours = ((uptime % 1440) / 60) | int %}
         {% set days = (uptime / 1440) | int %}
           {% if uptime < 1 %}
@@ -77,7 +77,7 @@
       entity_id:
         - sensor.time
       value_template: >
-         {% set uptime = as_timestamp (now()) -as_timestamp(states.sensor.last_boot.state) | int %}
+         {% set uptime = as_timestamp(now()) - as_timestamp(states.sensor.last_boot.state) | int %}
          {% set minutes = (( uptime % 3600) / 60) | int %}
          {% set hours = ((uptime % 86400) / 3600) | int %}
          {% set days = (uptime / 86400) | int %}

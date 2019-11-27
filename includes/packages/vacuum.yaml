@@ -41,16 +41,10 @@ sensor:
             No Error
           {% endif %}
 
-  - platform: rest
-    resource: !secret xiaomi_vacuum_map
+  - platform: mqtt
+    state_topic: "valetudo/rockrobo/state"
+    json_attributes_topic: "valetudo/rockrobo/map_data_parsed"
     name: xiaomi_map
-    json_attributes:
-      - image
-      - path
-      - charger
-      - robot
-      - virtual_walls
-      - no_go_areas
     value_template: 'OK'
     scan_interval: 5
 

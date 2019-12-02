@@ -80,14 +80,8 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                entity: switch.0x00158d00022addd4_switch_right
-                size: 15%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.0x00158d00022addd4_switch_left
-                size: 15%
+                entity: switch.wall_switch_ln_158d000211434a
+                size: 10%
                 styles:
                   card:
                     - font-size: 14px

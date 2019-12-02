@@ -20,9 +20,8 @@
     - delay: 00:03:00
     - service: automation.turn_on
       entity_id:
-#       - automation.turn_on_left_switch_livingroom
-#       - automation.turn_on_right_switch_livingroom
-        - automation.turn_on_right_switch_kitchen
+        - automation.turn_on_left_switch_livingroom
+        - automation.turn_on_right_switch_livingroom
 
 - alias: turn_on_left_switch_livingroom
   initial_state: 'off'
@@ -55,20 +54,4 @@
   action:
     - service: switch.turn_on
       entity_id: switch.0x00158d00022b3ea0_switch_right
-
-- alias: turn_on_right_switch_kitchen
-  initial_state: 'off'
-  trigger:
-    - platform: time_pattern
-      minutes: '/1'
-      seconds: 00
-  condition:
-    condition: state
-    entity_id: switch.0x00158d00022addd4_switch_right
-    state: 'off'
-    for:
-      minutes: 2
-  action:
-    - service: switch.turn_on
-      entity_id: switch.0x00158d00022addd4_switch_right
 

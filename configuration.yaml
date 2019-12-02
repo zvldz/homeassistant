@@ -30,6 +30,7 @@ discovery:
   ignore:
     - igd
     - yeelight
+    - samsung_tv
 
 updater:
   reporting: false
@@ -142,17 +143,11 @@ hacs:
 # options:
 #   experimental: true
 
-#climate:
-#  - platform: midea
-#    app_key: 3742e9e5842d4ad59c2db887e12449f9
-#    username: !secret midea_user
-#    password: !secret midea_pass
-#    #use_fan_only_workaround: true
-
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors
 binary_sensor:  !include_dir_merge_list includes/binary_sensors
 light:          !include_dir_merge_list includes/lights
+climate:        !include_dir_merge_list includes/climate
 automation:     !include_dir_merge_list includes/automations
 group:          !include includes/groups.yaml
 media_player:   !include includes/media_player.yaml

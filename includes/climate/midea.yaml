@@ -1,0 +1,5 @@
+#- platform: midea
+#  app_key: 3742e9e5842d4ad59c2db887e12449f9
+#  username: !secret midea_user
+#  password: !secret midea_pass
+#  #use_fan_only_workaround: true

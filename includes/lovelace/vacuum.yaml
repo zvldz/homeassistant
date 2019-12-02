@@ -28,49 +28,65 @@ cards:
         cards:
           - type: horizontal-stack
             cards:
-              - type: entity-button
+              - type: custom:button-card
                 name: Главная Щетка
                 icon: mdi:autorenew
+                entity: script.vacuum_reset_main_brush
                 tap_action:
                   confirmation: true
                   action: call-service
                   service: script.turn_on
                   service_data:
                     entity_id: script.vacuum_reset_main_brush
-                entity: script.vacuum_reset_main_brush
+                size: 30%
+                styles:
+                  card:
+                    - font-size: 14px
 
-              - type: entity-button
+              - type: custom:button-card
                 name: Боковая Щетка
                 icon: mdi:autorenew
+                entity: script.vacuum_reset_side_brush
                 tap_action:
                   confirmation: true
                   action: call-service
                   service: script.turn_on
                   service_data:
                     entity_id: script.vacuum_reset_side_brush
-                entity: script.vacuum_reset_side_brush
+                size: 30%
+                styles:
+                  card:
+                    - font-size: 14px
 
-              - type: entity-button
+              - type: custom:button-card
                 name: Фильтр
                 icon: mdi:autorenew
+                entity: script.vacuum_reset_filter
                 tap_action:
                   confirmation: true
                   action: call-service
                   service: script.turn_on
                   service_data:
                     entity_id: script.vacuum_reset_filter
-                entity: script.vacuum_reset_filter
+                size: 30%
+                styles:
+                  card:
+                    - font-size: 14px
 
-              - type: entity-button
+              - type: custom:button-card
                 name: Сенсоры
                 icon: mdi:autorenew
+                entity: script.vacuum_reset_sensor
                 tap_action:
                   confirmation: true
                   action: call-service
                   service: script.turn_on
                   service_data:
                     entity_id: script.vacuum_reset_sensor
-                entity: script.vacuum_reset_sensor
+                size: 30%
+                styles:
+                  card:
+                    - font-size: 14px
 
       - type: custom:xiaomi-vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner

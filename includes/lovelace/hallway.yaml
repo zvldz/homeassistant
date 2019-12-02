@@ -50,13 +50,13 @@ cards:
             cards:
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022360fe
-                size: 15%
+                size: 12%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_left_158d00022a8150
-                size: 15%
+                size: 12%
                 styles:
                   card:
                     - font-size: 14px
@@ -116,4 +116,24 @@ cards:
           - entity: input_boolean.wc_manaul_fun_on
           - entity: input_boolean.br_manaul_fun_on
 
+      - type: custom:button-card
+        name: "Климат"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: 'Температура'
+                entities:
+                  - entity: sensor.temperature_158d000231f03e
 
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: 'Влажность'
+                entities:
+                  - entity: sensor.humidity_158d000231f03e

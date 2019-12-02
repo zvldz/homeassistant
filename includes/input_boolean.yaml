@@ -14,6 +14,3 @@ br_manaul_fun_on:
   name: Проветривания в Ванной
   icon: mdi:timer
 
-pump_schedule:
-  name: Работа насоса по расписанию
-  icon: mdi:timer

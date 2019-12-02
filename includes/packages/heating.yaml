@@ -1,3 +1,26 @@
+python_script:
+
+input_boolean:
+  pump_schedule:
+    name: Работа насоса по расписанию
+    icon: mdi:timer
+
+climate:
+  - platform: generic_thermostat
+    name: Gas Boiler
+    heater: switch.boiler
+    target_sensor: sensor.temperature_158d000231f03e
+    ac_mode: false
+    min_temp: 15
+    max_temp: 25
+    target_temp: 20
+    away_temp: 17
+    cold_tolerance: 0.3
+    hot_tolerance: 0.3
+    min_cycle_duration:
+      minutes: 10
+    initial_hvac_mode: "heat"
+
 sensor:
   - platform: template
     sensors:
@@ -8,21 +31,21 @@ sensor:
       tessla_device_id:
         value_template: !secret tessla_device_id
       thermostat_current_temp:
-        friendly_name: 'Термостат Текущая'
+        friendly_name: 'Т Текущая'
         value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_2') }}"
         unit_of_measurement: '°C'
       thermostat_set_temp:
-        friendly_name: 'Термостат Желаемая'
+        friendly_name: 'Т Желаемая'
         value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_1') }}"
         unit_of_measurement: '°C'
       thermostat_reley_status:
-        friendly_name: 'Термостат Реле
+        friendly_name: 'Т Реле'
         value_template: >
           {% if is_state('sensor.thermostat_info', '4') %}
             ON
           {% elif is_state('sensor.thermostat_info', '3') %}
             OFF
-          {% elif is_state('sensor.thermostat_info', 'RELE', '2') %}
+          {% elif is_state('sensor.thermostat_info', '2') %}
             DISABLED
           {% else %}
             UNKNOWN
@@ -42,4 +65,117 @@ sensor:
       - RELE
       - ACTIVE
     command: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --status"
+
+switch:
+  - platform: template
+    switches:
+      boiler:
+        value_template: "{{ is_state('sensor.thermostat_reley_status', 'ON') }}"
+        availability_template: "{{ is_state('sensor.thermostat_reley_status', 'ON') or is_state('sensor.thermostat_reley_status', 'OFF')}}"
+        turn_on:
+          service: script.turn_on
+          data:
+            entity_id: script.boiler_turn_on
+        turn_off:
+          service: script.turn_on
+          data:
+            entity_id: script.boiler_turn_off
+
+shell_command:
+  boiler_on: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=23"
+  boiler_off: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=15"
+
+script:
+  boiler_turn_on:
+    alias: "Boiler Turn On"
+    sequence:
+      - service: shell_command.boiler_on
+      - service: python_script.set_state
+        data_template:
+          entity_id: sensor.thermostat_info
+          state: '4'
+
+  boiler_turn_off:
+    alias: "Boiler Turn Off"
+    sequence:
+      - service: shell_command.boiler_off
+      - service: python_script.set_state
+        data_template:
+          entity_id: sensor.thermostat_info
+          state: '3'
+
+automation:
+  - alias: 'Time Pump Off'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: '09:00'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.pump_schedule
+          state: 'on'
+    action:
+      - service: switch.turn_off
+        entity_id: switch.sonoff_pump_relay
+
+  - alias: 'Time Pump On'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: '17:00'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.pump_schedule
+          state: 'on'
+    action:
+      - service: switch.turn_on
+        entity_id: switch.sonoff_pump_relay
+
+  - alias: Turn off heating if kitchen temp above 23
+    initial_state: 'on'
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.temperature_158d0002ca0395
+        above: 23
+    action:
+      - service: switch.turn_off
+        entity_id: switch.boiler
+
+  - alias: 'Set temperature to 20 in the morning or evening'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: "06:00:00"
+      - platform: time
+        at: "17:00:00"
+    action:
+      - service: climate.set_temperature
+        data:
+          entity_id: climate.gas_boiler
+          temperature: 20
+          hvac_mode: heat
+      - service: switch.turn_on
+        entity_id: switch.sonoff_pump_relay
+
+  - alias: 'Set temperature to 17 in the morning or evening'
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        at: "09:00:00"
+      - platform: time
+        at: "00:00:00"
+    action:
+      - service: climate.set_temperature
+        data:
+          entity_id: climate.gas_boiler
+          temperature: 17
+          hvac_mode: heat
+      - service: switch.turn_off
+        entity_id: switch.sonoff_pump_relay
+
+# TODO: away mode
 

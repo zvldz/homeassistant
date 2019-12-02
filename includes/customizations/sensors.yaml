@@ -197,7 +197,7 @@ sensor.ha_latest:
   icon: mdi:package-down
 
 binary_sensor.sonoff_pump_status:
-  friendly_name: Насос Статус
+  friendly_name: Насос
 
 sensor.sonoff_pump_uptime:
   friendly_name: Насос Uptime

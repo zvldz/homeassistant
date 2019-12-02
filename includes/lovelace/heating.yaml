@@ -4,37 +4,30 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Насос Сенсоры"
+        name: "Термостат"
         styles:
           card:
             - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
-          - type: glance
-            show_header_toggle: false
-            entities:
-              - binary_sensor.sonoff_pump_status
-              - sensor.sonoff_pump_voltage
-              - sensor.sonoff_pump_power
-              - sensor.sonoff_pump_current
+          - type: thermostat
+            entity: climate.gas_boiler
 
-      - type: custom:button-card
-        name: "Насос Выключатели"
-        styles:
-          card:
-            - background-color: "#203040"
       - type: horizontal-stack
         cards:
           - type: custom:button-card
             entity: switch.sonoff_pump_relay
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
           - type: custom:button-card
-            entity: switch.sonoff_pump_restart
+            entity: switch.boiler
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
 
-      - type: custom:button-card
-        name: "Settings"
-        styles:
-          card:
-            - background-color: "#203040"
       - type: custom:vertical-stack-in-card
         cards:
           - type: entities
@@ -45,7 +38,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Термостат Сенсоры"
+        name: "Сенсоры"
         styles:
           card:
             - background-color: "#203040"
@@ -54,24 +47,26 @@ cards:
           - type: glance
             show_header_toggle: false
             entities:
-              - sensor.thermostat_current_temp
-              - sensor.thermostat_set_temp
+              - binary_sensor.sonoff_pump_status
               - sensor.thermostat_reley_status
+              - sensor.thermostat_current_temp
+              - sensor.temperature_158d000231f03e
+              - sensor.thermostat_set_temp
 
       - type: custom:button-card
         name: "Температура"
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
                 hour24: true
-                name: ""
+                points_per_hour: 1
                 entities:
                   - entity: sensor.thermostat_current_temp
                   - entity: sensor.temperature_158d000231f03e
                     color: red
+

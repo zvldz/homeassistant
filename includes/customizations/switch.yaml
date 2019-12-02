@@ -80,8 +80,7 @@ switch.sonoff_rf_br_1_gate2:
   friendly_name: RF Gate 2
 
 switch.sonoff_pump_relay:
-  friendly_name: Насос Выключатель
+  friendly_name: Насос
 
-switch.sonoff_pump_restart:
-  friendly_name: Насос Перезагрузка
-
+switch.boiler:
+  friendly_name: Котел

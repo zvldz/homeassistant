@@ -15,7 +15,7 @@ climate:
     max_temp: 25
     target_temp: 20
     away_temp: 17
-    cold_tolerance: 0.3
+    cold_tolerance: 0.2
     hot_tolerance: 0.3
     min_cycle_duration:
       minutes: 10
@@ -143,7 +143,9 @@ automation:
         above: 23
     action:
       - service: switch.turn_off
-        entity_id: switch.boiler
+        entity_id:
+          - switch.boiler
+          - switch.sonoff_pump_relay
 
   - alias: 'Set temperature to 20 in the morning or evening'
     initial_state: 'on'
@@ -165,7 +167,7 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: time
-        at: "09:00:00"
+        at: "09:15:00"
       - platform: time
         at: "00:00:00"
     action:

@@ -71,17 +71,14 @@ cards:
             cards:
               - type: custom:button-card
                 entity: switch.kitchen_tv_power
-                size: 10%
+                size: 20%
                 styles:
                   card:
                     - font-size: 14px
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d000211434a
-                size: 10%
+                icon: mdi:light-switch
+                size: 20%
                 styles:
                   card:
                     - font-size: 14px

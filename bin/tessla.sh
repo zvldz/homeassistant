@@ -5,9 +5,10 @@ TTMP="/tmp"
 TCOOKIE="${TTMP}/tcookie.txt"
 TRES_1="${TTMP}/tout_1.txt"
 TRES_2="${TTMP}/tout_2.txt"
-PUP="$PREFIX/pup"
 TURL='https://my.tessla.com.ua'
 TUA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36'
+# https://github.com/ericchiang/pup
+PUP="$PREFIX/pup"
 
 usage() {
     cat << EOF
@@ -222,6 +223,12 @@ EOF
 fi
 
 t_auth
+
+if [ "$TSESSID" = "" ] || [ "$TUSERID" = "" ];
+then
+    echo "auth fail"
+    exit 3
+fi
 
 if [ $STATUS -eq 1 ]; then
     t_get_status

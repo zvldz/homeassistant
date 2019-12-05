@@ -1,7 +1,7 @@
 substitutions:
   device_name: sonoff_rf_br_1
   repeat_wait: '10ms'
-  repeat_times: '5'
+  repeat_times: '10'
 
 esphome:
   name: ${device_name}
@@ -71,6 +71,10 @@ sensor:
 
   - platform: uptime
     name: ${device_name}_uptime
+    filters:
+      - lambda: return x / 86400.0;
+    unit_of_measurement: "days"
+    accuracy_decimals: 3
 
 text_sensor:
   - platform: version

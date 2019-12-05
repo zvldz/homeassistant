@@ -71,6 +71,10 @@ sensor:
 
   - platform: uptime
     name: ${device_name}_uptime
+    filters:
+      - lambda: return x / 86400.0;
+    unit_of_measurement: "days"
+    accuracy_decimals: 3
 
 text_sensor:
   - platform: version

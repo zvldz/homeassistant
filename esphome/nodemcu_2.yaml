@@ -17,22 +17,19 @@ wifi:
 logger:
 api:
 ota:
-web_server:
-
-dallas:
-  - pin: GPIO04 # D2
+#web_server:
 
 binary_sensor:
   - platform: status
     name: ${device_name}_status
 
 sensor:
-  - platform: dallas
-    address: !secret dallas_1
-    name: outdoor_tmperature"
-
   - platform: uptime
     name: ${device_name}_uptime
+    filters:
+      - lambda: return x / 86400.0;
+    unit_of_measurement: "days"
+    accuracy_decimals: 3
 
   - platform: wifi_signal
     name: ${device_name}_wifi_signal

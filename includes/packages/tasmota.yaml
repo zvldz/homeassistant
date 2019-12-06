@@ -1,8 +1,8 @@
 switch:
   - platform: mqtt
     name: "RF Code 1"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
+    command_topic: "tasmota_rf_bridge/cmnd/Backlog"
     value_template: '{{ value_json.RfCode }}'
     qos: 2
     payload_on: "RfSync 10270; RfLow 360; RfHigh 1010; RfCode #0B0994"
@@ -11,8 +11,8 @@ switch:
 
   - platform: mqtt
     name: "RF Code 2"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
+    command_topic: "tasmota_rf_bridge/cmnd/Backlog"
     value_template: '{{ value_json.RfCode }}'
     qos: 2
     payload_on: "RfSync 9800; RfLow 340; RfHigh 1010; RfCode #035F04"
@@ -21,8 +21,8 @@ switch:
 
   - platform: mqtt
     name: "RF Code 3"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
+    command_topic: "tasmota_rf_bridge/cmnd/Backlog"
     value_template: '{{ value_json.RfCode }}'
     qos: 2
     payload_on: "RfSync 9930; RfLow 340; RfHigh 1020; RfCode #E7E008"
@@ -31,8 +31,8 @@ switch:
 
   - platform: mqtt
     name: "RF Code 4"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
-    command_topic: "sonoff_rf_bridge/cmnd/Backlog"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
+    command_topic: "tasmota_rf_bridge/cmnd/Backlog"
     value_template: '{{ value_json.RfCode }}'
     qos: 2
     payload_on: "RfSync 10270; RfLow 360; RfHigh 1010; RfCode #2E1A18"
@@ -44,7 +44,7 @@ binary_sensor:
     name: "RF Code 1"
     payload_on: "0B0994"
     payload_off: "0B0994off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
     value_template: '{{value_json.RfReceived.Data}}'
     off_delay: 5
     force_update: true
@@ -53,7 +53,7 @@ binary_sensor:
     name: "RF Code 2"
     payload_on: "035F04"
     payload_off: "035F04off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.Data }}'
     off_delay: 5
     force_update: true
@@ -62,7 +62,7 @@ binary_sensor:
     name: "RF Code 3"
     payload_on: "E7E008"
     payload_off: "E7E008off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.Data }}'
     off_delay: 5
     force_update: true
@@ -71,13 +71,13 @@ binary_sensor:
     name: "RF Code 4"
     payload_on: "2E1A18"
     payload_off: "2E1A18off"
-    state_topic: "sonoff_rf_bridge/tele/RESULT"
+    state_topic: "tasmota_rf_bridge/tele/RESULT"
     value_template: '{{ value_json.RfReceived.Data }}'
     off_delay: 5
     force_update: true
 
 automation:
-  - alias: "Power state sonoff on HA start-up"
+  - alias: "Power state tasmota on HA start-up"
     initial_state: 'on'
     trigger:
       platform: homeassistant
@@ -85,19 +85,8 @@ automation:
     action:
       - service: mqtt.publish
         data:
-          topic: "sonoffs/cmnd/state"
+          topic: "tasmota/cmnd/state"
           payload: ""
-
-  - alias: "Enable MQTT discovery for all sonoff devices"
-    initial_state: 'on'
-    trigger:
-      platform: homeassistant
-      event: start
-    action:
-      - service: mqtt.publish
-        data:
-          topic: "cmnd/sonoffs/SetOption19"
-          payload: "1"
 
   - alias: "Enable MQTT discovery for all devices"
     trigger:

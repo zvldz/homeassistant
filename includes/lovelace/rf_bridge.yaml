@@ -13,7 +13,7 @@ cards:
           - type: glance
             show_header_toggle: false
             entities:
-              - sensor.sonoff_bridge_rf_1_status
+              - sensor.tasmota_bridge_rf_1_status
               - binary_sensor.sonoff_rf_br_1_status
               - binary_sensor.sonoff_rf_br_2_status
 

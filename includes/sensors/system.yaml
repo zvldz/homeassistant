@@ -36,67 +36,14 @@
   unit_of_measurement: сек
 
 - platform: uptime
-  name: online
+  name: ha_uptime
   unit_of_measurement: minutes
 
 - platform: template
   sensors:
-    online_custom:
-      friendly_name: "HA Uptime"
-      icon_template: mdi:clock-outline
-      value_template: >
-        {% set uptime = states.sensor.online.state | int %}
-        {% set minutes = ((uptime % 60) / 1) | int %}
-        {% set hours = ((uptime % 1440) / 60) | int %}
-        {% set days = (uptime / 1440) | int %}
-          {% if uptime < 1 %}
-            Меньше минуты
-          {% else %}
-            {% if days > 0 %}
-              {{ days }} д.
-            {% endif %}
-            {% if hours > 0 %}
-              {% if days > 0 %}
-                {{ ' ' }}
-              {% endif %}
-              {{ hours }} ч.
-            {% endif %}
-            {% if minutes > 0 %}
-              {% if days > 0 or hours > 0 %}
-                {{ ' ' }}
-              {% endif %}
-                {{ minutes }} м.
-            {% endif %}
-          {% endif %}
-
-- platform: template
-  sensors:
-    last_boot_custom:
-      friendly_name: "Host Uptime"
-      entity_id:
-        - sensor.time
-      value_template: >
-         {% set uptime = as_timestamp(now()) - as_timestamp(states.sensor.last_boot.state) | int %}
-         {% set minutes = (( uptime % 3600) / 60) | int %}
-         {% set hours = ((uptime % 86400) / 3600) | int %}
-         {% set days = (uptime / 86400) | int %}
-           {% if uptime < 1 %}
-             Меньше минуты
-           {% else %}
-             {% if days > 0 %}
-               {{ days }} д.
-             {% endif %}
-             {% if hours > 0 %}
-               {% if days > 0 %}
-                 {{ ' ' }}
-               {% endif %}
-               {{ hours }} ч.
-             {% endif %}
-             {% if minutes > 0 %}
-               {% if days > 0 or hours > 0 %}
-                 {{ ' ' }}
-               {% endif %}
-                 {{ minutes }} м.
-             {% endif %}
-           {% endif %}
+    ha_uptime_dt:
       icon_template: mdi:clock
+      friendly_name: HA Uptime
+      device_class: timestamp
+      value_template: "{{ (as_timestamp(now()) - (states('states.sensor.ha_uptime.state') * 60) | float) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+

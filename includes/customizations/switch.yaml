@@ -34,14 +34,6 @@ switch.wall_switch_ln_158d00022360fe:
   friendly_name: WC
   icon: "mdi:light-switch"
 
-switch.0x00158d00022addd4_switch_right:
-  friendly_name: Кухня Лампа
-  icon: "mdi:light-switch"
-
-switch.0x00158d00022addd4_switch_left:
-  friendly_name: Кухня Боковой
-  icon: "mdi:light-switch"
-
 switch.wall_switch_ln_158d0001f9aaae:
   friendly_name: Коридор 1
   icon: "mdi:light-switch"

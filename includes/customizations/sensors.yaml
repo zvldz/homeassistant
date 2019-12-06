@@ -7,6 +7,15 @@ sensor.time:
 sun.sun:
   friendly_name: Солнце
 
+sensor.ha_init:
+  icon: mdi:clock-check
+
+sensor.ha_latest:
+  icon: mdi:package-down
+
+sensor.last_boot:
+  friendly_name: Host Uptime
+
 binary_sensor.door_window_sensor_158d00024de627:
   friendly_name: WC ДО
 
@@ -190,11 +199,17 @@ binary_sensor.sonoff_rf_br_1_gate1:
 binary_sensor.sonoff_rf_br_1_gate2:
   friendly_name: RF Gate 2
 
-sensor.ha_init:
-  icon: mdi:clock-check
+sensor.bw_plug_1_current:
+  friendly_name: Розетка 2 Ток
 
-sensor.ha_latest:
-  icon: mdi:package-down
+sensor.bw_plug_1_voltage:
+  friendly_name: Розетка 2 Напряжение
+
+sensor.bw_plug_1_power:
+  friendly_name: Розетка 2 Мощность
+
+sensor.bw_plug_1_daily_energy:
+  friendly_name: Розетка 2 СР
 
 binary_sensor.sonoff_pump_status:
   friendly_name: Насос
@@ -210,3 +225,8 @@ sensor.sonoff_pump_power:
 
 sensor.sonoff_pump_current:
   friendly_name: Насос Ток
+
+sensor.sonoff_pump_daily_energy:
+  friendly_name: Насос СР
+
+

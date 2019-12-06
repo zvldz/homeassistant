@@ -11,11 +11,12 @@ cards:
 
       - type: custom:vertical-stack-in-card
         cards:
-          - type: glance
-            show_header_toggle: false
+          - type: entities
             entities:
-              - sensor.last_boot_custom
-              - sensor.online_custom
+              - entity: sensor.last_boot
+                format: total
+              - entity: sensor.ha_uptime_dt
+                format: total
               - sensor.ha_init
               - sensor.ha_current
               - sensor.ha_latest

@@ -8,10 +8,29 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+#     - type: custom:vertical-stack-in-card
+#       cards:
+#         - type: thermostat
+#           entity: climate.gas_boiler
+
+      - type: horizontal-stack
         cards:
-          - type: thermostat
+          - type: custom:simple-thermostat
             entity: climate.gas_boiler
+            name: false
+#           name: Котел
+            sensors:
+              - entity: sensor.temperature_158d0002bfe958
+              - entity: sensor.temperature_158d0002323856
+              - entity: sensor.temperature_158d0001ab2a27
+              - entity: sensor.temperature_158d0002ca0395
+#             - entity: sensor.temperature_158d000231f03e
+              - entity: sensor.temperature_158d00027300cc
+              - entity: sensor.nodemcu_3_outdoor_temperature
+            control:
+              hvac:
+                some_mode: false
+                another_mode: false
 
       - type: horizontal-stack
         cards:
@@ -34,6 +53,7 @@ cards:
             show_header_toggle: false
             entities:
               - input_boolean.pump_schedule
+              - input_boolean.boiler_schedule
 
   - type: vertical-stack
     cards:

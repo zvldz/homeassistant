@@ -4,6 +4,10 @@ input_boolean:
   pump_schedule:
     name: Работа насоса по расписанию
     icon: mdi:timer
+  boiler_schedule:
+    name: Работа котла по расписанию
+    icon: mdi:timer
+
 
 climate:
   - platform: generic_thermostat
@@ -154,6 +158,12 @@ automation:
         at: "06:00:00"
       - platform: time
         at: "17:00:00"
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.boiler_schedule
+          state: 'on'
     action:
       - service: climate.set_temperature
         data:
@@ -170,6 +180,12 @@ automation:
         at: "09:15:00"
       - platform: time
         at: "00:00:00"
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.boiler_schedule
+          state: 'on'
     action:
       - service: climate.set_temperature
         data:

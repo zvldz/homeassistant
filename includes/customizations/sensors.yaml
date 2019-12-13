@@ -110,13 +110,13 @@ sensor.outdoor_pressure:
   friendly_name: Улица DS
 
 sensor.temperature_158d000273011f:
-  friendly_name: Улица
+  friendly_name: Ванная
 
 sensor.humidity_158d000273011f:
-  friendly_name: Улица
+  friendly_name: Ванная
 
 sensor.pressure_158d000273011f:
-  friendly_name: Улица
+  friendly_name: Ванная
 
 sensor.living_room_bt_battery_level:
   friendly_name: Зал (BT)

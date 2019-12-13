@@ -130,10 +130,16 @@ cards:
                 name: 'Температура'
                 entities:
                   - entity: sensor.temperature_158d000231f03e
+                  - entity: sensor.temperature_158d000273011f
+                    color: red
 
+      - type: custom:vertical-stack-in-card
+        cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
                 name: 'Влажность'
                 entities:
                   - entity: sensor.humidity_158d000231f03e
+                  - entity: sensor.humidity_158d000273011f
+                    color: red

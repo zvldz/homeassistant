@@ -115,7 +115,7 @@ cards:
                 name: 'Температура'
                 entities:
                   - entity: sensor.temperature_158d00027300cc
-                  - entity: sensor.temperature_158d000273011f
+                  - entity: sensor.nodemcu_3_outdoor_temperature
                     color: red
       - type: custom:vertical-stack-in-card
         cards:
@@ -125,6 +125,4 @@ cards:
                 name: 'Влажность'
                 entities:
                   - entity: sensor.humidity_158d00027300cc
-                  - entity: sensor.humidity_158d000273011f
-                    color: red
 

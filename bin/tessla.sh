@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PREFIX=$(expr `realpath $0` : "\(/.*\)/$(basename $0)\$")
+PREFIX=$(expr $(realpath $0) : "\(/.*\)/$(basename $0)\$")
 TTMP="/tmp"
 TCOOKIE="${TTMP}/tcookie.txt"
 TRES_1="${TTMP}/tout_1.txt"
@@ -13,7 +13,7 @@ PUP="$PREFIX/pup"
 usage() {
     cat << EOF
 
-USAGE: `basename $0` [OPTIONS]
+USAGE: $(basename $0) [OPTIONS]
 
 OPTIONS
     --login=LOGIN
@@ -49,8 +49,8 @@ t_auth() {
             exit 2
         fi
 
-    TSESSID=`$PUP -f $TRES_1 'input#sessid attr{value}'`
-    TUSERID=`$PUP -f $TRES_1 'input[name=id_user] attr{value}'`
+    TSESSID=$($PUP -f $TRES_1 'input#sessid attr{value}')
+    TUSERID=$($PUP -f $TRES_1 'input[name=id_user] attr{value}')
 }
 
 t_get_status() {
@@ -143,8 +143,8 @@ if [ "$1" = "" ]; then
 fi
 
 while [ "$1" != "" ]; do
-    PARAM=`echo $1 | awk -F= '{print $1}'`
-    VALUE=`echo $1 | awk -F= '{print $2}'`
+    PARAM=$(echo $1 | awk -F= '{print $1}')
+    VALUE=$(echo $1 | awk -F= '{print $2}')
     case $PARAM in
         -h | --help)
             usage
@@ -202,6 +202,16 @@ Only one of the parameters can be used.
 EOF
     usage
     exit
+fi
+
+if [ "$TUSER" = "unknown" ] || [ "$TPASS" = "unknown" ] || [ "$TDID" = "unknown" ]; then
+    echo "Parameters is invalid"
+    echo >> ${TTMP}/tlog.txt
+    date >> ${TTMP}/tlog.txt
+    echo "USER: $TUSER" >> ${TTMP}/tlog.txt
+    echo "PASS: $TPASS" >> ${TTMP}/tlog.txt
+    echo "DID: $TDID"  >> ${TTMP}/tlog.txt
+    exit 3
 fi
 
 STATUS=${STATUS:-"0"}

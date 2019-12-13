@@ -68,7 +68,7 @@ sensor:
       - TEMPERATURE_2
       - RELE
       - ACTIVE
-    command: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --status"
+    command: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --status"
 
 switch:
   - platform: template
@@ -86,8 +86,8 @@ switch:
             entity_id: script.boiler_turn_off
 
 shell_command:
-  boiler_on: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=23"
-  boiler_off: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass.state') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=15"
+  boiler_on: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=23"
+  boiler_off: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=15"
 
 script:
   boiler_turn_on:

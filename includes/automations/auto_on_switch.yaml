@@ -1,16 +1,3 @@
-#- alias: Turn on all automation
-#  initial_state: 'on'
-#  trigger:
-#    - platform: time_pattern
-#      minutes: '/1'
-#      seconds: 00
-#  condition:
-#    condition: state
-#    state: 'off'
-#    entity_id: group.all_automations
-#  action:
-#    service: automation.turn_on
-
 - alias: After HA Start turn on switch automation
   initial_state: 'on'
   trigger:

@@ -1,5 +1,5 @@
 title: Automation
-icon: mdi:home-automation
+icon: mdi:flash-auto
 cards:
   - type: vertical-stack
     cards:
@@ -17,7 +17,7 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "automation.*"
+                - domain: automation
                   sort: entity_id
 
   - type: vertical-stack
@@ -35,7 +35,7 @@ cards:
               type: entities
             filter:
               include:
-                - entity_id: "script.*"
+                - domain: script
                   sort: entity_id
 
       - type: custom:button-card
@@ -52,3 +52,4 @@ cards:
               - input_boolean.auto_fan
               - input_boolean.vacuum_schedule
               - input_boolean.pump_schedule
+              - input_boolean.boiler_schedule

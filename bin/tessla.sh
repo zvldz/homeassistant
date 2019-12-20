@@ -211,7 +211,8 @@ if [ "$TUSER" = "unknown" ] || [ "$TPASS" = "unknown" ] || [ "$TDID" = "unknown"
     echo "USER: $TUSER" >> ${TTMP}/tlog.txt
     echo "PASS: $TPASS" >> ${TTMP}/tlog.txt
     echo "DID: $TDID"  >> ${TTMP}/tlog.txt
-    exit 3
+    echo -n '{"TEMPERATURE_1":"0.0","TEMPERATURE_2":"0.0","RELE":"3","TYPE_USTROYSTVO":"0","ACTIVE":"null"}'
+    exit 0
 fi
 
 STATUS=${STATUS:-"0"}

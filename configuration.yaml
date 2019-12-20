@@ -14,8 +14,6 @@ lovelace:
 http:
 # base_url: !secret home_base_url
 # cors_allowed_origins:
-#   - https://google.com
-#   - https://www.home-assistant.io
 #   - !secret home_base_url
   ip_ban_enabled: true
   login_attempts_threshold: 5
@@ -61,6 +59,7 @@ logbook:
 
 logger:
   default: info
+# default: debug
   logs:
     midea: debug
 

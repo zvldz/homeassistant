@@ -25,19 +25,18 @@ sensor:
     sensors:
       ring_front_door_last_activity_date:
         friendly_name: Последняя активность
-        value_template: "{{ states.sensor.ring_front_door_last_activity.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+        icon_template: mdi:clock
+        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-  - platform: template
-    sensors:
       ring_front_door_last_ding_date:
         friendly_name: Последний звонок
-        value_template: "{{ states.sensor.ring_front_door_last_ding.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+        icon_template: mdi:clock
+        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-  - platform: template
-    sensors:
       ring_front_door_last_motion_date:
         friendly_name: Последние движение
-        value_template: "{{ states.sensor.ring_front_door_last_motion.attributes.created_at.strftime('%H:%M %d-%m-%Y') }}"
+        icon_template: mdi:clock
+        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
 ffmpeg:
 

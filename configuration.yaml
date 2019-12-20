@@ -30,6 +30,7 @@ discovery:
   ignore:
     - igd
     - yeelight
+    - xiaomi_gw
     - samsung_tv
 
 updater:
@@ -136,6 +137,10 @@ panel_iframe:
     title: Ring
     icon: mdi:bell-ring
     url: !secret ring_url
+  esphome:
+    title: ESPHome
+    icon: mdi:chip
+    url: !secret esphome_url
 
 hacs:
   token: !secret my_github_access_token

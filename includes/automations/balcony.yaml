@@ -28,21 +28,21 @@
       - switch.wall_switch_ln_158d0001f9aa37
       - switch.wall_switch_ln_158d0002114338
 
-- alias: Turn on christmas lights
-  initial_state: 'off'
-  trigger:
-    platform: time
-    at: '18:00:00'
-  action:
-    service: switch.turn_on
-    entity_id: switch.plug_158d0002677c89
+#- alias: Turn on christmas lights
+#  initial_state: 'off'
+#  trigger:
+#    platform: time
+#    at: '18:00:00'
+#  action:
+#    service: switch.turn_on
+#    entity_id: switch.plug_158d0002677c89
 
-- alias: Turn off christmas lights
-  initial_state: 'off'
-  trigger:
-    platform: time
-    at: '00:00:00'
-  action:
-    service: switch.turn_off
-    entity_id: switch.plug_158d0002677c89
+#- alias: Turn off christmas lights
+#  initial_state: 'off'
+#  trigger:
+#    platform: time
+#    at: '00:00:00'
+#  action:
+#    service: switch.turn_off
+#    entity_id: switch.plug_158d0002677c89
 

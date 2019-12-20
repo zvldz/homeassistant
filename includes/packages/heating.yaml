@@ -1,5 +1,17 @@
 python_script:
 
+image_processing:
+# - platform: seven_segments
+#   name: gas_counter
+#   source:
+#     - entity_id: camera.upssensorcam
+#   x_position: 50
+#   y_position: 80
+#   height: 230
+#   width: 370
+#   threshold: 30
+#   extra_arguments: dilation 5 invert
+
 input_boolean:
   pump_schedule:
     name: Работа насоса по расписанию
@@ -7,7 +19,6 @@ input_boolean:
   boiler_schedule:
     name: Работа котла по расписанию
     icon: mdi:timer
-
 
 climate:
   - platform: generic_thermostat

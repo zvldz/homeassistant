@@ -59,31 +59,31 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Zigbee2mqtt"
-        styles:
-          card:
-            - background-color: "#203040"
+#     - type: custom:button-card
+#       name: "Zigbee2mqtt"
+#       styles:
+#         card:
+#           - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: sensor.zigbee2mqtt_bridge_state
-              - entity: sensor.zigbee2mqtt_version
-              - entity: sensor.coordinator_version
-              - entity: input_select.zigbee2mqtt_log_level
-              - type: divider
-              - entity: switch.zigbee2mqtt_main_join
-              - entity: timer.zigbee_permit_join
-              - type: divider
-              - entity: input_text.zigbee2mqtt_old_name
-              - entity: input_text.zigbee2mqtt_new_name
-              - entity: script.zigbee2mqtt_rename
-              - type: divider
-              - entity: input_text.zigbee2mqtt_remove
-              - entity: script.zigbee2mqtt_remove
+#     - type: custom:vertical-stack-in-card
+#       cards:
+#         - type: entities
+#           show_header_toggle: false
+#           entities:
+#             - entity: sensor.zigbee2mqtt_bridge_state
+#             - entity: sensor.zigbee2mqtt_version
+#             - entity: sensor.coordinator_version
+#             - entity: input_select.zigbee2mqtt_log_level
+#             - type: divider
+#             - entity: switch.zigbee2mqtt_main_join
+#             - entity: timer.zigbee_permit_join
+#             - type: divider
+#             - entity: input_text.zigbee2mqtt_old_name
+#             - entity: input_text.zigbee2mqtt_new_name
+#             - entity: script.zigbee2mqtt_rename
+#             - type: divider
+#             - entity: input_text.zigbee2mqtt_remove
+#             - entity: script.zigbee2mqtt_remove
 
       - type: custom:home-feed-card
         title: HACS Updates

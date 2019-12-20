@@ -18,12 +18,16 @@ switch.sonoff_br_relay_2:
   friendly_name: Ванная Зеркало
   icon: "mdi:light-switch"
 
-switch.0x00158d00022b3ea0_switch_right:
-  friendly_name: Зал Левый
-  icon: "mdi:light-switch"
+#switch.0x00158d00022b3ea0_switch_right:
+# friendly_name: Зал Левый
+# icon: "mdi:light-switch"
 
-switch.0x00158d00022b3ea0_switch_left:
-  friendly_name: Зал Правый
+#switch.0x00158d00022b3ea0_switch_left:
+# friendly_name: Зал Правый
+# icon: "mdi:light-switch"
+
+switch.wall_switch_ln_158d000211434a:
+  friendly_name: Кухня
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_left_158d00022a8150:

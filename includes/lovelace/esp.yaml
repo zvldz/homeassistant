@@ -17,6 +17,7 @@ cards:
             filter:
               include:
                 - entity_id: "binary_sensor.(sonoff|nodemcu|bw)_*"
+                  sort: entity_id
 
       - type: custom:button-card
         name: "Sensors"
@@ -50,19 +51,6 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Sonoff RF Bridge"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:entity-attributes-card
-            entity: sensor.sonoff_bridge_rf_1_status
-            filter:
-              include:
-                - key: sensor.sonoff_bridge_rf_1_status.*
-
       - type: custom:button-card
         name: "Switches"
         styles:

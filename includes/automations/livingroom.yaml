@@ -1,0 +1,81 @@
+- alias: Livingroom switch left
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_left_158d0002afc3c7
+      click_type: single
+  action:
+    service: light.toggle
+    entity_id:
+      - group.living_room_spot_left
+
+- alias: Livingroom switch right
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_right_158d0002afc3c7
+      click_type: single
+  action:
+    service: light.toggle
+    entity_id:
+      - group.living_room_spot_right
+
+- alias: Livingroom switch left long
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_left_158d0002afc3c7
+      click_type: long
+  action:
+    service: light.turn_off
+    entity_id:
+      - group.living_room_spot_left
+
+- alias: Livingroom switch right long
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_right_158d0002afc3c7
+      click_type: long
+  action:
+    service: light.turn_off
+    entity_id:
+      - group.living_room_spot_right
+
+- alias: Livingroom switch both
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_both_158d0002afc3c7
+      click_type: both
+  action:
+    service: light.toggle
+    entity_id:
+      - group.living_room_spot_right
+      - group.living_room_spot_left
+
+- alias: Livingroom switch both long
+  initial_state: 'on'
+  trigger:
+    platform: event
+    event_type: xiaomi_aqara.click
+    event_data:
+      entity_id: binary_sensor.wall_switch_both_158d0002afc3c7
+      click_type: long_both
+  action:
+    service: light.toggle
+    entity_id:
+      - group.living_room_spot_right
+      - group.living_room_spot_left
+
+

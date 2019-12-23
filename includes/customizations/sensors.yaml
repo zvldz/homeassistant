@@ -124,6 +124,7 @@ sensor.living_room_bt_battery_level:
 sensor.living_room_bt_temperature:
   friendly_name: Зал (BT)
 
+  friendly_name: Зал
 sensor.living_room_bt_humidity:
   friendly_name: Зал (BT)
 
@@ -198,6 +199,15 @@ binary_sensor.sonoff_rf_br_1_gate1:
 
 binary_sensor.sonoff_rf_br_1_gate2:
   friendly_name: RF Gate 2
+
+binary_sensor.wall_switch_both_158d0002afc3c7:
+  friendly_name: Зал Обе
+
+binary_sensor.wall_switch_left_158d0002afc3c7:
+  friendly_name: Зал Левая
+
+binary_sensor.wall_switch_right_158d0002afc3c7:
+  friendly_name: Зал Правая
 
 sensor.bw_plug_1_current:
   friendly_name: Розетка 2 Ток

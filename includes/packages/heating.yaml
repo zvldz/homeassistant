@@ -14,10 +14,10 @@ image_processing:
 
 input_boolean:
   pump_schedule:
-    name: Работа насоса по расписанию
+    name: Работа насоса по расписанию (Зима)
     icon: mdi:timer
   boiler_schedule:
-    name: Работа котла по расписанию
+    name: Работа котла по расписанию (Зима)
     icon: mdi:timer
 
 climate:

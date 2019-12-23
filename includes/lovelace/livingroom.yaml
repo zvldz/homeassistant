@@ -67,6 +67,9 @@ cards:
         show_header_toggle: false
         entities:
           - binary_sensor.living_room_lamp_nightlight
+          - binary_sensor.wall_switch_both_158d0002afc3c7
+          - binary_sensor.wall_switch_left_158d0002afc3c7
+          - binary_sensor.wall_switch_right_158d0002afc3c7
 
       - type: custom:button-card
         name: "Выключатели"

@@ -7,6 +7,8 @@ homeassistant:
   time_zone:  !secret home_timezone
   customize:  !include_dir_merge_named includes/customizations
   packages:   !include_dir_named includes/packages
+  whitelist_external_dirs:
+    - '/config/downloads'
 
 lovelace:
   mode: yaml

@@ -54,10 +54,11 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.kitchen_lamp_nightlight
-          - binary_sensor.motion_sensor_158d00022515fe
-          - sensor.illumination_158d00022515fe
-          - binary_sensor.water_leak_sensor_158d000232989c
+          - entity: binary_sensor.kitchen_lamp_nightlight
+          - entity: binary_sensor.motion_sensor_158d00022515fe
+            show_last_changed: true
+          - entity: sensor.illumination_158d00022515fe
+          - entity: binary_sensor.water_leak_sensor_158d000232989c
 
       - type: custom:button-card
         name: "Выключатели"

@@ -15,12 +15,37 @@ cards:
             entities:
               - entity: sensor.last_boot
                 format: total
-              - entity: sensor.ha_uptime_dt
+              - entity: sensor.ha1_uptime_dt
                 format: total
-              - sensor.ha_init
-              - sensor.ha_current
-              - sensor.ha_latest
+              - entity: sensor.ha2_uptime_dt
+                format: total
+              - entity: sensor.ha_dacha_uptime_dt
+                format: total
+              - entity: sensor.ha_init
+              - entity: sensor.ha_current
+              - entity: sensor.ha_latest
 
+      - type: custom:home-feed-card
+        title: HACS Updates
+        compact_mode: true
+        id_filter: ^home_feed_.*
+        entities:
+          - entity: sensor.hacs
+            icon: mdi:update
+            multiple_items: true
+            list_attribute: repositories
+            content_template: 'Update available for {{display_name}} to {{available version}}'
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Графики"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:vertical-stack-in-card
+        cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
@@ -57,41 +82,4 @@ cards:
                 entities:
                   - sensor.disk_use_percent
 
-  - type: vertical-stack
-    cards:
-#     - type: custom:button-card
-#       name: "Zigbee2mqtt"
-#       styles:
-#         card:
-#           - background-color: "#203040"
-
-#     - type: custom:vertical-stack-in-card
-#       cards:
-#         - type: entities
-#           show_header_toggle: false
-#           entities:
-#             - entity: sensor.zigbee2mqtt_bridge_state
-#             - entity: sensor.zigbee2mqtt_version
-#             - entity: sensor.coordinator_version
-#             - entity: input_select.zigbee2mqtt_log_level
-#             - type: divider
-#             - entity: switch.zigbee2mqtt_main_join
-#             - entity: timer.zigbee_permit_join
-#             - type: divider
-#             - entity: input_text.zigbee2mqtt_old_name
-#             - entity: input_text.zigbee2mqtt_new_name
-#             - entity: script.zigbee2mqtt_rename
-#             - type: divider
-#             - entity: input_text.zigbee2mqtt_remove
-#             - entity: script.zigbee2mqtt_remove
-
-      - type: custom:home-feed-card
-        title: HACS Updates
-        id_filter: ^home_feed_.*
-        entities:
-          - entity: sensor.hacs
-            icon: mdi:update
-            multiple_items: true
-            list_attribute: repositories
-            content_template: 'Update available for {{display_name}} to {{available version}}'
 

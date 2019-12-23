@@ -14,3 +14,7 @@ br_manaul_fun_on:
   name: Проветривания в Ванной
   icon: mdi:timer
 
+automation_status:
+  name: Статус Автоматизации
+  icon: mdi:flash-auto
+  initial: off

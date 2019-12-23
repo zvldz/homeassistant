@@ -31,7 +31,7 @@
 
 - platform: command_line
   name: HA Init
-  command: cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$"
+  command: cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$" || echo -1
   scan_interval: 180
   unit_of_measurement: сек
 
@@ -45,5 +45,71 @@
       icon_template: mdi:clock
       friendly_name: HA Uptime
       device_class: timestamp
-      value_template: "{{ (as_timestamp(now()) - (states('states.sensor.ha_uptime.state') * 60) | float) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+      value_template: "{{ (as_timestamp(now()) - (states('sensor.ha_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+
+- platform: rest
+  resource: !secret ha1_url
+  name: ha1_uptime
+  unit_of_measurement: minutes
+  force_update: true
+  headers:
+    authorization: !secret ha1_token
+  value_template: '{{ value_json.state }}'
+
+- platform: rest
+  resource: !secret ha2_url
+  name: ha2_uptime
+  unit_of_measurement: minutes
+  force_update: true
+  headers:
+    authorization: !secret ha2_token
+  value_template: '{{ value_json.state }}'
+
+- platform: rest
+  resource: !secret ha_dacha_url
+  name: ha_dacha_uptime
+  unit_of_measurement: minutes
+  force_update: true
+  headers:
+    authorization: !secret ha_dacha_token
+  value_template: '{{ value_json.state }}'
+
+- platform: template
+  sensors:
+    ha1_uptime_dt:
+      icon_template: mdi:clock
+      friendly_name: HA1 Uptime
+      device_class: timestamp
+      value_template: >-
+        {% if states('sensor.ha1_uptime') == 'unavailable' or states('sensor.ha1_uptime') == 'unknown' %}
+          unavailable
+        {% else %}
+          {{ (as_timestamp(now()) - (states('sensor.ha1_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+        {% endif %}
+
+- platform: template
+  sensors:
+    ha2_uptime_dt:
+      icon_template: mdi:clock
+      friendly_name: HA2 Uptime
+      device_class: timestamp
+      value_template: >-
+        {% if states('sensor.ha2_uptime') == 'unavailable' or states('sensor.ha2_uptime') == 'unknown' %}
+          unavailable
+        {% else %}
+          {{ (as_timestamp(now()) - (states('sensor.ha2_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+        {% endif %}
+
+- platform: template
+  sensors:
+    ha_dacha_uptime_dt:
+      icon_template: mdi:clock
+      friendly_name: HA Fazenda Uptime
+      device_class: timestamp
+      value_template: >-
+        {% if states('sensor.ha_dacha_uptime') == 'unavailable' or states('sensor.ha_dacha_uptime') == 'unknown' %}
+          unavailable
+        {% else %}
+          {{ (as_timestamp(now()) - (states('sensor.ha_dacha_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+        {% endif %}
 

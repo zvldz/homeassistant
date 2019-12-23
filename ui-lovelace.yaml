@@ -15,8 +15,6 @@ resources:
     type: module
   - url: /community_plugin/lovelace-valetudo-map-card/valetudo-map-card.js
     type: js
-  - url: /community_plugin/entity-attributes-card/entity-attributes-card.js
-    type: js
   - url: /community_plugin/miflora-card/miflora-card.js
     type: js
   - url: /community_plugin/lovelace-home-feed-card/lovelace-home-feed-card.js

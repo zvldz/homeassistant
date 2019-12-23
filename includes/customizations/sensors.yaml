@@ -124,7 +124,6 @@ sensor.living_room_bt_battery_level:
 sensor.living_room_bt_temperature:
   friendly_name: Зал (BT)
 
-  friendly_name: Зал
 sensor.living_room_bt_humidity:
   friendly_name: Зал (BT)
 

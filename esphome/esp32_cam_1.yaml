@@ -1,0 +1,81 @@
+substitutions:
+  device_name: esp32_cam_1
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32dev
+# arduino_version: 1.0.2
+
+wifi:
+  output_power: 20dB
+  fast_connect: true
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+api:
+ota:
+captive_portal:
+#esp32_ble_tracker:
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+binary_sensor:
+  - platform: status
+    name: ${device_name}_status
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:chip
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+    ssid:
+      name: ${device_name}_connected_ssid
+
+switch:
+  - platform: restart
+    name: ${device_name}_restart
+
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+
+  name: ${device_name}_camera
+  resolution: 1600x1200
+# resolution: 800x600
+# max_framerate: 4 fps
+# idle_framerate: 0 fps
+
+# Flashlight
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: gpio_4
+
+light:
+  - platform: binary
+    output: gpio_4
+    name: esp_cam
+

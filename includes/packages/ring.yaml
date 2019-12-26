@@ -2,6 +2,8 @@ ring:
   username: !secret ring_user
   password: !secret ring_pass
 
+ffmpeg:
+
 binary_sensor:
   - platform: ring
     scan_interval: 45
@@ -37,8 +39,6 @@ sensor:
         friendly_name: Последние движение
         icon_template: mdi:clock
         value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
-
-ffmpeg:
 
 camera:
   - platform: ring

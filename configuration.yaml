@@ -1,12 +1,12 @@
 homeassistant:
-  name: Home
-  unit_system: metric
+  name:       !secret home_name
   latitude:   !secret home_latitude
   longitude:  !secret home_longitude
   elevation:  !secret home_elevation
   time_zone:  !secret home_timezone
   customize:  !include_dir_merge_named includes/customizations
   packages:   !include_dir_named includes/packages
+  unit_system: metric
   whitelist_external_dirs:
     - '/config/downloads'
 
@@ -14,9 +14,6 @@ lovelace:
   mode: yaml
 
 http:
-# base_url: !secret home_base_url
-# cors_allowed_origins:
-#   - !secret home_base_url
   ip_ban_enabled: true
   login_attempts_threshold: 5
   use_x_forwarded_for: true
@@ -25,6 +22,9 @@ http:
 
 frontend:
   themes: !include_dir_merge_named themes
+
+api:
+  api_password: !secret api_pass
 
 discovery:
   ignore:
@@ -69,9 +69,6 @@ tts:
   - platform: google_translate
     service_name: google_say
     language: 'ru'
-
-api:
-  api_password: !secret api_pass
 
 google_assistant:
   project_id: !secret google_home_id
@@ -121,33 +118,8 @@ notify:
     platform: telegram
     chat_id: !secret telegram_bot_allowed_chat_id1
 
-panel_iframe:
-  cacti:
-    title: Cacti
-    icon: mdi:chart-areaspline
-    url: !secret cacti_url
-  portainer:
-    title: Portainer
-    icon: mdi:docker
-    url: !secret portainer_url
-  transmission:
-    title: Transmission
-    icon: mdi:download-network
-    url: !secret transmission_url
-  ring:
-    title: Ring
-    icon: mdi:bell-ring
-    url: !secret ring_url
-  esphome:
-    title: ESPHome
-    icon: mdi:chip
-    url: !secret esphome_url
-
 hacs:
   token: !secret my_github_access_token
-  theme: true
-# options:
-#   experimental: true
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors
@@ -162,4 +134,5 @@ script:         !include includes/scripts.yaml
 input_boolean:  !include includes/input_boolean.yaml
 input_number:   !include includes/input_number.yaml
 input_select:   !include includes/input_select.yaml
+panel_iframe:   !include includes/panel_iframe.yaml
 scene:          !include includes/scenes.yaml

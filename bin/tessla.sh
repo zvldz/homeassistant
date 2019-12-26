@@ -205,13 +205,13 @@ EOF
 fi
 
 if [ "$TUSER" = "unknown" ] || [ "$TPASS" = "unknown" ] || [ "$TDID" = "unknown" ]; then
-    echo "Parameters is invalid"
     echo >> ${TTMP}/tlog.txt
     date >> ${TTMP}/tlog.txt
+    echo "Parameters is invalid" >> ${TTMP}/tlog.txt
     echo "USER: $TUSER" >> ${TTMP}/tlog.txt
     echo "PASS: $TPASS" >> ${TTMP}/tlog.txt
     echo "DID: $TDID"  >> ${TTMP}/tlog.txt
-    echo -n '{"TEMPERATURE_1":"0.0","TEMPERATURE_2":"0.0","RELE":"3","TYPE_USTROYSTVO":"0","ACTIVE":"null"}'
+    echo '{"TEMPERATURE_1":"0","TEMPERATURE_2":"0","RELE":"3","TYPE_USTROYSTVO":"0","ACTIVE":"null"}'
     exit 0
 fi
 

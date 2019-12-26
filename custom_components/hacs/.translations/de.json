@@ -61,7 +61,7 @@
         "overwrite": "Dadurch wird die Datei überschrieben.",
         "reload_data": "Hierdurch werden die Daten aller Repositories die HACS kennt neu geladen. Dies wird einige Zeit in Anspruch nehmen.",
         "uninstall": "Möchtest du \"{item}\" wirklich deinstallieren?",
-        "upgrade_all": "Hier durch werden all diese Repositorys aktualisiert. Stelle sicher, dass du die Versionshinweise vorher gelesen hast.",
+        "upgrade_all": "Hierdurch werden all diese Repositories aktualisiert. Stelle sicher, dass du die Versionshinweise vorher gelesen hast.",
         "yes": "Ja"
     },
     "options": {
@@ -91,6 +91,7 @@
         "changelog": "Änderungsprotokoll",
         "downloads": "Downloads",
         "flag_this": "Melden",
+        "frontend_version": "Frontend Version",
         "hide": "Verstecken",
         "hide_beta": "Beta verstecken",
         "install": "Installieren",
@@ -126,7 +127,7 @@
         "hacs_repo": "HACS repo",
         "hidden_repositories": "versteckte Repositories",
         "missing_category": "Du musst eine Kategorie auswählen.",
-        "open_repository": "Öffnen das Repository",
+        "open_repository": "Repository öffnen",
         "reload_data": "Daten neu laden",
         "repository_configuration": "Repository Konfiguration",
         "save": "Speichern",

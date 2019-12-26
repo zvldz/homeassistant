@@ -12,5 +12,5 @@
   action:
     - service: persistent_notification.create
       data:
-        message: "Update available!"
+        message: "Доступны обновления"
         title: "HACS"

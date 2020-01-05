@@ -1,24 +1,24 @@
 esphome:
-	title: ESPHome
-	icon: mdi:chip
-	url: !secret esphome_url
+  title: ESPHome
+  icon: mdi:chip
+  url: !secret esphome_url
 portainer:
-	title: Portainer
-	icon: mdi:docker
-	url: !secret portainer_url
+  title: Portainer
+  icon: mdi:docker
+  url: !secret portainer_url
 transmission:
-	title: Transmission
-	icon: mdi:download-network
-	url: !secret transmission_url
+  title: Transmission
+  icon: mdi:download-network
+  url: !secret transmission_url
 monitorrent:
-	title: Monitorrent
-	icon: mdi:cloud-download
-	url: !secret monitorrent_url
+  title: Monitorrent
+  icon: mdi:cloud-download
+  url: !secret monitorrent_url
 cacti:
-	title: Cacti
-	icon: mdi:chart-areaspline
-	url: !secret cacti_url
+  title: Cacti
+  icon: mdi:chart-areaspline
+  url: !secret cacti_url
 ring:
-	title: Ring
-	icon: mdi:bell-ring
-	url: !secret ring_url
+  title: Ring
+  icon: mdi:bell-ring
+  url: !secret ring_url

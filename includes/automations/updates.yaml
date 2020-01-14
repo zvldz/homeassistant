@@ -1,0 +1,31 @@
+- alias: HACS Persistent Notification
+  initial_state: 'on'
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.hacs
+    above: 0
+  condition:
+    - condition: template
+      value_template: "{{ not is_state('sensor.hacs', 'none') }}"
+    - condition: template
+      value_template: "{{ not is_state('sensor.hacs', 'unknown') }}"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "HACS updates are available"
+        message: >-
+          {% for item in states.sensor.hacs.attributes.repositories %}
+            {{ item.display_name }} {{ item['installed version'] }} -> {{ item['available version'] }}
+          {% endfor %}
+
+- alias: HA Persistent Notification
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.updater
+      to: 'on'
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "HA Upgrade is Available"
+        message: "Upgrade from {{ states('sensor.ha_current') }} to {{ states('sensor.ha_latest2') }} is available"

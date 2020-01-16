@@ -1,5 +1,3 @@
-# Only for backup server
-
 - alias: turn_off_automation
   initial_state: 'on'
   trigger:
@@ -7,8 +5,7 @@
       event: start
   action:
     - service: automation.turn_off
-      entity_id:
-        - group.all_automations
+      entity_id: all
     - delay: 00:01:00
     - service: automation.turn_on
       entity_id:
@@ -32,7 +29,7 @@
     - service: input_boolean.turn_off
       entity_id: input_boolean.automation_status
     - service: automation.turn_off
-      entity_id: group.all_automations
+      entity_id: all
     - delay: 00:01:00
     - service: automation.turn_on
       entity_id:
@@ -54,6 +51,5 @@
     - service: input_boolean.turn_on
       entity_id: input_boolean.automation_status
     - service: automation.turn_on
-      entity_id:
-        - group.all_automations
+      entity_id: all
 

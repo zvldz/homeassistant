@@ -18,7 +18,12 @@ cards:
             filter:
               include:
                 - domain: automation
-                  sort: entity_id
+                  options:
+                    secondary_info: last-triggered
+                  sort:
+                    method: attribute
+                    attribute: last_triggered
+                    reverse: true
 
   - type: vertical-stack
     cards:
@@ -36,7 +41,12 @@ cards:
             filter:
               include:
                 - domain: script
-                  sort: entity_id
+                  options:
+                    secondary_info: last-triggered
+                  sort:
+                    method: attribute
+                    attribute: last_triggered
+                    reverse: true
 
       - type: custom:button-card
         name: "Settings"

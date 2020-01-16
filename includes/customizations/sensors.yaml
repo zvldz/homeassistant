@@ -142,23 +142,20 @@ sensor.illumination_7811dcb245b2:
 sensor.illumination_7c49eb1ce708:
   friendly_name: Спальня 1 ДО
 
-sensor.ring_front_door_battery:
+sensor.front_door_battery:
   friendly_name: Ring Заряд Батареи
 
-sensor.ring_front_door_volume:
+sensor.front_door_volume:
   friendly_name: Ring Громкость
 
-sensor.ring_front_door_wifi_signal_category:
-  friendly_name: Ring Уровень Сигнала WiFi
-
-sensor.ring_front_door_wifi_signal_strength:
-  friendly_name: Сила сигнала WiFi
-
-binary_sensor.ring_front_door_ding:
+binary_sensor.front_door_ding:
   friendly_name: Датчик Звонка
 
-binary_sensor.ring_front_door_motion:
+binary_sensor.front_door_motion:
   friendly_name: Датчик Движения
+
+sensor.hallway_volume:
+  friendly_name: Chime Громкость
 
 binary_sensor.door_window_sensor_158d0002fd4381:
   friendly_name: Ванная ДО

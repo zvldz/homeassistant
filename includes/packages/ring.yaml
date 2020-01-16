@@ -6,44 +6,38 @@ ffmpeg:
 
 binary_sensor:
   - platform: ring
-    scan_interval: 45
     monitored_conditions:
       - ding
       - motion
 
 sensor:
   - platform: ring
-    scan_interval: 45
     monitored_conditions:
       - battery
       - last_activity
       - last_ding
       - last_motion
       - volume
-      - wifi_signal_category
-      - wifi_signal_strength
 
   - platform: template
     sensors:
-      ring_front_door_last_activity_date:
+      front_door_last_activity_date:
         friendly_name: Последняя активность
         icon_template: mdi:clock
-        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-      ring_front_door_last_ding_date:
+      front_door_last_ding_date:
         friendly_name: Последний звонок
         icon_template: mdi:clock
-        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-      ring_front_door_last_motion_date:
+      front_door_last_motion_date:
         friendly_name: Последние движение
         icon_template: mdi:clock
-        value_template: "{{ as_timestamp(state_attr('sensor.ring_front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
 camera:
   - platform: ring
-    scan_interval: 45
-    ffmpeg_arguments: -pred 1 -q:v 2
 
 downloader:
   download_dir: downloads
@@ -53,7 +47,7 @@ automation:
     initial_state: 'on'
     trigger:
       platform: state
-      entity_id: binary_sensor.ring_front_door_ding
+      entity_id: binary_sensor.front_door_ding
       to: 'on'
     action:
       - service: notify.telegram
@@ -64,7 +58,7 @@ automation:
     initial_state: 'on'
     trigger:
       platform: template
-      value_template: "{{ is_state_attr('sensor.ring_front_door_last_activity', 'recording_status', 'ready') }}"
+      value_template: "{{ is_state_attr('sensor.front_door_last_activity', 'recording_status', 'ready') }}"
     action:
       - service: downloader.download_file
         data_template:

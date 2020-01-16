@@ -14,36 +14,36 @@ cards:
             cards:
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002235125
-                size: 10%
+                size: 35%
                 styles:
                   card:
                     - font-size: 14px
-
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022ab4bf
                 icon: mdi:light-switch
-                size: 20%
+                size: 35%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0001f9aa37
                 icon: mdi:light-switch
-                size: 20%
+                size: 35%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002114338
                 icon: mdi:light-switch
-                size: 20%
+                size: 35%
                 styles:
                   card:
                     - font-size: 14px
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: light
+            entity: light.balcony_strip
 
       - type: custom:miflora-card
         title: 'Цветок 1'

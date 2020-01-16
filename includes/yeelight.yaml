@@ -24,3 +24,7 @@ devices:
     model: ceiling3
     transition: 500
 #   use_music_mode: true
+  192.168.1.55:
+    name: balcony_strip
+#   model: strip1
+#   use_music_mode: true

@@ -1,3 +1,6 @@
+light.balcony_strip:
+  friendly_name: Балкон Лента
+
 light.master_bedroom_lamp:
   friendly_name: Спальня 1 Лампа
 

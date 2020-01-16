@@ -28,9 +28,6 @@ esp32_ble_tracker:
     interval: 320ms
     window: 30ms
 
-#dallas:
-#  - pin: GPIO23
-
 binary_sensor:
   - platform: status
     name: ${device_name}_status

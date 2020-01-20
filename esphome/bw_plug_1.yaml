@@ -2,7 +2,8 @@
 substitutions:
   device_name: bw_plug_1
   current_res: '0.00221'
-  voltage_div: '871'
+  #voltage_div: '871'
+  voltage_div: '878'
 
 esphome:
   name: ${device_name}

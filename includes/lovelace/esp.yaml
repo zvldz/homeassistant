@@ -96,3 +96,20 @@ cards:
               include:
                 - entity_id: "light.(sonoff|nodemcu|bw)_*"
                   sort: entity_id
+
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: 'Voltage'
+                entities:
+                  - entity: sensor.sonoff_pump_voltage
+                  - entity: sensor.bw_plug_1_voltage
+                    color: red

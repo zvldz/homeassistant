@@ -28,21 +28,25 @@
       - switch.wall_switch_ln_158d0001f9aa37
       - switch.wall_switch_ln_158d0002114338
 
-#- alias: Turn on christmas lights
-#  initial_state: 'off'
-#  trigger:
-#    platform: time
-#    at: '18:00:00'
-#  action:
-#    service: switch.turn_on
-#    entity_id: switch.plug_158d0002677c89
+- alias: Turn led strip on balcony
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: '+00:10:00'
+  action:
+    service: light.turn_on
+    entity_id: light.balcony_strip
+    data_template:
+      brightness_pct: 50
+#     kelvin: 6500
 
-#- alias: Turn off christmas lights
-#  initial_state: 'off'
-#  trigger:
-#    platform: time
-#    at: '00:00:00'
-#  action:
-#    service: switch.turn_off
-#    entity_id: switch.plug_158d0002677c89
+- alias: Turn off led strip on balcony
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '00:15:00'
+  action:
+    service: light.turn_off
+    entity_id: light.balcony_strip
 

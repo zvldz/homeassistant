@@ -1,24 +1,4 @@
-ring:
-  username: !secret ring_user
-  password: !secret ring_pass
-
-ffmpeg:
-
-binary_sensor:
-  - platform: ring
-    monitored_conditions:
-      - ding
-      - motion
-
 sensor:
-  - platform: ring
-    monitored_conditions:
-      - battery
-      - last_activity
-      - last_ding
-      - last_motion
-      - volume
-
   - platform: template
     sensors:
       front_door_last_activity_date:
@@ -36,14 +16,11 @@ sensor:
         icon_template: mdi:clock
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-camera:
-  - platform: ring
-
 downloader:
   download_dir: downloads
 
 automation:
-  - alias: Ring DoorBell
+  - alias: "Ring DoorBell"
     initial_state: 'on'
     trigger:
       platform: state
@@ -52,9 +29,9 @@ automation:
     action:
       - service: notify.telegram
         data:
-          message: 'Звонок в дверь'
+          message: "Звонок в дверь"
 
-  - alias: Ring Video Download
+  - alias: "Ring Video Download"
     initial_state: 'on'
     trigger:
       platform: template

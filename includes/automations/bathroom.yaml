@@ -1,86 +1,133 @@
-- alias: Door opened in Bathroom
+# Bathroom
+- alias: "Turn on light in bathroom on conditions"
   initial_state: 'on'
   trigger:
-    platform: state
-    entity_id: binary_sensor.door_window_sensor_158d0002fd4381
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      to: 'on'
+    - platform: event
+      event_type: xiaomi_aqara.motion
+      event_data:
+        entity_id: binary_sensor.motion_sensor_158d00044a26ba
   condition:
-    condition: state
-    entity_id: switch.wall_switch_ln_left_158d00022a8150
-    state: 'off'
+    - condition: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      state: 'off'
   action:
     - service: switch.turn_on
       entity_id: switch.wall_switch_ln_left_158d00022a8150
+    - service: timer.start
+      entity_id: timer.bathroom
 
-- alias: Turn off Bathroom lights 20 minutes after turn on
+- alias: "Reset bathroom timer on conditions"
   initial_state: 'on'
   trigger:
-    platform: time_pattern
-    minutes: '/1'
-    seconds: 00
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      to: 'off'
+    - platform: event
+      event_type: xiaomi_aqara.motion
+      event_data:
+        entity_id: binary_sensor.motion_sensor_158d00044a26ba
   condition:
-    condition: and
-    conditions:
-      - condition: state
-        entity_id: input_boolean.auto_turn_off_lights
-        state: 'on'
-      - condition: state
-        entity_id: switch.wall_switch_ln_left_158d00022a8150
-        state: 'on'
-        for:
-          minutes: 20
-      - condition: state
-        entity_id: binary_sensor.door_window_sensor_158d0002fd4381
-        state: 'off'
+    - condition: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      state: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.bathroom
+
+- alias: "Turn off light in bathroom on conditions"
+  initial_state: 'on'
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.bathroom
+  condition:
+    - condition: state
+      entity_id: input_boolean.auto_turn_off_lights
+      state: 'on'
+    - condition: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      state: 'off'
   action:
     - service: switch.turn_off
       entity_id: switch.wall_switch_ln_left_158d00022a8150
 
-- alias: Turn off auto Bathroom fan 5 minutes after turn on
+- alias: "Turn off bathroom timer if light is off"
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      to: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.bathroom
+
+- alias: "Turn on timer if bathroom light is on"
+  initial_state: 'on'
+  trigger:
+    - platform: time_pattern
+      minutes: '/1'
+  condition:
+    - condition: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      state: 'on'
+    - condition: state
+      entity_id: timer.bathroom
+      state: 'idle'
+  action:
+    - service: timer.cancel
+      entity_id: timer.bathroom
+    - service: timer.start
+      entity_id: timer.bathroom
+
+# FAN
+# humidity !!!!
+
+- alias: "Turn off auto Bathroom fan 5 minutes after turn on"
   initial_state: 'on'
   trigger:
     platform: time_pattern
     minutes: '/1'
-    seconds: 00
   condition:
-    condition: and
-    conditions:
-      - condition: state
-        entity_id: switch.sonoff_br_relay_1
-        state: 'on'
-        for:
-          minutes: 5
-      - condition: state
-        entity_id: input_boolean.br_manaul_fun_on
-        state: 'off'
+    - condition: state
+      entity_id: switch.sonoff_br_relay_1
+      state: 'on'
+      for:
+        minutes: 5
+    - condition: state
+      entity_id: input_boolean.br_manaul_fun_on
+      state: 'off'
   action:
     - service: switch.turn_off
       entity_id: switch.sonoff_br_relay_1
 
-- alias: Turn off manual Bathroom fan 15 minutes after turn on
+- alias: "Turn off manual Bathroom fan 15 minutes after turn on"
   initial_state: 'on'
   trigger:
     platform: time_pattern
     minutes: '/1'
-    seconds: 00
   condition:
-    condition: and
-    conditions:
-      - condition: state
-        entity_id: switch.sonoff_br_relay_1
-        state: 'on'
-        for:
-          minutes: 15
-      - condition: state
-        entity_id: input_boolean.br_manaul_fun_on
-        state: 'on'
+    - condition: state
+      entity_id: switch.sonoff_br_relay_1
+      state: 'on'
+      for:
+        minutes: 15
+    - condition: state
+      entity_id: input_boolean.br_manaul_fun_on
+      state: 'on'
   action:
     - service: switch.turn_off
       entity_id: switch.sonoff_br_relay_1
     - service: input_boolean.turn_off
       entity_id: input_boolean.br_manaul_fun_on
 
-- alias: Turn on Bathroom fan
+- alias: "Turn on Bathroom fan"
   initial_state: 'on'
   trigger:
     - platform: time
@@ -90,16 +137,14 @@
     - platform: time
       at: '18:00'
   condition:
-    condition: and
-    conditions:
-      - condition: state
-        entity_id: input_boolean.auto_fan
-        state: 'on'
+    - condition: state
+      entity_id: input_boolean.auto_fan
+      state: 'on'
   action:
     - service: switch.turn_on
       entity_id: switch.sonoff_br_relay_1
 
-- alias: Bathroom fan button is pressed to on
+- alias: "Bathroom fan button is pressed to on"
   initial_state: 'on'
   trigger:
     platform: state
@@ -113,7 +158,7 @@
     - service: input_boolean.turn_on
       entity_id: input_boolean.br_manaul_fun_on
 
-- alias: Bathroom fan button is pressed to off
+- alias: "Bathroom fan button is pressed to off"
   initial_state: 'on'
   trigger:
     platform: state

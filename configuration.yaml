@@ -72,7 +72,7 @@ tts:
 
 google_assistant:
   project_id: !secret google_home_id
-  api_key: !secret google_home_api
+  service_account: !include ga_ha.json
   exposed_domains:
     - light
     - vacuum
@@ -135,4 +135,5 @@ input_boolean:  !include includes/input_boolean.yaml
 input_number:   !include includes/input_number.yaml
 input_select:   !include includes/input_select.yaml
 panel_iframe:   !include includes/panel_iframe.yaml
+timer:          !include includes/timer.yaml
 scene:          !include includes/scenes.yaml

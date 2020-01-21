@@ -1,11 +1,11 @@
 media_player.home_mini:
-  friendly_name: Home mini
+  friendly_name: "Home mini"
 
 media_player.shield_tv:
-  friendly_name: Зал Shield TV
+  friendly_name: "Зал Shield TV"
 
 media_player.zal_tv_ue49mu6402:
-  friendly_name: Зал Samsung TV
+  friendly_name: "Зал Samsung TV"
 
 media_player.android_tv:
-  friendly_name: Кухня ТВ
+  friendly_name: "Кухня ТВ"

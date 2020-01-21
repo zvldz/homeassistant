@@ -1,5 +1,5 @@
-title: Кухня
-icon: mdi:silverware-fork-knife
+title: "Кухня"
+icon: "mdi:silverware-fork-knife"
 cards:
   - type: vertical-stack
     cards:
@@ -26,7 +26,7 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Температура'
+                name: "Температура"
                 hour24: true
                 entities:
                   - entity: sensor.temperature_158d0002ca0395
@@ -37,7 +37,7 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Влажность'
+                name: "Влажность"
                 hour24: true
                 entities:
                   - entity: sensor.humidity_158d0002ca0395
@@ -84,3 +84,19 @@ cards:
                   card:
                     - font-size: 14px
 
+      - type: custom:button-card
+        name: "Таймеры"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+            - type: entity-filter
+              show_header_toggle: false
+              entities:
+                - entity: timer.kitchen
+              state_filter:
+                - 'active'

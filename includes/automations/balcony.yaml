@@ -1,4 +1,4 @@
-- alias: Switch balcony 1
+- alias: "Switch balcony 1"
   initial_state: 'on'
   trigger:
     platform: event
@@ -13,7 +13,7 @@
       - switch.wall_switch_ln_158d0001f9aa37
       - switch.wall_switch_ln_158d0002114338
 
-- alias: Switch balcony 2
+- alias: "Switch balcony 2"
   initial_state: 'on'
   trigger:
     platform: event
@@ -28,7 +28,7 @@
       - switch.wall_switch_ln_158d0001f9aa37
       - switch.wall_switch_ln_158d0002114338
 
-- alias: Turn led strip on balcony
+- alias: "Turn led strip on balcony"
   initial_state: 'on'
   trigger:
     platform: sun
@@ -38,14 +38,16 @@
     service: light.turn_on
     entity_id: light.balcony_strip
     data_template:
-      brightness_pct: 50
+      brightness_pct: 40
 #     kelvin: 6500
 
-- alias: Turn off led strip on balcony
+- alias: "Turn off led strip on balcony"
   initial_state: 'on'
   trigger:
-    platform: time
-    at: '00:15:00'
+    - platform: time
+      at: '00:15:00'
+    - platform: time
+      at: '01:15:00'
   action:
     service: light.turn_off
     entity_id: light.balcony_strip

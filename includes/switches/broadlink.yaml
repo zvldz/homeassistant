@@ -5,7 +5,7 @@
   timeout: 15
   switches:
     samsung_tv:
-      friendly_name: Samsung TV Power
+      friendly_name: "Samsung TV Power"
       command_on: 'JgBGAJaTFDYVNxQ2FRIVERUSFREVEhU1FjYVNhUSFBIVEhQSFRISOBYSFBIVNhU2FRIVERU3FBEWNhU2FRIUEhU3FDYVEhUADQUAAA=='
       command_off: 'JgBGAJSWEzcUOBQ3FBIUERQTEhIUExI4EzkTNxUSExIUEhMSFBIUERQTExEVNxQ3FBITEhQ4EzcUOBM3FBITEhQ4EzcVEhMADQUAAA=='
 #   shield_tv:

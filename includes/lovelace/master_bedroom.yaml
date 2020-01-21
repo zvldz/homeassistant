@@ -1,5 +1,5 @@
-title: Спальня 1
-icon: mdi:hotel
+title: "Спальня 1"
+icon: "mdi:hotel"
 cards:
   - type: vertical-stack
     cards:
@@ -41,7 +41,7 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Температура'
+                name: "Температура"
                 hour24: true
                 entities:
                   - sensor.temperature_158d0002323856
@@ -50,7 +50,7 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Влажность'
+                name: "Влажность"
                 hour24: true
                 entities:
                   - sensor.humidity_158d0002323856

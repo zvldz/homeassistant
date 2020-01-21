@@ -1,12 +1,12 @@
 living_room_spot_left:
-  name: Левые Споты
+  name: "Левые Споты"
   entities:
     - light.living_room_spot_left_1
     - light.living_room_spot_left_2
     - light.living_room_spot_left_3
 
 living_room_spot_right:
-  name: Правые Споты
+  name: "Правые Споты"
   entities:
     - light.living_room_spot_right_1
     - light.living_room_spot_right_2

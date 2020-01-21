@@ -1,5 +1,5 @@
-title: Дверной звонок
-icon: mdi:bell-ring
+title: "Дверной звонок"
+icon: "mdi:bell-ring"
 cards:
   - type: vertical-stack
     cards:

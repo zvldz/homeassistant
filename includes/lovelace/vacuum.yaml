@@ -1,5 +1,5 @@
-title: Пылесос
-icon: mdi:robot-vacuum
+title: "Робот-Пылесос"
+icon: "mdi:robot-vacuum"
 cards:
   - type: vertical-stack
     cards:
@@ -29,8 +29,8 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                name: Главная Щетка
-                icon: mdi:autorenew
+                name: "Главная Щетка"
+                icon: "mdi:autorenew"
                 entity: script.vacuum_reset_main_brush
                 tap_action:
                   confirmation: true
@@ -44,8 +44,8 @@ cards:
                     - font-size: 14px
 
               - type: custom:button-card
-                name: Боковая Щетка
-                icon: mdi:autorenew
+                name: "Боковая Щетка"
+                icon: "mdi:autorenew"
                 entity: script.vacuum_reset_side_brush
                 tap_action:
                   confirmation: true
@@ -59,8 +59,8 @@ cards:
                     - font-size: 14px
 
               - type: custom:button-card
-                name: Фильтр
-                icon: mdi:autorenew
+                name: "Фильтр"
+                icon: "mdi:autorenew"
                 entity: script.vacuum_reset_filter
                 tap_action:
                   confirmation: true
@@ -74,8 +74,8 @@ cards:
                     - font-size: 14px
 
               - type: custom:button-card
-                name: Сенсоры
-                icon: mdi:autorenew
+                name: "Сенсоры"
+                icon: "mdi:autorenew"
                 entity: script.vacuum_reset_sensor
                 tap_action:
                   confirmation: true
@@ -90,20 +90,20 @@ cards:
 
       - type: custom:xiaomi-vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner
-        name: Xiaomi Vacuum
+        name: "Xiaomi Vacuum"
         buttons: true
         labels:
-          status: Состояние
-          battery: Батарея
-          mode: Режим
-          main_brush: Главная щетка
-          side_brush: Боковая щетка
-          filter: Фильтр
-          sensor: Сенсор
-          hours: ч
+          status: "Состояние"
+          battery: "Батарея"
+          mode: "Режим"
+          main_brush: "Главная щетка"
+          side_brush: "Боковая щетка"
+          filter: "Фильтр"
+          sensor: "Сенсор"
+          hours: "ч"
 
       - type: entities
-        title: Зональная Уборка
+        title: "Зональная Уборка"
         show_header_toggle: false
         entities:
           - input_select.vacuum_room

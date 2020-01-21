@@ -1,5 +1,5 @@
 title: Балкон
-icon: mdi:wall
+icon: "mdi:wall"
 cards:
   - type: vertical-stack
     cards:
@@ -20,21 +20,21 @@ cards:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022ab4bf
-                icon: mdi:light-switch
+                icon: "mdi:light-switch"
                 size: 35%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0001f9aa37
-                icon: mdi:light-switch
+                icon: "mdi:light-switch"
                 size: 35%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d0002114338
-                icon: mdi:light-switch
+                icon: "mdi:light-switch"
                 size: 35%
                 styles:
                   card:

@@ -1,5 +1,5 @@
-title: ESP
-icon: mdi:chip
+title: "ESP"
+icon: "mdi:chip"
 cards:
   - type: vertical-stack
     cards:
@@ -108,8 +108,11 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Voltage'
+                name: "Voltage"
+                hour24: true
+                points_per_hour: 1
                 entities:
                   - entity: sensor.sonoff_pump_voltage
                   - entity: sensor.bw_plug_1_voltage
                     color: red
+

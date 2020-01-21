@@ -1,4 +1,4 @@
-- alias: Water leak in kitchen
+- alias: "Water leak in kitchen"
   initial_state: 'on'
   trigger:
     platform: state
@@ -7,7 +7,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Утечка воды на кухне'
+        message: "Утечка воды на кухне"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -19,7 +19,7 @@
         ringtone_id: 0
         ringtone_vol: 80
 
-- alias: Water leak off in kitchen
+- alias: "Water leak off in kitchen"
   initial_state: 'on'
   trigger:
     platform: state
@@ -29,7 +29,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Устранена утечка воды на кухне'
+        message: "Устранена утечка воды на кухне"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -37,7 +37,7 @@
       data:
         gw_mac: !secret xgate_2_mac
 
-- alias: Water leak in bathroom
+- alias: "Water leak in bathroom"
   initial_state: 'on'
   trigger:
     platform: state
@@ -46,7 +46,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Утечка воды в ванной'
+        message: "Утечка воды в ванной"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -58,7 +58,7 @@
         ringtone_id: 0
         ringtone_vol: 80
 
-- alias: Water leak off in bathroom
+- alias: "Water leak off in bathroom"
   initial_state: 'on'
   trigger:
     platform: state
@@ -68,7 +68,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Устранена утечка воды в ванной'
+        message: "Устранена утечка воды в ванной"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -76,7 +76,7 @@
       data:
         gw_mac: !secret xgate_2_mac
 
-- alias: Water leak in WC
+- alias: "Water leak in WC"
   initial_state: 'on'
   trigger:
     platform: state
@@ -85,7 +85,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Утечка воды в туалете'
+        message: "Утечка воды в туалете"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -97,7 +97,7 @@
         ringtone_id: 0
         ringtone_vol: 80
 
-- alias: Water leak off in WC
+- alias: "Water leak off in WC"
   initial_state: 'on'
   trigger:
     platform: state
@@ -107,7 +107,7 @@
   action:
     - service: notify.telegram
       data:
-        message: 'Устранена утечка воды в туалете'
+        message: "Устранена утечка воды в туалете"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac

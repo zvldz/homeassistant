@@ -1,5 +1,5 @@
-title: Коридор
-icon: mdi:swap-vertical-variant
+title: "Коридор"
+icon: "mdi:swap-vertical-variant"
 cards:
   - type: vertical-stack
     cards:
@@ -127,7 +127,9 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Температура'
+                name: "Температура"
+                hour24: true
+                points_per_hour: 1
                 entities:
                   - entity: sensor.temperature_158d000231f03e
                   - entity: sensor.temperature_158d000273011f
@@ -138,7 +140,9 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: 'Влажность'
+                name: "Влажность"
+                hour24: true
+                points_per_hour: 1
                 entities:
                   - entity: sensor.humidity_158d000231f03e
                   - entity: sensor.humidity_158d000273011f

@@ -1,20 +1,20 @@
 auto_turn_off_lights:
-  name: Автовыключение света
-  icon: mdi:timer
+  name: "Автовыключение света"
+  icon: "mdi:timer"
 
 auto_fan:
-  name: Периодическое проветривание
-  icon: mdi:timer
+  name: "Периодическое проветривание"
+  icon: "mdi:timer"
 
 wc_manaul_fun_on:
-  name: Проветривания в WC
-  icon: mdi:timer
+  name: "Проветривания в WC"
+  icon: "mdi:timer"
 
 br_manaul_fun_on:
-  name: Проветривания в Ванной
-  icon: mdi:timer
+  name: "Проветривания в Ванной"
+  icon: "mdi:timer"
 
 automation_status:
-  name: Статус Автоматизации
-  icon: mdi:flash-auto
+  name: "Статус Автоматизации"
+  icon: "mdi:flash-auto"
   initial: off

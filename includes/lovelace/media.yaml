@@ -1,5 +1,5 @@
-title: Мультимедия
-icon: mdi:television
+title: "Мультимедия"
+icon: "mdi:television"
 cards:
 
   - type: conditional

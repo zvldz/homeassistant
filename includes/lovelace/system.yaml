@@ -1,5 +1,5 @@
-title: Система
-icon: mdi:heart-pulse
+title: "Система"
+icon: "mdi:heart-pulse"
 cards:
   - type: vertical-stack
     cards:
@@ -26,7 +26,7 @@ cards:
               - entity: sensor.ha_latest
 
       - type: custom:home-feed-card
-        title: HACS Updates
+        title: "HACS Updates"
         compact_mode: true
         id_filter: ^home_feed_.*
         entities:
@@ -34,7 +34,7 @@ cards:
             icon: mdi:update
             multiple_items: true
             list_attribute: repositories
-            content_template: 'Update available for {{display_name}} to {{available version}}'
+            content_template: "Update available for {{display_name}} to {{available version}}"
 
   - type: vertical-stack
     cards:
@@ -49,13 +49,13 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: CPU temp
+                name: "CPU temp"
                 entities:
                   - sensor.cpu_temperature
                 hour24: true
                 line_color: red
               - type: custom:mini-graph-card
-                name: CPU use
+                name: "CPU use"
                 hour24: true
                 entities:
                   - sensor.processor_use
@@ -63,13 +63,13 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: RAM
+                name: "RAM"
                 entities:
                   - sensor.memory_use_percent
                 hour24: true
                 line_color: red
               - type: custom:mini-graph-card
-                name: SWAP
+                name: "SWAP"
                 hour24: true
                 entities:
                   - sensor.swap_use_percent
@@ -77,7 +77,7 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-                name: HDD
+                name: "HDD"
                 hour24: true
                 entities:
                   - sensor.disk_use_percent

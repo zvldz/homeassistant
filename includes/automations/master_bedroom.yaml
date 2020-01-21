@@ -1,4 +1,4 @@
-- alias: Set brightness for lamp in bedroom1
+- alias: "Set brightness for lamp in bedroom1"
   initial_state: 'on'
   trigger:
     platform: state
@@ -11,7 +11,7 @@
         entity_id: light.master_bedroom_lamp
         mode: normal
 
-- alias: Turn on bedside lamp
+- alias: "Turn on bedside lamp"
   initial_state: 'on'
   trigger:
     platform: numeric_state
@@ -20,14 +20,12 @@
     below: 7
     above: 5
   condition:
-      condition: and
-      conditions:
-        - condition: state
-          state: 'off'
-          entity_id: light.bedside
-        - condition: time
-          after: '15:00:00'
-          before: '22:00:00'
+    - condition: state
+      state: 'off'
+      entity_id: light.bedside
+    - condition: time
+      after: '15:00:00'
+      before: '22:00:00'
   action:
     service: light.turn_on
     entity_id: light.bedside
@@ -35,7 +33,7 @@
       brightness_pct: 70
       kelvin: 6500
 
-- alias: Turn off bedside lamp
+- alias: "Turn off bedside lamp"
   initial_state: 'on'
   trigger:
     platform: time

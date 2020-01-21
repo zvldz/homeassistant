@@ -1,46 +1,46 @@
 light.balcony_strip:
-  friendly_name: Балкон Лента
+  friendly_name: "Балкон Лента"
 
 light.master_bedroom_lamp:
-  friendly_name: Спальня 1 Лампа
+  friendly_name: "Спальня 1 Лампа"
 
 light.bedside:
-  friendly_name: Спальня 1 Ночник
+  friendly_name: "Спальня 1 Ночник"
 
 light.bedroom_lamp:
-  friendly_name: Спальня 2 Лампа
+  friendly_name: "Спальня 2 Лампа"
 
 light.kitchen_lamp:
-  friendly_name: Кухня Лампа
+  friendly_name: "Кухня Лампа"
 
 light.living_room_lamp:
-  friendly_name: Зал Лампа
+  friendly_name: "Зал Лампа"
 
 light.living_room_lamp_ambilight:
-  friendly_name: Зал Лампа Ambilight
+  friendly_name: "Зал Лампа Ambilight"
 
 light.gateway_light_7811dcb245b2:
-  friendly_name: Hub 1 Свет
+  friendly_name: "Hub 1 Свет"
 
 light.gateway_light_7c49eb1ce708:
-  friendly_name: Hub 2 Свет
+  friendly_name: "Hub 2 Свет"
 
 light.living_room_spot_left_1:
-  friendly_name: Зал Спот Левый 1
+  friendly_name: "Зал Спот Левый 1"
 
 light.living_room_spot_left_2:
-  friendly_name: Зал Спот Левый 2
+  friendly_name: "Зал Спот Левый 2"
 
 light.living_room_spot_left_3:
-  friendly_name: Зал Спот Левый 3
+  friendly_name: "Зал Спот Левый 3"
 
 light.living_room_spot_right_1:
-  friendly_name: Зал Спот Правый 1
+  friendly_name: "Зал Спот Правый 1"
 
 light.living_room_spot_right_2:
-  friendly_name: Зал Спот Правый 2
+  friendly_name: "Зал Спот Правый 2"
 
 light.living_room_spot_right_3:
-  friendly_name: Зал Спот Правый 3
+  friendly_name: "Зал Спот Правый 3"
 
 

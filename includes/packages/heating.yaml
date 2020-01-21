@@ -3,10 +3,10 @@ python_script:
 input_boolean:
   pump_schedule:
     name: "Работа насоса по расписанию (Зима)"
-    icon: mdi:timer
+    icon: "mdi:timer"
   gas_boiler_schedule:
     name: "Работа котла по расписанию (Зима)"
-    icon: mdi:timer
+    icon: "mdi:timer"
 
 climate:
   - platform: generic_thermostat

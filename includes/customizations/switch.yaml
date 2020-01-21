@@ -1,82 +1,75 @@
 switch.plug_158d0002677c89:
-  friendly_name: Розетка 1
+  friendly_name: "Розетка 1"
   icon: "mdi:power-socket-au"
 
 switch.bw_plug_1_relay:
-  friendly_name: Розетка 2
+  friendly_name: "Розетка 2"
   icon: "mdi:power-socket-eu"
 
 switch.sonoff_wc_relay:
-  friendly_name: WC Вытяжка
+  friendly_name: "WC Вытяжка"
   icon: "mdi:light-switch"
 
 switch.sonoff_br_relay_1:
-  friendly_name: Ванная Вытяжка
+  friendly_name: "Ванная Вытяжка"
   icon: "mdi:light-switch"
 
 switch.sonoff_br_relay_2:
-  friendly_name: Ванная Зеркало
+  friendly_name: "Ванная Зеркало"
   icon: "mdi:light-switch"
 
-#switch.0x00158d00022b3ea0_switch_right:
-# friendly_name: Зал Левый
-# icon: "mdi:light-switch"
-
-#switch.0x00158d00022b3ea0_switch_left:
-# friendly_name: Зал Правый
-# icon: "mdi:light-switch"
-
 switch.wall_switch_ln_158d000211434a:
-  friendly_name: Кухня
+  friendly_name: "Кухня"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_left_158d00022a8150:
-  friendly_name: Ванная
+  friendly_name: "Ванная"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d00022360fe:
-  friendly_name: WC
+  friendly_name: "WC"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0001f9aaae:
-  friendly_name: Коридор 1
+  friendly_name: "Коридор 1"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0002112b1e:
-  friendly_name: Коридор 2
+  friendly_name: "Коридор 2"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_right_158d00022a8150:
-  friendly_name: Коридор 3
+  friendly_name: "Коридор 3"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0002235125:
-  friendly_name: Кладовка
+  friendly_name: "Кладовка"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d00022ab4bf:
-  friendly_name: Балкон 1
+  friendly_name: "Балкон 1"
 
 switch.wall_switch_ln_158d0001f9aa37:
-  friendly_name: Балкон 2
+  friendly_name: "Балкон 2"
 
 switch.wall_switch_ln_158d0002114338:
-  friendly_name: Балкон 3
+  friendly_name: "Балкон 3"
 
 switch.sonoff_rf_br_1_sb_rf:
-  friendly_name: RF Sonoff
+  friendly_name: "RF Sonoff"
 
 switch.sonoff_rf_br_1_key4:
-  friendly_name: RF Key 4
+  friendly_name: "RF Key 4"
 
 switch.sonoff_rf_br_1_gate1:
-  friendly_name: RF Gate 1
+  friendly_name: "RF Gate 1"
 
 switch.sonoff_rf_br_1_gate2:
-  friendly_name: RF Gate 2
+  friendly_name: "RF Gate 2"
 
 switch.sonoff_pump_relay:
-  friendly_name: Насос
+  friendly_name: "Насос"
 
 switch.gas_boiler:
-  friendly_name: Котел
+  friendly_name: "Котел"
+

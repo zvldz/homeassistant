@@ -1,5 +1,5 @@
 title: "Batteries"
-icon: mdi:battery-alert
+icon: "mdi:battery-alert"
 cards:
   - type: vertical-stack
     cards:

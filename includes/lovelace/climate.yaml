@@ -1,5 +1,5 @@
-title: Кондиционеры
-icon: mdi:air-conditioner
+title: "Кондиционеры"
+icon: "mdi:air-conditioner"
 cards:
   - type: thermostat
     entity: climate.midea_16492674435040

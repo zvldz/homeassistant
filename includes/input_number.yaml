@@ -1,6 +1,6 @@
 seconds:
   name: seconds
-  icon: mdi:clock-start
+  icon: "mdi:clock-start"
   initial: 30
   min: 0
   max: 60

@@ -1,5 +1,5 @@
 title: Automation
-icon: mdi:flash-auto
+icon: "mdi:flash-auto"
 cards:
   - type: vertical-stack
     cards:

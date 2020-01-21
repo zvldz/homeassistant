@@ -1,5 +1,5 @@
-title: Home
-icon: mdi:home-assistant
+title: "Home"
+icon: "mdi:home-assistant"
 cards:
   - type: vertical-stack
     cards:

@@ -1,5 +1,5 @@
-title: Sonoff RF Bridge
-icon: mdi:radio-tower
+title: "Sonoff RF Bridge"
+icon: "mdi:radio-tower"
 cards:
   - type: vertical-stack
     cards:
@@ -17,7 +17,7 @@ cards:
               - binary_sensor.sonoff_rf_br_2_status
 
       - type: custom:button-card
-        name: ESPHome Switch
+        name: "ESPHome Switch"
         styles:
           card:
             - background-color: "#203040"
@@ -33,7 +33,7 @@ cards:
             entity: switch.sonoff_rf_br_1_key4
 
       - type: custom:button-card
-        name: ESPHome Switch 2
+        name: "ESPHome Switch 2"
         styles:
           card:
             - background-color: "#203040"

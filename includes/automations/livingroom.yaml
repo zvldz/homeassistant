@@ -1,4 +1,4 @@
-- alias: Livingroom switch left
+- alias: "Livingroom switch left"
   initial_state: 'on'
   trigger:
     platform: event
@@ -11,7 +11,7 @@
     entity_id:
       - group.living_room_spot_left
 
-- alias: Livingroom switch right
+- alias: "Livingroom switch right"
   initial_state: 'on'
   trigger:
     platform: event
@@ -24,7 +24,7 @@
     entity_id:
       - group.living_room_spot_right
 
-- alias: Livingroom switch left long
+- alias: "Livingroom switch left long"
   initial_state: 'on'
   trigger:
     platform: event
@@ -37,7 +37,7 @@
     entity_id:
       - group.living_room_spot_left
 
-- alias: Livingroom switch right long
+- alias: "Livingroom switch right long"
   initial_state: 'on'
   trigger:
     platform: event
@@ -50,7 +50,7 @@
     entity_id:
       - group.living_room_spot_right
 
-- alias: Livingroom switch both
+- alias: "Livingroom switch both"
   initial_state: 'on'
   trigger:
     platform: event
@@ -64,7 +64,7 @@
       - group.living_room_spot_right
       - group.living_room_spot_left
 
-- alias: Livingroom switch both long
+- alias: "Livingroom switch both long"
   initial_state: 'on'
   trigger:
     platform: event

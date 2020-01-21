@@ -3,17 +3,17 @@ sensor:
     sensors:
       front_door_last_activity_date:
         friendly_name: Последняя активность
-        icon_template: mdi:clock
+        icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
       front_door_last_ding_date:
         friendly_name: Последний звонок
-        icon_template: mdi:clock
+        icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
       front_door_last_motion_date:
         friendly_name: Последние движение
-        icon_template: mdi:clock
+        icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
 downloader:

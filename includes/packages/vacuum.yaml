@@ -5,7 +5,7 @@ vacuum:
 
 input_select:
   vacuum_room:
-    name: Choose a room to clean
+    name: "Choose a room to clean"
     options:
       - Select Room
       - All Except Balcony
@@ -19,22 +19,22 @@ input_select:
 
 input_boolean:
   vacuum_schedule:
-    name: Регулярная уборка роботом
+    name: "Регулярная уборка роботом"
     icon: mdi:timer
   vacuum_notification:
-    name: Сообщения от робота
+    name: "Сообщения от робота"
     icon: mdi:bell
 
 sensor:
   - platform: template
     sensors:
       vacuum_cleaner_status_sensor:
-        friendly_name: Vacuum Cleaner Status Sensor
+        friendly_name: "Vacuum Cleaner Status Sensor"
         value_template: "{{ states.vacuum.xiaomi_vacuum_cleaner.attributes.status }}"
 
       vacuum_cleaner_error_sensor:
-        friendly_name: Vacuum Cleaner Error Sensor
-        value_template: >-
+        friendly_name: "Vacuum Cleaner Error Sensor"
+        value_template: >
           {% if states.vacuum.xiaomi_vacuum_cleaner.attributes.error is defined %}
             {{states.vacuum.xiaomi_vacuum_cleaner.attributes.error}}
           {% else %}
@@ -49,97 +49,87 @@ sensor:
     scan_interval: 5
 
 automation:
-  - alias: 'Vacuum Time Clean 1'
+  - alias: "Vacuum Time Clean 1"
     initial_state: 'on'
     trigger:
       - platform: time
         at: '13:00'
     condition:
-      condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.vacuum_schedule
-          state: 'on'
-        - condition: time
-          weekday:
-            - tue
-            - thu
+      - condition: state
+        entity_id: input_boolean.vacuum_schedule
+        state: 'on'
+      - condition: time
+        weekday:
+          - tue
+          - thu
     action:
       - service: script.turn_on
         entity_id: script.vacuum_all_except_balcony
 
-  - alias: 'Vacuum Time Clean 2'
+  - alias: "Vacuum Time Clean 2"
     initial_state: 'on'
     trigger:
       - platform: time
         at: '13:00'
     condition:
-      condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.vacuum_schedule
-          state: 'on'
-        - condition: time
-          weekday:
-            - mon
-            - wed
-            - fri
+      - condition: state
+        entity_id: input_boolean.vacuum_schedule
+        state: 'on'
+      - condition: time
+        weekday:
+          - mon
+          - wed
+          - fri
     action:
       - service: script.turn_on
         entity_id: script.vacuum_living_room
 
-  - alias: 'Vacuum Cleaning'
+  - alias: "Vacuum Cleaning"
     initial_state: 'on'
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
         to: 'cleaning'
     condition:
-      condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.vacuum_notification
-          state: 'on'
+      - condition: state
+        entity_id: input_boolean.vacuum_notification
+        state: 'on'
     action:
       - service: notify.telegram
         data:
-          message: 'Пылесос начал уборку'
+          message: "Пылесос начал уборку"
 
-  - alias: 'Vacuum Returning'
+  - alias: "Vacuum Returning"
     initial_state: 'on'
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
         to: 'returning'
     condition:
-      condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.vacuum_notification
-          state: 'on'
+      - condition: state
+        entity_id: input_boolean.vacuum_notification
+        state: 'on'
     action:
        - service: notify.telegram
          data_template:
            message: "Пылесос завершил уборку и возвращается на станцию. Время уборки: {{states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time}} минут. Общая площадь уборки: {{states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area}} м²"
 
-  - alias: 'Vacuum Docked'
+  - alias: "Vacuum Docked"
     initial_state: 'on'
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
         to: 'docked'
     condition:
-      condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.vacuum_notification
-          state: 'on'
+      - condition: state
+        entity_id: input_boolean.vacuum_notification
+        state: 'on'
     action:
       - service: notify.telegram
         data:
-          message: 'Пылесос прибыл на станцию и заряжается'
+          message: "Пылесос прибыл на станцию и заряжается"
 
-  - alias: 'Vacuum Cleaner Error'
+  - alias: "Vacuum Cleaner Error"
     initial_state: 'on'
     trigger:
       - platform: state
@@ -161,7 +151,7 @@ automation:
               {{states.sensor.vacuum_cleaner_error_sensor.state}}
             {% endif %}
 
-  - alias: 'Vacuum Cleaner Error Solved'
+  - alias: "Vacuum Cleaner Error Solved"
     initial_state: 'on'
     trigger:
       - platform: state
@@ -169,15 +159,15 @@ automation:
         to: 'No Error'
     condition:
       condition: template
-      value_template: "{{ states.sensor.ha_uptime_min.state  | int > 10 }}"
+      value_template: "{{ states.sensor.ha_uptime.state  | int > 10 }}"
     action:
       - service: notify.telegram
         data:
-          message: 'Пылесос вне опасности'
+          message: "Пылесос вне опасности"
 
-  - alias: 'Start Cleaning Room'
+  - alias: "Start Cleaning Room"
     initial_state: 'on'
-    hide_entity: True
+    hide_entity: true
     trigger:
       - platform: state
         entity_id: input_select.vacuum_room
@@ -206,7 +196,7 @@ automation:
         data_template:
           option: 'Select Room'
 
-  - alias: 'Hallway Button Click Single'
+  - alias: "Hallway Button Click Single"
     initial_state: 'on'
     trigger:
       platform: event
@@ -218,7 +208,7 @@ automation:
       - service: script.turn_on
         entity_id: script.vacuum_entryway
 
-  - alias: 'Hallway Button Click Double'
+  - alias: "Hallway Button Click Double"
     initial_state: 'on'
     trigger:
       platform: event
@@ -232,7 +222,7 @@ automation:
 
 script:
   vacuum_all_except_balcony:
-    alias: 'Clean Up All Except Balcony'
+    alias: "Clean Up All Except Balcony"
     sequence:
       - service: vacuum.send_command
         data:
@@ -245,10 +235,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-          message: 'Уборка Всей Квартиры Кроме Балкона'
+          message: "Уборка Всей Квартиры Кроме Балкона"
 
   vacuum_master_bedroom:
-    alias: 'Clean Up Master Bedroom'
+    alias: "Clean Up Master Bedroom"
     sequence:
       - service: vacuum.send_command
         data:
@@ -260,10 +250,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-          message: 'Уборка Главной Спальни'
+          message: "Уборка Главной Спальни"
 
   vacuum_bedroom:
-    alias: 'Clean Up Bedroom'
+    alias: "Clean Up Bedroom"
     sequence:
       - service: vacuum.send_command
         data:
@@ -275,10 +265,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-           message: 'Уборка Спальни'
+           message: "Уборка Спальни"
 
   vacuum_entryway:
-    alias: 'Clean Up Entryway'
+    alias: "Clean Up Entryway"
     sequence:
       - service: vacuum.send_command
         data:
@@ -290,10 +280,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-           message: 'Уборка Прихожей'
+           message: "Уборка Прихожей"
 
   vacuum_hallway:
-    alias: 'Clean Up Hallway'
+    alias: "Clean Up Hallway"
     sequence:
       - service: vacuum.send_command
         data:
@@ -305,10 +295,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-           message: 'Уборка Коридора'
+           message: "Уборка Коридора"
 
   vacuum_kitchen:
-    alias: 'Clean Up Kitchen'
+    alias: "Clean Up Kitchen"
     sequence:
       - service: vacuum.send_command
         data:
@@ -320,10 +310,10 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-           message: 'Уборка Кухни'
+           message: "Уборка Кухни"
 
   vacuum_living_room:
-    alias: 'Clean Up Living Room'
+    alias: "Clean Up Living Room"
     sequence:
       - service: vacuum.send_command
         data:
@@ -335,7 +325,7 @@ script:
         state: 'on'
       - service: notify.telegram
         data:
-           message: 'Уборка Гостиной'
+           message: "Уборка Гостиной"
 
   vacuum_reset_main_brush:
     alias: "Reset Main Brush"
@@ -372,3 +362,4 @@ script:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: sensor_dirty_time
+

@@ -36,7 +36,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.boiler
+            entity: switch.gas_boiler
             size: 18%
             styles:
               card:
@@ -48,7 +48,7 @@ cards:
             show_header_toggle: false
             entities:
               - input_boolean.pump_schedule
-              - input_boolean.boiler_schedule
+              - input_boolean.gas_boiler_schedule
 
   - type: vertical-stack
     cards:

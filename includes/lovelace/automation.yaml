@@ -62,4 +62,4 @@ cards:
               - input_boolean.auto_fan
               - input_boolean.vacuum_schedule
               - input_boolean.pump_schedule
-              - input_boolean.boiler_schedule
+              - input_boolean.gas_boiler_schedule

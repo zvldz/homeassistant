@@ -84,6 +84,24 @@ cards:
                   card:
                     - font-size: 14px
 
+      - type: custom:button-card
+        name: "Таймеры"
+        styles:
+          card:
+            - background-color: "#203040"
+            - font-size: 14px
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+            - type: entity-filter
+              show_header_toggle: false
+              entities:
+                - entity: timer.bathroom
+                - entity: timer.wc
+              state_filter:
+                - 'active'
+
   - type: vertical-stack
     cards:
       - type: custom:button-card

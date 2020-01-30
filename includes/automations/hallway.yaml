@@ -73,13 +73,13 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
+      entity_id: binary_sensor.door_window_sensor_158d00032b7db7
+      state: 'off'
+    - condition: state
       entity_id: switch.wall_switch_ln_158d0002112b1e
       state: 'on'
       for:
         minutes: 6
-    - condition: state
-      entity_id: binary_sensor.door_window_sensor_158d00032b7db7
-      state: 'off'
   action:
     service: switch.turn_off
     entity_id:
@@ -115,3 +115,4 @@
   action:
     - service: input_boolean.toggle
       entity_id: input_boolean.auto_turn_off_lights
+

@@ -16,13 +16,13 @@ climate:
     ac_mode: false
     min_temp: 15
     max_temp: 25
-    target_temp: 20
+#   target_temp: 20
     away_temp: 17
     cold_tolerance: 0.2
     hot_tolerance: 0.3
     min_cycle_duration:
-      minutes: 10
-    initial_hvac_mode: "heat"
+      minutes: 5
+#   initial_hvac_mode: "heat"
 
 sensor:
   - platform: template

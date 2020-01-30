@@ -38,7 +38,7 @@
     service: light.turn_on
     entity_id: light.balcony_strip
     data_template:
-      brightness_pct: 40
+      brightness_pct: 20
 #     kelvin: 6500
 
 - alias: "Turn off led strip on balcony"

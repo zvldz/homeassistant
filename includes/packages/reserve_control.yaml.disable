@@ -1,0 +1,137 @@
+binary_sensor:
+  - platform: rest
+    resource: !secret ha1_url_pump_schedule
+    name: ha1_pump_schedule
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource: !secret ha1_url_gas_boiler_schedule
+    name: ha1_gas_boiler_schedule
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource: !secret ha1_url_auto_turn_off_lights
+    name: ha1_auto_turn_off_lights
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource: !secret ha1_url_auto_fan
+    name: ha1_auto_fan
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource: !secret ha1_url_vacuum_schedule
+    name: ha1_vacuum_schedule
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource: !secret ha1_url_vacuum_notification
+    name: ha1_vacuum_notification
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+automation:
+  - alias: turn_off_automation
+    initial_state: 'on'
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: automation.turn_off
+        entity_id: all
+      - delay: 00:01:00
+      - service: automation.turn_on
+        entity_id:
+          - automation.ha_persistent_notification
+          - automation.hacs_persistent_notification
+          - automation.khadas_ha_server_off_reserve_control
+          - automation.sync_input_boolean
+
+  - alias: khadas_ha_server_on_return_control
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: sensor.ha1_uptime_dt
+        from: "unavailable"
+#   condition:
+#     condition: state
+#     entity_id: input_boolean.automation_status
+#     state: 'on'
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Заработал ХА на Khadas. Отдаю управление главному!'
+#     - service: input_boolean.turn_off
+#       entity_id: input_boolean.automation_status
+      - service: automation.turn_off
+        entity_id: all
+      - delay: 00:01:00
+      - service: automation.turn_on
+        entity_id:
+          - automation.hacs_persistent_notification
+          - automation.khadas_ha_server_off_reserve_control
+          - automation.khadas_ha_server_off
+
+  - alias: khadas_ha_server_off_reserve_control
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: sensor.ha1_uptime_dt
+        to: "unavailable"
+#       for: "00:02:00"
+    action:
+      - service: notify.telegram
+        data:
+          message: 'Не работает ХА на Khadas. Беру управление на себя!'
+#     - service: input_boolean.turn_on
+#       entity_id: input_boolean.automation_status
+      - service: automation.turn_on
+        entity_id: all
+
+  - alias: sync_input_boolean
+    initial_state: 'on'
+    trigger:
+      platform: state
+      entity_id:
+        - binary_sensor.ha1_pump_schedule
+        - binary_sensor.ha1_gas_boiler_schedule
+        - binary_sensor.ha1_auto_turn_off_lights
+        - binary_sensor.ha1_auto_fan
+        - binary_sensor.ha1_vacuum_schedule
+        - binary_sensor.ha1_vacuum_notification
+    action:
+      service_template: >
+        {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}
+          input_boolean.turn_on
+        {% elif trigger.to_state.state == 'off' and trigger.from_state.state == 'on' %}
+          input_boolean.turn_off
+        {% else %}
+          {{ trigger.to_state }}
+        {% endif %}
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'binary_sensor.ha1_pump_schedule' %}
+            input_boolean.pump_schedule
+          {% elif trigger.entity_id == 'binary_sensor.ha1_gas_boiler_schedule' %}
+            input_boolean.gas_boiler_schedule
+          {% elif trigger.entity_id == 'binary_sensor.ha1_auto_turn_off_lights' %}
+            input_boolean.auto_turn_off_lights
+          {% elif trigger.entity_id == 'binary_sensor.ha1_auto_fan' %}
+            input_boolean.auto_fan
+          {% elif trigger.entity_id == 'binary_sensor.ha1_vacuum_schedule' %}
+            input_boolean.vacuum_schedule
+          {% elif trigger.entity_id == 'binary_sensor.ha1_url_vacuum_notification' %}
+            input_boolean.vacuum_notification
+          {% endif %}
+

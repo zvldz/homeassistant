@@ -20,6 +20,42 @@ cards:
                   sort: entity_id
 
       - type: custom:button-card
+        name: "Lights"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: "light.(sonoff|nodemcu|bw)_*"
+                  sort: entity_id
+
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: "Voltage"
+                hour24: true
+                points_per_hour: 1
+                entities:
+                  - entity: sensor.sonoff_pump_voltage
+                  - entity: sensor.bw_plug_1_voltage
+                    color: red
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
         name: "Sensors"
         styles:
           card:
@@ -81,38 +117,4 @@ cards:
                 - entity_id: "switch.(sonoff|nodemcu|bw)_*restart"
                   sort: entity_id
 
-      - type: custom:button-card
-        name: "Lights"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: "light.(sonoff|nodemcu|bw)_*"
-                  sort: entity_id
-
-      - type: custom:button-card
-        name: "Voltage"
-        styles:
-          card:
-            - background-color: "#203040"
-            - font-size: 14px
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Voltage"
-                hour24: true
-                points_per_hour: 1
-                entities:
-                  - entity: sensor.sonoff_pump_voltage
-                  - entity: sensor.bw_plug_1_voltage
-                    color: red
 

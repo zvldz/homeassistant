@@ -20,7 +20,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -65,7 +64,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -89,7 +87,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack

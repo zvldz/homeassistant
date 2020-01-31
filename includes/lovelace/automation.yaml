@@ -57,6 +57,8 @@ cards:
                     attribute: last_triggered
                     reverse: true
 
+  - type: vertical-stack
+    cards:
       - type: custom:button-card
         name: "Settings"
         styles:

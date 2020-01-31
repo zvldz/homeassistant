@@ -20,7 +20,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -50,13 +49,13 @@ cards:
             cards:
               - type: custom:button-card
                 entity: switch.wall_switch_ln_158d00022360fe
-                size: 12%
+                size: 14%
                 styles:
                   card:
                     - font-size: 14px
               - type: custom:button-card
                 entity: switch.wall_switch_ln_left_158d00022a8150
-                size: 12%
+                size: 14%
                 styles:
                   card:
                     - font-size: 14px
@@ -84,12 +83,44 @@ cards:
                   card:
                     - font-size: 14px
 
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Климат"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: "Температура"
+                hour24: true
+                points_per_hour: 2
+                entities:
+                  - entity: sensor.temperature_158d000231f03e
+                  - entity: sensor.temperature_158d000273011f
+                    color: red
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: "Влажность"
+                hour24: true
+                points_per_hour: 2
+                entities:
+                  - entity: sensor.humidity_158d000231f03e
+                  - entity: sensor.humidity_158d000273011f
+                    color: red
+
       - type: custom:button-card
         name: "Таймеры"
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -131,37 +162,18 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
+          - sensor.temperature_158d000231f03e
+          - sensor.humidity_158d000231f03e
+          - sensor.pressure_158d000231f03e
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - sensor.temperature_158d000273011f
+          - sensor.humidity_158d000273011f
+          - sensor.pressure_158d000273011f
+      - type: glance
+        show_header_toggle: false
+        entities:
           - entity: input_boolean.wc_manaul_fun_on
           - entity: input_boolean.br_manaul_fun_on
 
-      - type: custom:button-card
-        name: "Климат"
-        styles:
-          card:
-            - background-color: "#203040"
-            - font-size: 14px
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Температура"
-                hour24: true
-                points_per_hour: 1
-                entities:
-                  - entity: sensor.temperature_158d000231f03e
-                  - entity: sensor.temperature_158d000273011f
-                    color: red
-
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Влажность"
-                hour24: true
-                points_per_hour: 1
-                entities:
-                  - entity: sensor.humidity_158d000231f03e
-                  - entity: sensor.humidity_158d000273011f
-                    color: red

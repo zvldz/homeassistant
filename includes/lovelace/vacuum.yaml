@@ -18,6 +18,22 @@ cards:
               - input_boolean.vacuum_schedule
               - input_boolean.vacuum_notification
 
+      - type: custom:xiaomi-vacuum-card
+        entity: vacuum.xiaomi_vacuum_cleaner
+        name: "Xiaomi Vacuum"
+        buttons: true
+        labels:
+          status: "Состояние"
+          battery: "Батарея"
+          mode: "Режим"
+          main_brush: "Главная щетка"
+          side_brush: "Боковая щетка"
+          filter: "Фильтр"
+          sensor: "Сенсор"
+          hours: "ч"
+
+
+
       - type: custom:button-card
         name: "Сброс Счетчиков"
         styles:
@@ -88,26 +104,6 @@ cards:
                   card:
                     - font-size: 14px
 
-      - type: custom:xiaomi-vacuum-card
-        entity: vacuum.xiaomi_vacuum_cleaner
-        name: "Xiaomi Vacuum"
-        buttons: true
-        labels:
-          status: "Состояние"
-          battery: "Батарея"
-          mode: "Режим"
-          main_brush: "Главная щетка"
-          side_brush: "Боковая щетка"
-          filter: "Фильтр"
-          sensor: "Сенсор"
-          hours: "ч"
-
-      - type: entities
-        title: "Зональная Уборка"
-        show_header_toggle: false
-        entities:
-          - input_select.vacuum_room
-
   - type: vertical-stack
     cards:
       - type: custom:button-card
@@ -127,30 +123,43 @@ cards:
           right: 0
         min_height: 0
 
-      - type: custom:xiaomi-vacuum-map-card
-        entity: vacuum.xiaomi_vacuum
-        map_image: '/local/img/vacuum_map.png'
-        debug: true
-        calibration_points:
-          - vacuum:
-              x: 25500
-              y: 25500
-            map:
-              x: 466
-              y: 1889
-          - vacuum:
-              x: 26500
-              y: 26500
-            map:
-              x: 730
-              y: 1625
-          - vacuum:
-              x: 25500
-              y: 26500
-            map:
-              x: 466
-              y: 1625
-        zones:
-          - [[25500, 25500, 26500, 26500]]
+#     - type: custom:xiaomi-vacuum-map-card
+#       entity: vacuum.xiaomi_vacuum
+#       map_image: '/local/img/vacuum_map.png'
+#       calibration_points:
+#         - vacuum:
+#             x: 25500
+#             y: 25500
+#           map:
+#             x: 466
+#             y: 1889
+#         - vacuum:
+#             x: 26500
+#             y: 26500
+#           map:
+#             x: 730
+#             y: 1625
+#         - vacuum:
+#             x: 25500
+#             y: 26500
+#           map:
+#             x: 466
+#             y: 1625
+#       zones:
+#         - [[25500, 25500, 26500, 26500]]
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Зональная Уборка"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        #title: "Зональная Уборка"
+        show_header_toggle: false
+        entities:
+          - input_select.vacuum_room
 
 

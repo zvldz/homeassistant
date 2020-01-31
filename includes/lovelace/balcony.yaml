@@ -45,6 +45,14 @@ cards:
           - type: light
             entity: light.balcony_strip
 
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Цветы"
+        styles:
+          card:
+            - background-color: "#203040"
+
       - type: custom:miflora-card
         title: 'Цветок 1'
         image: img/flower1.jpg
@@ -106,7 +114,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack

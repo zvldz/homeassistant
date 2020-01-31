@@ -76,7 +76,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -104,12 +103,13 @@ cards:
                   card:
                     - font-size: 14px
 
+  - type: vertical-stack
+    cards:
       - type: custom:button-card
         name: "Климат"
         styles:
           card:
             - background-color: "#203040"
-            - font-size: 14px
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack

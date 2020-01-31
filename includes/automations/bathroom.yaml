@@ -103,6 +103,9 @@
     - condition: state
       entity_id: input_boolean.br_manaul_fun_on
       state: 'off'
+    - condition: numeric_state
+      entity_id: sensor.humidity_158d000273011f
+      below: 60
   action:
     - service: switch.turn_off
       entity_id: switch.sonoff_br_relay_1
@@ -121,6 +124,9 @@
     - condition: state
       entity_id: input_boolean.br_manaul_fun_on
       state: 'on'
+    - condition: numeric_state
+      entity_id: sensor.humidity_158d000273011f
+      below: 60
   action:
     - service: switch.turn_off
       entity_id: switch.sonoff_br_relay_1

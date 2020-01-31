@@ -76,8 +76,8 @@ automation:
         entity_id: all
 #     - service: climate.set_hvac_mode
 #       data:
-#         entity_id: climate.gas_gas_boiler
-#         hvac_mode: off
+#         entity_id: climate.gas_boiler
+#         hvac_mode: 'off'
       - delay: 00:00:30
       - service: automation.turn_on
         entity_id: group.active_automations
@@ -100,8 +100,8 @@ automation:
         entity_id: all
 #     - service: climate.set_hvac_mode
 #       data:
-#         entity_id: climate.gas_gas_boiler
-#         hvac_mode: off
+#         entity_id: climate.gas_boiler
+#         hvac_mode: 'off'
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
       - delay: 00:00:30

@@ -48,7 +48,7 @@
       value_template: "{{ (as_timestamp(now()) - (states('sensor.ha_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
 
 - platform: rest
-  resource: !secret ha1_url
+  resource_template: "{{ states('sensor.ha1_url') }}api/states/sensor.ha_uptime"
   name: ha1_uptime
   unit_of_measurement: minutes
   force_update: true
@@ -57,7 +57,7 @@
   value_template: "{{ value_json.state }}"
 
 - platform: rest
-  resource: !secret ha2_url
+  resource_template: "{{ states('sensor.ha2_url') }}api/states/sensor.ha_uptime"
   name: ha2_uptime
   unit_of_measurement: minutes
   force_update: true
@@ -66,7 +66,7 @@
   value_template: "{{ value_json.state }}"
 
 - platform: rest
-  resource: !secret ha_dacha_url
+  resource_template: "{{ states('sensor.ha_dacha_url') }}api/states/sensor.ha_uptime"
   name: ha_dacha_uptime
   unit_of_measurement: minutes
   force_update: true
@@ -76,6 +76,12 @@
 
 - platform: template
   sensors:
+    ha1_url:
+      value_template: !secret ha1_url
+    ha2_url:
+      value_template: !secret ha2_url
+    ha_dacha_url:
+      value_template: !secret ha_dacha_url
     ha1_uptime_dt:
       icon_template: "mdi:clock"
       friendly_name: "HA1 Uptime"
@@ -86,9 +92,6 @@
         {% else %}
           {{ (as_timestamp(now()) - (states('sensor.ha1_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
         {% endif %}
-
-- platform: template
-  sensors:
     ha2_uptime_dt:
       icon_template: "mdi:clock"
       friendly_name: "HA2 Uptime"
@@ -99,9 +102,6 @@
         {% else %}
           {{ (as_timestamp(now()) - (states('sensor.ha2_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
         {% endif %}
-
-- platform: template
-  sensors:
     ha_dacha_uptime_dt:
       icon_template: "mdi:clock"
       friendly_name: "HA Fazenda Uptime"

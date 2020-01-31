@@ -16,13 +16,11 @@ climate:
     ac_mode: false
     min_temp: 15
     max_temp: 25
-#   target_temp: 20
     away_temp: 17
     cold_tolerance: 0.2
     hot_tolerance: 0.3
     min_cycle_duration:
       minutes: 5
-#   initial_hvac_mode: "heat"
 
 sensor:
   - platform: template
@@ -146,7 +144,7 @@ automation:
           - switch.gas_boiler
           - switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 20 in morning or evening"
+  - alias: "Set temperature to 20 on schedule"
     initial_state: 'on'
     trigger:
       - platform: time
@@ -160,13 +158,13 @@ automation:
     action:
       - service: climate.set_temperature
         data:
-          entity_id: climate.gas_gas_boiler
+          entity_id: climate.gas_boiler
           temperature: 20
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 17 in morning or evening"
+  - alias: "Set temperature to 17 on schedule"
     initial_state: 'on'
     trigger:
       - platform: time

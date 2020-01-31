@@ -18,12 +18,21 @@ cards:
             filter:
               include:
                 - domain: automation
+                  state: "on"
                   options:
                     secondary_info: last-triggered
                   sort:
-                    method: attribute
-                    attribute: last_triggered
+                    method: last-triggered
                     reverse: true
+                    ignore_case: true
+                - domain: automation
+                  state: "off"
+                  options:
+                    secondary_info: last-triggered
+                  sort:
+                    method: last-triggered
+                    reverse: true
+                    ignore_case: true
 
   - type: vertical-stack
     cards:

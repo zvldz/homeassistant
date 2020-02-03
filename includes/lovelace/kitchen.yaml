@@ -94,6 +94,6 @@ cards:
             - type: entity-filter
               show_header_toggle: false
               entities:
-                - entity: timer.kitchen
+                - entity: timer.kitchen_light
               state_filter:
                 - 'active'

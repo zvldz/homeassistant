@@ -1,9 +1,0 @@
-timer.kitchen:
-  friendly_name: "Кухня таймер"
-
-timer.wc:
-  friendly_name: "WC таймер"
-
-timer.bathroom:
-  friendly_name: "Ванная таймер"
-

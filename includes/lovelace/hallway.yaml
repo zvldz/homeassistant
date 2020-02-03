@@ -128,8 +128,11 @@ cards:
             - type: entity-filter
               show_header_toggle: false
               entities:
+                - entity: timer.hallway_light
                 - entity: timer.bathroom
                 - entity: timer.wc
+                - entity: timer.bathroom_fan
+                - entity: timer.wc_fan
               state_filter:
                 - 'active'
 
@@ -171,9 +174,4 @@ cards:
           - sensor.temperature_158d000273011f
           - sensor.humidity_158d000273011f
           - sensor.pressure_158d000273011f
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - entity: input_boolean.wc_manaul_fun_on
-          - entity: input_boolean.br_manaul_fun_on
 

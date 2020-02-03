@@ -1,5 +1,6 @@
 # Bathroom
-- alias: "Turn on light in bathroom on conditions"
+# Light
+- alias: "Turn on light in Bathroom on conditions"
   initial_state: 'on'
   trigger:
     - platform: state
@@ -16,10 +17,12 @@
   action:
     - service: switch.turn_on
       entity_id: switch.wall_switch_ln_left_158d00022a8150
+    - service: timer.cancel
+      entity_id: timer.bathroom_light
     - service: timer.start
-      entity_id: timer.bathroom
+      entity_id: timer.bathroom_light
 
-- alias: "Reset bathroom timer on conditions"
+- alias: "Reset Bathroom timer on conditions"
   initial_state: 'on'
   trigger:
     - platform: state
@@ -34,16 +37,18 @@
       entity_id: switch.wall_switch_ln_left_158d00022a8150
       state: 'on'
   action:
+    - service: timer.cancel
+      entity_id: timer.bathroom_light
     - service: timer.start
-      entity_id: timer.bathroom
+      entity_id: timer.bathroom_light
 
-- alias: "Turn off light in bathroom on conditions"
+- alias: "Turn off light in Bathroom on conditions"
   initial_state: 'on'
   trigger:
     - platform: event
       event_type: timer.finished
       event_data:
-        entity_id: timer.bathroom
+        entity_id: timer.bathroom_light
   condition:
     - condition: state
       entity_id: input_boolean.auto_turn_off_lights
@@ -58,7 +63,7 @@
     - service: switch.turn_off
       entity_id: switch.wall_switch_ln_left_158d00022a8150
 
-- alias: "Turn off bathroom timer if light is off"
+- alias: "Turn off Bathroom timer if light is off"
   initial_state: 'on'
   trigger:
     - platform: state
@@ -66,74 +71,43 @@
       to: 'off'
   action:
     - service: timer.cancel
-      entity_id: timer.bathroom
-
-- alias: "Turn on timer if bathroom light is on"
-  initial_state: 'on'
-  trigger:
-    - platform: time_pattern
-      minutes: '/1'
-  condition:
-    - condition: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
-      state: 'on'
-    - condition: state
-      entity_id: timer.bathroom
-      state: 'idle'
-  action:
-    - service: timer.cancel
-      entity_id: timer.bathroom
-    - service: timer.start
-      entity_id: timer.bathroom
+      entity_id: timer.bathroom_light
 
 # FAN
-# humidity !!!!
-
-- alias: "Turn off auto Bathroom fan 5 minutes after turn on"
+- alias: "Turn off Bathroom fan"
   initial_state: 'on'
   trigger:
-    platform: time_pattern
-    minutes: '/1'
-  condition:
-    - condition: state
+    - platform: state
       entity_id: switch.sonoff_br_relay_1
-      state: 'on'
-      for:
-        minutes: 5
-    - condition: state
-      entity_id: input_boolean.br_manaul_fun_on
-      state: 'off'
-    - condition: numeric_state
-      entity_id: sensor.humidity_158d000273011f
-      below: 60
+      to: 'off'
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.bathroom_fan
   action:
     - service: switch.turn_off
       entity_id: switch.sonoff_br_relay_1
-
-- alias: "Turn off manual Bathroom fan 15 minutes after turn on"
-  initial_state: 'on'
-  trigger:
-    platform: time_pattern
-    minutes: '/1'
-  condition:
-    - condition: state
-      entity_id: switch.sonoff_br_relay_1
-      state: 'on'
-      for:
-        minutes: 15
-    - condition: state
-      entity_id: input_boolean.br_manaul_fun_on
-      state: 'on'
-    - condition: numeric_state
-      entity_id: sensor.humidity_158d000273011f
-      below: 60
-  action:
-    - service: switch.turn_off
-      entity_id: switch.sonoff_br_relay_1
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.br_manaul_fun_on
+    - service: timer.cancel
+      entity_id: timer.bathroom_fan
 
 - alias: "Turn on Bathroom fan"
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: switch.sonoff_br_relay_1
+      to: 'on'
+    - platform: numeric_state
+      entity_id: sensor.humidity_158d000273011f
+      above: 68
+  action:
+    - service: switch.turn_on
+      entity_id: switch.sonoff_br_relay_1
+    - service: timer.cancel
+      entity_id: timer.bathroom_fan
+    - service: timer.start
+      entity_id: timer.bathroom_fan
+
+- alias: "Turn on Bathroom fan on schedule"
   initial_state: 'on'
   trigger:
     - platform: time
@@ -146,35 +120,43 @@
     - condition: state
       entity_id: input_boolean.auto_fan
       state: 'on'
+    - condition: state
+      entity_id: switch.sonoff_br_relay_1
+      state: 'off'
   action:
     - service: switch.turn_on
       entity_id: switch.sonoff_br_relay_1
+    - service: timer.cancel
+      entity_id: timer.bathroom_fan
+    - service: timer.start
+      entity_id: timer.bathroom_fan
+      data_template:
+        duration: 00:05:00
 
-- alias: "Bathroom fan button is pressed to on"
+# Start HA
+- alias: "Start Bathroom timer if not starting"
   initial_state: 'on'
   trigger:
-    platform: state
-    entity_id: binary_sensor.sonoff_br_button_1
-    to: 'on'
+    - platform: homeassistant
+      event: start
   condition:
-    condition: state
-    entity_id: switch.sonoff_br_relay_1
-    state: 'on'
+    - condition: state
+      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      state: 'on'
   action:
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.br_manaul_fun_on
+    - service: timer.start
+      entity_id: timer.bathroom_light
 
-- alias: "Bathroom fan button is pressed to off"
+- alias: "Start Bathroom fan timer if not starting"
   initial_state: 'on'
   trigger:
-    platform: state
-    entity_id: binary_sensor.sonoff_br_button_1
-    to: 'off'
+    - platform: homeassistant
+      event: start
   condition:
-    condition: state
-    entity_id: switch.sonoff_br_relay_1
-    state: 'off'
+    - condition: state
+      entity_id: switch.sonoff_br_relay_1
+      state: 'on'
   action:
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.br_manaul_fun_on
+    - service: timer.start
+      entity_id: timer.bathroom_fan
 

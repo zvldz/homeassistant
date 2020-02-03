@@ -123,7 +123,7 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: time
-        at: '17:00'
+        at: '16:30'
     condition:
       - condition: state
         entity_id: input_boolean.pump_schedule
@@ -144,7 +144,7 @@ automation:
           - switch.gas_boiler
           - switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 20 on schedule"
+  - alias: "Set temperature to 21 on schedule"
     initial_state: 'on'
     trigger:
       - platform: time
@@ -159,7 +159,7 @@ automation:
       - service: climate.set_temperature
         data:
           entity_id: climate.gas_boiler
-          temperature: 20
+          temperature: 21
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay

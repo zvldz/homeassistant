@@ -129,8 +129,8 @@ cards:
               show_header_toggle: false
               entities:
                 - entity: timer.hallway_light
-                - entity: timer.bathroom
-                - entity: timer.wc
+                - entity: timer.bathroom_light
+                - entity: timer.wc_light
                 - entity: timer.bathroom_fan
                 - entity: timer.wc_fan
               state_filter:
@@ -174,4 +174,9 @@ cards:
           - sensor.temperature_158d000273011f
           - sensor.humidity_158d000273011f
           - sensor.pressure_158d000273011f
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.motion_sensor_158d00044a26ba
+          - binary_sensor.motion_sensor_158d0004466f8f
 

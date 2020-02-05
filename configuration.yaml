@@ -44,12 +44,23 @@ wake_on_lan:
 map:
 sun:
 
+logger:
+  default: info
+# default: debug
+  logs:
+    midea: debug
+
 recorder:
   db_url: !secret db_mysql
   purge_keep_days: 30
   purge_interval: 1
   exclude:
     entities:
+      - sensor.uptime
+      - sensor.time
+      - sensor.time_date
+      - sensor.date
+      - sensor.date_time
       - sensor.xiaomi_map
 
 logbook:
@@ -57,13 +68,25 @@ logbook:
     entities:
       - sensor.uptime
       - sensor.time
+      - sensor.time_date
       - sensor.date
+      - sensor.date_time
+      - sensor.xiaomi_map
 
-logger:
-  default: info
-# default: debug
-  logs:
-    midea: debug
+#influxdb:
+#  host: 127.0.0.1
+#  max_retries: 5
+#  default_measurement: state
+#  exclude:
+#    domains:
+#      - automation
+#    entities:
+#      - sensor.uptime
+#      - sensor.time
+#      - sensor.time_date
+#      - sensor.date
+#      - sensor.date_time
+#      - sensor.xiaomi_map
 
 tts:
   - platform: google_translate

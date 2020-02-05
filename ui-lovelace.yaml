@@ -25,16 +25,16 @@ resources:
 title: Home
 views:
   - !include includes/lovelace/home.yaml
-# - !include includes/lovelace/climate.yaml
-  - !include includes/lovelace/livingroom.yaml
+  - !include includes/lovelace/hallway.yaml
   - !include includes/lovelace/kitchen.yaml
+  - !include includes/lovelace/livingroom.yaml
   - !include includes/lovelace/master_bedroom.yaml
   - !include includes/lovelace/bedroom.yaml
-  - !include includes/lovelace/hallway.yaml
   - !include includes/lovelace/balcony.yaml
   - !include includes/lovelace/vacuum.yaml
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/heating.yaml
+# - !include includes/lovelace/climate.yaml
   - !include includes/lovelace/battery.yaml
   - !include includes/lovelace/rf_bridge.yaml
   - !include includes/lovelace/esp.yaml

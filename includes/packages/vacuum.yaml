@@ -228,8 +228,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-#         params: [ [32705,32955,37175,35580,1], [31035,31320,32875,34525,2], [33320,28625,37140,32785,1], [31170,27155,32910,31455,1], [33045,25145,37345,28385,1], [28860,27215,31260,28265,1], [24615,25215,28765,28225,1] ]
-          params: [ [32705,32955,37175,35580,2], [31035,31320,32875,34525,2], [33320,28625,37140,32785,2], [31170,27155,32910,31455,2], [33045,25145,37345,28385,2]]
+#         params: [ [32705,32955,37175,35580,2], [31035,31320,32875,34525,2], [33320,28625,37140,32785,2], [31170,27155,32910,31455,2], [33045,25145,37345,28385,2]]
+          params: [ [32905,32455,37875,35180,2], [31350,26900,33100,34100,1], [33000,28100,37750,32550,2], [33155,24670,37860,27955,1], [24400,25000,28800,28250,1]]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -244,7 +244,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [33045,25145,37345,28385,1] ]
+#         params: [ [33045,25145,37345,28385,1] ]
+          params: [ [33155,24670,37860,27955,1] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -259,7 +260,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [24555,25215,28715,28250,1] ]
+#         params: [ [24555,25215,28715,28250,1] ]
+          params: [ [24400,25000,28800,28250,1] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -274,7 +276,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [31035,31320,32875,34525,2] ]
+#         params: [ [31035,31320,32875,34525,2] ]
+          params: [ [31350,31300,33100,34150,2] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -289,7 +292,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [31034,31317,32875,34523,2], [31170,27155,32910,31455,1], [28680,27155,31270,28145,1] ]
+#         params: [ [31034,31317,32875,34523,2], [31170,27155,32910,31455,1], [28680,27155,31270,28145,1] ]
+          params: [ [31350,31300,33100,34150,2], [31350,26900,33100,31300,1], [28800,26900,31350,28100,1] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -304,7 +308,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [32705,32955,37175,35580,2] ]
+#         params: [ [32705,32955,37175,35580,2] ]
+          params: [ [32905,32455,37875,35180,2] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -319,7 +324,8 @@ script:
         data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_zoned_clean
-          params: [ [33320,28625,37140,32785,2] ]
+#         params: [ [33320,28625,37140,32785,2] ]
+          params: [ [33000,28100,37750,32550,2] ]
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -363,3 +369,8 @@ script:
           command: reset_consumable
           params: sensor_dirty_time
 
+# Convert from Valetudo (condition - x1 < x2, y1 < y2)
+# x1 = v_x1
+# y1 = 51200 - v_y1
+# x2 = v_x2
+# y2 = 51200 - v_y2

@@ -22,10 +22,10 @@
   initial_state: 'on'
   trigger:
     - platform: state
-      entity_id: binary_sensor.updater
+      entity_id: binary_sensor.update_available
       to: 'on'
   action:
     - service: persistent_notification.create
       data:
         title: "HA Upgrade is Available"
-        message: "Upgrade from {{ states('sensor.ha_current') }} to {{ states('sensor.ha_latest2') }} is available"
+        message: "Upgrade from {{ states('sensor.ha_current') }} to {{ states('sensor.ha_latest') }} is available"

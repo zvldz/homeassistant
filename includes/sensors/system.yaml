@@ -8,13 +8,13 @@
       arg: /
 
 - platform: command_line
-  name: CPU Temperature
+  name: "CPU Temperature"
   command: 'cat /sys/class/thermal/thermal_zone0/temp'
   unit_of_measurement: "°C"
   value_template: "{{ value | multiply(0.001) }}"
 
 - platform: version
-  name: HA Current
+  name: "HA Current"
   scan_interval: 1800
 
 - platform: template
@@ -30,20 +30,20 @@
   scan_interval: 1800
 
 - platform: command_line
-  name: HA Init
+  name: "HA Init"
   command: 'cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$" || echo -1'
   scan_interval: 180
   unit_of_measurement: "сек"
 
 - platform: uptime
-  name: ha_uptime
+  name: "HA Uptime"
   unit_of_measurement: minutes
 
 - platform: template
   sensors:
     ha_uptime_dt:
       icon_template: "mdi:clock"
-      friendly_name: HA Uptime
+      friendly_name: "HA Uptime"
       device_class: timestamp
       value_template: "{{ (as_timestamp(now()) - (states('sensor.ha_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
 

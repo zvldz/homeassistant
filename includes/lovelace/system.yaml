@@ -25,17 +25,6 @@ cards:
               - entity: sensor.ha_current
               - entity: sensor.ha_latest
 
-      - type: custom:home-feed-card
-        title: "HACS Updates"
-        compact_mode: true
-        id_filter: ^home_feed_.*
-        entities:
-          - entity: sensor.hacs
-            icon: mdi:update
-            multiple_items: true
-            list_attribute: repositories
-            content_template: "Update available for {{display_name}} to {{available version}}"
-
   - type: vertical-stack
     cards:
       - type: custom:button-card

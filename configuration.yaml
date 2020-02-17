@@ -10,8 +10,21 @@ homeassistant:
   whitelist_external_dirs:
     - '/config/downloads'
 
+config:
+api:
+system_health:
+conversation:
+history:
+wake_on_lan:
+mobile_app:
+map:
+sun:
+
 lovelace:
   mode: yaml
+
+frontend:
+  themes: !include_dir_merge_named themes
 
 http:
   ip_ban_enabled: true
@@ -20,29 +33,12 @@ http:
   trusted_proxies:
     - 127.0.0.1
 
-frontend:
-  themes: !include_dir_merge_named themes
-
-api:
-  api_password: !secret api_pass
-
 discovery:
   ignore:
     - igd
     - yeelight
     - xiaomi_gw
-    - samsung_tv
-
-updater:
-  reporting: false
-
-config:
-system_health:
-conversation:
-history:
-wake_on_lan:
-map:
-sun:
+#   - samsung_tv
 
 logger:
   default: info
@@ -72,21 +68,6 @@ logbook:
       - sensor.date
       - sensor.date_time
       - sensor.xiaomi_map
-
-#influxdb:
-#  host: 127.0.0.1
-#  max_retries: 5
-#  default_measurement: state
-#  exclude:
-#    domains:
-#      - automation
-#    entities:
-#      - sensor.uptime
-#      - sensor.time
-#      - sensor.time_date
-#      - sensor.date
-#      - sensor.date_time
-#      - sensor.xiaomi_map
 
 tts:
   - platform: google_translate
@@ -160,3 +141,4 @@ input_select:   !include includes/input_select.yaml
 panel_iframe:   !include includes/panel_iframe.yaml
 timer:          !include includes/timer.yaml
 scene:          !include includes/scenes.yaml
+

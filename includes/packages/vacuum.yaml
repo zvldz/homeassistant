@@ -167,7 +167,6 @@ automation:
 
   - alias: "Start Cleaning Room"
     initial_state: 'on'
-    hide_entity: true
     trigger:
       - platform: state
         entity_id: input_select.vacuum_room

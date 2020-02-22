@@ -154,7 +154,7 @@ class Tcp2Sensor(Entity):
 
         if self._config[CONF_VALUE_TEMPLATE] is not None:
             try:
-                self._state = self._config[CONF_VALUE_TEMPLATE].render(value=value)
+                self._state = self._config[CONF_VALUE_TEMPLATE].render(value=value)[:255]
                 return
             except TemplateError:
                 _LOGGER.error(
@@ -164,4 +164,4 @@ class Tcp2Sensor(Entity):
                 )
                 return
 
-        self._state = value
+        self._state = value[:255]

@@ -84,6 +84,7 @@ class Tcp2Sensor(Entity):
             CONF_SEND_EOL: config.get(CONF_SEND_EOL),
         }
         self._state = None
+        self._attributes = {}
         self.update()
 
     @property
@@ -152,9 +153,11 @@ class Tcp2Sensor(Entity):
 
             value = sock.recv(self._config[CONF_BUFFER_SIZE]).decode()
 
+            self._attributes["data"] = value
+
         if self._config[CONF_VALUE_TEMPLATE] is not None:
             try:
-                self._state = self._config[CONF_VALUE_TEMPLATE].render(value=value)[:255]
+                self._state = self._config[CONF_VALUE_TEMPLATE].render(value=value)
                 return
             except TemplateError:
                 _LOGGER.error(
@@ -164,4 +167,9 @@ class Tcp2Sensor(Entity):
                 )
                 return
 
-        self._state = value[:255]
+        self._state = value
+
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes of the device."""
+        return self._attributes

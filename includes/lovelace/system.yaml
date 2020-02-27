@@ -40,28 +40,28 @@ cards:
               - type: custom:mini-graph-card
                 name: "CPU temp"
                 entities:
-                  - sensor.cpu_temperature
+                  - entity: sensor.cpu_temperature
                 hour24: true
                 line_color: red
               - type: custom:mini-graph-card
                 name: "CPU use"
                 hour24: true
                 entities:
-                  - sensor.processor_use
+                  - entity: sensor.processor_use
 
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
                 name: "RAM"
                 entities:
-                  - sensor.memory_use_percent
+                  - entity: sensor.memory_use_percent
                 hour24: true
                 line_color: red
               - type: custom:mini-graph-card
                 name: "SWAP"
                 hour24: true
                 entities:
-                  - sensor.swap_use_percent
+                  - entity: sensor.swap_use_percent
 
           - type: horizontal-stack
             cards:
@@ -69,6 +69,6 @@ cards:
                 name: "HDD"
                 hour24: true
                 entities:
-                  - sensor.disk_use_percent
+                  - entity: sensor.disk_use_percent
 
 

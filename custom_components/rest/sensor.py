@@ -44,21 +44,23 @@ DEFAULT_TIMEOUT = 10
 
 CONF_JSON_ATTRS = "json_attributes"
 CONF_JSON_ATTRS_PATH = "json_attributes_path"
+CONF_PAYLOAD_TEMPLATE = "payload_template"
 METHODS = ["POST", "GET"]
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Exclusive(CONF_RESOURCE, CONF_RESOURCE): cv.url,
         vol.Exclusive(CONF_RESOURCE_TEMPLATE, CONF_RESOURCE): cv.template,
+        vol.Exclusive(CONF_PAYLOAD, CONF_PAYLOAD): cv.string,
+        vol.Exclusive(CONF_PAYLOAD_TEMPLATE, CONF_PAYLOAD): cv.template,
         vol.Optional(CONF_AUTHENTICATION): vol.In(
             [HTTP_BASIC_AUTHENTICATION, HTTP_DIGEST_AUTHENTICATION]
         ),
-        vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.string}),
+        vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.template}),
         vol.Optional(CONF_JSON_ATTRS, default=[]): cv.ensure_list_csv,
         vol.Optional(CONF_METHOD, default=DEFAULT_METHOD): vol.In(METHODS),
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_PAYLOAD): cv.string,
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
         vol.Optional(CONF_USERNAME): cv.string,
@@ -82,10 +84,11 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     resource_template = config.get(CONF_RESOURCE_TEMPLATE)
     method = config.get(CONF_METHOD)
     payload = config.get(CONF_PAYLOAD)
+    payload_template = config.get(CONF_PAYLOAD_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
-    headers = config.get(CONF_HEADERS)
+    headers_template = config.get(CONF_HEADERS)
     unit = config.get(CONF_UNIT_OF_MEASUREMENT)
     device_class = config.get(CONF_DEVICE_CLASS)
     value_template = config.get(CONF_VALUE_TEMPLATE)
@@ -101,6 +104,14 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         resource_template.hass = hass
         resource = resource_template.render()
 
+    if payload_template is not None:
+        payload_template.hass = hass
+        payload = payload_template.render()
+
+    if headers_template is not None:
+        for header_template in headers_template.values():
+            header_template.hass = hass
+
     if username and password:
         if config.get(CONF_AUTHENTICATION) == HTTP_DIGEST_AUTHENTICATION:
             auth = HTTPDigestAuth(username, password)
@@ -108,7 +119,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             auth = HTTPBasicAuth(username, password)
     else:
         auth = None
-    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout)
+    rest = RestData(method, resource, auth, headers_template, payload, verify_ssl, timeout)
     rest.update()
     if rest.data is None:
         raise PlatformNotReady
@@ -127,6 +138,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
                 json_attrs,
                 force_update,
                 resource_template,
+                payload_template,
                 json_attrs_path,
             )
         ],
@@ -148,6 +160,7 @@ class RestSensor(Entity):
         json_attrs,
         force_update,
         resource_template,
+        payload_template,
         json_attrs_path,
     ):
         """Initialize the REST sensor."""
@@ -162,6 +175,7 @@ class RestSensor(Entity):
         self._attributes = None
         self._force_update = force_update
         self._resource_template = resource_template
+        self._payload_template = payload_template
         self._json_attrs_path = json_attrs_path
 
     @property
@@ -199,23 +213,28 @@ class RestSensor(Entity):
         if self._resource_template is not None:
             self.rest.set_url(self._resource_template.render())
 
+        if self._payload_template is not None:
+            self.rest.set_payload(self._payload_template.render())
+
         self.rest.update()
         value = self.rest.data
         _LOGGER.debug("Data fetched from resource: %s", value)
         if self.rest.headers is not None:
+            # If the http request failed, headers will be None
             content_type = self.rest.headers.get("content-type")
-        else:
-            content_type = None
 
-        if content_type and content_type.startswith("text/xml"):
-            try:
-                value = json.dumps(xmltodict.parse(value))
-                _LOGGER.debug("JSON converted from XML: %s", value)
-            except ExpatError:
-                _LOGGER.warning(
-                    "REST xml result could not be parsed and converted to JSON."
-                )
-                _LOGGER.debug("Erroneous XML: %s", value)
+            if content_type and (
+                content_type.startswith("text/xml")
+                or content_type.startswith("application/xml")
+            ):
+                try:
+                    value = json.dumps(xmltodict.parse(value))
+                    _LOGGER.debug("JSON converted from XML: %s", value)
+                except ExpatError:
+                    _LOGGER.warning(
+                        "REST xml result could not be parsed and converted to JSON."
+                    )
+                    _LOGGER.debug("Erroneous XML: %s", value)
 
         if self._json_attrs:
             self._attributes = {}
@@ -272,6 +291,10 @@ class RestData:
         self.data = None
         self.headers = None
 
+    def set_payload(self, payload):
+        """Set payload."""
+        self._request_data = payload
+
     def set_url(self, url):
         """Set url."""
         self._resource = url
@@ -279,15 +302,22 @@ class RestData:
     def update(self):
         """Get the latest data from REST service with provided method."""
         _LOGGER.debug("Updating from %s", self._resource)
+
+        headers = None
+        if self._headers:
+            headers = {}
+            for header_name, header_template in self._headers.items():
+                headers[header_name] = header_template.render()
+
         try:
             response = requests.request(
                 self._method,
                 self._resource,
-                headers=self._headers,
-                auth=self._auth,
-                data=self._request_data,
-                timeout=self._timeout,
-                verify=self._verify_ssl,
+                headers = headers,
+                auth = self._auth,
+                data = self._request_data,
+                timeout = self._timeout,
+                verify = self._verify_ssl,
             )
             self.data = response.text
             self.headers = response.headers

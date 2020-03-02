@@ -8,6 +8,14 @@ input_boolean:
     name: "Работа котла по расписанию (Зима)"
     icon: "mdi:timer"
 
+input_text:
+  tessla_user:
+    initial: !secret tessla_user
+  tessla_pass:
+    initial: !secret tessla_pass
+  tessla_device_id:
+    initial: !secret tessla_device_id
+
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
@@ -25,12 +33,6 @@ climate:
 sensor:
   - platform: template
     sensors:
-      tessla_user:
-        value_template: !secret tessla_user
-      tessla_pass:
-        value_template: !secret tessla_pass
-      tessla_device_id:
-        value_template: !secret tessla_device_id
       thermostat_current_temp:
         friendly_name: "Т Текущая"
         value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_2') }}"
@@ -65,7 +67,7 @@ sensor:
       - TEMPERATURE_2
       - RELE
       - ACTIVE
-    command: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --status"
+    command: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --status"
 
 switch:
   - platform: template
@@ -83,8 +85,8 @@ switch:
             entity_id: script.gas_boiler_turn_off
 
 shell_command:
-  gas_boiler_on: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=23"
-  gas_boiler_off: "/config/bin/tessla.sh --login={{ states('sensor.tessla_user') }} --password={{ states('sensor.tessla_pass') }} --device-id={{ states('sensor.tessla_device_id') }} --set-temp=15"
+  gas_boiler_on: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --set-temp=23"
+  gas_boiler_off: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --set-temp=15"
 
 script:
   gas_boiler_turn_on:

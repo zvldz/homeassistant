@@ -123,31 +123,6 @@ cards:
           right: 0
         min_height: 0
 
-#     - type: custom:xiaomi-vacuum-map-card
-#       entity: vacuum.xiaomi_vacuum
-#       map_image: '/local/img/vacuum_map.png'
-#       calibration_points:
-#         - vacuum:
-#             x: 25500
-#             y: 25500
-#           map:
-#             x: 466
-#             y: 1889
-#         - vacuum:
-#             x: 26500
-#             y: 26500
-#           map:
-#             x: 730
-#             y: 1625
-#         - vacuum:
-#             x: 25500
-#             y: 26500
-#           map:
-#             x: 466
-#             y: 1625
-#       zones:
-#         - [[25500, 25500, 26500, 26500]]
-
   - type: vertical-stack
     cards:
       - type: custom:button-card

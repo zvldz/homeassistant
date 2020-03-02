@@ -138,6 +138,7 @@ script:         !include includes/scripts.yaml
 input_boolean:  !include includes/input_boolean.yaml
 input_number:   !include includes/input_number.yaml
 input_select:   !include includes/input_select.yaml
+input_text:     !include includes/input_text.yaml
 panel_iframe:   !include includes/panel_iframe.yaml
 timer:          !include includes/timer.yaml
 scene:          !include includes/scenes.yaml

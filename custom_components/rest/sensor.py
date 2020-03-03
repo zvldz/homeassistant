@@ -121,8 +121,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         auth = None
     rest = RestData(method, resource, auth, headers_template, payload, verify_ssl, timeout)
     rest.update()
-    if rest.data is None:
-        raise PlatformNotReady
+#   if rest.data is None:
+#       raise PlatformNotReady
 
     # Must update the sensor now (including fetching the rest resource) to
     # ensure it's updating its state.

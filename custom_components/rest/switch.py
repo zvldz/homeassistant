@@ -257,14 +257,14 @@ class RestSwitch(SwitchDevice):
                 self._state = True
             elif text == "false":
                 self._state = False
-            else:
-                self._state = None
+#           else:
+#               self._state = None
         else:
             if text == self._body_on.template:
                 self._state = True
             elif text == self._body_off.template:
                 self._state = False
-            else:
-                self._state = None
+#           else:
+#               self._state = None
 
         return req

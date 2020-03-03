@@ -13,7 +13,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_RESOURCE,
-    CONF_RESOURCE_TEMPLATE,
     CONF_TIMEOUT,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
@@ -38,9 +37,8 @@ SUPPORT_REST_METHODS = ["post", "put"]
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        vol.Exclusive(CONF_RESOURCE, CONF_RESOURCE): cv.url,
-        vol.Exclusive(CONF_RESOURCE_TEMPLATE, CONF_RESOURCE): cv.template,
-        vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.template}),
+        vol.Required(CONF_RESOURCE): cv.url,
+        vol.Optional(CONF_HEADERS): {cv.string: cv.string},
         vol.Optional(CONF_BODY_OFF, default=DEFAULT_BODY_OFF): cv.template,
         vol.Optional(CONF_BODY_ON, default=DEFAULT_BODY_ON): cv.template,
         vol.Optional(CONF_IS_ON_TEMPLATE): cv.template,
@@ -55,10 +53,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-PLATFORM_SCHEMA = vol.All(
-    cv.has_at_least_one_key(CONF_RESOURCE, CONF_RESOURCE_TEMPLATE), PLATFORM_SCHEMA
-)
-
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the RESTful switch."""
@@ -66,21 +60,12 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     body_on = config.get(CONF_BODY_ON)
     is_on_template = config.get(CONF_IS_ON_TEMPLATE)
     method = config.get(CONF_METHOD)
-    headers_template = config.get(CONF_HEADERS)
+    headers = config.get(CONF_HEADERS)
     name = config.get(CONF_NAME)
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
     resource = config.get(CONF_RESOURCE)
-    resource_template = config.get(CONF_RESOURCE_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
-
-    if resource_template is not None:
-        resource_template.hass = hass
-        resource = resource_template.async_render()
-
-    if headers_template is not None:
-        for header_template in headers_template.values():
-            header_template.hass = hass
 
     auth = None
     if username:
@@ -98,9 +83,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         switch = RestSwitch(
             name,
             resource,
-            resource_template,
             method,
-            headers_template,
+            headers,
             auth,
             body_on,
             body_off,
@@ -112,7 +96,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         req = await switch.get_device_state(hass)
         if req.status >= 400:
             _LOGGER.error("Got non-ok response from resource: %s", req.status)
-        async_add_entities([switch])
+        else:
+            async_add_entities([switch])
     except (TypeError, ValueError):
         _LOGGER.error(
             "Missing resource or schema in configuration. "
@@ -129,7 +114,6 @@ class RestSwitch(SwitchDevice):
         self,
         name,
         resource,
-        resource_template,
         method,
         headers,
         auth,
@@ -143,7 +127,6 @@ class RestSwitch(SwitchDevice):
         self._state = None
         self._name = name
         self._resource = resource
-        self._resource_template = resource_template
         self._method = method
         self._headers = headers
         self._auth = auth
@@ -152,10 +135,6 @@ class RestSwitch(SwitchDevice):
         self._is_on_template = is_on_template
         self._timeout = timeout
         self._verify_ssl = verify_ssl
-
-    def set_url(self, url):
-        """Set url."""
-        self._resource = url
 
     @property
     def name(self):
@@ -202,21 +181,12 @@ class RestSwitch(SwitchDevice):
         """Send a state update to the device."""
         websession = async_get_clientsession(self.hass, self._verify_ssl)
 
-        if self._resource_template is not None:
-            self.set_url(self._resource_template.async_render())
-
-        headers = None
-        if self._headers:
-            headers = {}
-            for header_name, header_template in self._headers.items():
-                headers[header_name] = header_template.async_render()
-
         with async_timeout.timeout(self._timeout):
             req = await getattr(websession, self._method)(
                 self._resource,
                 auth=self._auth,
                 data=bytes(body, "utf-8"),
-                headers=headers,
+                headers=self._headers,
             )
             return req
 
@@ -233,18 +203,9 @@ class RestSwitch(SwitchDevice):
         """Get the latest data from REST API and update the state."""
         websession = async_get_clientsession(hass, self._verify_ssl)
 
-        if self._resource_template is not None:
-            self.set_url(self._resource_template.async_render())
-
-        headers = None
-        if self._headers:
-            headers = {}
-            for header_name, header_template in self._headers.items():
-                headers[header_name] = header_template.async_render()
-
         with async_timeout.timeout(self._timeout):
             req = await websession.get(
-                self._resource, auth=self._auth, headers=headers
+                self._resource, auth=self._auth, headers=self._headers
             )
             text = await req.text()
 

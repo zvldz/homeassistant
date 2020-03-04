@@ -17,7 +17,6 @@ from homeassistant.const import (
     CONF_TIMEOUT,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
-    STATE_UNAVAILABLE,
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
@@ -112,14 +111,14 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
         req = await switch.get_device_state(hass)
         if req.status >= 400:
-            _LOGGER.error("Got non-ok response from resource: %s", req.status)
+            _LOGGER.warning("Got non-ok response from resource: %s", req.status)
     except (TypeError, ValueError):
         _LOGGER.error(
             "Missing resource or schema in configuration. "
             "Add http:// or https:// to your URL"
         )
     except (asyncio.TimeoutError, aiohttp.ClientError):
-        _LOGGER.error("No route to resource/endpoint: %s", resource)
+        _LOGGER.warning("No route to resource/endpoint: %s", resource)
 
     async_add_entities([switch])
 
@@ -179,11 +178,11 @@ class RestSwitch(SwitchDevice):
             if req.status == 200:
                 self._state = True
             else:
-                _LOGGER.error(
+                _LOGGER.warning(
                     "Can't turn on %s. Is resource/endpoint offline?", self._resource
                 )
         except (asyncio.TimeoutError, aiohttp.ClientError):
-            _LOGGER.error("Error while switching on %s", self._resource)
+            _LOGGER.warning("Error while switching on %s", self._resource)
 
     async def async_turn_off(self, **kwargs):
         """Turn the device off."""
@@ -194,11 +193,11 @@ class RestSwitch(SwitchDevice):
             if req.status == 200:
                 self._state = False
             else:
-                _LOGGER.error(
+                _LOGGER.warning(
                     "Can't turn off %s. Is resource/endpoint offline?", self._resource
                 )
         except (asyncio.TimeoutError, aiohttp.ClientError):
-            _LOGGER.error("Error while switching off %s", self._resource)
+            _LOGGER.warning("Error while switching off %s", self._resource)
 
     async def set_device_state(self, body):
         """Send a state update to the device."""
@@ -227,9 +226,9 @@ class RestSwitch(SwitchDevice):
         try:
             await self.get_device_state(self.hass)
         except asyncio.TimeoutError:
-            _LOGGER.error("Timed out while fetching data")
+            _LOGGER.warning("Timed out while fetching data")
         except aiohttp.ClientError as err:
-            _LOGGER.error("Error while fetching data: %s", err)
+            _LOGGER.warning("Error while fetching data: %s", err)
 
     async def get_device_state(self, hass):
         """Get the latest data from REST API and update the state."""
@@ -260,13 +259,13 @@ class RestSwitch(SwitchDevice):
             elif text == "false":
                 self._state = False
 #           else:
-#               self._state = STATE_UNAVAILABLE
+#               self._state = None
         else:
             if text == self._body_on.template:
                 self._state = True
             elif text == self._body_off.template:
                 self._state = False
 #           else:
-#               self._state = STATE_UNAVAILABLE
+#               self._state = None
 
         return req

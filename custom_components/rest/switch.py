@@ -112,7 +112,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         req = await switch.get_device_state(hass)
         if req.status >= 400:
             _LOGGER.error("Got non-ok response from resource: %s", req.status)
-        async_add_entities([switch])
     except (TypeError, ValueError):
         _LOGGER.error(
             "Missing resource or schema in configuration. "
@@ -120,6 +119,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         )
     except (asyncio.TimeoutError, aiohttp.ClientError):
         _LOGGER.error("No route to resource/endpoint: %s", resource)
+
+    async_add_entities([switch])
 
 
 class RestSwitch(SwitchDevice):

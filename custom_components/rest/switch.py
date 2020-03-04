@@ -17,6 +17,7 @@ from homeassistant.const import (
     CONF_TIMEOUT,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
+    STATE_UNAVAILABLE,
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
@@ -226,9 +227,9 @@ class RestSwitch(SwitchDevice):
         try:
             await self.get_device_state(self.hass)
         except asyncio.TimeoutError:
-            _LOGGER.exception("Timed out while fetching data")
+            _LOGGER.error("Timed out while fetching data")
         except aiohttp.ClientError as err:
-            _LOGGER.exception("Error while fetching data: %s", err)
+            _LOGGER.error("Error while fetching data: %s", err)
 
     async def get_device_state(self, hass):
         """Get the latest data from REST API and update the state."""
@@ -259,13 +260,13 @@ class RestSwitch(SwitchDevice):
             elif text == "false":
                 self._state = False
 #           else:
-#               self._state = None
+#               self._state = STATE_UNAVAILABLE
         else:
             if text == self._body_on.template:
                 self._state = True
             elif text == self._body_off.template:
                 self._state = False
 #           else:
-#               self._state = None
+#               self._state = STATE_UNAVAILABLE
 
         return req

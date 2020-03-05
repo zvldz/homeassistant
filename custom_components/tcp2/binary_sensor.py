@@ -1,4 +1,4 @@
-"""Provides a binary sensor which gets its values from a TCP2 socket."""
+"""Provides a binary sensor which gets its values from a TCP socket."""
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDevice
@@ -11,7 +11,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({})
 
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up the TCP2 binary sensor."""
+    """Set up the TCP binary sensor."""
     add_entities([Tcp2BinarySensor(hass, config)])
 
 

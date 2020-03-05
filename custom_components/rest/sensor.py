@@ -29,7 +29,6 @@ from homeassistant.const import (
     HTTP_BASIC_AUTHENTICATION,
     HTTP_DIGEST_AUTHENTICATION,
 )
-from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 
@@ -121,8 +120,6 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         auth = None
     rest = RestData(method, resource, auth, headers_template, payload, verify_ssl, timeout)
     rest.update()
-#   if rest.data is None:
-#       raise PlatformNotReady
 
     # Must update the sensor now (including fetching the rest resource) to
     # ensure it's updating its state.
@@ -303,9 +300,8 @@ class RestData:
         """Get the latest data from REST service with provided method."""
         _LOGGER.debug("Updating from %s", self._resource)
 
-        headers = None
+        headers = {}
         if self._headers:
-            headers = {}
             for header_name, header_template in self._headers.items():
                 headers[header_name] = header_template.render()
 

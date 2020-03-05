@@ -159,6 +159,11 @@ class RestSwitch(SwitchDevice):
         self._resource = url
 
     @property
+    def available(self):
+        """Return the availability of this sensor."""
+        return self._state is not None
+
+    @property
     def name(self):
         """Return the name of the switch."""
         return self._name
@@ -206,9 +211,8 @@ class RestSwitch(SwitchDevice):
         if self._resource_template is not None:
             self.set_url(self._resource_template.async_render())
 
-        headers = None
+        headers = {}
         if self._headers:
-            headers = {}
             for header_name, header_template in self._headers.items():
                 headers[header_name] = header_template.async_render()
 
@@ -237,9 +241,8 @@ class RestSwitch(SwitchDevice):
         if self._resource_template is not None:
             self.set_url(self._resource_template.async_render())
 
-        headers = None
+        headers = {}
         if self._headers:
-            headers = {}
             for header_name, header_template in self._headers.items():
                 headers[header_name] = header_template.async_render()
 
@@ -258,14 +261,14 @@ class RestSwitch(SwitchDevice):
                 self._state = True
             elif text == "false":
                 self._state = False
-#           else:
-#               self._state = None
+            else:
+                self._state = None
         else:
             if text == self._body_on.template:
                 self._state = True
             elif text == self._body_off.template:
                 self._state = False
-#           else:
-#               self._state = None
+            else:
+                self._state = None
 
         return req

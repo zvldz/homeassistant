@@ -29,6 +29,12 @@
 
 - platform: template
   sensors:
+    ha1_url:
+      value_template: !secret ha1_url
+    ha2_url:
+      value_template: !secret ha2_url
+    ha_dacha_url:
+      value_template: !secret ha_dacha_url
     ha_latest2:
       friendly_name: "HA Latest"
       value_template: "{{ state_attr('binary_sensor.updater', 'newest_version') }}"
@@ -76,6 +82,7 @@
 
 - platform: rest
   resource_template: "{{ states('input_text.ha1_url') }}api/states/sensor.ha_uptime"
+# resource_template: "{{ states('sensor.ha1_url') }}api/states/sensor.ha_uptime"
   name: ha1_uptime
   unit_of_measurement: minutes
   force_update: true
@@ -85,6 +92,7 @@
 
 - platform: rest
   resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
+# resource_template: "{{ states('sensor.ha2_url') }}api/states/sensor.ha_uptime"
   name: ha2_uptime
   unit_of_measurement: minutes
   force_update: true
@@ -94,6 +102,7 @@
 
 - platform: rest
   resource_template: "{{ states('input_text.ha_dacha_url') }}api/states/sensor.ha_uptime"
+# resource_template: "{{ states('sensor.ha_dacha_url') }}api/states/sensor.ha_uptime"
   name: ha_dacha_uptime
   unit_of_measurement: minutes
   force_update: true

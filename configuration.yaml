@@ -40,11 +40,17 @@ discovery:
     - xiaomi_gw
 #   - samsung_tv
 
+system_log:
+  fire_event: true
+
 logger:
   default: info
 # default: debug
   logs:
     midea: debug
+    custom_components.rest.switch: debug
+    homeassistant.components.xiaomi_miio.light: fatal
+    miio.device: fatal
 
 recorder:
   db_url: !secret db_mysql
@@ -131,15 +137,16 @@ binary_sensor:  !include_dir_merge_list includes/binary_sensors
 light:          !include_dir_merge_list includes/lights
 climate:        !include_dir_merge_list includes/climate
 automation:     !include_dir_merge_list includes/automations
+script:         !include_dir_merge_named includes/scripts
 group:          !include includes/groups.yaml
 media_player:   !include includes/media_player.yaml
 yeelight:       !include includes/yeelight.yaml
-script:         !include includes/scripts.yaml
 input_boolean:  !include includes/input_boolean.yaml
 input_number:   !include includes/input_number.yaml
 input_select:   !include includes/input_select.yaml
 input_text:     !include includes/input_text.yaml
 panel_iframe:   !include includes/panel_iframe.yaml
 timer:          !include includes/timer.yaml
+counter:        !include includes/counter.yaml
 scene:          !include includes/scenes.yaml
 

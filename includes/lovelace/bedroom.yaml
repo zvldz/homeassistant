@@ -40,7 +40,7 @@ cards:
                 name: "Температура"
                 hour24: true
                 entities:
-                  - sensor.temperature_158d0001ab2a27
+                  - entity: sensor.temperature_158d0001ab2a27
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -49,4 +49,4 @@ cards:
                 name: "Влажность"
                 hour24: true
                 entities:
-                  - sensor.humidity_158d0001ab2a27
+                  - entity: sensor.humidity_158d0001ab2a27

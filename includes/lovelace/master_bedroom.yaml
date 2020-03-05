@@ -29,6 +29,7 @@ cards:
         entities:
           - binary_sensor.master_bedroom_lamp_nightlight
           - sensor.illumination_7c49eb1ce708
+          - binary_sensor.switch_158d0001a66df0
 
       - type: custom:button-card
         name: "Климат"
@@ -43,7 +44,7 @@ cards:
                 name: "Температура"
                 hour24: true
                 entities:
-                  - sensor.temperature_158d0002323856
+                  - entity: sensor.temperature_158d0002323856
       - type: custom:vertical-stack-in-card
         cards:
           - type: horizontal-stack
@@ -52,4 +53,4 @@ cards:
                 name: "Влажность"
                 hour24: true
                 entities:
-                  - sensor.humidity_158d0002323856
+                  - entity: sensor.humidity_158d0002323856

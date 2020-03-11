@@ -26,6 +26,8 @@ _LOGGER = logging.getLogger(__name__)
 CONF_BODY_OFF = "body_off"
 CONF_BODY_ON = "body_on"
 CONF_IS_ON_TEMPLATE = "is_on_template"
+CONF_RESOURCE_STATE="resource_state"
+CONF_RESOURCE_STATE_TEMPLATE="resource_state_template"
 
 DEFAULT_METHOD = "post"
 DEFAULT_BODY_OFF = "OFF"
@@ -40,6 +42,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Exclusive(CONF_RESOURCE, CONF_RESOURCE): cv.url,
         vol.Exclusive(CONF_RESOURCE_TEMPLATE, CONF_RESOURCE): cv.template,
+        vol.Optional(CONF_RESOURCE_STATE): cv.string,
+        vol.Optional(CONF_RESOURCE_STATE_TEMPLATE): cv.template,
         vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.template}),
         vol.Optional(CONF_BODY_OFF, default=DEFAULT_BODY_OFF): cv.template,
         vol.Optional(CONF_BODY_ON, default=DEFAULT_BODY_ON): cv.template,
@@ -72,11 +76,17 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     password = config.get(CONF_PASSWORD)
     resource = config.get(CONF_RESOURCE)
     resource_template = config.get(CONF_RESOURCE_TEMPLATE)
+    resource_state = config.get(CONF_RESOURCE_STATE)
+    resource_state_template = config.get(CONF_RESOURCE_STATE_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
 
     if resource_template is not None:
         resource_template.hass = hass
         resource = resource_template.async_render()
+
+    if resource_state_template is not None:
+        resource_state_template.hass = hass
+        resource_state = resource_state_template.async_render()
 
     if headers_template is not None:
         for header_template in headers_template.values():
@@ -99,6 +109,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             name,
             resource,
             resource_template,
+            resource_state,
+            resource_state_template,
             method,
             headers_template,
             auth,
@@ -131,6 +143,8 @@ class RestSwitch(SwitchDevice):
         name,
         resource,
         resource_template,
+        resource_state,
+        resource_state_template,
         method,
         headers,
         auth,
@@ -145,6 +159,8 @@ class RestSwitch(SwitchDevice):
         self._name = name
         self._resource = resource
         self._resource_template = resource_template
+        self._resource_state = resource_state
+        self._resource_state_template = resource_state_template
         self._method = method
         self._headers = headers
         self._auth = auth
@@ -238,8 +254,16 @@ class RestSwitch(SwitchDevice):
         """Get the latest data from REST API and update the state."""
         websession = async_get_clientsession(hass, self._verify_ssl)
 
+        resource_state = self._resource
+
         if self._resource_template is not None:
-            self.set_url(self._resource_template.async_render())
+            resource_state = self._resource_template.async_render()
+
+        if self._resource_state is not None:
+            resource_state = self._resource_state
+
+        if self._resource_state_template is not None:
+            resource_state = self._resource_state_template.async_render()
 
         headers = {}
         if self._headers:
@@ -248,7 +272,7 @@ class RestSwitch(SwitchDevice):
 
         with async_timeout.timeout(self._timeout):
             req = await websession.get(
-                self._resource, auth=self._auth, headers=headers
+                resource_state, auth=self._auth, headers=headers
             )
             text = await req.text()
 

@@ -42,8 +42,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Exclusive(CONF_RESOURCE, CONF_RESOURCE): cv.url,
         vol.Exclusive(CONF_RESOURCE_TEMPLATE, CONF_RESOURCE): cv.template,
-        vol.Optional(CONF_RESOURCE_STATE): cv.string,
-        vol.Optional(CONF_RESOURCE_STATE_TEMPLATE): cv.template,
+        vol.Exclusive(CONF_RESOURCE_STATE, CONF_RESOURCE_STATE): cv.string,
+        vol.Exclusive(CONF_RESOURCE_STATE_TEMPLATE, CONF_RESOURCE_STATE): cv.template,
         vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.template}),
         vol.Optional(CONF_BODY_OFF, default=DEFAULT_BODY_OFF): cv.template,
         vol.Optional(CONF_BODY_ON, default=DEFAULT_BODY_ON): cv.template,

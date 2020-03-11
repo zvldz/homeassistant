@@ -107,6 +107,19 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
+        name: "Зональная Уборка"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        #title: "Зональная Уборка"
+        show_header_toggle: false
+        entities:
+          - input_select.vacuum_room
+
+
+      - type: custom:button-card
         name: "Карта"
         styles:
           card:
@@ -122,19 +135,4 @@ cards:
           left: 80
           right: 0
         min_height: 0
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Зональная Уборка"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        #title: "Зональная Уборка"
-        show_header_toggle: false
-        entities:
-          - input_select.vacuum_room
-
 

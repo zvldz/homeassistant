@@ -278,9 +278,12 @@ class RestSwitch(SwitchDevice):
 
         if self._is_on_template is not None:
             text = self._is_on_template.async_render_with_possible_json_value(
-                text, "None"
+                text, error_value=None
             )
-            text = text.lower()
+
+            if text is not None:
+                text = text.lower()
+
             if text == "true":
                 self._state = True
             elif text == "false":

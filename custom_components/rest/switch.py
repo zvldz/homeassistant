@@ -177,6 +177,7 @@ class RestSwitch(SwitchDevice):
     @property
     def available(self):
         """Return the availability of this sensor."""
+        _LOGGER.debug("State: %s", self._state)
         return self._state is not None
 
     @property
@@ -276,10 +277,14 @@ class RestSwitch(SwitchDevice):
             )
             text = await req.text()
 
+        _LOGGER.debug("Raw response is: %s", text)
+
         if self._is_on_template is not None:
             text = self._is_on_template.async_render_with_possible_json_value(
                 text, error_value=None
             )
+
+            _LOGGER.debug("Value after template rendering: %s", text)
 
             if text is not None:
                 text = text.lower()

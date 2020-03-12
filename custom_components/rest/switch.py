@@ -80,6 +80,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     resource_state_template = config.get(CONF_RESOURCE_STATE_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
 
+    _LOGGER.warning("Setup custom rest switch")
+
     if resource_template is not None:
         resource_template.hass = hass
         resource = resource_template.async_render()
@@ -177,7 +179,7 @@ class RestSwitch(SwitchDevice):
     @property
     def available(self):
         """Return the availability of this sensor."""
-        _LOGGER.debug("State: %s", self._state)
+        _LOGGER.warning("State: %s", self._state)
         return self._state is not None
 
     @property
@@ -277,14 +279,14 @@ class RestSwitch(SwitchDevice):
             )
             text = await req.text()
 
-        _LOGGER.debug("Raw response is: %s", text)
+        _LOGGER.warning("Raw response is: %s", text)
 
         if self._is_on_template is not None:
             text = self._is_on_template.async_render_with_possible_json_value(
                 text, error_value=None
             )
 
-            _LOGGER.debug("Value after template rendering: %s", text)
+            _LOGGER.warning("Value after template rendering: %s", text)
 
             if text is not None:
                 text = text.lower()

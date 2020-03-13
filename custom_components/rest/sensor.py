@@ -87,7 +87,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     verify_ssl = config.get(CONF_VERIFY_SSL)
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
-    headers_template = config.get(CONF_HEADERS)
+    headers = config.get(CONF_HEADERS)
     unit = config.get(CONF_UNIT_OF_MEASUREMENT)
     device_class = config.get(CONF_DEVICE_CLASS)
     value_template = config.get(CONF_VALUE_TEMPLATE)
@@ -107,8 +107,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         payload_template.hass = hass
         payload = payload_template.render()
 
-    if headers_template is not None:
-        for header_template in headers_template.values():
+    if headers is not None:
+        for header_template in headers.values():
             header_template.hass = hass
 
     if username and password:
@@ -118,7 +118,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             auth = HTTPBasicAuth(username, password)
     else:
         auth = None
-    rest = RestData(method, resource, auth, headers_template, payload, verify_ssl, timeout)
+    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout)
     rest.update()
 
     # Must update the sensor now (including fetching the rest resource) to

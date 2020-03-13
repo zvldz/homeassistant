@@ -70,7 +70,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     body_on = config.get(CONF_BODY_ON)
     is_on_template = config.get(CONF_IS_ON_TEMPLATE)
     method = config.get(CONF_METHOD)
-    headers_template = config.get(CONF_HEADERS)
+    headers = config.get(CONF_HEADERS)
     name = config.get(CONF_NAME)
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
@@ -80,8 +80,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     resource_state_template = config.get(CONF_RESOURCE_STATE_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
 
-    _LOGGER.warning("Setup custom rest switch")
-
     if resource_template is not None:
         resource_template.hass = hass
         resource = resource_template.async_render()
@@ -90,8 +88,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         resource_state_template.hass = hass
         resource_state = resource_state_template.async_render()
 
-    if headers_template is not None:
-        for header_template in headers_template.values():
+    if headers is not None:
+        for header_template in headers.values():
             header_template.hass = hass
 
     auth = None
@@ -114,7 +112,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             resource_state,
             resource_state_template,
             method,
-            headers_template,
+            headers,
             auth,
             body_on,
             body_off,
@@ -179,7 +177,7 @@ class RestSwitch(SwitchDevice):
     @property
     def available(self):
         """Return the availability of this sensor."""
-        _LOGGER.warning("State: %s", self._state)
+        _LOGGER.debug("State: %s", self._state)
         return self._state is not None
 
     @property
@@ -279,17 +277,15 @@ class RestSwitch(SwitchDevice):
             )
             text = await req.text()
 
-        _LOGGER.warning("Raw response is: %s", text)
+        _LOGGER.debug("Raw response is (%s): %s", req.status, text)
 
         if self._is_on_template is not None:
             text = self._is_on_template.async_render_with_possible_json_value(
-                text, error_value=None
+                text, "False"
             )
 
-            _LOGGER.warning("Value after template rendering: %s", text)
-
-            if text is not None:
-                text = text.lower()
+            _LOGGER.debug("Value after template rendering: %s", text)
+            text = text.lower()
 
             if text == "true":
                 self._state = True

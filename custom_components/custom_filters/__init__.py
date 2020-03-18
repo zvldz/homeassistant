@@ -42,11 +42,8 @@ async def async_setup(hass, config):
 
         env.filters['unquote'] = unquote
         env.filters['urldecode'] = unquote
-        env.filters['b64encode'] = b64encode
-        env.filters['b64decode'] = b64decode
         env.filters['ternary'] = ternary
         env.filters['shuffle'] = randomize_list
-        env.filters['hash'] = get_hash
 
         return env
 

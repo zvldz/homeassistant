@@ -48,5 +48,9 @@ async def async_setup(hass, config):
         return env
 
     template.TemplateEnvironment = init
+    template._NO_HASS_ENV.filters['unquote'] = unquote
+    template._NO_HASS_ENV.filters['urldecode'] = unquote
+    template._NO_HASS_ENV.filters['ternary'] = ternary
+    template._NO_HASS_ENV.filters['shuffle'] = randomize_list
 
     return True

@@ -4,5 +4,6 @@
   "documentation": "https://google.com",
   "requirements": [],
   "dependencies": [],
-  "codeowners": []
+  "config_flow": true,
+  "codeowners": [ "@zvldz" ]
 }

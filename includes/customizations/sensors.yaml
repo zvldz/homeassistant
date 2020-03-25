@@ -244,4 +244,6 @@ sensor.sonoff_pump_current:
 sensor.sonoff_pump_daily_energy:
   friendly_name: "Насос СР"
 
-
+binary_sensor.door_window_sensor_158d00039461dd:
+  friendly_name: "Gas Counter"
+  icon: "mdi:fire"

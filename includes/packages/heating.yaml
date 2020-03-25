@@ -16,6 +16,14 @@ input_text:
   tessla_device_id:
     initial: !secret tessla_device_id
 
+input_number:
+  gas_counter:
+    name: "Счетчик газа"
+    icon: "mdi:fire"
+    mode: box
+    min: 0.0
+    max: 99999.999
+
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
@@ -186,5 +194,32 @@ automation:
       - service: switch.turn_off
         entity_id: switch.sonoff_pump_relay
 
-# TODO: away mode
+  - alias: gas_counter
+    initial_state: 'true'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00039461dd
+      from: 'on'
+      to: 'off'
+      for:
+        seconds: 3
+    action:
+      - service: input_number.set_value
+        data_template:
+          entity_id: input_number.gas_counter
+          value: "{{ (states.input_number.gas_counter.state|float + 0.01 ) | round(2) }}"
+
+utility_meter:
+  gas_hourly:
+    source: input_number.gas_counter
+    cycle: hourly
+  gas_daily:
+    source: input_number.gas_counter
+    cycle: daily
+  gas_monthly:
+    source: input_number.gas_counter
+    cycle: monthly
+  gas_yearly:
+    source: input_number.gas_counter
+    cycle: yearly
 

@@ -18,5 +18,5 @@ resources:
     type: js
   - url: /hacsfiles/simple-thermostat/simple-thermostat.js
     type: module
-  - url: /hacsfiles/lovelace-battery-entity/battery-entity.js
+  - url: /local/zha-network-visualization-card/zha-network-visualization-card.js
     type: module

@@ -20,6 +20,11 @@ mobile_app:
 map:
 sun:
 
+zha_map:
+
+hacs:
+  token: !secret my_github_access_token
+
 lovelace: !include includes/lovelace.yaml
 
 frontend:
@@ -54,7 +59,6 @@ logger:
 recorder:
   db_url: !secret db_mysql
   purge_keep_days: 30
-  purge_interval: 1
   exclude:
     entities:
       - sensor.uptime
@@ -126,9 +130,6 @@ notify:
   - name: telegram
     platform: telegram
     chat_id: !secret telegram_bot_allowed_chat_id1
-
-hacs:
-  token: !secret my_github_access_token
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors

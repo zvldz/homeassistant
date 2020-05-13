@@ -15,6 +15,38 @@ cards:
               - input_number.gas_counter
               - binary_sensor.door_window_sensor_158d00039461dd
 
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            name: "Синхронизация с HA1"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha1
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha1
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+          - type: custom:button-card
+            name: "Синхронизация с HA2"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha2
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha2
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
       - type: custom:button-card
         name: "Расход"
         styles:
@@ -30,6 +62,19 @@ cards:
                 unit: "㎥"
                 entities:
                   - entity: sensor.gas_hourly
+
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+#               hour24: true
+#               points_per_hour: 1
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_monthly
+
 
   - type: vertical-stack
     cards:

@@ -1,0 +1,10 @@
+- alias: 'zha_test_1'
+  trigger:
+    - platform: device
+      domain: zha
+      device_id: 90f9532fa9c242b4922867a07b23360b
+      subtype: remote_button_short_press
+      type: remote_button_short_press
+  action:
+    - service: light.toggle
+      entity_id: light.kitchen_lamp

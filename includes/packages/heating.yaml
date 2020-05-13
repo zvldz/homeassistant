@@ -77,6 +77,21 @@ sensor:
       - ACTIVE
     command: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --status"
 
+  - platform: rest
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_number.gas_counter"
+    name: ha1_gas_counter
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+
+  - platform: rest
+    resource_template: "{{ states('input_text.ha2_url') }}api/states/input_number.gas_counter"
+    name: ha2_gas_counter
+    headers:
+      authorization: !secret ha2_token
+    value_template: "{{ value_json.state }}"
+
+
 switch:
   - platform: template
     switches:
@@ -114,6 +129,23 @@ script:
         data_template:
           entity_id: sensor.thermostat_info
           state: '3'
+
+  sync_gas_counter_with_ha1:
+    alias: "Sync gas counter with ha1"
+    sequence:
+      - service: input_number.set_value
+        data_template:
+          entity_id: input_number.gas_counter
+          value: "{{ states('sensor.ha1_gas_counter') }}"
+
+  sync_gas_counter_with_ha2:
+    alias: "Sync gas counter with ha2"
+    sequence:
+      - service: input_number.set_value
+        data_template:
+          entity_id: input_number.gas_counter
+          value: "{{ states('sensor.ha2_gas_counter') }}"
+
 
 automation:
   - alias: "Time Pump Off"

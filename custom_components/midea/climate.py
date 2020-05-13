@@ -54,7 +54,7 @@ async def async_setup_platform(hass, config, async_add_entities,
     use_fan_only_workaround = config.get(CONF_USE_FAN_ONLY_WORKAROUND)
 
     client = midea_client(app_key, username, password)
-    devices = client.devices()
+    devices = await hass.async_add_executor_job(client.devices)
     entities = []
     for device in devices:
         if device.type == 0xAC:

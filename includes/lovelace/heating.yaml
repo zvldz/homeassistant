@@ -68,13 +68,20 @@ cards:
           - type: horizontal-stack
             cards:
               - type: custom:mini-graph-card
-#               hour24: true
-#               points_per_hour: 1
                 hours_to_show: 720
                 unit: "㎥"
                 entities:
                   - entity: sensor.gas_monthly
 
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_yearly
 
   - type: vertical-stack
     cards:

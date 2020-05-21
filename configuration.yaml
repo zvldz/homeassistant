@@ -39,10 +39,8 @@ http:
 
 discovery:
   ignore:
-    - igd
     - yeelight
     - xiaomi_gw
-#   - samsung_tv
 
 system_log:
   fire_event: true

@@ -5,6 +5,7 @@ from xml.parsers.expat import ExpatError
 
 from jsonpath import jsonpath
 import requests
+from requests import Session
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 import voluptuous as vol
 import xmltodict
@@ -285,12 +286,17 @@ class RestData:
         self._request_data = data
         self._verify_ssl = verify_ssl
         self._timeout = timeout
+        self._http_session = Session()
         self.data = None
         self.headers = None
 
     def set_payload(self, payload):
         """Set payload."""
         self._request_data = payload
+
+    def __del__(self):
+        """Destroy the http session on destroy."""
+        self._http_session.close()
 
     def set_url(self, url):
         """Set url."""
@@ -306,14 +312,14 @@ class RestData:
                 headers[header_name] = header_template.render()
 
         try:
-            response = requests.request(
+            response = self._http_session.request(
                 self._method,
                 self._resource,
-                headers = headers,
-                auth = self._auth,
-                data = self._request_data,
-                timeout = self._timeout,
-                verify = self._verify_ssl,
+                headers=headers,
+                auth=self._auth,
+                data=self._request_data,
+                timeout=self._timeout,
+                verify=self._verify_ssl,
             )
             self.data = response.text
             self.headers = response.headers

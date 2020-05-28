@@ -146,5 +146,6 @@ input_text:     !include includes/input_text.yaml
 panel_iframe:   !include includes/panel_iframe.yaml
 timer:          !include includes/timer.yaml
 counter:        !include includes/counter.yaml
+camera:         !include includes/camera.yaml
 scene:          !include includes/scenes.yaml
 

@@ -9,30 +9,27 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - domain: automation
-                  state: "on"
-                  options:
-                    secondary_info: last-triggered
-                  sort:
-                    method: last-triggered
-                    reverse: true
-                    ignore_case: true
-                - domain: automation
-                  state: "off"
-                  options:
-                    secondary_info: last-triggered
-                  sort:
-                    method: last-triggered
-                    reverse: true
-                    ignore_case: true
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - domain: automation
+              state: "on"
+              options:
+                secondary_info: last-triggered
+              sort:
+                method: last-triggered
+                reverse: true
+                ignore_case: true
+            - domain: automation
+              state: "off"
+              options:
+                secondary_info: last-triggered
+              sort:
+                method: last-triggered
+                reverse: true
+                ignore_case: true
 
   - type: vertical-stack
     cards:
@@ -41,21 +38,19 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - domain: script
-                  options:
-                    secondary_info: last-triggered
-                  sort:
-                    method: attribute
-                    attribute: last_triggered
-                    reverse: true
+
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - domain: script
+              options:
+                secondary_info: last-triggered
+              sort:
+                method: attribute
+                attribute: last_triggered
+                reverse: true
 
   - type: vertical-stack
     cards:
@@ -64,15 +59,14 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - input_boolean.auto_turn_off_lights
-              - input_boolean.auto_fan
-              - input_boolean.vacuum_schedule
-              - input_boolean.vacuum_notification
-              - input_boolean.pump_schedule
-              - input_boolean.gas_boiler_schedule
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - input_boolean.auto_turn_off_lights
+          - input_boolean.auto_fan
+          - input_boolean.vacuum_schedule
+          - input_boolean.vacuum_notification
+          - input_boolean.pump_schedule
+          - input_boolean.gas_boiler_schedule
 

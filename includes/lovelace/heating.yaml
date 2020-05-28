@@ -8,12 +8,11 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            entities:
-              - input_number.gas_counter
-              - binary_sensor.door_window_sensor_158d00039461dd
+
+      - type: entities
+        entities:
+          - input_number.gas_counter
+          - binary_sensor.door_window_sensor_158d00039461dd
 
       - type: horizontal-stack
         cards:
@@ -47,41 +46,30 @@ cards:
               card:
                 - font-size: 14px
 
-      - type: custom:button-card
-        name: "Расход"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                hour24: true
-                points_per_hour: 1
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_hourly
+          - type: custom:mini-graph-card
+            hour24: true
+            points_per_hour: 1
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_hourly
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_monthly
+          - type: custom:mini-graph-card
+            hours_to_show: 720
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_monthly
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_yearly
+          - type: custom:mini-graph-card
+            hours_to_show: 720
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_yearly
 
   - type: vertical-stack
     cards:
@@ -124,13 +112,11 @@ cards:
               card:
                 - font-size: 14px
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - input_boolean.pump_schedule
-              - input_boolean.gas_boiler_schedule
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - input_boolean.pump_schedule
+          - input_boolean.gas_boiler_schedule
 
   - type: vertical-stack
     cards:
@@ -139,31 +125,29 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: glance
-            show_header_toggle: false
-            entities:
-              - binary_sensor.sonoff_pump_status
-              - sensor.thermostat_reley_status
-              - sensor.thermostat_current_temp
-              - sensor.temperature_158d000231f03e
-              - sensor.thermostat_set_temp
+
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_pump_status
+          - sensor.thermostat_reley_status
+          - sensor.thermostat_current_temp
+          - sensor.temperature_158d000231f03e
+          - sensor.thermostat_set_temp
 
       - type: custom:button-card
         name: "Температура"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                hour24: true
-                points_per_hour: 1
-                entities:
-                  - entity: sensor.thermostat_current_temp
-                  - entity: sensor.temperature_158d000231f03e
-                    color: red
+          - type: custom:mini-graph-card
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.thermostat_current_temp
+              - entity: sensor.temperature_158d000231f03e
+                color: red
 

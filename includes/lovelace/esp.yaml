@@ -8,50 +8,46 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: glance
-            filter:
-              include:
-                - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip)_*"
-                  sort: entity_id
+
+      - type: custom:auto-entities
+        card:
+          type: glance
+        filter:
+          include:
+            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip)_*"
+              sort: entity_id
 
       - type: custom:button-card
         name: "Lights"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: "light.(sonoff|nodemcu|bw|power_strip)_*"
-                  sort: entity_id
+
+      - type: custom:auto-entities
+        card:
+          type: entities
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: "light.(sonoff|nodemcu|bw|power_strip)_*"
+              sort: entity_id
 
       - type: custom:button-card
         name: "Voltage"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Voltage"
-                hour24: true
-                points_per_hour: 1
-                entities:
-                  - entity: sensor.sonoff_pump_voltage
-                  - entity: sensor.bw_plug_1_voltage
-                    color: red
+          - type: custom:mini-graph-card
+            name: "Voltage"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.sonoff_pump_voltage
+              - entity: sensor.bw_plug_1_voltage
+                color: red
 
   - type: vertical-stack
     cards:
@@ -60,30 +56,28 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*ip_address*"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*wifi_signal"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*uptime"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*version"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*current"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*voltage"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*power"
-                  sort: entity_id
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*daily_energy"
-                  sort: entity_id
+
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*ip_address*"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*wifi_signal"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*uptime"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*version"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*current"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*voltage"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*power"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*daily_energy"
+              sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -93,28 +87,23 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip)_*"
-                  sort: entity_id
-              exclude:
-                - entity_id: "*restart"
+      - type: custom:auto-entities
+        card:
+          type: entities
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip)_*"
+              sort: entity_id
+          exclude:
+            - entity_id: "*restart"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip)_*restart"
-                  sort: entity_id
-
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Restart
+        filter:
+          include:
+            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip)_*restart"
+              sort: entity_id
 

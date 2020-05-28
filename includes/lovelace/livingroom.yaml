@@ -8,53 +8,49 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: light
-                entity: light.living_room_lamp
-              - type: light
-                entity: light.living_room_lamp_ambilight
+          - type: light
+            entity: light.living_room_lamp
+          - type: light
+            entity: light.living_room_lamp_ambilight
 
       - type: custom:button-card
         name: "Группа Спотов"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - group.living_room_spot_left
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - group.living_room_spot_right
+          - type: entities
+            entities:
+              - group.living_room_spot_left
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - group.living_room_spot_right
 
       - type: custom:button-card
         name: "Споты"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:auto-entities
-                show_empty: false
-                card:
-                  type: entities
-                filter:
-                  include:
-                    - entity_id: "light.living_room_spot_left_*"
-                      sort: name
-                    - type: divider
-                    - entity_id: "light.living_room_spot_right_*"
-                      sort: name
+          - type: custom:auto-entities
+            card:
+              type: entities
+              show_header_toggle: false
+            filter:
+              include:
+                - entity_id: "light.living_room_spot_left_*"
+                  sort: name
+                - type: divider
+                - entity_id: "light.living_room_spot_right_*"
+                  sort: name
 
   - type: vertical-stack
     cards:
@@ -63,6 +59,7 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
       - type: glance
         show_header_toggle: false
         entities:
@@ -76,32 +73,30 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                entity: switch.samsung_tv
-                size: 10%
-                styles:
-                  card:
-                    - font-size: 14px
-      - type: custom:vertical-stack-in-card
+          - type: custom:button-card
+            entity: switch.samsung_tv
+            size: 10%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                entity: switch.plug_158d0002677c89
-                size: 15%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.bw_plug_1_relay
-                size: 15%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            entity: switch.plug_158d0002677c89
+            size: 15%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.bw_plug_1_relay
+            size: 15%
+            styles:
+              card:
+                - font-size: 14px
 
   - type: vertical-stack
     cards:
@@ -110,25 +105,23 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Температура"
-                hour24: true
-                entities:
-                  - entity: sensor.temperature_158d0002bfe958
-                  - entity: sensor.living_room_bt_temperature
-                    color: red
-      - type: custom:vertical-stack-in-card
+          - type: custom:mini-graph-card
+            name: "Температура"
+            hour24: true
+            entities:
+              - entity: sensor.temperature_158d0002bfe958
+              - entity: sensor.living_room_bt_temperature
+                color: red
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Влажность"
-                hour24: true
-                entities:
-                  - entity: sensor.humidity_158d0002bfe958
-                  - entity: sensor.living_room_bt_humidity
-                    color: red
+          - type: custom:mini-graph-card
+            name: "Влажность"
+            hour24: true
+            entities:
+              - entity: sensor.humidity_158d0002bfe958
+              - entity: sensor.living_room_bt_humidity
+                color: red

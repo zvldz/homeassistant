@@ -9,7 +9,6 @@ cards:
           card:
             - background-color: "#203040"
       - type: custom:auto-entities
-        show_empty: false
         card:
           type: entities
         filter:

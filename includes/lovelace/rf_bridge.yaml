@@ -8,13 +8,12 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: glance
-            show_header_toggle: false
-            entities:
-              - binary_sensor.sonoff_rf_br_1_status
-              - binary_sensor.sonoff_rf_br_2_status
+
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_rf_br_1_status
+          - binary_sensor.sonoff_rf_br_2_status
 
       - type: custom:button-card
         name: "ESPHome Switch"

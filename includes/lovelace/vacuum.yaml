@@ -9,30 +9,52 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - vacuum.xiaomi_vacuum_cleaner
-              - input_boolean.vacuum_schedule
-              - input_boolean.vacuum_notification
-
-      - type: custom:xiaomi-vacuum-card
+      - type: custom:vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner
-        name: "Xiaomi Vacuum"
-        buttons: true
-        labels:
-          status: "Состояние"
-          battery: "Батарея"
-          mode: "Режим"
-          main_brush: "Главная щетка"
-          side_brush: "Боковая щетка"
-          filter: "Фильтр"
-          sensor: "Сенсор"
-          hours: "ч"
-
-
+#       map: camera.rockrobo_map
+        stats:
+          default:
+            - attribute: filter_left
+              unit: hours
+              subtitle: Filter
+            - attribute: side_brush_left
+              unit: hours
+              subtitle: Side brush
+            - attribute: main_brush_left
+              unit: hours
+              subtitle: Main brush
+            - attribute: sensor_dirty_left
+              unit: hours
+              subtitle: Sensors
+          cleaning:
+            - attribute: cleaned_area
+              unit: m2
+              subtitle: Cleaning area
+            - attribute: cleaning_time
+              unit: minutes
+              subtitle: Cleaning time
+        actions:
+          - name: Clean All
+            service: script.vacuum_all_except_balcony
+            icon: "mdi:all-inclusive"
+          - name: Clean Entryway
+            service: script.vacuum_entryway
+            icon: "mdi:door-open"
+          - name: Clean Hallway
+            service: script.vacuum_hallway
+            icon: "mdi:swap-vertical-variant"
+          - name: Clean Kitchen
+            service: script.vacuum_kitchen
+            icon: "mdi:silverware-fork-knife"
+          - name: Clean Living Room
+            service: script.vacuum_living_room
+            icon: "mdi:sofa"
+          - name: Clean Master Bedroom
+            service: script.vacuum_master_bedroom
+            icon: "mdi:hotel"
+          - name: Clean Bedroom
+            service: script.vacuum_bedroom
+            icon: "mdi:bed-empty"
 
       - type: custom:button-card
         name: "Сброс Счетчиков"
@@ -40,85 +62,72 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                name: "Главная Щетка"
-                icon: "mdi:autorenew"
-                entity: script.vacuum_reset_main_brush
-                tap_action:
-                  confirmation: true
-                  action: call-service
-                  service: script.turn_on
-                  service_data:
-                    entity_id: script.vacuum_reset_main_brush
-                size: 30%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            name: "Фильтр"
+            icon: "mdi:autorenew"
+            entity: script.vacuum_reset_filter
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.vacuum_reset_filter
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
 
-              - type: custom:button-card
-                name: "Боковая Щетка"
-                icon: "mdi:autorenew"
-                entity: script.vacuum_reset_side_brush
-                tap_action:
-                  confirmation: true
-                  action: call-service
-                  service: script.turn_on
-                  service_data:
-                    entity_id: script.vacuum_reset_side_brush
-                size: 30%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            name: "Боковая Щетка"
+            icon: "mdi:autorenew"
+            entity: script.vacuum_reset_side_brush
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.vacuum_reset_side_brush
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
 
-              - type: custom:button-card
-                name: "Фильтр"
-                icon: "mdi:autorenew"
-                entity: script.vacuum_reset_filter
-                tap_action:
-                  confirmation: true
-                  action: call-service
-                  service: script.turn_on
-                  service_data:
-                    entity_id: script.vacuum_reset_filter
-                size: 30%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            name: "Главная Щетка"
+            icon: "mdi:autorenew"
+            entity: script.vacuum_reset_main_brush
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.vacuum_reset_main_brush
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
 
-              - type: custom:button-card
-                name: "Сенсоры"
-                icon: "mdi:autorenew"
-                entity: script.vacuum_reset_sensor
-                tap_action:
-                  confirmation: true
-                  action: call-service
-                  service: script.turn_on
-                  service_data:
-                    entity_id: script.vacuum_reset_sensor
-                size: 30%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            name: "Сенсоры"
+            icon: "mdi:autorenew"
+            entity: script.vacuum_reset_sensor
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.vacuum_reset_sensor
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+
+
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Зональная Уборка"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        #title: "Зональная Уборка"
-        show_header_toggle: false
-        entities:
-          - input_select.vacuum_room
-
-
       - type: custom:button-card
         name: "Карта"
         styles:
@@ -127,12 +136,21 @@ cards:
 
       - type: custom:valetudo-map-card
         entity: sensor.xiaomi_map
+        floor_color: "#2980b9"
         rotate: -1
-        map_scale: 1.5
+        map_scale: 1.6
         crop:
-          top: 70
-          bottom: 30
-          left: 120
+          top: 180
+          bottom: 80
+          left: 150
           right: 0
         min_height: 0
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - vacuum.xiaomi_vacuum_cleaner
+          - input_boolean.vacuum_schedule
+          - input_boolean.vacuum_notification
+
 

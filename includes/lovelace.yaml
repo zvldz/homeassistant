@@ -1,7 +1,5 @@
 mode: yaml
 resources:
-  - url: /hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js
-    type: js
   - url: /hacsfiles/button-card/button-card.js
     type: module
   - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
@@ -10,8 +8,8 @@ resources:
     type: module
   - url: /hacsfiles/mini-graph-card/mini-graph-card.js
     type: module
-  - url: /hacsfiles/lovelace-xiaomi-vacuum-card/xiaomi-vacuum-card.js
-    type: js
+  - url: /hacsfiles/vacuum-card/vacuum-card.js
+    type: module
   - url: /hacsfiles/lovelace-valetudo-map-card/valetudo-map-card.js
     type: js
   - url: /hacsfiles/miflora-card/miflora-card.js

@@ -8,14 +8,13 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: light
-            entity: light.master_bedroom_lamp
-          - type: light
-            entity: light.bedside
-          - type: light
-            entity: light.gateway_light_7c49eb1ce708
+
+      - type: light
+        entity: light.master_bedroom_lamp
+      - type: light
+        entity: light.bedside
+      - type: light
+        entity: light.gateway_light_7c49eb1ce708
 
   - type: vertical-stack
     cards:
@@ -24,6 +23,7 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
       - type: glance
         show_header_toggle: false
         entities:
@@ -36,21 +36,19 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Температура"
-                hour24: true
-                entities:
-                  - entity: sensor.temperature_158d0002323856
-      - type: custom:vertical-stack-in-card
+          - type: custom:mini-graph-card
+            name: "Температура"
+            hour24: true
+            entities:
+              - entity: sensor.temperature_158d0002323856
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Влажность"
-                hour24: true
-                entities:
-                  - entity: sensor.humidity_158d0002323856
+          - type: custom:mini-graph-card
+            name: "Влажность"
+            hour24: true
+            entities:
+              - entity: sensor.humidity_158d0002323856

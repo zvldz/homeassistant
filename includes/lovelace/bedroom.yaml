@@ -8,12 +8,11 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: light
-                entity: light.bedroom_lamp
+          - type: light
+            entity: light.bedroom_lamp
 
   - type: vertical-stack
     cards:
@@ -32,21 +31,19 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Температура"
-                hour24: true
-                entities:
-                  - entity: sensor.temperature_158d0001ab2a27
-      - type: custom:vertical-stack-in-card
+          - type: custom:mini-graph-card
+            name: "Температура"
+            hour24: true
+            entities:
+              - entity: sensor.temperature_158d0001ab2a27
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Влажность"
-                hour24: true
-                entities:
-                  - entity: sensor.humidity_158d0001ab2a27
+          - type: custom:mini-graph-card
+            name: "Влажность"
+            hour24: true
+            entities:
+              - entity: sensor.humidity_158d0001ab2a27

@@ -8,80 +8,74 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: light
-                entity: light.gateway_light_7811dcb245b2
+          - type: light
+            entity: light.gateway_light_7811dcb245b2
 
       - type: custom:button-card
         name: "Выключатели"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                entity: switch.wall_switch_ln_158d0001f9aaae
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.wall_switch_ln_158d0002112b1e
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.wall_switch_ln_right_158d00022a8150
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                entity: switch.wall_switch_ln_158d00022360fe
-                size: 14%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.wall_switch_ln_left_158d00022a8150
-                size: 14%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            entity: switch.wall_switch_ln_158d0001f9aaae
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.wall_switch_ln_158d0002112b1e
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.wall_switch_ln_right_158d00022a8150
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                entity: switch.sonoff_br_relay_2
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.sonoff_br_relay_1
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
-              - type: custom:button-card
-                entity: switch.sonoff_wc_relay
-                size: 20%
-                styles:
-                  card:
-                    - font-size: 14px
+          - type: custom:button-card
+            entity: switch.wall_switch_ln_158d00022360fe
+            size: 14%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.wall_switch_ln_left_158d00022a8150
+            size: 14%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            entity: switch.sonoff_br_relay_2
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.sonoff_br_relay_1
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.sonoff_wc_relay
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
 
   - type: vertical-stack
     cards:
@@ -90,51 +84,47 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Температура"
-                hour24: true
-                points_per_hour: 2
-                entities:
-                  - entity: sensor.temperature_158d000231f03e
-                  - entity: sensor.temperature_158d000273011f
-                    color: red
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "Влажность"
-                hour24: true
-                points_per_hour: 2
-                entities:
-                  - entity: sensor.humidity_158d000231f03e
-                  - entity: sensor.humidity_158d000273011f
-                    color: red
+          - type: custom:mini-graph-card
+            name: "Температура"
+            hour24: true
+            points_per_hour: 2
+            entities:
+              - entity: sensor.temperature_158d000231f03e
+              - entity: sensor.temperature_158d000273011f
+                color: red
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Влажность"
+            hour24: true
+            points_per_hour: 2
+            entities:
+              - entity: sensor.humidity_158d000231f03e
+              - entity: sensor.humidity_158d000273011f
+                color: red
 
       - type: custom:button-card
         name: "Таймеры"
         styles:
           card:
             - background-color: "#203040"
-      - type: custom:vertical-stack-in-card
+
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-            - type: entity-filter
-              show_header_toggle: false
-              entities:
-                - entity: timer.hallway_light
-                - entity: timer.bathroom_light
-                - entity: timer.wc_light
-                - entity: timer.bathroom_fan
-                - entity: timer.wc_fan
-              state_filter:
-                - 'active'
+        - type: entity-filter
+          show_header_toggle: false
+          entities:
+            - entity: timer.hallway_light
+            - entity: timer.bathroom_light
+            - entity: timer.wc_light
+            - entity: timer.bathroom_fan
+            - entity: timer.wc_fan
+          state_filter:
+            - 'active'
 
   - type: vertical-stack
     cards:
@@ -143,6 +133,7 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
       - type: glance
         show_header_toggle: false
         entities:
@@ -150,30 +141,35 @@ cards:
           - binary_sensor.sonoff_wc_button
           - binary_sensor.sonoff_br_button_1
           - binary_sensor.sonoff_br_button_2
+
       - type: glance
         show_header_toggle: false
         entities:
           - sensor.illumination_7811dcb245b2
           - binary_sensor.water_leak_sensor_158d00023aa420
           - binary_sensor.water_leak_sensor_158d000233ddf2
+
       - type: glance
         show_header_toggle: false
         entities:
           - binary_sensor.door_window_sensor_158d00024de627
           - binary_sensor.door_window_sensor_158d0002fd4381
           - binary_sensor.door_window_sensor_158d00032b7db7
+
       - type: glance
         show_header_toggle: false
         entities:
           - sensor.temperature_158d000231f03e
           - sensor.humidity_158d000231f03e
           - sensor.pressure_158d000231f03e
+
       - type: glance
         show_header_toggle: false
         entities:
           - sensor.temperature_158d000273011f
           - sensor.humidity_158d000273011f
           - sensor.pressure_158d000273011f
+
       - type: glance
         show_header_toggle: false
         entities:

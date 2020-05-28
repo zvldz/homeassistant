@@ -9,19 +9,18 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - binary_sensor.front_door_ding
-              - binary_sensor.front_door_motion
-              - sensor.front_door_battery
-              - sensor.front_door_last_activity_date
-              - sensor.front_door_last_ding_date
-              - sensor.front_door_last_motion_date
-              - sensor.front_door_volume
-              - sensor.hallway_volume
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - binary_sensor.front_door_ding
+          - binary_sensor.front_door_motion
+          - sensor.front_door_battery
+          - sensor.front_door_last_activity_date
+          - sensor.front_door_last_ding_date
+          - sensor.front_door_last_motion_date
+          - sensor.front_door_volume
+          - sensor.hallway_volume
+
   - type: vertical-stack
     cards:
       - type: custom:button-card
@@ -30,10 +29,8 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: picture-glance
-            show_header_toggle: false
-            entities:
-              - sensor.front_door_battery
-            camera_image: camera.front_door
+      - type: picture-glance
+        show_header_toggle: false
+        entities:
+          - sensor.front_door_battery
+        camera_image: camera.front_door

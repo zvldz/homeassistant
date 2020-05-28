@@ -9,38 +9,36 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.last_boot
-                format: total
-              - entity: sensor.ha1_uptime_dt
-                format: total
-              - entity: sensor.ha2_uptime_dt
-                format: total
-              - entity: sensor.ha_dacha_uptime_dt
-                format: total
-              - entity: sensor.ha_init
-              - entity: sensor.ha_current
-              - entity: sensor.ha_latest
-              - type: divider
+      - type: entities
+        entities:
+          - entity: sensor.last_boot
+            format: total
+          - entity: sensor.ha1_uptime_dt
+            format: total
+          - entity: sensor.ha2_uptime_dt
+            format: total
+          - entity: sensor.ha_dacha_uptime_dt
+            format: total
+          - entity: sensor.ha_init
+          - entity: sensor.ha_current
+          - entity: sensor.ha_latest
+          - type: divider
 
-          - type: glance
-            state_color: true
-            entities:
-              - entity: counter.restart_counter
-                name: Restarts
-              - entity: counter.error_counter
-                name: Errors
-                double_tap_action:
-                  action: call-service
-                  service: script.error_reset
-              - entity: counter.warning_counter
-                name: Warnings
-                double_tap_action:
-                  action: call-service
-                  service: script.warning_reset
+      - type: glance
+        state_color: true
+        entities:
+          - entity: counter.restart_counter
+            name: Restarts
+          - entity: counter.error_counter
+            name: Errors
+            double_tap_action:
+              action: call-service
+              service: script.error_reset
+          - entity: counter.warning_counter
+            name: Warnings
+            double_tap_action:
+              action: call-service
+              service: script.warning_reset
 
   - type: vertical-stack
     cards:
@@ -50,43 +48,41 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:vertical-stack-in-card
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "CPU temp"
-                entities:
-                  - entity: sensor.cpu_temperature
-                hour24: true
-                line_color: red
-              - type: custom:mini-graph-card
-                name: "CPU use"
-                hour24: true
-                entities:
-                  - entity: sensor.processor_use
+          - type: custom:mini-graph-card
+            name: "CPU temp"
+            entities:
+              - entity: sensor.cpu_temperature
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "CPU use"
+            hour24: true
+            entities:
+              - entity: sensor.processor_use
 
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "RAM"
-                entities:
-                  - entity: sensor.memory_use_percent
-                hour24: true
-                line_color: red
-              - type: custom:mini-graph-card
-                name: "SWAP"
-                hour24: true
-                entities:
-                  - entity: sensor.swap_use_percent
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "RAM"
+            entities:
+              - entity: sensor.memory_use_percent
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "SWAP"
+            hour24: true
+            entities:
+              - entity: sensor.swap_use_percent
 
-          - type: horizontal-stack
-            cards:
-              - type: custom:mini-graph-card
-                name: "HDD"
-                hour24: true
-                entities:
-                  - entity: sensor.disk_use_percent
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "HDD"
+            hour24: true
+            entities:
+              - entity: sensor.disk_use_percent
 
 # - type: vertical-stack
 #   cards:

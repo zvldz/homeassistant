@@ -10,7 +10,7 @@ views:
   - !include includes/lovelace/vacuum.yaml
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/heating.yaml
-# - !include includes/lovelace/climate.yaml
+  - !include includes/lovelace/climate.yaml
   - !include includes/lovelace/battery.yaml
   - !include includes/lovelace/rf_bridge.yaml
   - !include includes/lovelace/esp.yaml

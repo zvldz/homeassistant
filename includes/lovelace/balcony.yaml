@@ -62,7 +62,6 @@ cards:
           - intensity:sensor.mf1_illuminance
           - temperature:sensor.mf1_temperature
           - conductivity:sensor.mf1_soil
-          - battery:sensor.mf1_battery_level
 
       - type: custom:miflora-card
         title: 'Цветок 2'
@@ -76,7 +75,6 @@ cards:
           - intensity:sensor.mf2_illuminance
           - temperature:sensor.mf2_temperature
           - conductivity:sensor.mf2_soil
-          - battery:sensor.mf2_battery_level
 
       - type: custom:miflora-card
         title: 'Цветок 3'
@@ -90,7 +88,6 @@ cards:
           - intensity:sensor.mf3_illuminance
           - temperature:sensor.mf3_temperature
           - conductivity:sensor.mf3_soil
-          - battery:sensor.mf3_battery_level
 
   - type: vertical-stack
     cards:

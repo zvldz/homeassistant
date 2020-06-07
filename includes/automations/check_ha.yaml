@@ -7,8 +7,8 @@
       for: "00:02:00"
   action:
     - service: notify.telegram
-      data:
-        message: 'Не работает ХА на Khadas'
+      data_template:
+        message: '{{ states.sensor.date_time.state }} | Не работает ХА на Khadas'
 
 - alias: khadas_ha_server_on
   initial_state: 'on'
@@ -18,8 +18,8 @@
       from: "unavailable"
   action:
     - service: notify.telegram
-      data:
-        message: 'Заработал ХА на Khadas'
+      data_template:
+        message: '{{ states.sensor.date_time.state }} | Заработал ХА на Khadas'
 
 - alias: raspberry_ha_server_off
   initial_state: 'on'
@@ -30,8 +30,8 @@
       for: "00:02:00"
   action:
     - service: notify.telegram
-      data:
-        message: 'Не работает ХА на Raspberry PI 4'
+      data_template:
+        message: '{{ states.sensor.date_time.state }} | Не работает ХА на Raspberry PI 4'
 
 - alias: raspberry_ha_server_on
   initial_state: 'on'
@@ -41,6 +41,6 @@
       from: "unavailable"
   action:
     - service: notify.telegram
-      data:
-        message: 'Заработал ХА на Raspberry PI 4'
+      data_template:
+        message: '{{ states.sensor.date_time.state }} | Заработал ХА на Raspberry PI 4'
 

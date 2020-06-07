@@ -21,52 +21,57 @@ group:
       - automation.khadas_ha_server_off_reserve_control
       - automation.sync_input_boolean
       - automation.sync_thermostat_temperature
+      - automation.system_start
+      - automation.system_error_counter
+      - automation.system_warning_counter
+      - automation.reset_system_counters
+      - automation.gas_counter
 
 sensor:
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.pump_schedule"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.pump_schedule"
     name: ha1_pump_schedule
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
     name: ha1_gas_boiler_schedule
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.auto_turn_off_lights"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_turn_off_lights"
     name: ha1_auto_turn_off_lights
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.auto_fan"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_fan"
     name: ha1_auto_fan
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.vacuum_schedule"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_schedule"
     name: ha1_vacuum_schedule
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/input_boolean.vacuum_notification"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_notification"
     name: ha1_vacuum_notification
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.state }}"
 
   - platform: rest
-    resource_template: "{{ states('sensor.ha1_url') }}api/states/climate.gas_boiler"
+    resource_template: "{{ states('input_text.ha1_url') }}api/states/climate.gas_boiler"
     name: ha1_thermostat_temperature
     headers:
       authorization: !secret ha1_token
@@ -74,7 +79,7 @@ sensor:
 
 rest_command:
   ha1_set_input_boolean:
-    url: "{{ states('sensor.ha1_url') }}api/services/input_boolean/turn_{{ set_state }}"
+    url: "{{ states('input_text.ha1_url') }}api/services/input_boolean/turn_{{ set_state }}"
     method: POST
     headers:
       authorization: !secret ha1_token
@@ -89,10 +94,6 @@ automation:
     action:
       - service: automation.turn_off
         entity_id: all
-#     - service: climate.set_hvac_mode
-#       data:
-#         entity_id: climate.gas_boiler
-#         hvac_mode: 'off'
       - delay: 00:00:30
       - service: automation.turn_on
         entity_id: group.active_automations
@@ -105,18 +106,14 @@ automation:
         from: "unavailable"
     action:
       - service: notify.telegram
-        data:
-          message: 'Заработал ХА на Khadas. Отдаю управление главному!'
+        data_template:
+          message: '{{ states.sensor.date_time.state }} | Заработал ХА на Khadas. Отдаю управление главному!'
       - service: rest_command.ha1_set_input_boolean
         data_template:
           set_entity_id: "input_boolean.pump_schedule"
           set_state: "{{ states('input_boolean.pump_schedule') }}"
       - service: automation.turn_off
         entity_id: all
-#     - service: climate.set_hvac_mode
-#       data:
-#         entity_id: climate.gas_boiler
-#         hvac_mode: 'off'
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
       - delay: 00:00:30
@@ -132,8 +129,8 @@ automation:
         for: "00:01:00"
     action:
       - service: notify.telegram
-        data:
-          message: 'Не работает ХА на Khadas. Беру управление на себя!'
+        data_template:
+          message: '{{ states.sensor.date_time.state }} | Не работает ХА на Khadas. Беру управление на себя!'
       - service: automation.turn_on
         entity_id: all
 
@@ -169,7 +166,7 @@ automation:
             input_boolean.auto_fan
           {% elif trigger.entity_id == 'sensor.ha1_vacuum_schedule' %}
             input_boolean.vacuum_schedule
-          {% elif trigger.entity_id == 'sensor.ha1_url_vacuum_notification' %}
+          {% elif trigger.entity_id == 'sensor.ha1_vacuum_notification' %}
             input_boolean.vacuum_notification
           {% endif %}
 

@@ -10,7 +10,7 @@
         title: "HACS updates are available"
         message: >
           {% for item in states.sensor.hacs.attributes.repositories %}
-            {{ item.display_name }} {{ item['installed version'] }} -> {{ item['available version'] }}
+            {{ item.display_name }} {{ item.installed_version }} -> {{ item.available_version }}
           {% endfor %}
 
 - alias: "HA Persistent Notification"

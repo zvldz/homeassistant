@@ -41,6 +41,7 @@ discovery:
   ignore:
     - yeelight
     - xiaomi_gw
+    - homekit
 
 system_log:
   fire_event: true
@@ -128,6 +129,14 @@ notify:
   - name: telegram
     platform: telegram
     chat_id: !secret telegram_bot_allowed_chat_id1
+
+#samsungtv:
+#  - host: !secret livingroom_tv_ip
+#    name: livingroom_tv
+#    turn_on_action:
+#      - service: wake_on_lan.send_magic_packet
+#        data:
+#          mac: !secret livingroom_tv_mac
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors

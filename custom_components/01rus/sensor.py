@@ -20,7 +20,7 @@ from homeassistant.helpers.entity import Entity
 _LOGGER = logging.getLogger(__name__)
 
 ATTRIBUTION = "Data provided by 01rus.ru"
-DEFAULT_NAME = " 01rus.ru sensor"
+DEFAULT_NAME = "01rus.ru sensor"
 SCAN_INTERVAL = timedelta(seconds=3600)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(

@@ -153,4 +153,3 @@ cards:
           - input_boolean.vacuum_schedule
           - input_boolean.vacuum_notification
 
-

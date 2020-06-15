@@ -4,6 +4,7 @@ cards:
   - type: thermostat
     entity: climate.midea_ac_813900000011
   - type: thermostat
-    entity: climate.midea_ac_e0470000000f
-  - type: thermostat
     entity: climate.midea_ac_823900000011
+  - type: thermostat
+    entity: climate.midea_ac_e0470000000f
+

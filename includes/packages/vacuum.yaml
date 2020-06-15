@@ -3,19 +3,19 @@ vacuum:
     host: !secret xiaomi_vacuum_ip
     token: !secret xiaomi_vacuum_token
 
-input_select:
-  vacuum_room:
-    name: "Choose a room to clean"
-    options:
-      - Select Room
-      - All Except Balcony
-      - Entryway
-      - Hallway
-      - Kitchen
-      - Living Room
-      - Master Bedroom
-      - Bedroom
-    initial: Select Room
+#input_select:
+#  vacuum_room:
+#    name: "Choose a room to clean"
+#    options:
+#      - Select Room
+#      - All Except Balcony
+#      - Entryway
+#      - Hallway
+#      - Kitchen
+#      - Living Room
+#      - Master Bedroom
+#      - Bedroom
+#    initial: Select Room
 
 input_boolean:
   vacuum_schedule:
@@ -165,35 +165,35 @@ automation:
         data:
           message: "Пылесос вне опасности"
 
-  - alias: "Start Cleaning Room"
-    initial_state: 'on'
-    trigger:
-      - platform: state
-        entity_id: input_select.vacuum_room
-        from: 'Select Room'
-    action:
-      - service: script.turn_on
-        data_template:
-          entity_id: >
-            {% if is_state("input_select.vacuum_room", "All Except Balcony") %}
-             script.vacuum_all_except_balcony
-            {% elif is_state("input_select.vacuum_room", "Entryway") %}
-              script.vacuum_entryway
-            {% elif is_state("input_select.vacuum_room", "Hallway") %}
-              script.vacuum_hallway
-            {% elif is_state("input_select.vacuum_room", "Kitchen") %}
-              script.vacuum_kitchen
-            {% elif is_state("input_select.vacuum_room", "Living Room") %}
-              script.vacuum_living_room
-            {% elif is_state("input_select.vacuum_room", "Master Bedroom") %}
-              script.vacuum_master_bedroom
-            {% elif is_state("input_select.vacuum_room", "Bedroom") %}
-              script.vacuum_bedroom
-            {% endif %}
-      - service: input_select.select_option
-        entity_id: input_select.vacuum_room
-        data_template:
-          option: 'Select Room'
+#  - alias: "Start Cleaning Room"
+#    initial_state: 'on'
+#    trigger:
+#      - platform: state
+#        entity_id: input_select.vacuum_room
+#        from: 'Select Room'
+#    action:
+#      - service: script.turn_on
+#        data_template:
+#          entity_id: >
+#            {% if is_state("input_select.vacuum_room", "All Except Balcony") %}
+#             script.vacuum_all_except_balcony
+#            {% elif is_state("input_select.vacuum_room", "Entryway") %}
+#              script.vacuum_entryway
+#            {% elif is_state("input_select.vacuum_room", "Hallway") %}
+#              script.vacuum_hallway
+#            {% elif is_state("input_select.vacuum_room", "Kitchen") %}
+#              script.vacuum_kitchen
+#            {% elif is_state("input_select.vacuum_room", "Living Room") %}
+#              script.vacuum_living_room
+#            {% elif is_state("input_select.vacuum_room", "Master Bedroom") %}
+#              script.vacuum_master_bedroom
+#            {% elif is_state("input_select.vacuum_room", "Bedroom") %}
+#              script.vacuum_bedroom
+#            {% endif %}
+#      - service: input_select.select_option
+#        entity_id: input_select.vacuum_room
+#        data_template:
+#          option: 'Select Room'
 
   - alias: "Hallway Button Click Single"
     initial_state: 'on'

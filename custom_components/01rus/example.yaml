@@ -1,0 +1,5 @@
+sensor:
+  - platform: 01rus
+    name: "01rus_traffic"
+    username: !secret private_username
+    password: !secret private_password

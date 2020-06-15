@@ -70,6 +70,8 @@ cards:
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*version"
               sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*free_heap"
+              sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*current"
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*voltage"

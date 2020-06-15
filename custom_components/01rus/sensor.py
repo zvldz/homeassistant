@@ -73,7 +73,7 @@ class site01rusSensor(Entity):
 
         if traff_in != None and traff_out != None:
             attr['down'] = round(float(traff_out.get_text()), 2)
-            attr['up'] = round(float(traff_out.get_text()), 2)
+            attr['up'] = round(float(traff_in.get_text()), 2)
         else:
             _LOGGER.warning("Result could not be parsed")
 
@@ -82,12 +82,13 @@ class site01rusSensor(Entity):
     @property
     def state(self):
         """Return the state of the device."""
-        if self.data:
-            return "OK"
-        return None
+        return self._state
 
     def update(self):
         """Get the latest data from 01rus.ru."""
+        self.data = None
+        self._state = None
+
         url = 'http://abonent.01rus.ru/'
         request_data = {
             'username': self._username,
@@ -100,13 +101,22 @@ class site01rusSensor(Entity):
 
             if response.status_code != HTTP_OK:
                 _LOGGER.error("Error %d on load URL %s", request.status, request.url)
-                self.data = None
                 return None
 
             if response.url.find('user') == -1:
                 _LOGGER.error("Failed to login to %s", url)
-                self.data = None
                 return None
+
+            raw_data = BeautifulSoup(response.text, "html.parser")
+            balance = raw_data.find(class_='label label-warning')
+
+            if balance is None:
+                balance = raw_data.find(class_='label label-success')
+
+            if balance is None:
+                _LOGGER.warning("Can't get a balance")
+            else:
+                self._state = balance.contents[0].split()[0]
 
             start_date = date.today().strftime("01.%m.%Y")
             end_date = date.today() + timedelta(days=1)
@@ -121,4 +131,3 @@ class site01rusSensor(Entity):
             _LOGGER.debug("Data fetched from resource: \n%s", self.data.text)
         except ValueError as err:
             _LOGGER.error("Error retrieving data from %s: %s", url, err.args)
-            self.data = None

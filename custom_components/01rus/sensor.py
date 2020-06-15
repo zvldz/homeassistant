@@ -50,6 +50,7 @@ class site01rusSensor(Entity):
         self._name = name
         self._username = username
         self._password = password
+        self._state = None
         self.data = None
 
     @property

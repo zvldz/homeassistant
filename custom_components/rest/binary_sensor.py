@@ -38,6 +38,7 @@ DEFAULT_VERIFY_SSL = True
 DEFAULT_TIMEOUT = 10
 
 CONF_PAYLOAD_TEMPLATE = "payload_template"
+CONF_PROXY_URL = "proxy_url"
 
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -58,6 +59,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_VALUE_TEMPLATE): cv.template,
         vol.Optional(CONF_VERIFY_SSL, default=DEFAULT_VERIFY_SSL): cv.boolean,
         vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int,
+        vol.Optional(CONF_PROXY_URL): cv.string,
     }
 )
 
@@ -80,6 +82,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     headers = config.get(CONF_HEADERS)
     device_class = config.get(CONF_DEVICE_CLASS)
     value_template = config.get(CONF_VALUE_TEMPLATE)
+    proxy_url = config.get(CONF_PROXY_URL)
 
     if value_template is not None:
         value_template.hass = hass
@@ -104,7 +107,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     else:
         auth = None
 
-    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout)
+    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout, proxy_url)
     rest.update()
 
     # No need to update the sensor now because it will determine its state

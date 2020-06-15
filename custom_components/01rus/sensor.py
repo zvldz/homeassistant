@@ -73,8 +73,8 @@ class site01rusSensor(Entity):
         traff_out = raw_data.find('td', text='Исходящий').findNextSibling('td')
 
         if traff_in != None and traff_out != None:
-            attr['down'] = round(float(traff_out.get_text()), 2)
-            attr['up'] = round(float(traff_in.get_text()), 2)
+            attr['down'] = round(float(traff_in.get_text()), 2)
+            attr['up'] = round(float(traff_out.get_text()), 2)
         else:
             _LOGGER.warning("Result could not be parsed")
 

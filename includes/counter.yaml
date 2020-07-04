@@ -2,7 +2,7 @@
 warning_counter:
   name: Warnings
   icon: mdi:alert-box-outline
-  restore: true
+  restore: false
   step: 1
   initial: 0
 
@@ -10,7 +10,7 @@ warning_counter:
 error_counter:
   name: Errors
   icon: mdi:alert-box
-  restore: true
+  restore: false
   step: 1
   initial: 0
 

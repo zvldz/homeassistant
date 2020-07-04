@@ -62,9 +62,11 @@ cards:
           type: entities
         filter:
           include:
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*ip_address*"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*connected_ssid"
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*wifi_signal"
+              sort: entity_id
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*ip_address"
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*uptime"
               sort: entity_id

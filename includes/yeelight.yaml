@@ -1,28 +1,28 @@
 devices:
   192.168.1.26:
     name: kitchen_lamp
-    model: ceiling1
+#   model: ceiling1
     transition: 500
     nightlight_switch_type: light
 #   use_music_mode: true
   192.168.1.15:
     name: living_room_lamp
-    model: ceiling4
+#   model: ceiling4
     transition: 500
 #   use_music_mode: true
   192.168.1.16:
     name: master_bedroom_lamp
-    model: ceiling3
+#   model: ceiling3
     transition: 500
 #   use_music_mode: true
   192.168.1.30:
     name: bedside
-    model: bslamp1
+#   model: bslamp1
     transition: 500
 #   use_music_mode: true
   192.168.1.32:
     name: bedroom_lamp
-    model: ceiling3
+#   model: ceiling3
     transition: 500
 #   use_music_mode: true
   192.168.1.55:

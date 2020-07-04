@@ -39,4 +39,5 @@
       at: '00:00:02'
   action:
     - service: counter.reset
-      entity_id: counter.warning_counter, counter.error_counter, counter.restart_counter
+#     entity_id: counter.warning_counter, counter.error_counter, counter.restart_counter
+      entity_id: counter.restart_counter

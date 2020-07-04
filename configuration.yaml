@@ -20,8 +20,6 @@ mobile_app:
 map:
 sun:
 
-zha_map:
-
 hacs:
   token: !secret my_github_access_token
 
@@ -40,7 +38,6 @@ http:
 discovery:
   ignore:
     - yeelight
-    - xiaomi_gw
     - homekit
 
 system_log:
@@ -111,14 +108,6 @@ device_tracker:
     interval_seconds: 30
     consider_home: 120
 
-xiaomi_aqara:
-  discovery_retry: 10
-  gateways:
-    - mac: !secret xgate_1_mac
-      key: !secret xgate_1_key
-    - mac: !secret xgate_2_mac
-      key: !secret xgate_2_key
-
 telegram_bot:
   - platform: polling
     api_key: !secret telegram_bot_api_key
@@ -137,6 +126,12 @@ notify:
 #      - service: wake_on_lan.send_magic_packet
 #        data:
 #          mac: !secret livingroom_tv_mac
+
+sonoff:
+  username: !secret sonoff_username
+  password: !secret sonoff_password
+  mode: local
+  reload: always
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors

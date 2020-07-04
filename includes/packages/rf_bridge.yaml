@@ -1,0 +1,11 @@
+script:
+  switch_sonoff_rf_br_3_sb_rf:
+    alias: "switch sonoff rf br sb rf"
+    sequence:
+      - service: esphome.sonoff_rf_br_3_send_rf_code
+        data:
+          sync: 0x5168
+          low:  0x0186
+          high: 0x0424
+          code: 0x0B0994
+

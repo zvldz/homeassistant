@@ -143,4 +143,3 @@ status_led:
     number: GPIO13
     inverted: yes
 
-

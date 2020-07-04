@@ -11,11 +11,9 @@ esphome:
   board: esp8285
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-  ap:
-    ssid: ${device_name}
-    password: !secret wifi_pass_2
+  output_power: 17.5dB
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
 
 time:
   - platform: homeassistant
@@ -24,7 +22,7 @@ time:
 logger:
 api:
 ota:
-web_server:
+captive_portal:
 
 binary_sensor:
   - platform: gpio
@@ -40,6 +38,22 @@ binary_sensor:
     name: ${device_name} status
 
 sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+    icon: mdi:timer
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+    icon: mdi:wifi
+
+  - platform: template
+    name: ${device_name}_free_heap
+    icon: mdi:memory
+    lambda: "return ESP.getFreeHeap();"
+    update_interval: 20s
+    unit_of_measurement: bytes
+    accuracy_decimals: 0
+
   - platform: hlw8012
     sel_pin:
       number: GPIO12
@@ -66,31 +80,30 @@ sensor:
 
   - platform: total_daily_energy
     name: ${device_name}_daily_energy
-    icon: mdi:circle-slice-3
+    icon: mdi:power-settings
     power_id: ${device_name}_power
     filters:
-      # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
     unit_of_measurement: kWh
-
-  - platform: uptime
-    name: ${device_name}_uptime
-
-  - platform: wifi_signal
-    name: ${device_name}_wifi_signal
 
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
-    icon: mdi:chip
+    icon: mdi:information-outline
 
   - platform: wifi_info
     ip_address:
       name: ${device_name}_ip_address
+      icon: mdi:ip-network
     ssid:
       name: ${device_name}_connected_ssid
+      icon: mdi:access-point
 
 switch:
+  - platform: restart
+    name: ${device_name}_restart
+    icon: mdi:restart
+
   - platform: gpio
     id: relay
     name: ${device_name}_relay
@@ -119,8 +132,4 @@ switch:
     pin:
       number: GPIO13
       inverted: true
-
-  - platform: restart
-    name: ${device_name}_restart
-
 

@@ -5,24 +5,17 @@ esphome:
   name: ${device_name}
   platform: ESP32
   board: nodemcu-32s
-# arduino_version: 1.0.2
-# platformio_options:
-#   upload_speed: 115200
 
 wifi:
   output_power: 20dB
   fast_connect: true
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-# ap:
-#   ssid: ${device_name}
-#   password: !secret wifi_pass_2
-#   ap_timeout: 3min
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
 
 logger:
 api:
 ota:
-#web_server:
+captive_portal:
 
 esp32_ble_tracker:
   scan_parameters:
@@ -39,6 +32,22 @@ binary_sensor:
     name: ${device_name}_status
 
 sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+    icon: mdi:timer
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+    icon: mdi:wifi
+
+  - platform: template
+    name: ${device_name}_free_heap
+    icon: mdi:memory
+    lambda: "return ESP.getFreeHeap();"
+    update_interval: 20s
+    unit_of_measurement: bytes
+    accuracy_decimals: 0
+
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora1
     temperature:
@@ -49,8 +58,6 @@ sensor:
       name: mf1_illuminance
     conductivity:
       name: mf1_soil
-    battery_level:
-      name: mf1_battery_level
 
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora2
@@ -62,8 +69,6 @@ sensor:
       name: mf2_illuminance
     conductivity:
       name: mf2_soil
-    battery_level:
-      name: mf2_battery_level
 
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora3
@@ -75,31 +80,25 @@ sensor:
       name: mf3_illuminance
     conductivity:
       name: mf3_soil
-    battery_level:
-      name: mf3_battery_level
 
   - platform: dallas
     address: !secret dallas_2
     name: ${device_name}_outdoor_temperature
 
-  - platform: uptime
-    name: ${device_name}_uptime
-
-  - platform: wifi_signal
-    name: ${device_name}_wifi_signal
-
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
-    icon: mdi:chip
+    icon: mdi:information-outline
 
   - platform: wifi_info
     ip_address:
       name: ${device_name}_ip_address
+      icon: mdi:ip-network
     ssid:
       name: ${device_name}_connected_ssid
+      icon: mdi:access-point
 
 switch:
   - platform: restart
     name: ${device_name}_restart
-
+    icon: mdi:restart

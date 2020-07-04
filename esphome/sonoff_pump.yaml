@@ -1,7 +1,7 @@
+# Sonoff Pow R2
 substitutions:
   device_name: sonoff_pump
 
-#sonoff pow r2
 esphome:
   name: ${device_name}
   platform: ESP8266
@@ -11,43 +11,45 @@ wifi:
   output_power: 20dB
   fast_connect: true
   networks:
-    - ssid: !secret wifi_ssid
-      password: !secret wifi_pass
-# ap:
-#   ssid: ${device_name}
-#   password: !secret wifi_pass_2
+    - ssid: !secret wifi_ssid_3
+      password: !secret wifi_pass_3
 
 time:
   - platform: homeassistant
     id: homeassistant_time
 
-uart:
-  rx_pin: RX
-  baud_rate: 4800
+api:
+ota:
+captive_portal:
 
 logger:
   baud_rate: 0
 
-api:
-ota:
-#web_server:
+uart:
+  rx_pin: RX
+  baud_rate: 4800
 
 binary_sensor:
+  - platform: status
+    name: ${device_name} status
+
   - platform: gpio
+    name: ${device_name}_button
     pin:
       number: GPIO00
       mode: INPUT_PULLUP
       inverted: true
-    name: ${device_name}_button
     on_press:
       - switch.toggle: fakebutton
 
-  - platform: status
-    name: ${device_name}_status
-
 switch:
+  - platform: restart
+    name: ${device_name}_restart
+    icon: mdi:restart
+
   - platform: template
     name: ${device_name}_relay
+    icon: mdi:water-pump
     optimistic: true
     id: fakebutton
     turn_on_action:
@@ -61,23 +63,23 @@ switch:
     id: relay
     pin: GPIO12
 
-  - platform: restart
-    name: ${device_name}_restart
-
-output:
-  - platform: esp8266_pwm
-    id: pow_blue_led
-    pin:
-      number: GPIO13
-      inverted: true
-
-light:
-  - platform: monochromatic
-    name: ${device_name}_blue_led
-    output: pow_blue_led
-    id: led
-
 sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+    icon: mdi:timer
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+    icon: mdi:wifi
+
+  - platform: template
+    name: ${device_name}_free_heap
+    icon: mdi:memory
+    lambda: "return ESP.getFreeHeap();"
+    update_interval: 20s
+    unit_of_measurement: bytes
+    accuracy_decimals: 0
+
   - platform: cse7766
     current:
       name: ${device_name}_current
@@ -88,10 +90,10 @@ sensor:
       icon: mdi:flash-circle
       unit_of_measurement: V
     power:
+      id: ${device_name}_power
       name: ${device_name}_power
       icon: mdi:flash-outline
       unit_of_measurement: W
-      id: ${device_name}_power
       on_value_range:
         - above: 4.0
           then:
@@ -103,26 +105,36 @@ sensor:
 
   - platform: total_daily_energy
     name: ${device_name}_daily_energy
-    icon: mdi:circle-slice-3
+    icon: mdi:power-settings
     power_id: ${device_name}_power
     filters:
-      # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
     unit_of_measurement: kWh
-
-  - platform: wifi_signal
-    name: ${device_name}_wifi_signal
-
-  - platform: uptime
-    name: ${device_name}_uptime
 
 text_sensor:
   - platform: version
     name: ${device_name}_esphome_version
-    icon: mdi:chip
+    icon: mdi:information-outline
 
   - platform: wifi_info
     ip_address:
       name: ${device_name}_ip_address
+      icon: mdi:ip-network
     ssid:
       name: ${device_name}_connected_ssid
+      icon: mdi:access-point
+
+output:
+  - platform: esp8266_pwm
+    id: pow_blue_led
+    pin:
+      number: GPIO13
+      inverted: true
+
+light:
+  - platform: monochromatic
+    id: led
+    name: ${device_name}_blue_led
+    output: pow_blue_led
+
+

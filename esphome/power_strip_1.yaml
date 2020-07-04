@@ -1,0 +1,147 @@
+substitutions:
+  device_name: power_strip_1
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp8285
+  esp8266_restore_from_flash: true
+
+wifi:
+  output_power: 17dB
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
+
+logger:
+api:
+ota:
+captive_portal:
+
+binary_sensor:
+  - platform: status
+    name: ${device_name}_status
+
+  - platform: gpio
+    pin: 3
+    name: ${device_name}_button
+    filters:
+      - invert
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at least 0.2s
+      then:
+        - logger.log: "Tripple Click - socket 4"
+        - switch.toggle: ${device_name}_relay4
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at least 0.2s
+      then:
+        - logger.log: "Tripple Click - socket 3"
+        - switch.toggle: ${device_name}_relay3
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at least 0.2s
+      then:
+        - logger.log: "Double Click - socket 2"
+        - switch.toggle: ${device_name}_relay2
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.4s
+      then:
+        - logger.log: "Single Click - socket 1"
+        - switch.toggle: ${device_name}_relay1
+    - timing:
+        - ON for 0.6s to 3s
+        - OFF for at least 0.3s
+      then:
+        - logger.log: "Single Long Click - USB"
+        - switch.toggle: ${device_name}_relay_usb
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+    icon: mdi:timer
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+    icon: mdi:wifi
+
+  - platform: template
+    name: ${device_name}_free_heap
+    icon: mdi:memory
+    lambda: "return ESP.getFreeHeap();"
+    update_interval: 20s
+    unit_of_measurement: bytes
+    accuracy_decimals: 0
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:information-outline
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+      icon: mdi:ip-network
+    ssid:
+      name: ${device_name}_connected_ssid
+      icon: mdi:access-point
+
+status_led:
+  pin: 1
+
+switch:
+  - platform: restart
+    name: ${device_name}_restart
+    icon: mdi:restart
+
+  - platform: gpio
+    pin: 5
+    name: ${device_name}_relay1
+    icon: mdi:power-socket-eu
+    id: ${device_name}_relay1
+    #restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    pin: 4
+    name: ${device_name}_relay2
+    icon: mdi:power-socket-eu
+    id: ${device_name}_relay2
+    #restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    pin: 12
+    name: ${device_name}_relay3
+    icon: mdi:power-socket-eu
+    id: ${device_name}_relay3
+    #restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    pin: 13
+    name: ${device_name}_relay4
+    icon: mdi:power-socket-eu
+    id: ${device_name}_relay4
+    #restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    pin:
+      number: 14
+      inverted: yes
+#   pin: 14
+    name: ${device_name}_relay_usb
+    icon: mdi:usb
+    id: ${device_name}_relay_usb
+    restore_mode: ALWAYS_ON

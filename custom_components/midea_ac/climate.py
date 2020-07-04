@@ -12,11 +12,15 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.climate import ClimateDevice, PLATFORM_SCHEMA
+from homeassistant.components.climate import PLATFORM_SCHEMA
+try:
+    from homeassistant.components.climate import ClimateEntity
+except ImportError:
+    from homeassistant.components.climate import ClimateDevice as ClimateEntity
 from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE,
     SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST)
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, TEMP_CELSIUS, \
+from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, TEMP_CELSIUS, TEMP_FAHRENHEIT, \
     ATTR_TEMPERATURE
 
 from homeassistant.helpers.restore_state import RestoreEntity
@@ -65,7 +69,7 @@ async def async_setup_platform(hass, config, async_add_entities,
     async_add_entities(entities)
 
 
-class MideaClimateACDevice(ClimateDevice, RestoreEntity):
+class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     """Representation of a Midea climate AC device."""
 
     def __init__(self, hass, device, temp_step: float,
@@ -79,6 +83,8 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
         if include_off_as_state:
             self._operation_list.append("off")
         self._support_flags = SUPPORT_FLAGS
+        #the LED display on the AC should use the same unit as that in homeassistant
+        device.farenheit_unit = (hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
         self._device = device
         self._unit_of_measurement = TEMP_CELSIUS
         self._target_temperature_step = temp_step
@@ -232,7 +238,7 @@ class MideaClimateACDevice(ClimateDevice, RestoreEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperatures."""
         if kwargs.get(ATTR_TEMPERATURE) is not None:
-            self._device.target_temperature = int(kwargs.get(ATTR_TEMPERATURE))
+            self._device.target_temperature = (kwargs.get(ATTR_TEMPERATURE))
             self._changed = True
             await self.apply_changes()
 

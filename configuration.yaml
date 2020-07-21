@@ -45,7 +45,6 @@ system_log:
 
 logger:
   default: info
-# default: debug
   logs:
     midea: debug
     custom_components.rest.switch: debug

@@ -6,7 +6,7 @@ resources:
     type: module
   - url: /hacsfiles/mini-media-player/mini-media-player-bundle.js
     type: module
-  - url: /hacsfiles/mini-graph-card/mini-graph-card.js
+  - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
     type: module
   - url: /hacsfiles/vacuum-card/vacuum-card.js
     type: module

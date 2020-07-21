@@ -13,6 +13,9 @@ sensor.ha_init:
 sensor.ha_latest:
   icon: "mdi:package-down"
 
+sensor.ha_beta:
+  icon: "mdi:beta"
+
 sensor.last_boot:
   friendly_name: "Host Uptime"
 

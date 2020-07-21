@@ -17,11 +17,12 @@ cards:
             format: total
           - entity: sensor.ha2_uptime_dt
             format: total
-          - entity: sensor.ha_dacha_uptime_dt
+          - entity: sensor.ha_fazenda_uptime_dt
             format: total
           - entity: sensor.ha_init
           - entity: sensor.ha_current
           - entity: sensor.ha_latest
+          - entity: sensor.ha_beta
           - type: divider
 
       - type: glance

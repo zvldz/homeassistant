@@ -2,5 +2,5 @@ ha1_url:
   initial: !secret ha1_url
 ha2_url:
   initial: !secret ha2_url
-ha_dacha_url:
-  initial: !secret ha_dacha_url
+ha_fazenda_url:
+  initial: !secret ha_fazenda_url

@@ -27,53 +27,6 @@
   name: "HA Uptime"
   unit_of_measurement: minutes
 
-- platform: template
-  sensors:
-    ha1_url:
-      value_template: !secret ha1_url
-    ha2_url:
-      value_template: !secret ha2_url
-    ha_fazenda_url:
-      value_template: !secret ha_fazenda_url
-    ha_latest2:
-      friendly_name: "HA Latest"
-      value_template: "{{ state_attr('binary_sensor.updater', 'newest_version') }}"
-    ha_uptime_dt:
-      icon_template: "mdi:clock"
-      friendly_name: "HA Uptime"
-      device_class: timestamp
-      value_template: "{{ (as_timestamp(now()) - (states('sensor.ha_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
-    ha1_uptime_dt:
-      icon_template: "mdi:clock"
-      friendly_name: "HA1 Uptime"
-      device_class: timestamp
-      value_template: >
-        {% if states('sensor.ha1_uptime') in ['unavailable', 'unknown', 'none'] %}
-          unavailable
-        {% else %}
-          {{ (as_timestamp(now()) - (states('sensor.ha1_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
-        {% endif %}
-    ha2_uptime_dt:
-      icon_template: "mdi:clock"
-      friendly_name: "HA2 Uptime"
-      device_class: timestamp
-      value_template: >
-        {% if states('sensor.ha2_uptime') in ['unavailable', 'unknown', 'none'] %}
-          unavailable
-        {% else %}
-          {{ (as_timestamp(now()) - (states('sensor.ha2_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
-        {% endif %}
-    ha_fazenda_uptime_dt:
-      icon_template: "mdi:clock"
-      friendly_name: "HA Fazenda Uptime"
-      device_class: timestamp
-      value_template: >
-        {% if states('sensor.ha_fazenda_uptime') in ['unavailable', 'unknown', 'none'] %}
-          unavailable
-        {% else %}
-          {{ (as_timestamp(now()) - (states('sensor.ha_fazenda_uptime') | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
-        {% endif %}
-
 - platform: rest
   resource: https://version.home-assistant.io/stable.json
   name: "HA Latest"
@@ -88,31 +41,27 @@
 
 - platform: rest
   resource_template: "{{ states('input_text.ha1_url') }}api/states/sensor.ha_uptime"
-# resource_template: "{{ states('sensor.ha1_url') }}api/states/sensor.ha_uptime"
   name: ha1_uptime
-  unit_of_measurement: minutes
+  device_class: timestamp
   force_update: true
   headers:
     authorization: !secret ha1_token
-  value_template: "{{ value_json.state }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
 
 - platform: rest
   resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
-# resource_template: "{{ states('sensor.ha2_url') }}api/states/sensor.ha_uptime"
   name: ha2_uptime
-  unit_of_measurement: minutes
+  device_class: timestamp
   force_update: true
   headers:
     authorization: !secret ha2_token
-  value_template: "{{ value_json.state }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
 
 - platform: rest
   resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
-# resource_template: "{{ states('sensor.ha_fazenda_url') }}api/states/sensor.ha_uptime"
   name: ha_fazenda_uptime
-  unit_of_measurement: minutes
+  device_class: timestamp
   force_update: true
   headers:
     authorization: !secret ha_fazenda_token
-  value_template: "{{ value_json.state }}"
-
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"

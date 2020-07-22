@@ -18,3 +18,5 @@ resources:
     type: module
   - url: /local/zha-network-visualization-card/zha-network-visualization-card.js
     type: module
+  - url:  /hacsfiles/lovelace-template-entity-row/template-entity-row.js
+    type: module

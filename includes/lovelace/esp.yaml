@@ -70,6 +70,14 @@ cards:
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*uptime"
               sort: entity_id
+              options:
+                type: custom:template-entity-row
+                state: >
+                  {% set uptime = states(config.entity) | int %}
+                  {% set minutes = ((uptime % 3600) / 60) | int %}
+                  {% set hours = ((uptime % 86400) / 3600) | int %}
+                  {% set days = (uptime / 86400) | int %}
+                  {%if days > 0 %}{{ days }}d {% endif %}{% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% else %}<1m{% endif %}
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*version"
               sort: entity_id
             - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip)_*free_heap"

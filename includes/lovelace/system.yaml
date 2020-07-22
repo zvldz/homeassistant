@@ -13,11 +13,11 @@ cards:
         entities:
           - entity: sensor.last_boot
             format: total
-          - entity: sensor.ha1_uptime_dt
+          - entity: sensor.ha1_uptime
             format: total
-          - entity: sensor.ha2_uptime_dt
+          - entity: sensor.ha2_uptime
             format: total
-          - entity: sensor.ha_fazenda_uptime_dt
+          - entity: sensor.ha_fazenda_uptime
             format: total
           - entity: sensor.ha_init
           - entity: sensor.ha_current

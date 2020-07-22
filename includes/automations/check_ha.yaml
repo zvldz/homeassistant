@@ -2,7 +2,7 @@
   initial_state: 'on'
   trigger:
     - platform: state
-      entity_id: sensor.ha1_uptime_dt
+      entity_id: sensor.ha1_uptime
       to: "unavailable"
       for: "00:02:00"
   action:
@@ -14,7 +14,7 @@
   initial_state: 'on'
   trigger:
     - platform: state
-      entity_id: sensor.ha1_uptime_dt
+      entity_id: sensor.ha1_uptime
       from: "unavailable"
   action:
     - service: notify.telegram
@@ -25,7 +25,7 @@
   initial_state: 'on'
   trigger:
     - platform: state
-      entity_id: sensor.ha2_uptime_dt
+      entity_id: sensor.ha2_uptime
       to: "unavailable"
       for: "00:02:00"
   action:
@@ -37,7 +37,7 @@
   initial_state: 'on'
   trigger:
     - platform: state
-      entity_id: sensor.ha2_uptime_dt
+      entity_id: sensor.ha2_uptime
       from: "unavailable"
   action:
     - service: notify.telegram

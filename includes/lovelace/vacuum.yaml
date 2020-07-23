@@ -51,7 +51,7 @@ cards:
             icon: "mdi:sofa"
           - name: Clean Master Bedroom
             service: script.vacuum_master_bedroom
-            icon: "mdi:hotel"
+            icon: "mdi:bed"
           - name: Clean Bedroom
             service: script.vacuum_bedroom
             icon: "mdi:bed-empty"

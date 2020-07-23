@@ -1,5 +1,5 @@
 title: "Спальня 1"
-icon: "mdi:hotel"
+icon: "mdi:bed"
 cards:
   - type: vertical-stack
     cards:

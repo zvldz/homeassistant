@@ -48,7 +48,9 @@ logger:
   logs:
     midea: debug
     custom_components.rest.switch: debug
+    custom_components.tcp2.sensor: debug
     homeassistant.components.xiaomi_miio.light: fatal
+    custom_components.sonoff: debug
     miio.device: fatal
 
 recorder:

@@ -11,6 +11,7 @@
 # Errors counter
 - alias: system_error_counter
   initial_state: 'on'
+  mode: queued
   trigger:
     platform: event
     event_type: system_log_event
@@ -23,6 +24,7 @@
 # Warning counter
 - alias: system_warning_counter
   initial_state: 'on'
+  mode: queued
   trigger:
     platform: event
     event_type: system_log_event

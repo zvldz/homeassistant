@@ -1,13 +1,13 @@
 substitutions:
-  device_name: sonoff_basic_1
+  device_name: sonoff_mini_2
 
 esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp01_1m
-  arduino_version: 2.4.2
 
 wifi:
+  output_power: 20dB
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass
@@ -20,20 +20,32 @@ wifi:
 logger:
 api:
 ota:
-#web_server:
+captive_portal:
 
 binary_sensor:
   - platform: gpio
-    pin:
-      number: GPIO00
-      mode: INPUT_PULLUP
-      inverted: true
-    name: ${device_name}_button
+    pin: GPIO00
+    id: reset
+    internal: true
+    filters:
+      - invert:
+      - delayed_off: 10ms
     on_press:
-      - switch.toggle: fakebutton
+      - switch.toggle:
+          id: relay
 
-  - platform: status
-    name: ${device_name}_status
+  - platform: gpio
+    name: ${device_name}_switch
+    pin: GPIO04
+    id: switch1
+    on_press:
+      then:
+        - switch.turn_on:
+            id: relay
+    on_release:
+      then:
+        - switch.turn_off:
+            id: relay
 
 sensor:
   - platform: uptime
@@ -54,35 +66,18 @@ text_sensor:
       name: ${device_name}_connected_ssid
 
 switch:
-  - platform: template
-    name: ${device_name}_relay
-    optimistic: true
-    id: fakebutton
-    turn_on_action:
-      - switch.turn_on: relay
-      - light.turn_on: led
-    turn_off_action:
-      - switch.turn_off: relay
-      - light.turn_off: led
-
-  - platform: gpio
-    id: relay
-    pin: GPIO12
-
   - platform: restart
     name: ${device_name}_restart
 
-output:
-  - platform: esp8266_pwm
-    id: basic_green_led
-    pin:
-      number: GPIO13
-      inverted: true
+  - platform: gpio
+    name: ${device_name}_relay
+    icon: mdi:lightbulb_outline
+    pin: GPIO12
+    id: relay
+    restore_mode: restore_default_off
 
-light:
-  - platform: monochromatic
-    name: ${device_name}_green_led
-    output: basic_green_led
-    id: led
-
+status_led:
+  pin:
+    number: GPIO13
+    inverted: true
 

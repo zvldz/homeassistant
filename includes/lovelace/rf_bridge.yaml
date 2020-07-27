@@ -12,24 +12,8 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.sonoff_rf_br_1_status
           - binary_sensor.sonoff_rf_br_2_status
-
-      - type: custom:button-card
-        name: "ESPHome Switch"
-        styles:
-          card:
-            - background-color: "#203040"
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            entity: switch.sonoff_rf_br_1_sb_rf
-          - type: custom:button-card
-            entity: switch.sonoff_rf_br_1_gate1
-          - type: custom:button-card
-            entity: switch.sonoff_rf_br_1_gate2
-          - type: custom:button-card
-            entity: switch.sonoff_rf_br_1_key4
+          - binary_sensor.sonoff_rf_br_3_status
 
       - type: custom:button-card
         name: "ESPHome Switch 2"
@@ -40,28 +24,87 @@ cards:
         cards:
           - type: custom:button-card
             entity: switch.sonoff_rf_br_2_sb_rf
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
           - type: custom:button-card
             entity: switch.sonoff_rf_br_2_gate1
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
           - type: custom:button-card
             entity: switch.sonoff_rf_br_2_gate2
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
           - type: custom:button-card
             entity: switch.sonoff_rf_br_2_key4
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
 
-  - type: vertical-stack
-    cards:
       - type: custom:button-card
-        name: "ESPHome Sensor"
+        name: "ESPHome Switch 3"
         styles:
           card:
             - background-color: "#203040"
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.sonoff_rf_br_1_sb_rf
-          - binary_sensor.sonoff_rf_br_1_gate1
-          - binary_sensor.sonoff_rf_br_1_gate2
-          - binary_sensor.sonoff_rf_br_1_key4
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_sb_rf
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_sb_rf
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_gate1
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_gate1
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_gate2
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_gate2
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_key4
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_key4
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
 
+  - type: vertical-stack
+    cards:
       - type: custom:button-card
         name: "ESPHome Sensor 2"
         styles:
@@ -74,3 +117,16 @@ cards:
           - binary_sensor.sonoff_rf_br_2_gate1
           - binary_sensor.sonoff_rf_br_2_gate2
           - binary_sensor.sonoff_rf_br_2_key4
+
+      - type: custom:button-card
+        name: "ESPHome Sensor 3"
+        styles:
+          card:
+            - background-color: "#203040"
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.rf_br_3_sb_rf
+          - binary_sensor.rf_br_3_gate1
+          - binary_sensor.rf_br_3_gate2
+          - binary_sensor.rf_br_3_key4

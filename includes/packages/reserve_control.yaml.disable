@@ -1,18 +1,3 @@
-influxdb:
-  host: 127.0.0.1
-  max_retries: 5
-  default_measurement: state
-  exclude:
-    domains:
-      - automation
-    entities:
-      - sensor.uptime
-      - sensor.time
-      - sensor.time_date
-      - sensor.date
-      - sensor.date_time
-      - sensor.xiaomi_map
-
 group:
   active_automations:
     entities:
@@ -111,6 +96,7 @@ automation:
       - platform: state
         entity_id: sensor.ha1_uptime
         from: "unavailable"
+        for: "00:01:00"
     action:
       - service: notify.telegram
         data_template:

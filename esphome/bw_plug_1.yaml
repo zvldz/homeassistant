@@ -11,9 +11,15 @@ esphome:
   board: esp8285
 
 wifi:
-  output_power: 17.5dB
+  output_power: 17dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
+  manual_ip:
+    static_ip: 192.168.1.17
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1
+    dns2: 1.1.1.1
 
 time:
   - platform: homeassistant
@@ -40,19 +46,19 @@ binary_sensor:
 sensor:
   - platform: uptime
     name: ${device_name}_uptime
-    icon: mdi:timer
+    icon: mdi:timer-outline
 
   - platform: wifi_signal
     name: ${device_name}_wifi_signal
     icon: mdi:wifi
 
-  - platform: template
-    name: ${device_name}_free_heap
-    icon: mdi:memory
-    lambda: "return ESP.getFreeHeap();"
-    update_interval: 20s
-    unit_of_measurement: bytes
-    accuracy_decimals: 0
+# - platform: template
+#   name: ${device_name}_free_heap
+#   icon: mdi:memory
+#   lambda: "return ESP.getFreeHeap();"
+#   update_interval: 20s
+#   unit_of_measurement: bytes
+#   accuracy_decimals: 0
 
   - platform: hlw8012
     sel_pin:

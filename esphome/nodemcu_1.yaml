@@ -9,8 +9,8 @@ esphome:
 wifi:
   output_power: 20dB
   fast_connect: true
-  ssid: !secret wifi_ssid_3
-  password: !secret wifi_pass_3
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
   use_address: 192.168.1.33
 
 captive_portal:
@@ -48,19 +48,19 @@ sensor:
 
   - platform: uptime
     name: ${device_name}_uptime
-    icon: mdi:timer
+    icon: mdi:timer-outline
 
   - platform: wifi_signal
     name: ${device_name}_wifi_signal
     icon: mdi:wifi
 
-  - platform: template
-    name: ${device_name}_free_heap
-    icon: mdi:memory
-    lambda: "return ESP.getFreeHeap();"
-    update_interval: 20s
-    unit_of_measurement: bytes
-    accuracy_decimals: 0
+# - platform: template
+#   name: ${device_name}_free_heap
+#   icon: mdi:memory
+#   lambda: "return ESP.getFreeHeap();"
+#   update_interval: 20s
+#   unit_of_measurement: bytes
+#   accuracy_decimals: 0
 
 text_sensor:
   - platform: version

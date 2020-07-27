@@ -21,7 +21,6 @@ logger:
 api:
 ota:
 captive_portal:
-#web_server:
 
 binary_sensor:
   - platform: gpio

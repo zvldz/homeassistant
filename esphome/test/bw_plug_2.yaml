@@ -12,8 +12,8 @@ esphome:
 
 wifi:
   networks:
-    - ssid: !secret wifi_ssid_3
-      password: !secret wifi_pass_3
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_pass
     - ssid: !secret wifi_ssid_2
       password: !secret wifi_pass_2
 
@@ -67,7 +67,7 @@ binary_sensor:
 sensor:
   - platform: uptime
     name: ${device_name}_uptime
-    icon: mdi:timer
+    icon: mdi:timer-outline
 
   - platform: wifi_signal
     name: ${device_name}_wifi_signal

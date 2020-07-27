@@ -142,7 +142,7 @@ cards:
         crop:
           top: 180
           bottom: 80
-          left: 85
+          left: 140
           right: 0
         min_height: 0
 

@@ -20,7 +20,7 @@ wifi:
 logger:
 api:
 ota:
-web_server:
+#web_server:
 
 binary_sensor:
   - platform: gpio

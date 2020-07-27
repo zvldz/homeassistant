@@ -1,8 +1,8 @@
 auto_turn_off_lights:
   name: "Автовыключение света"
-  icon: "mdi:timer"
+  icon: "mdi:timer-outline"
 
 auto_fan:
   name: "Периодическое проветривание"
-  icon: "mdi:timer"
+  icon: "mdi:timer-outline"
 

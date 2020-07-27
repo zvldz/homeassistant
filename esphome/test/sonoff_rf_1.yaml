@@ -7,19 +7,24 @@ esphome:
   board: esp01_1m
 
 wifi:
+  output_power: 20dB
+# fast_connect: true
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass
+      priority: 20
     - ssid: !secret wifi_ssid_2
       password: !secret wifi_pass_2
+      priority: 10
   ap:
     ssid: ${device_name}
     password: !secret wifi_pass_2
+    ap_timeout: 3min
 
 logger:
 api:
 ota:
-web_server:
+captive_portal:
 
 binary_sensor:
   - platform: gpio
@@ -40,6 +45,13 @@ sensor:
 
   - platform: uptime
     name: ${device_name}_uptime
+
+# - platform: template
+#   name: ${device_name}_free_heap
+#   lambda: "return ESP.getFreeHeap();"
+#   update_interval: 20s
+#   unit_of_measurement: bytes
+#   accuracy_decimals: 0
 
 text_sensor:
   - platform: version
@@ -67,6 +79,8 @@ switch:
   - platform: gpio
     id: relay
     pin: GPIO12
+    #restore_mode: always_on
+    restore_mode: always_off
 
   - platform: restart
     name: ${device_name}_restart
@@ -83,4 +97,3 @@ light:
     name: ${device_name}_green_led
     output: basic_green_led
     id: led
-

@@ -11,11 +11,23 @@ wifi:
   output_power: 17dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
+  manual_ip:
+    static_ip: 192.168.1.41
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1
+    dns2: 1.1.1.1
 
 logger:
+  level: DEBUG
+
 api:
 ota:
 captive_portal:
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
 
 binary_sensor:
   - platform: status
@@ -37,7 +49,7 @@ binary_sensor:
         - ON for at most 0.4s
         - OFF for at least 0.2s
       then:
-        - logger.log: "Tripple Click - socket 4"
+        - logger.log: "Quarter Click - socket 4"
         - switch.toggle: ${device_name}_relay4
     - timing:
         - ON for at most 0.4s
@@ -73,19 +85,19 @@ binary_sensor:
 sensor:
   - platform: uptime
     name: ${device_name}_uptime
-    icon: mdi:timer
+    icon: mdi:timer-outline
 
   - platform: wifi_signal
     name: ${device_name}_wifi_signal
     icon: mdi:wifi
 
-  - platform: template
-    name: ${device_name}_free_heap
-    icon: mdi:memory
-    lambda: "return ESP.getFreeHeap();"
-    update_interval: 20s
-    unit_of_measurement: bytes
-    accuracy_decimals: 0
+# - platform: template
+#   name: ${device_name}_free_heap
+#   icon: mdi:memory
+#   lambda: "return ESP.getFreeHeap();"
+#   update_interval: 20s
+#   unit_of_measurement: bytes
+#   accuracy_decimals: 0
 
 text_sensor:
   - platform: version

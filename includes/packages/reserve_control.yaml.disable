@@ -96,8 +96,8 @@ automation:
       - platform: state
         entity_id: sensor.ha1_uptime
         from: "unavailable"
-        for: "00:01:00"
     action:
+      - delay: 00:00:30
       - service: notify.telegram
         data_template:
           message: '{{ states.sensor.date_time.state }} | Заработал HA1. Отдаю управление главному!'

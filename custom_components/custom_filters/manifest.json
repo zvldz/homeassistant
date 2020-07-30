@@ -1,9 +1,0 @@
-{
-  "domain": "custom_filters",
-  "name": "Custom filters fot jinja",
-  "documentation": "https://google.com",
-  "requirements": [],
-  "dependencies": [],
-  "config_flow": true,
-  "codeowners": [ "@zvldz" ]
-}

@@ -16,6 +16,7 @@ system_health:
 conversation:
 history:
 wake_on_lan:
+zeroconf:
 mobile_app:
 map:
 sun:

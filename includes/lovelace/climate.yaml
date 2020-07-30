@@ -8,3 +8,19 @@ cards:
   - type: thermostat
     entity: climate.midea_ac_e0470000000f
 
+  - type: custom:simple-thermostat
+    entity: climate.midea_ac_813900000011
+    sensors:
+      - entity: sensor.temperature_158d0002bfe958
+      - entity: sensor.living_room_bt_temperature
+      - entity: sensor.humidity_158d0002bfe958
+  - type: custom:simple-thermostat
+    entity: climate.midea_ac_823900000011
+    sensors:
+      - entity: sensor.temperature_158d0002323856
+      - entity: sensor.humidity_158d0002323856
+  - type: custom:simple-thermostat
+    entity: climate.midea_ac_e0470000000f
+    sensors:
+      - entity: sensor.temperature_158d0001ab2a27
+      - entity: sensor.humidity_158d0001ab2a27

@@ -50,7 +50,7 @@
   value_template: "{{ value_json.location_name }}"
 
 - platform: rest
-  resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
+  resource_template: "{{ states('input_text.ha_fazenda_url') }}api/discovery_info"
   name: ha_fazenda_name
   value_template: "{{ value_json.location_name }}"
 

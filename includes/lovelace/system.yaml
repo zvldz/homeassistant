@@ -85,12 +85,3 @@ cards:
             entities:
               - entity: sensor.disk_use_percent
 
-# - type: vertical-stack
-#   cards:
-#     - type: custom:button-card
-#       name: "ZHA Map"
-#       styles:
-#         card:
-#           - background-color: "#203040"
-#
-#     - type: custom:zha-network-visualization-card

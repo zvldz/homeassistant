@@ -62,6 +62,8 @@
   headers:
     authorization: !secret ha1_token
   value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  json_attributes:
+    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
@@ -71,6 +73,8 @@
   headers:
     authorization: !secret ha2_token
   value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  json_attributes:
+    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
@@ -80,3 +84,6 @@
   headers:
     authorization: !secret ha_fazenda_token
   value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  json_attributes:
+    - state
+

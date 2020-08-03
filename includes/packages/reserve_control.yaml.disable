@@ -7,11 +7,20 @@ group:
       - automation.check_ha1_on_start
       - automation.sync_input_boolean
       - automation.sync_thermostat_temperature
-      - automation.system_start
-      - automation.system_error_counter
-      - automation.system_warning_counter
-      - automation.reset_system_counters
       - automation.gas_counter
+      - automation.system_start
+#     - automation.system_error_counter
+#     - automation.system_warning_counter
+      - automation.reset_system_counters
+
+  sync_input_boolean:
+    entities:
+      - sensor.ha1_pump_schedule
+      - sensor.ha1_gas_boiler_schedule
+      - sensor.ha1_auto_turn_off_lights
+      - sensor.ha1_auto_fan
+      - sensor.ha1_vacuum_schedule
+      - sensor.ha1_vacuum_notification
 
 sensor:
   - platform: rest
@@ -72,6 +81,32 @@ rest_command:
     payload: '{"entity_id":"{{ set_entity_id }}"}'
 
 automation:
+  - alias: sync_input_boolean
+    trigger:
+      - platform: state
+#       entity_id: group.sync_input_boolean # not working
+        entity_id:
+          - sensor.ha1_pump_schedule
+          - sensor.ha1_gas_boiler_schedule
+          - sensor.ha1_auto_turn_off_lights
+          - sensor.ha1_auto_fan
+          - sensor.ha1_vacuum_schedule
+          - sensor.ha1_vacuum_notification
+    condition:
+      - condition: template
+        value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int) > 0 }}'
+    action:
+      - service_template: >
+          {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}
+            input_boolean.turn_on
+          {% elif trigger.to_state.state == 'off' and trigger.from_state.state == 'on' %}
+            input_boolean.turn_off
+          {% else %}
+            {{ trigger.to_state }}
+          {% endif %}
+        data_template:
+          entity_id: "{{ trigger.entity_id | replace('sensor.ha1_', 'input_boolean.')}}"
+
   - alias: turn_off_automation
     initial_state: 'on'
     trigger:
@@ -92,10 +127,6 @@ automation:
       - service: notify.telegram
         data_template:
           message: '{{ states.sensor.date_time.state }} | Заработал HA1. Отдаю управление главному!'
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: "input_boolean.pump_schedule"
-          set_state: "{{ states('input_boolean.pump_schedule') }}"
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
       - service: script.turn_on
@@ -104,13 +135,13 @@ automation:
   - alias: check_ha1_on_start
     initial_state: 'on'
     trigger:
-      platform: homeassistant
-      event: start
-#     platform: time_pattern
-#     minutes: '/1'
+      - platform: homeassistant
+        event: start
+#     - platform: time_pattern
+#       minutes: '/1'
     condition:
-      condition: template
-      value_template: "{{ states.sensor.ha1_uptime is none }}"
+      - condition: template
+        value_template: "{{ states.sensor.ha1_uptime is none }}"
     action:
       - service: notify.telegram
         data_template:
@@ -131,49 +162,10 @@ automation:
       - service: automation.turn_on
         entity_id: all
 
-  - alias: sync_input_boolean
-    trigger:
-      platform: state
-      entity_id:
-        - sensor.ha1_pump_schedule
-        - sensor.ha1_gas_boiler_schedule
-        - sensor.ha1_auto_turn_off_lights
-        - sensor.ha1_auto_fan
-        - sensor.ha1_vacuum_schedule
-        - sensor.ha1_vacuum_notification
-    condition:
-      - condition: numeric_state
-        entity_id: sensor.ha1_uptime
-        above: 120
-    action:
-      service_template: >
-        {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}
-          input_boolean.turn_on
-        {% elif trigger.to_state.state == 'off' and trigger.from_state.state == 'on' %}
-          input_boolean.turn_off
-        {% else %}
-          {{ trigger.to_state }}
-        {% endif %}
-      data_template:
-        entity_id: >
-          {% if trigger.entity_id == 'sensor.ha1_pump_schedule' %}
-            input_boolean.pump_schedule
-          {% elif trigger.entity_id == 'sensor.ha1_gas_boiler_schedule' %}
-            input_boolean.gas_boiler_schedule
-          {% elif trigger.entity_id == 'sensor.ha1_auto_turn_off_lights' %}
-            input_boolean.auto_turn_off_lights
-          {% elif trigger.entity_id == 'sensor.ha1_auto_fan' %}
-            input_boolean.auto_fan
-          {% elif trigger.entity_id == 'sensor.ha1_vacuum_schedule' %}
-            input_boolean.vacuum_schedule
-          {% elif trigger.entity_id == 'sensor.ha1_vacuum_notification' %}
-            input_boolean.vacuum_notification
-          {% endif %}
-
   - alias: sync_thermostat_temperature
     trigger:
-      platform: state
-      entity_id: sensor.ha1_thermostat_temperature
+      - platform: state
+        entity_id: sensor.ha1_thermostat_temperature
     condition:
       - condition: numeric_state
         entity_id: sensor.ha1_thermostat_temperature
@@ -212,6 +204,7 @@ script:
         data_template:
           set_entity_id: input_boolean.vacuum_notification
           set_state: "{{ states('input_boolean.vacuum_notification') }}"
+#     - try to rebuild into cycles and groups
 
   turn_off_most_automation:
     alias: "Turn off most automation"

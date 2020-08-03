@@ -12,12 +12,6 @@ group:
       - automation.system_warning_counter
       - automation.reset_system_counters
       - automation.gas_counter
-      - automation.zigbe2mqtt_log_level
-      - automation.zigbee_join_enabled
-      - automation.zigbee_join_disabled
-      - automation.zigbee2mqtt_create_notification_on_successfull_interview
-      - automation.zigbee_publish_birth_message
-      - automation.zigbee_kitchen_button_single
 
 sensor:
   - platform: rest
@@ -84,11 +78,8 @@ automation:
       - platform: homeassistant
         event: start
     action:
-      - service: automation.turn_off
-        entity_id: all
-      - delay: 00:00:30
-      - service: automation.turn_on
-        entity_id: group.active_automations
+      - service: script.turn_on
+        entity_id: script.turn_off_most_automation
 
   - alias: ha1_server_on_return_control
     initial_state: 'on'
@@ -105,13 +96,10 @@ automation:
         data_template:
           set_entity_id: "input_boolean.pump_schedule"
           set_state: "{{ states('input_boolean.pump_schedule') }}"
-      - service: automation.turn_off
-        entity_id: all
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
-      - delay: 00:00:30
-      - service: automation.turn_on
-        entity_id: group.active_automations
+      - service: script.turn_on
+        entity_id: script.turn_off_most_automation
 
   - alias: check_ha1_on_start
     initial_state: 'on'
@@ -131,7 +119,6 @@ automation:
         entity_id: all
 
   - alias: ha1_server_off_reserve_control
-    initial_state: 'on'
     trigger:
       - platform: state
         entity_id: sensor.ha1_uptime
@@ -145,7 +132,6 @@ automation:
         entity_id: all
 
   - alias: sync_input_boolean
-    initial_state: 'on'
     trigger:
       platform: state
       entity_id:
@@ -185,7 +171,6 @@ automation:
           {% endif %}
 
   - alias: sync_thermostat_temperature
-    initial_state: 'on'
     trigger:
       platform: state
       entity_id: sensor.ha1_thermostat_temperature
@@ -227,4 +212,13 @@ script:
         data_template:
           set_entity_id: input_boolean.vacuum_notification
           set_state: "{{ states('input_boolean.vacuum_notification') }}"
+
+  turn_off_most_automation:
+    alias: "Turn off most automation"
+    sequence:
+      - service: automation.turn_off
+        entity_id: all
+      - delay: '00:00:30'
+      - service: homeassistant.turn_on
+        entity_id: group.active_automations
 

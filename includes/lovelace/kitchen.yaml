@@ -93,3 +93,9 @@ cards:
             - entity: timer.kitchen_light
           state_filter:
             - 'active'
+
+      - type: picture-glance
+        show_header_toggle: false
+        entities: []
+        camera_image: camera.camera1
+

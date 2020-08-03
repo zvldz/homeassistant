@@ -20,6 +20,8 @@ zeroconf:
 mobile_app:
 map:
 sun:
+ffmpeg:
+stream:
 
 hacs:
   token: !secret my_github_access_token
@@ -50,9 +52,9 @@ logger:
     midea: debug
     custom_components.rest.switch: debug
     custom_components.tcp2.sensor: debug
-    homeassistant.components.xiaomi_miio.light: fatal
-    custom_components.sonoff: debug
-    miio.device: fatal
+#   homeassistant.components.xiaomi_miio.light: fatal
+#   custom_components.sonoff: debug
+#   miio.device: fatal
 
 recorder:
   db_url: !secret db_mysql

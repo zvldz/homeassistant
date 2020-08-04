@@ -180,31 +180,13 @@ script:
   sync_input_boolean_to_ha1:
     alias: "Sync input_boolean state to ha1"
     sequence:
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.pump_schedule
-          set_state: "{{ states('input_boolean.pump_schedule') }}"
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.gas_boiler_schedule
-          set_state: "{{ states('input_boolean.gas_boiler_schedule') }}"
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.auto_turn_off_lights
-          set_state: "{{ states('input_boolean.auto_turn_off_lights') }}"
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.auto_fan
-          set_state: "{{ states('input_boolean.auto_fan') }}"
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.vacuum_schedule
-          set_state: "{{ states('input_boolean.vacuum_schedule') }}"
-      - service: rest_command.ha1_set_input_boolean
-        data_template:
-          set_entity_id: input_boolean.vacuum_notification
-          set_state: "{{ states('input_boolean.vacuum_notification') }}"
-#     - try to rebuild into cycles and groups
+      repeat:
+        count: "{{ states.group.sync_input_boolean.attributes.entity_id | count }}"
+        sequence:
+          - service: rest_command.ha1_set_input_boolean
+            data_template:
+              set_entity_id: "{{ states.group.sync_input_boolean.attributes.entity_id[repeat.index-1] | replace('sensor.ha1_', 'input_boolean.') }}"
+              set_state: "{{ states(states.group.sync_input_boolean.attributes.entity_id[repeat.index-1] | replace('sensor.ha1_', 'input_boolean.'))}}"
 
   turn_off_most_automation:
     alias: "Turn off most automation"

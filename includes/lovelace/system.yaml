@@ -85,3 +85,23 @@ cards:
             entities:
               - entity: sensor.disk_use_percent
 
+  - type: conditional
+    conditions:
+      - entity: sensor.instance_name
+        state: "HA2"
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:button-card
+          name: "Raspberry PI UPS"
+          styles:
+            card:
+              - background-color: "#203040"
+
+        - type: entities
+          entities:
+            - entity: sensor.raspberry_ups_bus_voltage
+            - entity: sensor.raspberry_ups_bus_current
+            - entity: sensor.raspberry_ups_power
+            - entity: sensor.raspberry_ups_shunt_voltage
+

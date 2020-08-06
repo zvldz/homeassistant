@@ -72,6 +72,9 @@ sensor:
       authorization: !secret ha1_token
     value_template: "{{ value_json.attributes.temperature }}"
 
+  - platform: rups
+    name: raspberry_ups
+
 rest_command:
   ha1_set_input_boolean:
     url: "{{ states('input_text.ha1_url') }}api/services/input_boolean/turn_{{ set_state }}"

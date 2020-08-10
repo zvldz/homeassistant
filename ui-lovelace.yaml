@@ -1,4 +1,4 @@
-title: Home
+title: !secret home_name
 views:
   - !include includes/lovelace/home.yaml
   - !include includes/lovelace/hallway.yaml

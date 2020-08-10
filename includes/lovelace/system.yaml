@@ -98,10 +98,34 @@ cards:
             card:
               - background-color: "#203040"
 
-        - type: entities
-          entities:
-            - entity: sensor.raspberry_ups_bus_voltage
-            - entity: sensor.raspberry_ups_bus_current
-            - entity: sensor.raspberry_ups_power
-            - entity: sensor.raspberry_ups_shunt_voltage
+        - type: custom:auto-entities
+          card:
+            type: entities
+            show_header_toggle: false
+          filter:
+            include:
+              - entity_id: "sensor.raspberry_ups_*"
+                sort: entity_id
+
+  - type: conditional
+    conditions:
+      - entity: sensor.instance_name
+        state: "HA1"
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:button-card
+          name: "MUSTEK UPS"
+          styles:
+            card:
+              - background-color: "#203040"
+
+        - type: custom:auto-entities
+          card:
+            type: entities
+            show_header_toggle: false
+          filter:
+            include:
+              - entity_id: "sensor.mustek_*"
+                sort: entity_id
 

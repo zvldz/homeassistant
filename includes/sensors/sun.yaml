@@ -5,15 +5,11 @@
       icon_template: "mdi:weather-sunset-down"
       value_template: "{{ as_timestamp(states.sun.sun.attributes.next_dusk) | timestamp_custom('%H:%M') }}"
 
-- platform: template
-  sensors:
     sun_dawn:
       friendly_name: "Рассвет"
       icon_template: "mdi:weather-sunset-up"
       value_template: "{{ as_timestamp(states.sun.sun.attributes.next_dawn) | timestamp_custom('%H:%M') }}"
 
-- platform: template
-  sensors:
     sun_elevation:
       friendly_name: "Высота солнца над горизонтом"
       icon_template: "mdi:weather-sunset"

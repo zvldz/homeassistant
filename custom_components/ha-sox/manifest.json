@@ -1,0 +1,8 @@
+{
+  "domain": "sox",
+  "name": "SoX",
+  "documentation": "https://sourceforge.net/projects/sox/",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": []
+}

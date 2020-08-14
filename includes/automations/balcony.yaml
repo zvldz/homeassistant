@@ -1,26 +1,13 @@
-- alias: "Switch balcony 1"
+- alias: "Switch balcony"
   initial_state: 'on'
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
-      entity_id: binary_sensor.wall_switch_158d000183dd12
-      click_type: single
-  action:
-    service: switch.toggle
-    entity_id:
-      - switch.wall_switch_ln_158d00022ab4bf
-      - switch.wall_switch_ln_158d0001f9aa37
-      - switch.wall_switch_ln_158d0002114338
-
-- alias: "Switch balcony 2"
-  initial_state: 'on'
-  trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
-      entity_id: binary_sensor.wall_switch_158d000183d2d5
-      click_type: single
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id:
+          - binary_sensor.wall_switch_158d000183dd12
+          - binary_sensor.wall_switch_158d000183d2d5
+        click_type: single
   action:
     service: switch.toggle
     entity_id:

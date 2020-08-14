@@ -44,6 +44,7 @@ sensor:
   - platform: mqtt
     state_topic: "valetudo/rockrobo/state"
     json_attributes_topic: "valetudo/rockrobo/map_data_parsed"
+#   json_attributes_topic: "valetudo/rockrobo/map_data"
     name: xiaomi_map
     value_template: 'OK'
     scan_interval: 5

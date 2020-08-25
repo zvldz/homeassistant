@@ -6,7 +6,6 @@ import voluptuous as vol
 
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import (
-    ATTR_ATTRIBUTION,
     CONF_NAME,
     CONF_MONITORED_VARIABLES,
     VOLT,

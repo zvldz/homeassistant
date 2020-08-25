@@ -43,11 +43,11 @@ sensor:
 
   - platform: mqtt
     state_topic: "valetudo/rockrobo/state"
-    json_attributes_topic: "valetudo/rockrobo/map_data_parsed"
-#   json_attributes_topic: "valetudo/rockrobo/map_data"
+#   json_attributes_topic: "valetudo/rockrobo/map_data_parsed"
+    json_attributes_topic: "valetudo/rockrobo/map_data"
     name: xiaomi_map
     value_template: 'OK'
-    scan_interval: 5
+#   scan_interval: 5
 
 automation:
   - alias: "Vacuum Time Clean 1"

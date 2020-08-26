@@ -14,25 +14,27 @@ _TemplateEnvironment = template.TemplateEnvironment
 
 
 def deflate(string):
-    #   return zlib.decompress(string, -15)
     return zlib.decompress(string)
 
 
 def inflate(string):
-    #   return zlib.compress(string.encode("utf-8"))[2:-4]
     return zlib.compress(string.encode("utf-8"))
 
 
 def decode_base64_and_inflate(string):
     data = base64.b64decode(string)
-    #   return zlib.decompress(data, -15).decode("utf-8")
     return zlib.decompress(data).decode("utf-8")
 
 
 def deflate_and_base64_encode(string):
-    #   data = zlib.compress(string.encode("utf-8"))[2:-4]
     data = zlib.compress(string.encode("utf-8"))
     return base64.b64encode(data).decode("utf-8")
+
+
+def decode_valetudo_map(string):
+    """ Currently, this function is equivalent to deflate_and_base64_encode. """
+    """ But it may be changed in the future. """
+    return decode_base64_and_inflate(string)
 
 
 def unquote(string):
@@ -73,6 +75,7 @@ def init(*args):
     env.filters["inflate"] = inflate
     env.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
     env.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
+    env.filters["decode_valetudo_map"] = decode_valetudo_map
 
     return env
 
@@ -86,6 +89,7 @@ template._NO_HASS_ENV.filters["deflate"] = deflate
 template._NO_HASS_ENV.filters["inflate"] = inflate
 template._NO_HASS_ENV.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
 template._NO_HASS_ENV.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
+template._NO_HASS_ENV.filters["decode_valetudo_map"] = decode_valetudo_map
 
 
 async def async_setup(hass, hass_config):

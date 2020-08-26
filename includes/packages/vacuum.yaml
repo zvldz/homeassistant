@@ -46,8 +46,7 @@ sensor:
   - platform: mqtt
     state_topic: "valetudo/rockrobo/state"
     json_attributes_topic: "valetudo/rockrobo/map_data"
-#   json_attributes_template: '{"deflatedMapAsBase64": "{{ value }}"}'
-    json_attributes_template: "{{ value | decode_base64_and_inflate }}"
+    json_attributes_template: "{% if 'class' in value[1:10] %} {{ value }} {% else %} {{ value | decode_valetudo_map }} {% endif %}"
     name: xiaomi_map
     value_template: 'OK'
 

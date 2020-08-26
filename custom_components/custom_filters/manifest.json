@@ -1,0 +1,8 @@
+{
+  "domain": "custom_filters",
+  "name": "Custom filters for jinja",
+  "documentation": "https://google.com",
+  "requirements": [ "jinja2-base64-filters" ],
+  "config_flow": true,
+  "codeowners": [ "@zvldz" ]
+}

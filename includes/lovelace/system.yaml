@@ -107,6 +107,20 @@ cards:
               - entity_id: "sensor.raspberry_ups_*"
                 sort: entity_id
 
+        - type: custom:button-card
+          name: "Reboot HA1"
+          icon: "mdi:autorenew"
+          tap_action:
+            confirmation: true
+            action: call-service
+            service: script.turn_on
+            service_data:
+              entity_id: script.reboot_ha1
+          size: 20%
+          styles:
+            card:
+              - font-size: 14px
+
   - type: conditional
     conditions:
       - entity: sensor.instance_name

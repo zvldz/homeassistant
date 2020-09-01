@@ -200,3 +200,17 @@ script:
       - service: homeassistant.turn_on
         entity_id: group.active_automations
 
+  reboot_ha1:
+    alias: "Reboot HA1"
+    sequence:
+      - service: switch.turn_off
+        entity_id:
+          - switch.power_strip_1_relay2
+          - switch.power_strip_1_relay4
+      - delay: '00:00:02'
+      - service: switch.turn_on
+        entity_id: switch.power_strip_1_relay4
+      - delay: '00:00:15'
+      - service: switch.turn_on
+        entity_id: switch.power_strip_1_relay2
+

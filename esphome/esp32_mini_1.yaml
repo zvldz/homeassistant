@@ -1,0 +1,91 @@
+substitutions:
+  device_name: esp32_mini_1
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  output_power: 20dB
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+api:
+ota:
+captive_portal:
+esp32_ble_tracker:
+
+binary_sensor:
+  - platform: status
+    name: ${device_name}_status
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+    icon: mdi:timer-outline
+
+  - platform: wifi_signal
+    name: ${device_name}_wifi_signal
+    icon: mdi:wifi
+
+  - platform: xiaomi_lywsd03mmc
+    mac_address: !secret xiaomi_bt_sensor_1_mac
+    bindkey: !secret xiaomi_bt_sensor_1_key
+    temperature:
+      name: t1_temperature
+    humidity:
+      name: t1_humidity
+    battery_level:
+      name: t1_battery_level
+
+  - platform: xiaomi_lywsd03mmc
+    mac_address: !secret xiaomi_bt_sensor_2_mac
+    bindkey: !secret xiaomi_bt_sensor_2_key
+    temperature:
+      name: t2_temperature
+    humidity:
+      name: t2_humidity
+    battery_level:
+      name: t2_battery_level
+
+  - platform: xiaomi_lywsd03mmc
+    mac_address: !secret xiaomi_bt_sensor_3_mac
+    bindkey: !secret xiaomi_bt_sensor_3_key
+    temperature:
+      name: t3_temperature
+    humidity:
+      name: t3_humidity
+    battery_level:
+      name: t3_battery_level
+
+  - platform: xiaomi_lywsd03mmc
+    mac_address: !secret xiaomi_bt_sensor_4_mac
+    bindkey: !secret xiaomi_bt_sensor_4_key
+    temperature:
+      name: t4_temperature
+    humidity:
+      name: t4_humidity
+    battery_level:
+      name: t4_battery_level
+
+text_sensor:
+  - platform: version
+    name: ${device_name}_esphome_version
+    icon: mdi:information-outline
+
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip_address
+      icon: mdi:ip-network
+    ssid:
+      name: ${device_name}_connected_ssid
+      icon: mdi:access-point
+
+switch:
+  - platform: restart
+    name: ${device_name}_restart
+    icon: mdi:restart
+
+

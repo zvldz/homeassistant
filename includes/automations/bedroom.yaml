@@ -1,4 +1,4 @@
-- alias: "Set brightness for lamp in bedroom2"
+- alias: "Set brightness for lamp in bedroom"
   initial_state: 'on'
   trigger:
     platform: state

@@ -1,4 +1,4 @@
-- alias: "Set brightness for lamp in bedroom1"
+- alias: "Set brightness for lamp in master bedroom"
   initial_state: 'on'
   trigger:
     platform: state
@@ -10,6 +10,11 @@
       data:
         entity_id: light.master_bedroom_lamp
         mode: normal
+    - service: yeelight.set_color_temp_scene
+      data:
+        entity_id: light.master_bedroom_lamp
+        brightness: 70
+        kelvin: 4000
 
 - alias: "Turn on bedside lamp"
   initial_state: 'on'

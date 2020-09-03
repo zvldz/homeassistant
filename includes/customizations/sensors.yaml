@@ -32,7 +32,7 @@ binary_sensor.motion_sensor_158d0004466f8f:
   friendly_name: "WC Motion"
 
 binary_sensor.motion_sensor_158d00044a26ba:
-  friendly_name: "Bathromm Motion"
+  friendly_name: "Bathroom Motion"
 
 sensor.illumination_158d00022515fe:
   friendly_name: "Kitchen Illum"

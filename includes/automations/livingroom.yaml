@@ -1,3 +1,21 @@
+- alias: "Set brightness for lamp in living room"
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: light.living_room_lamp
+    from: 'off'
+    to: 'on'
+  action:
+    - service: yeelight.set_mode
+      data:
+        entity_id: light.living_room_lamp
+        mode: normal
+    - service: yeelight.set_color_temp_scene
+      data:
+        entity_id: light.living_room_lamp
+        brightness: 70
+        kelvin: 4000
+
 - alias: "Livingroom switch left"
   initial_state: 'on'
   trigger:

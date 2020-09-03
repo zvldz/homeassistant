@@ -1,10 +1,10 @@
-title: Балкон
+title: Balcony
 icon: "mdi:wall"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Выключатели"
+        name: "Switches"
         styles:
           card:
             - background-color: "#203040"
@@ -45,13 +45,13 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Цветы"
+        name: "Flowers"
         styles:
           card:
             - background-color: "#203040"
 
       - type: custom:miflora-card
-        title: 'Цветок 1'
+        title: 'Flower 1'
         image: img/flower1.jpg
         min_moisture: 15
         max_moisture: 60
@@ -64,7 +64,7 @@ cards:
           - conductivity:sensor.mf1_soil
 
       - type: custom:miflora-card
-        title: 'Цветок 2'
+        title: 'Flower 2'
         image: img/flower2.jpg
         min_moisture: 15
         max_moisture: 60
@@ -77,7 +77,7 @@ cards:
           - conductivity:sensor.mf2_soil
 
       - type: custom:miflora-card
-        title: 'Цветок 3'
+        title: 'Flower 3'
         image: img/flower3.jpg
         min_moisture: 15
         max_moisture: 60
@@ -92,7 +92,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
@@ -105,7 +105,7 @@ cards:
           - binary_sensor.door_window_sensor_158d0002537042
 
       - type: custom:button-card
-        name: "Климат"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
@@ -113,7 +113,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: 'Температура'
+            name: 'Temperature'
             entities:
               - entity: sensor.temperature_158d00027300cc
               - entity: sensor.nodemcu_3_outdoor_temperature
@@ -122,7 +122,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: 'Влажность'
+            name: 'Humidity'
             entities:
               - entity: sensor.humidity_158d00027300cc
 

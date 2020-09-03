@@ -15,7 +15,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Открылась дверь в квартиру"
+        message: "\U0001F6AA The front door opened"
     - service: switch.turn_on
       entity_id:
         - switch.wall_switch_ln_158d0002112b1e

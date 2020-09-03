@@ -1,23 +1,23 @@
 kitchen_light:
-  name: "Кухня таймер"
+  name: "Kitchen timer"
   duration: '00:10:00'
 
 wc_light:
-  name: "WC таймер"
+  name: "WC timer"
   duration: '00:05:00'
 
 wc_fan:
-  name: "WC вентилятор таймер"
+  name: "WC fan timer"
   duration: '00:15:00'
 
 bathroom_light:
-  name: "Ванная таймер"
+  name: "Bathroom timer"
   duration: '00:10:00'
 
 bathroom_fan:
-  name: "Ванная вентилятор таймер"
+  name: "Baroom fan timer"
   duration: '00:15:00'
 
 hallway_light:
-  name: "Коридор таймер"
+  name: "Hallway timer"
   duration: '00:06:00'

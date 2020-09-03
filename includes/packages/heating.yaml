@@ -2,10 +2,10 @@ python_script:
 
 input_boolean:
   pump_schedule:
-    name: "Работа насоса по расписанию (Зима)"
+    name: "Pump work on schedule (Winter)"
     icon: "mdi:timer-outline"
   gas_boiler_schedule:
-    name: "Работа котла по расписанию (Зима)"
+    name: "Boiler work on schedule (Winter)"
     icon: "mdi:timer-outline"
 
 input_text:
@@ -18,7 +18,7 @@ input_text:
 
 input_number:
   gas_counter:
-    name: "Счетчик газа"
+    name: "Gas Counter"
     icon: "mdi:fire"
     mode: box
     min: 0.0
@@ -42,15 +42,15 @@ sensor:
   - platform: template
     sensors:
       thermostat_current_temp:
-        friendly_name: "Т Текущая"
+        friendly_name: "T Current"
         value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_2') }}"
         unit_of_measurement: '°C'
       thermostat_set_temp:
-        friendly_name: "Т Желаемая"
+        friendly_name: "T Required"
         value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_1') }}"
         unit_of_measurement: "°C"
       thermostat_reley_status:
-        friendly_name: "Т Реле"
+        friendly_name: "T Rele"
         value_template: >
           {% if is_state('sensor.thermostat_info', '4') %}
             ON

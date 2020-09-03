@@ -1,10 +1,10 @@
-title: "Коридор"
+title: "Hallway"
 icon: "mdi:swap-vertical-variant"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Лампы"
+        name: "Light"
         styles:
           card:
             - background-color: "#203040"
@@ -15,7 +15,7 @@ cards:
             entity: light.gateway_light_7811dcb245b2
 
       - type: custom:button-card
-        name: "Выключатели"
+        name: "Switches"
         styles:
           card:
             - background-color: "#203040"
@@ -80,7 +80,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Климат"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
@@ -88,7 +88,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Температура"
+            name: "Temperature"
             hour24: true
             points_per_hour: 2
             entities:
@@ -99,7 +99,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Влажность"
+            name: "Humidity"
             hour24: true
             points_per_hour: 2
             entities:
@@ -108,7 +108,7 @@ cards:
                 color: red
 
       - type: custom:button-card
-        name: "Таймеры"
+        name: "Timers"
         styles:
           card:
             - background-color: "#203040"
@@ -129,7 +129,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"

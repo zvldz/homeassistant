@@ -7,7 +7,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Утечка воды на кухне"
+        message: "\U0001F4A6 Water leakage in Kitchen"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -29,7 +29,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Устранена утечка воды на кухне"
+        message: "\U00002705 Fixed water leakage in kitchen"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -46,7 +46,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Утечка воды в ванной"
+        message: "\U0001F4A6 Water leakage in Bathroom"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -68,7 +68,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Устранена утечка воды в ванной"
+        message: "\U00002705 Fixed water leakage in bathroom"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -85,7 +85,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Утечка воды в туалете"
+        message: "\U0001F4A6 Water leakage in WC"
     - service: xiaomi_aqara.play_ringtone
       data:
         gw_mac: !secret xgate_1_mac
@@ -107,7 +107,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "Устранена утечка воды в туалете"
+        message: "\U00002705 Fixed water leakage in WC"
     - service: xiaomi_aqara.stop_ringtone
       data:
         gw_mac: !secret xgate_1_mac

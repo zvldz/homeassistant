@@ -4,7 +4,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Температура"
+        name: "Temperature"
         styles:
           card:
             - background-color: "#203040"
@@ -25,7 +25,7 @@ cards:
             - entity_id: "*battery"
 
       - type: custom:button-card
-        name: "Погода"
+        name: "Weather"
         styles:
           card:
             - background-color: "#203040"
@@ -41,7 +41,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Влажность"
+        name: "Humidity"
         styles:
           card:
             - background-color: "#203040"
@@ -62,7 +62,7 @@ cards:
             - entity_id: "*battery"
 
       - type: custom:button-card
-        name: "День"
+        name: "Day"
         styles:
           card:
             - background-color: "#203040"
@@ -79,7 +79,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Давление"
+        name: "Pressure"
         styles:
           card:
             - background-color: "#203040"
@@ -100,7 +100,7 @@ cards:
             - entity_id: "*battery"
 
       - type: custom:button-card
-        name: "Кто Дома"
+        name: "Home"
         styles:
           card:
             - background-color: "#203040"

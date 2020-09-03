@@ -1,0 +1,24 @@
+automation:
+  - alias: 'Notify when UPS goes on battery'
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.mustek_status_data
+        from: 'OL'
+        to: 'OB'
+    action:
+      - service: notify.telegram
+        data:
+          message: "\U00002620 {{ states('sensor.time_date') }} | Mains voltage is missing"
+
+  - alias: 'Notify when UPS goes on ac'
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.mustek_status_data
+        from: 'OB'
+        to: 'OL'
+    action:
+      - service: notify.telegram
+        data:
+          message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored"

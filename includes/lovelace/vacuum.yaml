@@ -1,10 +1,10 @@
-title: "Робот-Пылесос"
+title: "Robot Vacuum"
 icon: "mdi:robot-vacuum"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Статус"
+        name: "Status"
         styles:
           card:
             - background-color: "#203040"
@@ -57,7 +57,7 @@ cards:
             icon: "mdi:bed-empty"
 
       - type: custom:button-card
-        name: "Сброс Счетчиков"
+        name: "Reset Counters"
         styles:
           card:
             - background-color: "#203040"
@@ -65,7 +65,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Фильтр"
+            name: "Filter"
             icon: "mdi:autorenew"
             entity: script.vacuum_reset_filter
             tap_action:
@@ -80,7 +80,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Боковая Щетка"
+            name: "Side Brush"
             icon: "mdi:autorenew"
             entity: script.vacuum_reset_side_brush
             tap_action:
@@ -95,7 +95,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Главная Щетка"
+            name: "Main Brush"
             icon: "mdi:autorenew"
             entity: script.vacuum_reset_main_brush
             tap_action:
@@ -110,7 +110,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Сенсоры"
+            name: "Sensors"
             icon: "mdi:autorenew"
             entity: script.vacuum_reset_sensor
             tap_action:
@@ -125,11 +125,10 @@ cards:
                 - font-size: 14px
 
 
-
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Карта"
+        name: "Map"
         styles:
           card:
             - background-color: "#203040"

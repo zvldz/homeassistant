@@ -1,10 +1,10 @@
-title: "Спальня 2"
+title: "Bedroom"
 icon: "mdi:bed-empty"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Лампы"
+        name: "Light"
         styles:
           card:
             - background-color: "#203040"
@@ -17,7 +17,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
@@ -27,7 +27,7 @@ cards:
           - binary_sensor.bedroom_lamp_nightlight
 
       - type: custom:button-card
-        name: "Климат"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
@@ -35,7 +35,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Температура"
+            name: "Temperature"
             hour24: true
             entities:
               - entity: sensor.temperature_158d0001ab2a27
@@ -43,7 +43,8 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Влажность"
+            name: "Humidity"
             hour24: true
             entities:
               - entity: sensor.humidity_158d0001ab2a27
+

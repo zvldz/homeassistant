@@ -10,4 +10,4 @@
   action:
     - service: notify.telegram
       data_template:
-        message: "Этому цветку необходима вода - '{{ trigger.from_state.attributes.friendly_name }}', влажность {{ trigger.from_state.state }}"
+        message: "\U0001F940 This flower needs water - '{{ trigger.from_state.attributes.friendly_name }}', влажность {{ trigger.from_state.state }}"

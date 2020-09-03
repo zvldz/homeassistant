@@ -1,10 +1,10 @@
-title: "Зал"
+title: "Living Room"
 icon: "mdi:sofa"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Лампы"
+        name: "Light"
         styles:
           card:
             - background-color: "#203040"
@@ -17,7 +17,7 @@ cards:
             entity: light.living_room_lamp_ambilight
 
       - type: custom:button-card
-        name: "Группа Спотов"
+        name: "Spotting Group"
         styles:
           card:
             - background-color: "#203040"
@@ -33,7 +33,7 @@ cards:
               - group.living_room_spot_right
 
       - type: custom:button-card
-        name: "Споты"
+        name: "Spots"
         styles:
           card:
             - background-color: "#203040"
@@ -55,7 +55,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
@@ -69,7 +69,7 @@ cards:
           - binary_sensor.wall_switch_right_158d0002afc3c7
 
       - type: custom:button-card
-        name: "Выключатели"
+        name: "Switches"
         styles:
           card:
             - background-color: "#203040"
@@ -101,7 +101,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Климат"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
@@ -109,7 +109,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Температура"
+            name: "Temperature"
             hour24: true
             entities:
               - entity: sensor.temperature_158d0002bfe958
@@ -119,9 +119,10 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Влажность"
+            name: "Humidity"
             hour24: true
             entities:
               - entity: sensor.humidity_158d0002bfe958
               - entity: sensor.living_room_bt_humidity
                 color: red
+

@@ -76,3 +76,4 @@
   sensors:
     instance_name:
       value_template: !secret home_name
+

@@ -43,3 +43,18 @@
     - service: counter.reset
 #     entity_id: counter.warning_counter, counter.error_counter, counter.restart_counter
       entity_id: counter.restart_counter
+
+# ##################################
+# System - Entity Change
+# ##################################
+- alias: system_entity_change
+  initial_state: 'true'
+  mode: parallel
+  trigger:
+    - platform: event
+      event_type: entity_registry_updated
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "\U00002747 {{ trigger.event.data.action | capitalize }}: {{ trigger.event.data.old_entity_id+'->' if trigger.event.data.old_entity_id is defined }}{{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }}"
+

@@ -1,10 +1,10 @@
-title: "Отопление"
+title: "Heating"
 icon: "mdi:radiator"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Газ"
+        name: "Gas"
         styles:
           card:
             - background-color: "#203040"
@@ -17,7 +17,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Синхронизация с HA1"
+            name: "Sync with HA1"
             icon: "mdi:autorenew"
             entity: script.sync_gas_counter_with_ha1
             tap_action:
@@ -32,7 +32,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Синхронизация с HA2"
+            name: "Sync with HA2"
             icon: "mdi:autorenew"
             entity: script.sync_gas_counter_with_ha2
             tap_action:
@@ -74,7 +74,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Термостат"
+        name: "Thermostat"
         styles:
           card:
             - background-color: "#203040"
@@ -84,7 +84,6 @@ cards:
           - type: custom:simple-thermostat
             entity: climate.gas_boiler
             name: false
-#           name: Котел
             sensors:
               - entity: sensor.temperature_158d0002bfe958
               - entity: sensor.temperature_158d0002323856
@@ -121,7 +120,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
@@ -136,7 +135,7 @@ cards:
           - sensor.thermostat_set_temp
 
       - type: custom:button-card
-        name: "Температура"
+        name: "Temperature"
         styles:
           card:
             - background-color: "#203040"

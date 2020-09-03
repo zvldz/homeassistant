@@ -2,17 +2,17 @@ sensor:
   - platform: template
     sensors:
       front_door_last_activity_date:
-        friendly_name: Последняя активность
+        friendly_name: Last Activity
         icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
       front_door_last_ding_date:
-        friendly_name: Последний звонок
+        friendly_name: Last Ding
         icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
       front_door_last_motion_date:
-        friendly_name: Последние движение
+        friendly_name: Last Motion
         icon_template: "mdi:clock"
         value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
@@ -29,7 +29,7 @@ automation:
     action:
       - service: notify.telegram
         data:
-          message: "Звонок в дверь"
+          message: "\U0001F515 The doorbell rings !!!"
 
   - alias: "Ring Video Download"
     initial_state: 'on'

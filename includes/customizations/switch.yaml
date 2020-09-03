@@ -1,29 +1,29 @@
 switch.plug_158d0002677c89:
-  friendly_name: "Розетка 1"
+  friendly_name: "Socket 1"
   icon: "mdi:power-socket-au"
 
 switch.bw_plug_1_relay:
-  friendly_name: "Розетка 2"
+  friendly_name: "Socket 2"
   icon: "mdi:power-socket-eu"
 
 switch.sonoff_wc_relay:
-  friendly_name: "WC Вытяжка"
+  friendly_name: "WC Fan"
   icon: "mdi:light-switch"
 
 switch.sonoff_br_relay_1:
-  friendly_name: "Ванная Вытяжка"
+  friendly_name: "Bathroom Fan"
   icon: "mdi:light-switch"
 
 switch.sonoff_br_relay_2:
-  friendly_name: "Ванная Зеркало"
+  friendly_name: "Bathroom Mirror"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d000211434a:
-  friendly_name: "Кухня"
+  friendly_name: "Kitchen"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_left_158d00022a8150:
-  friendly_name: "Ванная"
+  friendly_name: "Bathroom"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d00022360fe:
@@ -31,29 +31,29 @@ switch.wall_switch_ln_158d00022360fe:
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0001f9aaae:
-  friendly_name: "Коридор 1"
+  friendly_name: "Hallway 1"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0002112b1e:
-  friendly_name: "Коридор 2"
+  friendly_name: "Hallway 2"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_right_158d00022a8150:
-  friendly_name: "Коридор 3"
+  friendly_name: "Hallway 3"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d0002235125:
-  friendly_name: "Кладовка"
+  friendly_name: "Storeroom"
   icon: "mdi:light-switch"
 
 switch.wall_switch_ln_158d00022ab4bf:
-  friendly_name: "Балкон 1"
+  friendly_name: "Balcony 1"
 
 switch.wall_switch_ln_158d0001f9aa37:
-  friendly_name: "Балкон 2"
+  friendly_name: "Balcony 2"
 
 switch.wall_switch_ln_158d0002114338:
-  friendly_name: "Балкон 3"
+  friendly_name: "Balcony 3"
 
 switch.sonoff_rf_br_1_sb_rf:
   friendly_name: "RF Sonoff"
@@ -68,8 +68,8 @@ switch.sonoff_rf_br_1_gate2:
   friendly_name: "RF Gate 2"
 
 switch.sonoff_pump_relay:
-  friendly_name: "Насос"
+  friendly_name: "Pump"
 
 switch.gas_boiler:
-  friendly_name: "Котел"
+  friendly_name: "Boiler"
 

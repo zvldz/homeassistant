@@ -1,10 +1,10 @@
-title: "Система"
+title: "System"
 icon: "mdi:heart-pulse"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Система"
+        name: "System"
         styles:
           card:
             - background-color: "#203040"
@@ -44,7 +44,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Графики"
+        name: "Graphs"
         styles:
           card:
             - background-color: "#203040"

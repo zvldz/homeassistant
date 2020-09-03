@@ -1,6 +1,6 @@
 climate.midea_ac_813900000011:
-  friendly_name: "Зал"
+  friendly_name: "Living Room"
 climate.midea_ac_823900000011:
-  friendly_name: "Спальня 1"
+  friendly_name: "Master Bedroom"
 climate.midea_ac_e0470000000f:
-  friendly_name: "Спальня 2"
+  friendly_name: "Bedroom"

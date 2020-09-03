@@ -8,7 +8,7 @@
   action:
     - service: notify.telegram
       data_template:
-        message: '{{ states.sensor.date_time.state }} | Не работает HA1'
+        message: "\U00002620 {{ states.sensor.date_time.state }} | HA1 is not working"
 
 - alias: ha1_server_on
   initial_state: 'on'
@@ -19,7 +19,7 @@
   action:
     - service: notify.telegram
       data_template:
-        message: '{{ states.sensor.date_time.state }} | Заработал HA1'
+        message: "\U00002705 {{ states.sensor.date_time.state }} | HA1 is now working"
 
 - alias: ha2_server_off
   initial_state: 'on'
@@ -31,7 +31,7 @@
   action:
     - service: notify.telegram
       data_template:
-        message: '{{ states.sensor.date_time.state }} | Не работает HA2'
+        message: "\U00002620 {{ states.sensor.date_time.state }} | HA2 is not working"
 
 - alias: ha2_server_on
   initial_state: 'on'
@@ -42,5 +42,5 @@
   action:
     - service: notify.telegram
       data_template:
-        message: '{{ states.sensor.date_time.state }} | Заработал HA2'
+        message: "\U00002705 {{ states.sensor.date_time.state }} | HA2 is now working"
 

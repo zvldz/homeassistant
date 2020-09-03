@@ -1,10 +1,10 @@
-title: "Кухня"
+title: "Kitchen"
 icon: "mdi:silverware-fork-knife"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Лампы"
+        name: "Light"
         styles:
           card:
             - background-color: "#203040"
@@ -15,7 +15,7 @@ cards:
             entity: light.kitchen_lamp
 
       - type: custom:button-card
-        name: "Климат"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
@@ -23,7 +23,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Температура"
+            name: "Temperature"
             hour24: true
             entities:
               - entity: sensor.temperature_158d0002ca0395
@@ -33,7 +33,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Влажность"
+            name: "Humidity"
             hour24: true
             entities:
               - entity: sensor.humidity_158d0002ca0395
@@ -43,7 +43,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Сенсоры"
+        name: "Sensors"
         styles:
           card:
             - background-color: "#203040"
@@ -58,7 +58,7 @@ cards:
           - entity: binary_sensor.water_leak_sensor_158d000232989c
 
       - type: custom:button-card
-        name: "Выключатели"
+        name: "Switches"
         styles:
           card:
             - background-color: "#203040"
@@ -80,7 +80,7 @@ cards:
                 - font-size: 14px
 
       - type: custom:button-card
-        name: "Таймеры"
+        name: "Timers"
         styles:
           card:
             - background-color: "#203040"

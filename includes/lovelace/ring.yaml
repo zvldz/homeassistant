@@ -1,10 +1,10 @@
-title: "Дверной звонок"
+title: "Doorbell"
 icon: "mdi:bell-ring"
 cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Дверной Звонок"
+        name: "Doorbell"
         styles:
           card:
             - background-color: "#203040"
@@ -24,7 +24,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Камера"
+        name: "Camera"
         styles:
           card:
             - background-color: "#203040"

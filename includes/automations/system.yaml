@@ -48,7 +48,7 @@
 # System - Entity Change
 # ##################################
 - alias: system_entity_change
-  initial_state: 'true'
+  initial_state: 'on'
   mode: parallel
   trigger:
     - platform: event

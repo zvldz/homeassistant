@@ -4,9 +4,12 @@
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id:
-          - binary_sensor.wall_switch_158d000183dd12
-          - binary_sensor.wall_switch_158d000183d2d5
+        entity_id: binary_sensor.wall_switch_158d000183dd12
+        click_type: single
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.wall_switch_158d000183d2d5
         click_type: single
   action:
     service: switch.toggle

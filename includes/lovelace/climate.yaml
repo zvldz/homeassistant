@@ -15,6 +15,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_813900000011
+        name: false
         sensors:
           - entity: sensor.temperature_158d0002bfe958
           - entity: sensor.living_room_bt_temperature
@@ -33,6 +34,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_823900000011
+        name: false
         sensors:
           - entity: sensor.temperature_158d0002323856
           - entity: sensor.humidity_158d0002323856
@@ -50,6 +52,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_e0470000000f
+        name: false
         sensors:
           - entity: sensor.temperature_158d0001ab2a27
           - entity: sensor.humidity_158d0001ab2a27

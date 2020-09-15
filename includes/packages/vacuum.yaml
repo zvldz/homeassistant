@@ -62,8 +62,12 @@ automation:
         state: 'on'
       - condition: time
         weekday:
-          - tue
-          - thu
+          - mon
+          - wed
+          - fri
+      - condition: state
+        entity_id: group.persons
+        state: 'not_home'
     action:
       - service: script.turn_on
         entity_id: script.vacuum_all_except_balcony
@@ -79,9 +83,11 @@ automation:
         state: 'on'
       - condition: time
         weekday:
-          - mon
-          - wed
-          - fri
+          - tue
+          - thu
+      - condition: state
+        entity_id: group.persons
+        state: 'not_home'
     action:
       - service: script.turn_on
         entity_id: script.vacuum_living_room

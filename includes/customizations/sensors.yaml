@@ -250,3 +250,73 @@ sensor.sonoff_pump_daily_energy:
 binary_sensor.door_window_sensor_158d00039461dd:
   friendly_name: "Gas Counter Sensor"
   icon: "mdi:fire"
+
+sensor.battery_158d000183d2d5:
+  friendly_name: "Balcony General 1"
+
+sensor.battery_158d000183dd12:
+  friendly_name: "Balcony General 2"
+
+sensor.battery_158d0001a66df0:
+  friendly_name: "Master Bedroom Button"
+
+sensor.battery_158d0001ab2a27:
+  friendly_name: "Bedroom Thermometer"
+
+sensor.battery_158d00022515fe:
+  friendly_name: "Kitchen Motion"
+
+sensor.battery_158d000231f03e:
+  friendly_name: "Hallway Thermometer"
+
+sensor.battery_158d0002323856:
+  friendly_name: "Master Bedroom Thermometer"
+
+sensor.battery_158d000232989c:
+  friendly_name: "Kitchen Leak"
+
+sensor.battery_158d000233ddf2:
+  friendly_name: "Bathroom Leak"
+
+sensor.battery_158d00023aa420:
+  friendly_name: "WC Leak"
+
+sensor.battery_158d00024de627:
+  friendly_name: "WC Door"
+
+sensor.battery_158d0002537042:
+  friendly_name: "Storeroom Door"
+
+sensor.battery_158d00027300cc:
+  friendly_name: "Balcony Thermometer"
+
+sensor.battery_158d000273011f:
+  friendly_name: "Bathroom Thermometer"
+
+sensor.battery_158d0002afc3c7:
+  friendly_name: "Livingroom Button"
+
+sensor.battery_158d0002bfe958:
+  friendly_name: "Living Room Thermometer"
+
+sensor.battery_158d0002ca0395:
+  friendly_name: "Kitchen Thermometer"
+
+sensor.battery_158d0002e22617:
+  friendly_name: "Vacuum Button"
+
+sensor.battery_158d0002fd4381:
+  friendly_name: "Bathroom Door"
+
+sensor.battery_158d00032b7db7:
+  friendly_name: "Entrance Door"
+
+sensor.battery_158d00039461dd:
+  friendly_name: "Gas Counter"
+
+sensor.battery_158d0004466f8f:
+  friendly_name: "WC Motion"
+
+sensor.battery_158d00044a26ba:
+  friendly_name: "Bathroom Motion"
+

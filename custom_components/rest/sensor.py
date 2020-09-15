@@ -32,6 +32,9 @@ from homeassistant.const import (
 )
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.reload import setup_reload_service
+
+from . import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,6 +84,8 @@ PLATFORM_SCHEMA = vol.All(
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the RESTful sensor."""
+    setup_reload_service(hass, DOMAIN, PLATFORMS)
+
     name = config.get(CONF_NAME)
     resource = config.get(CONF_RESOURCE)
     resource_template = config.get(CONF_RESOURCE_TEMPLATE)
@@ -123,7 +128,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     else:
         auth = None
 
-    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout, proxy_url)
+    rest = RestData(
+        method, resource, auth, headers, payload, verify_ssl, timeout, proxy_url
+    )
     rest.update()
 
     # Must update the sensor now (including fetching the rest resource) to
@@ -280,7 +287,15 @@ class RestData:
     """Class for handling the data retrieval."""
 
     def __init__(
-        self, method, resource, auth, headers, data, verify_ssl, timeout=DEFAULT_TIMEOUT, proxy_url=None
+        self,
+        method,
+        resource,
+        auth,
+        headers,
+        data,
+        verify_ssl,
+        timeout=DEFAULT_TIMEOUT,
+        proxy_url=None,
     ):
         """Initialize the data object."""
         self._method = method
@@ -293,7 +308,7 @@ class RestData:
         self._http_session = Session()
 
         if proxy_url is not None:
-            self._proxies = {"http" : proxy_url, "https" : proxy_url}
+            self._proxies = {"http": proxy_url, "https": proxy_url}
         else:
             self._proxies = None
 
@@ -330,16 +345,17 @@ class RestData:
                 data=self._request_data,
                 timeout=self._timeout,
                 verify=self._verify_ssl,
-                proxies = self._proxies,
+                proxies=self._proxies,
             )
             self.data = response.text
             self.headers = response.headers
         except requests.exceptions.RequestException as ex:
-            _LOGGER.warning("Error fetching data: %s failed with %s", self._resource, ex)
+            _LOGGER.warning(
+                "Error fetching data: %s failed with %s", self._resource, ex
+            )
             self.data = None
             self.headers = None
         except Exception as err:
             _LOGGER.warning("Unknown error: %s", err)
             self.data = None
             self.headers = None
-

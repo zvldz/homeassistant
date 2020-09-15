@@ -32,7 +32,7 @@ cards:
 
       - type: weather-forecast
         show_header_toggle: false
-        entity: weather.weather
+        entity: weather.openweathermap
 
       - type: weather-forecast
         show_header_toggle: false
@@ -108,6 +108,6 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - device_tracker.redmi4
-          - device_tracker.galaxy_a5
+          - device_tracker.person1
+          - device_tracker.person2
 

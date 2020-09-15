@@ -12,6 +12,7 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.const import (
     CONF_AUTHENTICATION,
     CONF_DEVICE_CLASS,
+    CONF_FORCE_UPDATE,
     CONF_HEADERS,
     CONF_METHOD,
     CONF_NAME,
@@ -27,7 +28,9 @@ from homeassistant.const import (
     HTTP_DIGEST_AUTHENTICATION,
 )
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.reload import setup_reload_service
 
+from . import DOMAIN, PLATFORMS
 from .sensor import RestData
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,11 +38,11 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_METHOD = "GET"
 DEFAULT_NAME = "REST Binary Sensor"
 DEFAULT_VERIFY_SSL = True
+DEFAULT_FORCE_UPDATE = False
 DEFAULT_TIMEOUT = 10
 
 CONF_PAYLOAD_TEMPLATE = "payload_template"
 CONF_PROXY_URL = "proxy_url"
-
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -58,6 +61,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_VALUE_TEMPLATE): cv.template,
         vol.Optional(CONF_VERIFY_SSL, default=DEFAULT_VERIFY_SSL): cv.boolean,
+        vol.Optional(CONF_FORCE_UPDATE, default=DEFAULT_FORCE_UPDATE): cv.boolean,
         vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): cv.positive_int,
         vol.Optional(CONF_PROXY_URL): cv.string,
     }
@@ -67,8 +71,12 @@ PLATFORM_SCHEMA = vol.All(
     cv.has_at_least_one_key(CONF_RESOURCE, CONF_RESOURCE_TEMPLATE), PLATFORM_SCHEMA
 )
 
+
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the REST binary sensor."""
+
+    setup_reload_service(hass, DOMAIN, PLATFORMS)
+
     name = config.get(CONF_NAME)
     resource = config.get(CONF_RESOURCE)
     resource_template = config.get(CONF_RESOURCE_TEMPLATE)
@@ -82,14 +90,15 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     headers = config.get(CONF_HEADERS)
     device_class = config.get(CONF_DEVICE_CLASS)
     value_template = config.get(CONF_VALUE_TEMPLATE)
+    force_update = config.get(CONF_FORCE_UPDATE)
     proxy_url = config.get(CONF_PROXY_URL)
-
-    if value_template is not None:
-        value_template.hass = hass
 
     if resource_template is not None:
         resource_template.hass = hass
         resource = resource_template.render()
+
+    if value_template is not None:
+        value_template.hass = hass
 
     if payload_template is not None:
         payload_template.hass = hass
@@ -107,18 +116,40 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     else:
         auth = None
 
-    rest = RestData(method, resource, auth, headers, payload, verify_ssl, timeout, proxy_url)
+    rest = RestData(
+        method, resource, auth, headers, payload, verify_ssl, timeout, proxy_url
+    )
     rest.update()
 
-    # No need to update the sensor now because it will determine its state
-    # based in the rest resource that has just been retrieved.
-    add_entities([RestBinarySensor(hass, rest, name, device_class, value_template, resource_template, payload_template)])
+    add_entities(
+        [
+            RestBinarySensor(
+                hass,
+                rest,
+                name,
+                device_class,
+                value_template,
+                resource_template,
+                payload_template,
+            )
+        ]
+    )
 
 
 class RestBinarySensor(BinarySensorEntity):
     """Representation of a REST binary sensor."""
 
-    def __init__(self, hass, rest, name, device_class, value_template, resource_template, payload_template):
+    def __init__(
+        self,
+        hass,
+        rest,
+        name,
+        device_class,
+        value_template,
+        force_update,
+        resource_template,
+        payload_template,
+    ):
         """Initialize a REST binary sensor."""
         self._hass = hass
         self.rest = rest
@@ -127,6 +158,7 @@ class RestBinarySensor(BinarySensorEntity):
         self._state = False
         self._previous_data = None
         self._value_template = value_template
+        self._force_update = force_update
         self._resource_template = resource_template
         self._payload_template = payload_template
 
@@ -164,6 +196,11 @@ class RestBinarySensor(BinarySensorEntity):
             return {"true": True, "on": True, "open": True, "yes": True}.get(
                 response.lower(), False
             )
+
+    @property
+    def force_update(self):
+        """Force update."""
+        return self._force_update
 
     def update(self):
         """Get the latest data from REST API and updates the state."""

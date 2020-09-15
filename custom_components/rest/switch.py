@@ -22,14 +22,17 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.reload import async_setup_reload_service
+
+from . import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
 
 CONF_BODY_OFF = "body_off"
 CONF_BODY_ON = "body_on"
 CONF_IS_ON_TEMPLATE = "is_on_template"
-CONF_RESOURCE_STATE="resource_state"
-CONF_RESOURCE_STATE_TEMPLATE="resource_state_template"
+CONF_STATE_RESOURCE = "state_resource"
+CONF_STATE_RESOURCE_TEMPLATE = "state_resource_template"
 
 DEFAULT_METHOD = "post"
 DEFAULT_BODY_OFF = "OFF"
@@ -44,8 +47,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Exclusive(CONF_RESOURCE, CONF_RESOURCE): cv.url,
         vol.Exclusive(CONF_RESOURCE_TEMPLATE, CONF_RESOURCE): cv.template,
-        vol.Exclusive(CONF_RESOURCE_STATE, CONF_RESOURCE_STATE): cv.string,
-        vol.Exclusive(CONF_RESOURCE_STATE_TEMPLATE, CONF_RESOURCE_STATE): cv.template,
+        vol.Exclusive(CONF_STATE_RESOURCE, CONF_STATE_RESOURCE): cv.string,
+        vol.Exclusive(CONF_STATE_RESOURCE_TEMPLATE, CONF_STATE_RESOURCE): cv.template,
         vol.Optional(CONF_HEADERS): vol.Schema({cv.string: cv.template}),
         vol.Optional(CONF_BODY_OFF, default=DEFAULT_BODY_OFF): cv.template,
         vol.Optional(CONF_BODY_ON, default=DEFAULT_BODY_ON): cv.template,
@@ -68,6 +71,9 @@ PLATFORM_SCHEMA = vol.All(
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the RESTful switch."""
+
+    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
+
     body_off = config.get(CONF_BODY_OFF)
     body_on = config.get(CONF_BODY_ON)
     is_on_template = config.get(CONF_IS_ON_TEMPLATE)
@@ -78,17 +84,17 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     password = config.get(CONF_PASSWORD)
     resource = config.get(CONF_RESOURCE)
     resource_template = config.get(CONF_RESOURCE_TEMPLATE)
-    resource_state = config.get(CONF_RESOURCE_STATE)
-    resource_state_template = config.get(CONF_RESOURCE_STATE_TEMPLATE)
+    state_resource = config.get(CONF_STATE_RESOURCE) or resource
+    state_resource_template = config.get(CONF_STATE_RESOURCE_TEMPLATE)
     verify_ssl = config.get(CONF_VERIFY_SSL)
 
     if resource_template is not None:
         resource_template.hass = hass
         resource = resource_template.async_render()
 
-    if resource_state_template is not None:
-        resource_state_template.hass = hass
-        resource_state = resource_state_template.async_render()
+    if state_resource_template is not None:
+        state_resource_template.hass = hass
+        state_resource = state_resource_template.async_render()
 
     if headers is not None:
         for header_template in headers.values():
@@ -111,8 +117,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             name,
             resource,
             resource_template,
-            resource_state,
-            resource_state_template,
+            state_resource,
+            state_resource_template,
             method,
             headers,
             auth,
@@ -145,8 +151,8 @@ class RestSwitch(SwitchEntity):
         name,
         resource,
         resource_template,
-        resource_state,
-        resource_state_template,
+        state_resource,
+        state_resource_template,
         method,
         headers,
         auth,
@@ -161,8 +167,8 @@ class RestSwitch(SwitchEntity):
         self._name = name
         self._resource = resource
         self._resource_template = resource_template
-        self._resource_state = resource_state
-        self._resource_state_template = resource_state_template
+        self._state_resource = state_resource
+        self._state_resource_template = state_resource_template
         self._method = method
         self._headers = headers
         self._auth = auth
@@ -257,16 +263,16 @@ class RestSwitch(SwitchEntity):
         """Get the latest data from REST API and update the state."""
         websession = async_get_clientsession(hass, self._verify_ssl)
 
-        resource_state = self._resource
+        state_resource = self._resource
 
         if self._resource_template is not None:
-            resource_state = self._resource_template.async_render()
+            state_resource = self._resource_template.async_render()
 
-        if self._resource_state is not None:
-            resource_state = self._resource_state
+        if self._state_resource is not None:
+            state_resource = self._state_resource
 
-        if self._resource_state_template is not None:
-            resource_state = self._resource_state_template.async_render()
+        if self._state_resource_template is not None:
+            state_resource = self._state_resource_template.async_render()
 
         headers = {}
         if self._headers:
@@ -275,7 +281,7 @@ class RestSwitch(SwitchEntity):
 
         with async_timeout.timeout(self._timeout):
             req = await websession.get(
-                resource_state, auth=self._auth, headers=headers
+                state_resource, auth=self._auth, headers=headers
             )
             text = await req.text()
 
@@ -283,7 +289,7 @@ class RestSwitch(SwitchEntity):
 
         if self._is_on_template is not None:
             text = self._is_on_template.async_render_with_possible_json_value(
-                text, "False"
+                text, "None"
             )
 
             _LOGGER.debug("Value after template rendering: %s", text)

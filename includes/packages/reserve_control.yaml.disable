@@ -9,6 +9,7 @@ group:
       - automation.sync_thermostat_temperature
       - automation.gas_counter
       - automation.system_start
+      - automation.system_entity_change
 #     - automation.system_error_counter
 #     - automation.system_warning_counter
       - automation.reset_system_counters

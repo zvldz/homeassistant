@@ -1,16 +1,7 @@
 weather:
-  - platform: openweathermap
-    api_key: !secret openweather_key
-    name: weather
   - platform: gismeteo
 
 sensor:
-  - platform: openweathermap
-    api_key: !secret openweather_key
-    language: ru
-    monitored_conditions:
-      - weather
-
   - platform: gismeteo
     forecast: true
     monitored_conditions:

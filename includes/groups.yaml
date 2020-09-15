@@ -11,3 +11,10 @@ living_room_spot_right:
     - light.living_room_spot_right_1
     - light.living_room_spot_right_2
     - light.living_room_spot_right_3
+
+persons:
+  name: "Persons"
+  entities:
+    - device_tracker.person1
+    - device_tracker.person2
+

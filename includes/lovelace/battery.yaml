@@ -15,11 +15,15 @@ cards:
           include:
             - entity_id: "*battery*"
               sort: name
+              options:
+                secondary_info: last-changed
             - attributes:
                 battery:  '< 100'
-            - attributes:
-                battery_level: '< 100'
-          exclude:
-            - entity_id: "*humidity*"
-            - entity_id: "*pressure*"
+              options:
+                secondary_info: last-changed
+#           - attributes:
+#               battery_level: '< 100'
+#         exclude:
+#           - entity_id: "*humidity*"
+#           - entity_id: "*pressure*"
 

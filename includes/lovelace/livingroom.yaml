@@ -17,7 +17,7 @@ cards:
             entity: light.living_room_lamp_ambilight
 
       - type: custom:button-card
-        name: "Spotting Group"
+        name: "Spots"
         styles:
           card:
             - background-color: "#203040"
@@ -31,12 +31,6 @@ cards:
             show_header_toggle: false
             entities:
               - group.living_room_spot_right
-
-      - type: custom:button-card
-        name: "Spots"
-        styles:
-          card:
-            - background-color: "#203040"
 
       - type: horizontal-stack
         cards:

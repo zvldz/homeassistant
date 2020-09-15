@@ -1,14 +1,7 @@
 - platform: broadlink
-  host: !secret broadlink_ip
   mac: !secret broadlink_mac
-# type: rm2_pro_plus
-  timeout: 15
   switches:
-    samsung_tv:
-      friendly_name: "Samsung TV Power"
+    - name: Samsung TV
       command_on: 'JgBGAJaTFDYVNxQ2FRIVERUSFREVEhU1FjYVNhUSFBIVEhQSFRISOBYSFBIVNhU2FRIVERU3FBEWNhU2FRIUEhU3FDYVEhUADQUAAA=='
       command_off: 'JgBGAJSWEzcUOBQ3FBIUERQTEhIUExI4EzkTNxUSExIUEhMSFBIUERQTExEVNxQ3FBITEhQ4EzcUOBM3FBITEhQ4EzcVEhMADQUAAA=='
-#   shield_tv:
-#     friendly_name: "Nvidia Shield TV Power"
-#     command_on: 'JgBIAAABJpMTEhMSExITERMSExITEhM2ExITNhM2EzYTNhM2FDYTEhI3EhMSNxISExITEhM2ExISExI3ExISNxI3EjcTEhM2EwANBQ=='
-#     command_off: 'JgBIAAABJ5MTEhITEhITEhMSEhITEhM2ExITNhM3EjcSNxI3EjcTEhM2ExITEhMSEhITEhM2ExISExI3EjcTNhM2EzcSEhM2EwANBQ=='
+

@@ -55,6 +55,6 @@
       event_type: entity_registry_updated
   action:
     - service: notify.telegram
-      data_template:
+      data:
         message: "\U00002747 {{ trigger.event.data.action | capitalize }}: {{ trigger.event.data.old_entity_id+'->' if trigger.event.data.old_entity_id is defined }}{{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }}"
 

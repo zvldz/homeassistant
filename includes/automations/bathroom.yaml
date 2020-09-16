@@ -142,7 +142,7 @@
       entity_id: timer.bathroom_fan
     - service: timer.start
       entity_id: timer.bathroom_fan
-      data_template:
+      data:
         duration: 00:05:00
 
 # Start HA

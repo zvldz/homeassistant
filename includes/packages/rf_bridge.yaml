@@ -65,7 +65,7 @@ automation:
         code: !secret rf1_code
     action:
       - service: python_script.set_state
-        data_template:
+        data:
           entity_id: binary_sensor.rf_br_3_sb_rf
           state: ON
       - service: notify.telegram

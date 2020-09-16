@@ -38,7 +38,7 @@ automation:
       value_template: "{{ is_state_attr('sensor.front_door_last_activity', 'recording_status', 'ready') }}"
     action:
       - service: downloader.download_file
-        data_template:
+        data:
           subdir: "ring_{{ now().strftime('%Y_%m_%d') }}"
           filename: "motion_{{ now().strftime('%Y_%m_%d_%H_%M') }}.mpg"
           overwrite: true

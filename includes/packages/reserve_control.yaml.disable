@@ -100,7 +100,7 @@ automation:
       - condition: template
         value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int) > 0 }}'
     action:
-      - service_template: >
+      - service: >
           {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}
             input_boolean.turn_on
           {% elif trigger.to_state.state == 'off' and trigger.from_state.state == 'on' %}
@@ -108,7 +108,7 @@ automation:
           {% else %}
             {{ trigger.to_state }}
           {% endif %}
-        data_template:
+        data:
           entity_id: "{{ trigger.entity_id | replace('sensor.ha1_', 'input_boolean.')}}"
 
   - alias: turn_off_automation
@@ -129,7 +129,7 @@ automation:
     action:
       - delay: 00:00:30
       - service: notify.telegram
-        data_template:
+        data:
           message: "\U00002747 {{ states.sensor.date_time.state }} | HA1 is now working. Return of control to main !!!"
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
@@ -148,7 +148,7 @@ automation:
         value_template: "{{ states.sensor.ha1_uptime is none }}"
     action:
       - service: notify.telegram
-        data_template:
+        data:
           message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
       - service: automation.turn_on
         entity_id: all
@@ -161,7 +161,7 @@ automation:
         for: "00:01:00"
     action:
       - service: notify.telegram
-        data_template:
+        data:
           message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
       - service: automation.turn_on
         entity_id: all
@@ -176,7 +176,7 @@ automation:
         below: 40
     action:
       - service: climate.set_temperature
-        data_template:
+        data:
           entity_id: climate.gas_boiler
           temperature: "{{ states('sensor.ha1_thermostat_temperature') | float }}"
 
@@ -188,7 +188,7 @@ script:
         count: "{{ states.group.sync_input_boolean.attributes.entity_id | count }}"
         sequence:
           - service: rest_command.ha1_set_input_boolean
-            data_template:
+            data:
               set_entity_id: "{{ states.group.sync_input_boolean.attributes.entity_id[repeat.index-1] | replace('sensor.ha1_', 'input_boolean.') }}"
               set_state: "{{ states(states.group.sync_input_boolean.attributes.entity_id[repeat.index-1] | replace('sensor.ha1_', 'input_boolean.'))}}"
 

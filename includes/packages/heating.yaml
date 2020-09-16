@@ -117,7 +117,7 @@ script:
     sequence:
       - service: shell_command.gas_boiler_on
       - service: python_script.set_state
-        data_template:
+        data:
           entity_id: sensor.thermostat_info
           state: '4'
 
@@ -126,7 +126,7 @@ script:
     sequence:
       - service: shell_command.gas_boiler_off
       - service: python_script.set_state
-        data_template:
+        data:
           entity_id: sensor.thermostat_info
           state: '3'
 
@@ -134,7 +134,7 @@ script:
     alias: "Sync gas counter with ha1"
     sequence:
       - service: input_number.set_value
-        data_template:
+        data:
           entity_id: input_number.gas_counter
           value: "{{ states('sensor.ha1_gas_counter') }}"
 
@@ -142,7 +142,7 @@ script:
     alias: "Sync gas counter with ha2"
     sequence:
       - service: input_number.set_value
-        data_template:
+        data:
           entity_id: input_number.gas_counter
           value: "{{ states('sensor.ha2_gas_counter') }}"
 
@@ -237,7 +237,7 @@ automation:
         seconds: 3
     action:
       - service: input_number.set_value
-        data_template:
+        data:
           entity_id: input_number.gas_counter
           value: "{{ (states.input_number.gas_counter.state|float + 0.01 ) | round(2) }}"
 

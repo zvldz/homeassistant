@@ -134,7 +134,7 @@
       entity_id: timer.wc_fan
     - service: timer.start
       entity_id: timer.wc_fan
-      data_template:
+      data:
         duration: 00:05:00
 
 # Start HA

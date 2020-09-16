@@ -27,7 +27,7 @@
   action:
     service: light.turn_on
     entity_id: light.balcony_strip
-    data_template:
+    data:
       brightness_pct: 20
 #     kelvin: 6500
 

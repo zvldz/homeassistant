@@ -19,7 +19,7 @@
         ringtone_id: 0
         ringtone_vol: 80
     - service: notify.telegram
-      data_template:
+      data:
         message: "\U0001F4A6 {{ trigger.from_state.attributes.friendly_name }}age !!!"
 
 - alias: "Water leakage fixed"
@@ -40,6 +40,6 @@
       data:
         gw_mac: !secret xgate_2_mac
     - service: notify.telegram
-      data_template:
+      data:
         message: "\U00002705 {{ trigger.from_state.attributes.friendly_name }}age fixed"
 

@@ -119,7 +119,7 @@ automation:
         state: 'on'
     action:
        - service: notify.telegram
-         data_template:
+         data:
            message: "Vacuum cleaner has finished cleaning and is returning to the base. Cleaning time: {{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time }} min. Total cleaning area: {{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area }} m²"
 
   - alias: "Vacuum Docked"
@@ -181,7 +181,7 @@ automation:
 #        from: 'Select Room'
 #    action:
 #      - service: script.turn_on
-#        data_template:
+#        data:
 #          entity_id: >
 #            {% if is_state("input_select.vacuum_room", "All Except Balcony") %}
 #             script.vacuum_all_except_balcony
@@ -200,7 +200,7 @@ automation:
 #            {% endif %}
 #      - service: input_select.select_option
 #        entity_id: input_select.vacuum_room
-#        data_template:
+#        data:
 #          option: 'Select Room'
 
   - alias: "Hallway Button Click Single"
@@ -344,7 +344,7 @@ script:
     alias: "Reset Main Brush"
     sequence:
       - service: vacuum.send_command
-        data_template:
+        data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: main_brush_work_time
@@ -353,7 +353,7 @@ script:
     alias: "Reset Side Brush"
     sequence:
       - service: vacuum.send_command
-        data_template:
+        data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: side_brush_work_time
@@ -362,7 +362,7 @@ script:
     alias: "Reset Filter"
     sequence:
       - service: vacuum.send_command
-        data_template:
+        data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: filter_work_time
@@ -371,7 +371,7 @@ script:
     alias: "Reset Sensor"
     sequence:
       - service: vacuum.send_command
-        data_template:
+        data:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: sensor_dirty_time

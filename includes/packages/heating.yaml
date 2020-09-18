@@ -190,9 +190,9 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: time
-        at: '06:00:00'
-      - platform: time
-        at: '17:00:00'
+        at:
+          - '06:00:00'
+          - '17:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule
@@ -210,9 +210,9 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: time
-        at: '09:15:00'
-      - platform: time
-        at: '00:00:00'
+        at:
+          - '09:15:00'
+          - '00:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule

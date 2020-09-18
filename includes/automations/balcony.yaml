@@ -35,9 +35,9 @@
   initial_state: 'on'
   trigger:
     - platform: time
-      at: '00:15:00'
-    - platform: time
-      at: '01:15:00'
+      at:
+        - '00:15:00'
+        - '01:15:00'
   action:
     service: light.turn_off
     entity_id: light.balcony_strip

@@ -123,11 +123,10 @@
   initial_state: 'on'
   trigger:
     - platform: time
-      at: '07:45'
-    - platform: time
-      at: '13:00'
-    - platform: time
-      at: '18:00'
+      at:
+        - '07:45'
+        - '13:00'
+        - '18:00'
   condition:
     - condition: state
       entity_id: input_boolean.auto_fan

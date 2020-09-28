@@ -1,6 +1,6 @@
 # System start
 - alias: system_start
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: homeassistant
     event: start
@@ -10,7 +10,7 @@
 
 # Errors counter
 - alias: system_error_counter
-  initial_state: 'on'
+  initial_state: true
   mode: queued
   trigger:
     platform: event
@@ -23,7 +23,7 @@
 
 # Warning counter
 - alias: system_warning_counter
-  initial_state: 'on'
+  initial_state: true
   mode: queued
   trigger:
     platform: event
@@ -35,7 +35,7 @@
     entity_id: counter.warning_counter
 
 - alias: reset_system_counters
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: time
       at: '00:00:02'
@@ -44,11 +44,8 @@
 #     entity_id: counter.warning_counter, counter.error_counter, counter.restart_counter
       entity_id: counter.restart_counter
 
-# ##################################
-# System - Entity Change
-# ##################################
 - alias: system_entity_change
-  initial_state: 'on'
+  initial_state: true
   mode: parallel
   trigger:
     - platform: event

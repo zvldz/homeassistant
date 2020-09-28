@@ -1,5 +1,5 @@
 - alias: "Set brightness for lamp in living room"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: state
     entity_id: light.living_room_lamp
@@ -17,7 +17,7 @@
         kelvin: 4000
 
 - alias: "Livingroom switch left"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
@@ -30,7 +30,7 @@
       - group.living_room_spot_left
 
 - alias: "Livingroom switch right"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
@@ -43,7 +43,7 @@
       - group.living_room_spot_right
 
 - alias: "Livingroom switch left long"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
@@ -56,7 +56,7 @@
       - group.living_room_spot_left
 
 - alias: "Livingroom switch right long"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
@@ -69,7 +69,7 @@
       - group.living_room_spot_right
 
 - alias: "Livingroom switch both"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
@@ -83,7 +83,7 @@
       - group.living_room_spot_left
 
 - alias: "Livingroom switch both long"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click

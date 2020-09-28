@@ -149,10 +149,10 @@ script:
 
 automation:
   - alias: "Time Pump Off"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
-        at: '09:00'
+        at: '09:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.pump_schedule
@@ -162,10 +162,10 @@ automation:
         entity_id: switch.sonoff_pump_relay
 
   - alias: "Time Pump On"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
-        at: '16:30'
+        at: '16:30:00'
     condition:
       - condition: state
         entity_id: input_boolean.pump_schedule
@@ -174,12 +174,17 @@ automation:
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
 
+# cond state on
   - alias: "Turn off heating if kitchen temp above 23"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: numeric_state
         entity_id: sensor.temperature_158d0002ca0395
         above: 23
+    condition:
+      - condition: state
+        entity_id: switch.gas_boiler
+        state: 'on'
     action:
       - service: switch.turn_off
         entity_id:
@@ -187,7 +192,7 @@ automation:
           - switch.sonoff_pump_relay
 
   - alias: "Set temperature to 20.5 on schedule"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
         at:
@@ -207,7 +212,7 @@ automation:
         entity_id: switch.sonoff_pump_relay
 
   - alias: "Set temperature to 17 on schedule"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
         at:
@@ -227,7 +232,7 @@ automation:
         entity_id: switch.sonoff_pump_relay
 
   - alias: gas_counter
-    initial_state: 'true'
+    initial_state: true
     trigger:
       platform: state
       entity_id: binary_sensor.door_window_sensor_158d00039461dd

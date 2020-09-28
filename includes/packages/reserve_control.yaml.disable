@@ -86,6 +86,7 @@ rest_command:
 
 automation:
   - alias: sync_input_boolean
+    initial_state: true
     trigger:
       - platform: state
 #       entity_id: group.sync_input_boolean # not working
@@ -112,7 +113,7 @@ automation:
           entity_id: "{{ trigger.entity_id | replace('sensor.ha1_', 'input_boolean.')}}"
 
   - alias: turn_off_automation
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: homeassistant
         event: start
@@ -121,7 +122,7 @@ automation:
         entity_id: script.turn_off_most_automation
 
   - alias: ha1_server_on_return_control
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: sensor.ha1_uptime
@@ -137,7 +138,7 @@ automation:
         entity_id: script.turn_off_most_automation
 
   - alias: check_ha1_on_start
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: homeassistant
         event: start

@@ -17,7 +17,7 @@
   name: "HA Init"
   command: 'cat /config/home-assistant.log | grep -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" | grep -o "[0-9]\+.[0-9]\+$" || echo -1'
   scan_interval: 180
-  unit_of_measurement: "сек"
+  unit_of_measurement: "sec"
 
 - platform: version
   name: "HA Current"

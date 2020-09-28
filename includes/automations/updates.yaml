@@ -1,5 +1,5 @@
 - alias: "HACS Persistent Notification"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: numeric_state
     entity_id: sensor.hacs
@@ -14,7 +14,7 @@
           {% endfor %}
 
 - alias: "HA Persistent Notification"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.update_available

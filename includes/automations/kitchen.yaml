@@ -1,7 +1,7 @@
 # Kitchen
 # Light
 - alias: "Turn on light in Kitchen on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.motion_sensor_158d00022515fe
@@ -18,7 +18,7 @@
       entity_id: switch.wall_switch_ln_158d000211434a
 
 - alias: "Turn on Kitchen timer"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_158d000211434a
@@ -30,7 +30,7 @@
       entity_id: timer.kitchen_light
 
 - alias: "Reset Kitchen timer"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: event
       event_type: xiaomi_aqara.motion
@@ -47,7 +47,7 @@
       entity_id: timer.kitchen_light
 
 - alias: "Turn off light in Kitchen"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: event
       event_type: timer.finished
@@ -67,7 +67,7 @@
       entity_id: light.kitchen_lamp
 
 - alias: "Turn off Kitchen timer"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_158d000211434a
@@ -78,7 +78,7 @@
 
 # Brightness
 - alias: "Set brightness for lamp in kitchen"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: state
     entity_id: light.kitchen_lamp
@@ -97,7 +97,7 @@
 
 # Start HA
 - alias: "Start Kitchen timer if not starting"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: homeassistant
       event: start

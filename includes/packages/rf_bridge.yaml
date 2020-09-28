@@ -54,7 +54,7 @@ binary_sensor:
 
 automation:
   - alias: "rf_br3_sb_rf"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       platform: event
       event_type: esphome.rf_code_received

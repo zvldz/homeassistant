@@ -21,7 +21,7 @@ downloader:
 
 automation:
   - alias: "Ring DoorBell"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       platform: state
       entity_id: binary_sensor.front_door_ding
@@ -32,7 +32,7 @@ automation:
           message: "\U0001F515 The doorbell rings !!!"
 
   - alias: "Ring Video Download"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       platform: template
       value_template: "{{ is_state_attr('sensor.front_door_last_activity', 'recording_status', 'ready') }}"

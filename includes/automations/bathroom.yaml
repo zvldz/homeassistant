@@ -1,7 +1,7 @@
 # Bathroom
 # Light
 - alias: "Turn on light in Bathroom on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.door_window_sensor_158d0002fd4381
@@ -23,7 +23,7 @@
 #     entity_id: timer.bathroom_light
 
 - alias: "Turn on Bathroom timer"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_left_158d00022a8150
@@ -35,7 +35,7 @@
       entity_id: timer.bathroom_light
 
 - alias: "Reset Bathroom timer on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.door_window_sensor_158d0002fd4381
@@ -55,7 +55,7 @@
       entity_id: timer.bathroom_light
 
 - alias: "Turn off light in Bathroom on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: event
       event_type: timer.finished
@@ -76,7 +76,7 @@
       entity_id: switch.wall_switch_ln_left_158d00022a8150
 
 - alias: "Turn off Bathroom timer if light is off"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_left_158d00022a8150
@@ -87,7 +87,7 @@
 
 # FAN
 - alias: "Turn off Bathroom fan"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.sonoff_br_relay_1
@@ -103,7 +103,7 @@
       entity_id: timer.bathroom_fan
 
 - alias: "Turn on Bathroom fan"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.sonoff_br_relay_1
@@ -120,7 +120,7 @@
       entity_id: timer.bathroom_fan
 
 - alias: "Turn on Bathroom fan on schedule"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: time
       at:
@@ -146,7 +146,7 @@
 
 # Start HA
 - alias: "Start Bathroom timer if not starting"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: homeassistant
       event: start
@@ -159,7 +159,7 @@
       entity_id: timer.bathroom_light
 
 - alias: "Start Bathroom fan timer if not starting"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: homeassistant
       event: start

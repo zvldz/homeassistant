@@ -1,5 +1,5 @@
 - alias: "Switch balcony"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: event
       event_type: xiaomi_aqara.click
@@ -19,7 +19,7 @@
       - switch.wall_switch_ln_158d0002114338
 
 - alias: "Turn led strip on balcony"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: sun
     event: sunset
@@ -32,7 +32,7 @@
 #     kelvin: 6500
 
 - alias: "Turn off led strip on balcony"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: time
       at:

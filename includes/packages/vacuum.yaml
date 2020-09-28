@@ -52,10 +52,10 @@ sensor:
 
 automation:
   - alias: "Vacuum Time Clean 1"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
-        at: '13:00'
+        at: '13:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.vacuum_schedule
@@ -73,10 +73,10 @@ automation:
         entity_id: script.vacuum_all_except_balcony
 
   - alias: "Vacuum Time Clean 2"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: time
-        at: '13:00'
+        at: '13:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.vacuum_schedule
@@ -93,7 +93,7 @@ automation:
         entity_id: script.vacuum_living_room
 
   - alias: "Vacuum Cleaning"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
@@ -108,7 +108,7 @@ automation:
           message: "Vacuum cleaner started cleaning"
 
   - alias: "Vacuum Returning"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
@@ -123,7 +123,7 @@ automation:
            message: "Vacuum cleaner has finished cleaning and is returning to the base. Cleaning time: {{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaning_time }} min. Total cleaning area: {{ states.vacuum.xiaomi_vacuum_cleaner.attributes.cleaned_area }} m²"
 
   - alias: "Vacuum Docked"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: vacuum.xiaomi_vacuum_cleaner
@@ -138,7 +138,7 @@ automation:
           message: "Vacuum cleaner docked and charging."
 
   - alias: "Vacuum Cleaner Error"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: sensor.vacuum_cleaner_status_sensor
@@ -160,7 +160,7 @@ automation:
             {% endif %}
 
   - alias: "Vacuum Cleaner Error Solved"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       - platform: state
         entity_id: sensor.vacuum_cleaner_error_sensor
@@ -174,7 +174,7 @@ automation:
           message: "Vacuum cleaner error solved"
 
 #  - alias: "Start Cleaning Room"
-#    initial_state: 'on'
+#    initial_state: true
 #    trigger:
 #      - platform: state
 #        entity_id: input_select.vacuum_room
@@ -204,7 +204,7 @@ automation:
 #          option: 'Select Room'
 
   - alias: "Hallway Button Click Single"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       platform: event
       event_type: xiaomi_aqara.click
@@ -216,7 +216,7 @@ automation:
         entity_id: script.vacuum_entryway
 
   - alias: "Hallway Button Click Double"
-    initial_state: 'on'
+    initial_state: true
     trigger:
       platform: event
       event_type: xiaomi_aqara.click

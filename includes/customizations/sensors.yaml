@@ -19,6 +19,15 @@ sensor.ha_beta:
 sensor.last_boot:
   friendly_name: "Host Uptime"
 
+sensor.ha1_uptime:
+  friendly_name: HA1 Uptime
+
+sensor.ha2_uptime:
+  friendly_name: HA2 Uptime
+
+sensor.ha_fazenda_uptime:
+  friendly_name: HA Fazenda Uptime
+
 binary_sensor.door_window_sensor_158d00024de627:
   friendly_name: "WC Door"
 

@@ -1,5 +1,5 @@
 - alias: ha1_server_off
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: sensor.ha1_uptime
@@ -11,7 +11,7 @@
         message: "\U00002620 {{ states.sensor.date_time.state }} | HA1 is not working"
 
 - alias: ha1_server_on
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: sensor.ha1_uptime
@@ -22,7 +22,7 @@
         message: "\U00002705 {{ states.sensor.date_time.state }} | HA1 is now working"
 
 - alias: ha2_server_off
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: sensor.ha2_uptime
@@ -34,7 +34,7 @@
         message: "\U00002620 {{ states.sensor.date_time.state }} | HA2 is not working"
 
 - alias: ha2_server_on
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: sensor.ha2_uptime

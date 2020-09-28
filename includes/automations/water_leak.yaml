@@ -1,5 +1,5 @@
 - alias: "Water leakage"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: state
     entity_id:
@@ -23,7 +23,7 @@
         message: "\U0001F4A6 {{ trigger.from_state.attributes.friendly_name }}age !!!"
 
 - alias: "Water leakage fixed"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     platform: state
     entity_id:

@@ -1,7 +1,7 @@
 # WC
 # Light
 - alias: "Turn on light in WC on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.door_window_sensor_158d00024de627
@@ -23,7 +23,7 @@
 #     entity_id: timer.wc_light
 
 - alias: "Turn on WC timer"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_158d00022360fe
@@ -35,7 +35,7 @@
       entity_id: timer.wc_light
 
 - alias: "Reset WC timer on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: binary_sensor.door_window_sensor_158d00024de627
@@ -55,7 +55,7 @@
       entity_id: timer.wc_light
 
 - alias: "Turn off light in WC on conditions"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: event
       event_type: timer.finished
@@ -76,7 +76,7 @@
       entity_id: switch.wall_switch_ln_158d00022360fe
 
 - alias: "Turn off wc timer if light is off"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.wall_switch_ln_158d00022360fe
@@ -87,7 +87,7 @@
 
 # FAN
 - alias: "Turn off WC fan"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.sonoff_wc_relay
@@ -103,7 +103,7 @@
       entity_id: timer.wc_fan
 
 - alias: "Turn on WC fan"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: state
       entity_id: switch.sonoff_wc_relay
@@ -115,7 +115,7 @@
       entity_id: timer.wc_fan
 
 - alias: "Turn on WC fan on schedule"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: time
       at:
@@ -138,7 +138,7 @@
 
 # Start HA
 - alias: "Start WC timer if not starting"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: homeassistant
       event: start
@@ -151,7 +151,7 @@
       entity_id: timer.wc_light
 
 - alias: "Start WC fan timer if not starting"
-  initial_state: 'on'
+  initial_state: true
   trigger:
     - platform: homeassistant
       event: start

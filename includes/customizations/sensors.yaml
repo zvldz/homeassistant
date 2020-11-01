@@ -256,7 +256,7 @@ sensor.sonoff_pump_current:
 sensor.sonoff_pump_daily_energy:
   friendly_name: "Pump DE"
 
-binary_sensor.door_window_sensor_158d00039461dd:
+binary_sensor.door_window_sensor_158d000393f29a:
   friendly_name: "Gas Counter Sensor"
   icon: "mdi:fire"
 
@@ -320,7 +320,7 @@ sensor.battery_158d0002fd4381:
 sensor.battery_158d00032b7db7:
   friendly_name: "Entrance Door"
 
-sensor.battery_158d00039461dd:
+sensor.battery_158d000393f29a:
   friendly_name: "Gas Counter"
 
 sensor.battery_158d0004466f8f:

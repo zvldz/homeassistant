@@ -12,7 +12,7 @@ cards:
       - type: entities
         entities:
           - input_number.gas_counter
-          - binary_sensor.door_window_sensor_158d00039461dd
+          - binary_sensor.door_window_sensor_158d000393f29a
 
       - type: horizontal-stack
         cards:

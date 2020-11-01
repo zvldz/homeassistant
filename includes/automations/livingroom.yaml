@@ -13,8 +13,8 @@
     - service: yeelight.set_color_temp_scene
       data:
         entity_id: light.living_room_lamp
-        brightness: 60
-        kelvin: 4000
+        brightness: 75
+        kelvin: 3000
 
 - alias: "Livingroom switch left"
   initial_state: true
@@ -95,5 +95,4 @@
     entity_id:
       - group.living_room_spot_right
       - group.living_room_spot_left
-
 

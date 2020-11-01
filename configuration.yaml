@@ -131,6 +131,7 @@ device_tracker:
 telegram_bot:
   - platform: polling
     api_key: !secret telegram_bot_api_key
+    parse_mode: html
     allowed_chat_ids:
       - !secret telegram_bot_allowed_chat_id1
 

@@ -148,11 +148,11 @@ notify:
 #        data:
 #          mac: !secret livingroom_tv_mac
 
-sonoff:
-  username: !secret sonoff_username
-  password: !secret sonoff_password
-  mode: local
-  reload: always
+#sonoff:
+#  username: !secret sonoff_username
+#  password: !secret sonoff_password
+#  mode: local
+#  reload: always
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors

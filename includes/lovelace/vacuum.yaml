@@ -136,13 +136,13 @@ cards:
       - type: 'custom:valetudo-map-card'
         entity: sensor.xiaomi_map
         rotate: -1
-        map_scale: 1.4
+        map_scale: 1.3
         min_height: 0
         crop:
-          top: 130
-          bottom: -100
-          left: 180
-          right: -200
+          top: 20
+          bottom: -10
+          left: 20
+          right: -20
 
       - type: entities
         show_header_toggle: false

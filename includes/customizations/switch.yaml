@@ -70,6 +70,8 @@ switch.sonoff_rf_br_1_gate2:
 switch.sonoff_pump_relay:
   friendly_name: "Pump"
 
-switch.gas_boiler:
+switch.esp_boiler_relay:
   friendly_name: "Boiler"
+  icon: "mdi:water-boiler"
+
 

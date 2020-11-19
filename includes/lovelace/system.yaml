@@ -41,6 +41,23 @@ cards:
               action: call-service
               service: script.warning_reset
 
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Voltage"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.sonoff_pump_voltage
+              - entity: sensor.bw_plug_1_voltage
+                color: red
+
   - type: vertical-stack
     cards:
       - type: custom:button-card
@@ -84,6 +101,76 @@ cards:
             hour24: true
             entities:
               - entity: sensor.disk_use_percent
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Gas"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - input_number.gas_counter
+          - binary_sensor.door_window_sensor_158d000393f29a
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            name: "Sync with HA1"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha1
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha1
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+          - type: custom:button-card
+            name: "Sync with HA2"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha2
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha2
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            hour24: true
+            points_per_hour: 1
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_hourly
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            hours_to_show: 720
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_monthly
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            hours_to_show: 720
+            unit: "㎥"
+            entities:
+              - entity: sensor.gas_yearly
 
   - type: conditional
     conditions:

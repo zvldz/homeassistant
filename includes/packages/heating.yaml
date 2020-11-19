@@ -1,5 +1,3 @@
-python_script:
-
 input_boolean:
   pump_schedule:
     name: "Pump work on schedule (Winter)"
@@ -7,14 +5,6 @@ input_boolean:
   gas_boiler_schedule:
     name: "Boiler work on schedule (Winter)"
     icon: "mdi:timer-outline"
-
-input_text:
-  tessla_user:
-    initial: !secret tessla_user
-  tessla_pass:
-    initial: !secret tessla_pass
-  tessla_device_id:
-    initial: !secret tessla_device_id
 
 input_number:
   gas_counter:
@@ -27,7 +17,7 @@ input_number:
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
-    heater: switch.gas_boiler
+    heater: switch.esp_boiler_relay
     target_sensor: sensor.temperature_158d000231f03e
     ac_mode: false
     min_temp: 15
@@ -39,44 +29,6 @@ climate:
       minutes: 5
 
 sensor:
-  - platform: template
-    sensors:
-      thermostat_current_temp:
-        friendly_name: "T Current"
-        value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_2') }}"
-        unit_of_measurement: '°C'
-      thermostat_set_temp:
-        friendly_name: "T Required"
-        value_template: "{{ state_attr('sensor.thermostat_info', 'TEMPERATURE_1') }}"
-        unit_of_measurement: "°C"
-      thermostat_reley_status:
-        friendly_name: "T Rele"
-        value_template: >
-          {% if is_state('sensor.thermostat_info', '4') %}
-            ON
-          {% elif is_state('sensor.thermostat_info', '3') %}
-            OFF
-          {% elif is_state('sensor.thermostat_info', '2') %}
-            DISABLED
-          {% else %}
-            UNKNOWN
-          {% endif %}
-
-# RELE - status of reley. 2 - disabled. 3 - turn off, 4 - turn on
-# ACTIVE - status of device. null - disabled, 5 - enabled
-
-  - platform: command_line
-    name: thermostat_info
-    command_timeout: 30
-    scan_interval: 60
-    value_template: "{{ value_json.RELE }}"
-    json_attributes:
-      - TEMPERATURE_1
-      - TEMPERATURE_2
-      - RELE
-      - ACTIVE
-    command: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --status"
-
   - platform: rest
     resource_template: "{{ states('input_text.ha1_url') }}api/states/input_number.gas_counter"
     name: ha1_gas_counter
@@ -91,36 +43,21 @@ sensor:
       authorization: !secret ha2_token
     value_template: "{{ value_json.state }}"
 
-
-switch:
   - platform: template
-    switches:
-      gas_boiler:
-        value_template: "{{ is_state('sensor.thermostat_reley_status', 'ON') }}"
-        availability_template: "{{ is_state('sensor.thermostat_reley_status', 'ON') or is_state('sensor.thermostat_reley_status', 'OFF')}}"
-        turn_on:
-          service: script.turn_on
-          data:
-            entity_id: script.gas_boiler_turn_on
-        turn_off:
-          service: script.turn_on
-          data:
-            entity_id: script.gas_boiler_turn_off
+    sensors:
+      living_room_trv_calibration:
+        value_template: "{{ state_attr('climate.living_room_trv_climate', 'local_temperature_calibration') }}"
+        unit_of_measurement: "°C"
 
-shell_command:
-  gas_boiler_on: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --set-temp=23"
-  gas_boiler_off: "/config/bin/tessla.sh --login={{ states('input_text.tessla_user') }} --password={{ states('input_text.tessla_pass') }} --device-id={{ states('input_text.tessla_device_id') }} --set-temp=15"
+      master_bedroom_trv_calibration:
+        value_template: "{{ state_attr('climate.master_bedroom_trv_climate', 'local_temperature_calibration') }}"
+        unit_of_measurement: "°C"
+
+      bedroom_trv_calibration:
+        value_template: "{{ state_attr('climate.bedroom_trv_climate', 'local_temperature_calibration') }}"
+        unit_of_measurement: "°C"
 
 script:
-  gas_boiler_turn_on:
-    alias: "Gas Boiler Turn On"
-    sequence:
-      - service: shell_command.gas_boiler_on
-      - service: python_script.set_state
-        data:
-          entity_id: sensor.thermostat_info
-          state: '4'
-
   gas_boiler_turn_off:
     alias: "Gas Boiler Turn Off"
     sequence:
@@ -145,6 +82,50 @@ script:
         data:
           entity_id: input_number.gas_counter
           value: "{{ states('sensor.ha2_gas_counter') }}"
+
+  # Author @Enzokot
+  auto_local_temperature_calibration_trv:
+    alias: "Automatic calibration of local temperature of TRV"
+    icon: mdi:hydraulic-oil-temperature
+    mode: parallel
+    fields:
+      namevalve:
+        description: 'FRIENDLY_NAME from z2m'
+        example: 'Bedroom TRV'
+      objectvalve:
+        description: "Climate domain object name"
+        example: 'climate.bedroom_trv_climate'
+      objectvalvewindow:
+        description: "Object name of window sensor"
+        example: 'switch.bedroom_trv_window_detection'
+      objectsensortemperature:
+        description: "Object name of external temperature sensor"
+        example: 'sensor.bedroom_temperature'
+    sequence:
+      - variables:
+          calibration_local: >
+            {{  128 + ((states(objectsensortemperature) | float
+              - state_attr(objectvalve, 'local_temperature') | float) / 0.5) | round(0) * 0.5
+              + state_attr(objectvalve, 'local_temperature_calibration') | float
+            }}
+          calibration_local_condition: >
+            {{ 128 + ((states(objectsensortemperature) | float
+              - state_attr(objectvalve, 'local_temperature') | float) / 0.5) | round(0) * 0.5
+            }}
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: >-
+              {{ calibration_local_condition != 0
+                and is_state(objectvalvewindow, 'off')
+                and states(objectsensortemperature) not in ['unavailable', 'unknown', '']
+                and state_attr(objectvalve, 'local_temperature')  not in ['unavailable', 'unknown', '']
+              }}
+          sequence:
+            - service: mqtt.publish
+              data:
+                topic: "zigbee2mqtt/{{- namevalve -}}/set/local_temperature_calibration"
+                payload: '{{ calibration_local }}'
 
 
 automation:
@@ -174,7 +155,6 @@ automation:
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
 
-# cond state on
   - alias: "Turn off heating if kitchen temp above 23"
     initial_state: true
     trigger:
@@ -183,12 +163,12 @@ automation:
         above: 23
     condition:
       - condition: state
-        entity_id: switch.gas_boiler
+        entity_id: switch.esp_boiler_relay
         state: 'on'
     action:
       - service: switch.turn_off
         entity_id:
-          - switch.gas_boiler
+          - switch.esp_boiler_relay
           - switch.sonoff_pump_relay
 
   - alias: "Set temperature to 20.5 on schedule"
@@ -245,6 +225,32 @@ automation:
         data:
           entity_id: input_number.gas_counter
           value: "{{ (states.input_number.gas_counter.state|float + 0.01 ) | round(2) }}"
+
+  - alias: auto_local_temperature_calibration_trv
+    initial_state: 'true'
+    trigger:
+      - platform: time_pattern
+        minutes: "/30"
+    action:
+      - service: script.auto_local_temperature_calibration_trv
+        data:
+          namevalve: 'living_room_trv'
+          objectvalve: 'climate.living_room_trv_climate'
+          objectvalvewindow: 'switch.living_room_trv_window_detection'
+          objectsensortemperature: 'sensor.temperature_158d0002bfe958'
+      - service: script.auto_local_temperature_calibration_trv
+        data:
+          namevalve: 'master_bedroom_trv'
+          objectvalve: 'climate.master_bedroom_trv_climate'
+          objectvalvewindow: 'switch.master_bedroom_trv_window_detection'
+          objectsensortemperature: 'sensor.temperature_158d0002323856'
+      - service: script.auto_local_temperature_calibration_trv
+        data:
+          namevalve: 'bedroom_trv'
+          objectvalve: 'climate.bedroom_trv_climate'
+          objectvalvewindow: 'switch.bedroom_trv_window_detection'
+          objectsensortemperature: 'sensor.temperature_158d0001ab2a27'
+
 
 utility_meter:
   gas_hourly:

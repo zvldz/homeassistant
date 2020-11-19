@@ -1,7 +1,7 @@
 import logging
 
 import voluptuous as vol
-from homeassistant.const import STATE_UNKNOWN
+from homeassistant.config import DATA_CUSTOMIZE
 from homeassistant.core import HomeAssistant, Event
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -11,11 +11,10 @@ from homeassistant.util import sanitize_filename
 
 from .core import utils
 from .core.gateway3 import Gateway3
+from .core.utils import DOMAIN
 from .core.xiaomi_cloud import MiCloud
 
 _LOGGER = logging.getLogger(__name__)
-
-DOMAIN = 'xiaomi_gateway3'
 
 CONF_DEVICES = 'devices'
 CONF_DEBUG = 'debug'
@@ -47,6 +46,8 @@ async def async_setup(hass: HomeAssistant, hass_config: dict):
     hass.data[DOMAIN] = {'config': config}
 
     await _handle_device_remove(hass)
+
+    # utils.migrate_unique_id(hass)
 
     return True
 
@@ -160,6 +161,7 @@ async def _handle_device_remove(hass: HomeAssistant):
             gw_device = gw.get_device(mac)
             if not gw_device:
                 continue
+            _LOGGER.debug(f"{gw.host} | Remove device: {gw_device['did']}")
             gw.miio.send('remove_device', [gw_device['did']])
             break
 
@@ -170,7 +172,8 @@ async def _handle_device_remove(hass: HomeAssistant):
 
 
 class Gateway3Device(Entity):
-    _state = STATE_UNKNOWN
+    _ignore_offline = None
+    _state = None
 
     def __init__(self, gateway: Gateway3, device: dict, attr: str):
         self.gw = gateway
@@ -185,11 +188,26 @@ class Gateway3Device(Entity):
 
         self.entity_id = f"{DOMAIN}.{self._unique_id}"
 
+    def debug(self, message: str):
+        _LOGGER.debug(f"{self.entity_id} | {message}")
+
     async def async_added_to_hass(self):
-        if 'init' in self.device:
+        """Also run when rename entity_id"""
+        custom: dict = self.hass.data[DATA_CUSTOMIZE].get(self.entity_id)
+        self._ignore_offline = custom.get('ignore_offline')
+
+        if 'init' in self.device and self._state is None:
             self.update(self.device['init'])
 
         self.gw.add_update(self.device['did'], self.update)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Also run when rename entity_id"""
+        self.gw.remove_update(self.device['did'], self.update)
+
+    # @property
+    # def entity_registry_enabled_default(self):
+    #     return False
 
     @property
     def should_poll(self) -> bool:
@@ -205,7 +223,7 @@ class Gateway3Device(Entity):
 
     @property
     def available(self) -> bool:
-        return self.device.get('online', True)
+        return self.device.get('online', True) or self._ignore_offline
 
     @property
     def device_info(self):

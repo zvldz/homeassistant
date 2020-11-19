@@ -1,6 +1,51 @@
-title: "Air Conditioner"
-icon: "mdi:air-conditioner"
+title: "Climate"
+icon: "mdi:radiator"
 cards:
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Gas Thermostat"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:simple-thermostat
+            entity: climate.gas_boiler
+            name: false
+            sensors:
+              - entity: sensor.temperature_158d0002bfe958
+              - entity: sensor.temperature_158d0002323856
+              - entity: sensor.temperature_158d0001ab2a27
+              - entity: sensor.temperature_158d0002ca0395
+              - entity: sensor.temperature_158d00027300cc
+              - entity: sensor.nodemcu_3_outdoor_temperature
+            control:
+              hvac:
+                some_mode: false
+                another_mode: false
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            entity: switch.sonoff_pump_relay
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.esp_boiler_relay
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - input_boolean.pump_schedule
+          - input_boolean.gas_boiler_schedule
 
   - type: vertical-stack
     cards:
@@ -10,16 +55,39 @@ cards:
           card:
             - background-color: "#203040"
 
-#     - type: thermostat
-#       entity: climate.midea_ac_813900000011
-
       - type: custom:simple-thermostat
         entity: climate.midea_ac_813900000011
-        name: false
+        name: "A/C"
+        icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0002bfe958
           - entity: sensor.living_room_bt_temperature
           - entity: sensor.humidity_158d0002bfe958
+
+      - type: custom:simple-thermostat
+        entity: climate.living_room_trv_climate
+        name: false
+        sensors:
+          - entity: sensor.temperature_158d0002bfe958
+        control:
+#         hvac: true
+          preset:
+            none: false
+
+      - type: gauge
+        name: Positions
+        unit: '%'
+        entity: sensor.living_room_trv_position
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - lock.living_room_trv_child_lock
+          - sensor.living_room_trv_linkquality
+          - switch.living_room_trv_valve_detection
+          - switch.living_room_trv_window_detection
+          - sensor.living_room_trv_position
+          - sensor.living_room_trv_calibration
 
   - type: vertical-stack
     cards:
@@ -29,15 +97,38 @@ cards:
           card:
             - background-color: "#203040"
 
-#     - type: thermostat
-#       entity: climate.midea_ac_823900000011
-
       - type: custom:simple-thermostat
         entity: climate.midea_ac_823900000011
-        name: false
+        name: "A/C"
+        icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0002323856
           - entity: sensor.humidity_158d0002323856
+
+      - type: custom:simple-thermostat
+        entity: climate.master_bedroom_trv_climate
+        name: false
+        sensors:
+          - entity: sensor.temperature_158d0002323856
+        control:
+#         hvac: true
+          preset:
+            none: false
+
+      - type: gauge
+        name: Positions
+        unit: '%'
+        entity: sensor.master_bedroom_trv_position
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - lock.master_bedroom_trv_child_lock
+          - sensor.master_bedroom_trv_linkquality
+          - switch.master_bedroom_trv_valve_detection
+          - switch.master_bedroom_trv_window_detection
+          - sensor.master_bedroom_trv_position
+          - sensor.master_bedroom_trv_calibration
 
   - type: vertical-stack
     cards:
@@ -47,12 +138,36 @@ cards:
           card:
             - background-color: "#203040"
 
-#     - type: thermostat
-#       entity: climate.midea_ac_e0470000000f
-
       - type: custom:simple-thermostat
         entity: climate.midea_ac_e0470000000f
-        name: false
+        name: "A/C"
+        icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0001ab2a27
           - entity: sensor.humidity_158d0001ab2a27
+
+      - type: custom:simple-thermostat
+        entity: climate.bedroom_trv_climate
+        name: false
+        sensors:
+          - entity: sensor.temperature_158d0001ab2a27
+        control:
+#         hvac: true
+          preset:
+            none: false
+
+      - type: gauge
+        name: Positions
+        unit: '%'
+        entity: sensor.bedroom_trv_position
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - lock.bedroom_trv_child_lock
+          - sensor.bedroom_trv_linkquality
+          - switch.bedroom_trv_valve_detection
+          - switch.bedroom_trv_window_detection
+          - sensor.bedroom_trv_position
+          - sensor.bedroom_trv_calibration
+

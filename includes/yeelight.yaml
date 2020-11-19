@@ -30,3 +30,75 @@ devices:
 #   model: strip1
 #   model: RGBW
 #   use_music_mode: true
+custom_effects:
+  - name: 'Lightning'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 50, 0]
+        - SleepTransition:       [3000]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 50, 0]
+        - SleepTransition:       [1500]
+  - name: 'Flicker'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - SleepTransition:       [3000]
+  - name: 'Flicker2'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - SleepTransition:       [3000]
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 500, 0]
+        - TemperatureTransition: [6500, 50, 80]
+  - name: 'FlickerScare'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - SleepTransition:       [3000]
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 50, 0]
+        - TemperatureTransition: [6500, 50, 50]
+        - TemperatureTransition: [6500, 500, 0]
+        - SleepTransition:       [3000]
+        - RGBTransition: [255, 0, 0, 50, 80]
+        - SleepTransition:       [10000]
+  - name: 'FlickerWarm'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [1700, 50, 0]
+        - TemperatureTransition: [1700, 50, 50]
+        - SleepTransition:       [3000]
+  - name: 'FlickerWarmScare'
+    flow_params:
+      count: 0
+      transitions:
+        - TemperatureTransition: [1700, 50, 0]
+        - TemperatureTransition: [1700, 50, 50]
+        - SleepTransition:       [3000]
+        - TemperatureTransition: [1700, 50, 0]
+        - TemperatureTransition: [1700, 50, 50]
+        - TemperatureTransition: [1700, 50, 0]
+        - TemperatureTransition: [1700, 50, 50]
+        - TemperatureTransition: [1700, 500, 0]
+        - SleepTransition:       [3000]
+        - RGBTransition: [255, 0, 0, 50, 80]
+        - RGBTransition: [255, 0, 0, 50, 0]
+        - SleepTransition:       [10000]

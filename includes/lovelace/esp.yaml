@@ -14,7 +14,7 @@ cards:
           type: glance
         filter:
           include:
-            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*"
+            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*"
               sort: entity_id
 
       - type: custom:button-card
@@ -29,25 +29,8 @@ cards:
           show_header_toggle: false
         filter:
           include:
-            - entity_id: "light.(sonoff|nodemcu|bw|power_strip|esp32)_*"
+            - entity_id: "light.(sonoff|nodemcu|bw|power_strip|esp)_*"
               sort: entity_id
-
-      - type: custom:button-card
-        name: "Voltage"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Voltage"
-            hour24: true
-            points_per_hour: 1
-            entities:
-              - entity: sensor.sonoff_pump_voltage
-              - entity: sensor.bw_plug_1_voltage
-                color: red
 
   - type: vertical-stack
     cards:
@@ -62,13 +45,13 @@ cards:
           type: entities
         filter:
           include:
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*connected_ssid"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*connected_ssid"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*wifi_signal"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*wifi_signal"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*ip_address"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*ip_address"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*uptime"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*uptime"
               sort: entity_id
               options:
                 type: custom:template-entity-row
@@ -78,17 +61,17 @@ cards:
                   {% set hours = ((uptime % 86400) / 3600) | int %}
                   {% set days = (uptime / 86400) | int %}
                   {%if days > 0 %}{{ days }}d {% endif %}{% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% else %}<1m{% endif %}
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*version"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*free_heap"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*free_heap"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*current"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*current"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*voltage"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*voltage"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*power"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*power"
               sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp32)_*daily_energy"
+            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*daily_energy"
               sort: entity_id
 
   - type: vertical-stack
@@ -105,7 +88,7 @@ cards:
           show_header_toggle: false
         filter:
           include:
-            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp32)_*"
+            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*"
               sort: entity_id
           exclude:
             - entity_id: "*restart"
@@ -116,6 +99,6 @@ cards:
           title: Restart
         filter:
           include:
-            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp32)_*restart"
+            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
               sort: entity_id
 

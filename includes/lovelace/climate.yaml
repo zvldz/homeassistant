@@ -44,7 +44,6 @@ cards:
       - type: entities
         show_header_toggle: false
         entities:
-          - input_boolean.pump_schedule
           - input_boolean.gas_boiler_schedule
 
   - type: vertical-stack

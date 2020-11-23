@@ -29,7 +29,7 @@ devices:
     name: balcony_strip
 #   model: strip1
 #   model: RGBW
-#   use_music_mode: true
+    use_music_mode: true
 custom_effects:
   - name: 'Lightning'
     flow_params:

@@ -1,9 +1,0 @@
-- platform: midea_ac
-  host: !secret midea_ip_1
-  id: !secret midea_id_1
-- platform: midea_ac
-  host: !secret midea_ip_2
-  id: !secret midea_id_2
-- platform: midea_ac
-  host: !secret midea_ip_3
-  id: !secret midea_id_3

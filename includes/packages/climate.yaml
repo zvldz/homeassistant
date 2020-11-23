@@ -1,7 +1,4 @@
 input_boolean:
-  pump_schedule:
-    name: "Pump work on schedule (Winter)"
-    icon: "mdi:timer-outline"
   gas_boiler_schedule:
     name: "Boiler work on schedule (Winter)"
     icon: "mdi:timer-outline"
@@ -27,6 +24,16 @@ climate:
     hot_tolerance: 0.3
     min_cycle_duration:
       minutes: 5
+
+  - platform: midea_ac
+    host: !secret midea_ip_1
+    id: !secret midea_id_1
+  - platform: midea_ac
+    host: !secret midea_ip_2
+    id: !secret midea_id_2
+  - platform: midea_ac
+    host: !secret midea_ip_3
+    id: !secret midea_id_3
 
 sensor:
   - platform: rest
@@ -58,15 +65,6 @@ sensor:
         unit_of_measurement: "°C"
 
 script:
-  gas_boiler_turn_off:
-    alias: "Gas Boiler Turn Off"
-    sequence:
-      - service: shell_command.gas_boiler_off
-      - service: python_script.set_state
-        data:
-          entity_id: sensor.thermostat_info
-          state: '3'
-
   sync_gas_counter_with_ha1:
     alias: "Sync gas counter with ha1"
     sequence:
@@ -127,32 +125,19 @@ script:
                 topic: "zigbee2mqtt/{{- namevalve -}}/set/local_temperature_calibration"
                 payload: '{{ calibration_local }}'
 
-
 automation:
-  - alias: "Time Pump Off"
+  - alias: "Sync Pump with Boiler"
     initial_state: true
     trigger:
-      - platform: time
-        at: '09:00:00'
-    condition:
-      - condition: state
-        entity_id: input_boolean.pump_schedule
-        state: 'on'
+      - platform: state
+        entity_id: switch.esp_boiler_relay
     action:
-      - service: switch.turn_off
-        entity_id: switch.sonoff_pump_relay
-
-  - alias: "Time Pump On"
-    initial_state: true
-    trigger:
-      - platform: time
-        at: '16:30:00'
-    condition:
-      - condition: state
-        entity_id: input_boolean.pump_schedule
-        state: 'on'
-    action:
-      - service: switch.turn_on
+      - service: >
+          {% if trigger.to_state.state == 'on' %}
+            switch.turn_on
+          {% elif trigger.to_state.state == 'off' %}
+            switch.turn_off
+          {% endif %}
         entity_id: switch.sonoff_pump_relay
 
   - alias: "Turn off heating if kitchen temp above 23"
@@ -163,13 +148,11 @@ automation:
         above: 23
     condition:
       - condition: state
-        entity_id: switch.esp_boiler_relay
+        entity_id: switch.sonoff_pump_relay
         state: 'on'
     action:
       - service: switch.turn_off
-        entity_id:
-          - switch.esp_boiler_relay
-          - switch.sonoff_pump_relay
+        entity_id: switch.sonoff_pump_relay
 
   - alias: "Set temperature to 20.5 on schedule"
     initial_state: true
@@ -177,7 +160,7 @@ automation:
       - platform: time
         at:
           - '06:00:00'
-          - '17:00:00'
+          - '16:30:00'
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule
@@ -188,8 +171,6 @@ automation:
           entity_id: climate.gas_boiler
           temperature: 20.5
           hvac_mode: heat
-      - service: switch.turn_on
-        entity_id: switch.sonoff_pump_relay
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true
@@ -208,8 +189,6 @@ automation:
           entity_id: climate.gas_boiler
           temperature: 17
           hvac_mode: heat
-      - service: switch.turn_off
-        entity_id: switch.sonoff_pump_relay
 
   - alias: gas_counter
     initial_state: true
@@ -224,7 +203,7 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.gas_counter
-          value: "{{ (states.input_number.gas_counter.state|float + 0.01 ) | round(2) }}"
+          value: "{{ (states.input_number.gas_counter.state | float + 0.01 ) | round(2) }}"
 
   - alias: auto_local_temperature_calibration_trv
     initial_state: 'true'
@@ -250,7 +229,6 @@ automation:
           objectvalve: 'climate.bedroom_trv_climate'
           objectvalvewindow: 'switch.bedroom_trv_window_detection'
           objectsensortemperature: 'sensor.temperature_158d0001ab2a27'
-
 
 utility_meter:
   gas_hourly:

@@ -154,7 +154,7 @@ automation:
       - service: switch.turn_off
         entity_id: switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 20.5 on schedule"
+  - alias: "Set temperature to 21 on schedule"
     initial_state: true
     trigger:
       - platform: time
@@ -169,7 +169,7 @@ automation:
       - service: climate.set_temperature
         data:
           entity_id: climate.gas_boiler
-          temperature: 20.5
+          temperature: 21
           hvac_mode: heat
 
   - alias: "Set temperature to 17 on schedule"

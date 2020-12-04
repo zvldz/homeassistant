@@ -2,7 +2,7 @@ import logging
 import re
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
@@ -310,11 +310,17 @@ DEVICES = [{
         ['8.0.2001', 'battery', 'battery', 'sensor'],
     ]
 }, {
+    'lumi.lock.aq1': ["Aqara", "Door Lock S1", "ZNMS11LM"],
     'lumi.lock.acn02': ["Aqara", "Door Lock S2", "ZNMS12LM"],
     'params': [
         ['13.1.85', None, 'key_id', 'sensor'],
         ['13.20.85', 'lock_state', 'lock', 'binary_sensor'],
         ['8.0.2001', 'battery', 'battery', 'sensor'],
+    ]
+}, {
+    'lumi.airrtc.vrfegl01': ["Xiaomi", "VRF Air Conditioning"],
+    'params': [
+        ['13.1.85', None, 'channels', 'sensor']
     ]
 }]
 
@@ -410,6 +416,15 @@ def migrate_unique_id(hass: HomeAssistantType):
 
         uid = entity.unique_id.replace('0x', '').replace(' ', '_').lower()
         registry.async_update_entity(entity.entity_id, new_unique_id=uid)
+
+
+RE_JSON = re.compile(b'{.+}')
+
+
+def extract_jsons(raw) -> List[bytes]:
+    """There can be multiple concatenated json on one line."""
+    m = RE_JSON.search(raw)[0]
+    return m.replace(b'}{', b'}\n{').split(b'\n')
 
 
 TITLE = "Xiaomi Gateway 3 Debug"

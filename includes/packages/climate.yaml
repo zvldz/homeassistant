@@ -15,7 +15,7 @@ climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
     heater: switch.esp_boiler_relay
-    target_sensor: sensor.temperature_158d000231f03e
+    target_sensor: sensor.temperature_158d0002323856
     ac_mode: false
     min_temp: 15
     max_temp: 25
@@ -154,7 +154,7 @@ automation:
       - service: switch.turn_off
         entity_id: switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 21 on schedule"
+  - alias: "Set temperature to 21.0 schedule"
     initial_state: true
     trigger:
       - platform: time
@@ -169,7 +169,7 @@ automation:
       - service: climate.set_temperature
         data:
           entity_id: climate.gas_boiler
-          temperature: 21
+          temperature: 21.0
           hvac_mode: heat
 
   - alias: "Set temperature to 17 on schedule"

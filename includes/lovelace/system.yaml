@@ -25,21 +25,21 @@ cards:
           - entity: sensor.ha_beta
           - type: divider
 
-      - type: glance
-        state_color: true
-        entities:
-          - entity: counter.restart_counter
-            name: Restarts
-          - entity: counter.error_counter
-            name: Errors
-            double_tap_action:
-              action: call-service
-              service: script.error_reset
-          - entity: counter.warning_counter
-            name: Warnings
-            double_tap_action:
-              action: call-service
-              service: script.warning_reset
+#     - type: glance
+#       state_color: true
+#       entities:
+#         - entity: counter.restart_counter
+#           name: Restarts
+#         - entity: counter.error_counter
+#           name: Errors
+#           double_tap_action:
+#             action: call-service
+#             service: script.error_reset
+#         - entity: counter.warning_counter
+#           name: Warnings
+#           double_tap_action:
+#             action: call-service
+#             service: script.warning_reset
 
       - type: custom:button-card
         name: "Voltage"

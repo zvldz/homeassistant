@@ -77,6 +77,14 @@ cards:
               card:
                 - font-size: 14px
 
+
+      - type: horizontal-stack
+        cards:
+          - type: light
+            entity: light.28d12721e0ee_light
+          - type: light
+            entity: light.28d12721b455_light
+
   - type: vertical-stack
     cards:
       - type: custom:button-card

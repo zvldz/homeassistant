@@ -15,6 +15,7 @@ cards:
             entity: climate.gas_boiler
             name: false
             sensors:
+              - entity: sensor.temperature_158d000231f03e
               - entity: sensor.temperature_158d0002bfe958
               - entity: sensor.temperature_158d0002323856
               - entity: sensor.temperature_158d0001ab2a27

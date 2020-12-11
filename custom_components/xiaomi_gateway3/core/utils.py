@@ -18,6 +18,7 @@ DOMAIN = 'xiaomi_gateway3'
 #   https://github.com/rytilahti/python-miio/issues/699#issuecomment-643208618
 # Zigbee Model: [Manufacturer, Device Name, Device Model]
 # params: [lumi res name, xiaomi prop name, hass attr name, hass domain]
+# old devices uses params, new devices uses mi_spec
 DEVICES = [{
     'lumi.gateway.mgl03': ["Xiaomi", "Gateway 3", "ZNDMWG03LM"],
     'params': [
@@ -41,6 +42,7 @@ DEVICES = [{
     'lumi.plug.mmeu01': ["Xiaomi", "Plug EU", "ZNCZ04LM"],
     'lumi.plug.maus01': ["Xiaomi", "Plug US", "ZNCZ12LM"],
     'lumi.ctrl_86plug': ["Aqara", "Socket", "QBCZ11LM"],
+    # 'lumi.plug.maeu01': ["Aqara", "Plug EU", "SP-EUC01"],
     'params': [
         ['0.12.85', 'load_power', 'power', 'sensor'],
         ['0.13.85', None, 'consumption', 'sensor'],
@@ -206,9 +208,9 @@ DEVICES = [{
         ['13.2.85', None, 'button_2', None],
         ['13.3.85', None, 'button_3', None],
         ['13.4.85', None, 'button_4', None],
-        ['13.5.85', None, 'button_both', None],
         ['13.6.85', None, 'button_5', None],
         ['13.7.85', None, 'button_6', None],
+        ['13.5.85', None, 'button_both', None],
         [None, None, 'action', 'sensor'],
         ['8.0.2001', 'battery', 'battery', 'sensor'],
     ]
@@ -274,7 +276,7 @@ DEVICES = [{
     ]
 }, {
     'lumi.sen_ill.mgl01': ["Xiaomi", "Light Sensor", "GZCGQ01LM"],
-    'params': [
+    'mi_spec': [
         ['2.1', '2.1', 'illuminance', 'sensor'],
         ['3.1', '3.1', 'battery', 'sensor'],
     ]
@@ -318,9 +320,28 @@ DEVICES = [{
         ['8.0.2001', 'battery', 'battery', 'sensor'],
     ]
 }, {
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/101
+    'lumi.airrtc.tcpecn02': ["Aqara", "Thermostat S2", "KTWKQ03ES"],
+    'params': [
+        ['3.1.85', None, 'power', None],
+        ['3.2.85', None, 'current_temperature', None],
+        ['14.2.85', None, 'climate', 'climate'],
+        ['14.8.85', None, 'mode', None],
+        ['14.9.85', None, 'target_temperature', None],
+        ['14.10.85', None, 'fan_mode', None],
+    ]
+}, {
     'lumi.airrtc.vrfegl01': ["Xiaomi", "VRF Air Conditioning"],
     'params': [
         ['13.1.85', None, 'channels', 'sensor']
+    ]
+}, {
+    # without N
+    'lumi.switch.l0agl1': ["Aqara", "Relay T1", "DLKZMK12LM"],
+    # with N
+    'lumi.switch.n0agl1': ["Aqara", "Relay T1", "SSM-U01"],
+    'mi_spec': [
+        ['2.1', '2.1', 'switch', 'switch'],
     ]
 }]
 
@@ -370,7 +391,8 @@ def get_device(zigbee_model: str) -> Optional[dict]:
                 'device_name': desc[0] + ' ' + desc[1],
                 'device_model': zigbee_model + ' ' + desc[2]
                 if len(desc) > 2 else zigbee_model,
-                'params': device['params']
+                'params': device.get('params'),
+                'mi_spec': device.get('mi_spec')
             }
 
     return None
@@ -418,13 +440,33 @@ def migrate_unique_id(hass: HomeAssistantType):
         registry.async_update_entity(entity.entity_id, new_unique_id=uid)
 
 
-RE_JSON = re.compile(b'{.+}')
+# new miio adds colors to logs
+RE_JSON1 = re.compile(b'msg:(.+) length:(\d+) bytes')
+RE_JSON2 = re.compile(b'{.+}')
 
 
 def extract_jsons(raw) -> List[bytes]:
-    """There can be multiple concatenated json on one line."""
-    m = RE_JSON.search(raw)[0]
-    return m.replace(b'}{', b'}\n{').split(b'\n')
+    """There can be multiple concatenated json on one line. And sometimes the
+    length does not match the message."""
+    m = RE_JSON1.search(raw)
+    if m:
+        length = int(m[2])
+        raw = m[1][:length]
+    else:
+        m = RE_JSON2.search(raw)
+        raw = m[0]
+    return raw.replace(b'}{', b'}\n{').split(b'\n')
+
+
+def get_buttons(model: str):
+    model, _ = model.split(' ', 1)
+    for device in DEVICES:
+        if model in device:
+            return [
+                param[2] for param in device['params']
+                if param[2].startswith('button')
+            ]
+    return None
 
 
 TITLE = "Xiaomi Gateway 3 Debug"

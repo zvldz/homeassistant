@@ -79,15 +79,12 @@ cards:
         unit: '%'
         entity: sensor.living_room_trv_position
 
-      - type: entities
-        show_header_toggle: false
-        entities:
-          - lock.living_room_trv_child_lock
-          - sensor.living_room_trv_linkquality
-          - switch.living_room_trv_valve_detection
-          - switch.living_room_trv_window_detection
-          - sensor.living_room_trv_position
-          - sensor.living_room_trv_calibration
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "*living_room_trv*"
 
   - type: vertical-stack
     cards:
@@ -120,15 +117,13 @@ cards:
         unit: '%'
         entity: sensor.master_bedroom_trv_position
 
-      - type: entities
-        show_header_toggle: false
-        entities:
-          - lock.master_bedroom_trv_child_lock
-          - sensor.master_bedroom_trv_linkquality
-          - switch.master_bedroom_trv_valve_detection
-          - switch.master_bedroom_trv_window_detection
-          - sensor.master_bedroom_trv_position
-          - sensor.master_bedroom_trv_calibration
+
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "*master_bedroom_trv*"
 
   - type: vertical-stack
     cards:
@@ -161,13 +156,10 @@ cards:
         unit: '%'
         entity: sensor.bedroom_trv_position
 
-      - type: entities
-        show_header_toggle: false
-        entities:
-          - lock.bedroom_trv_child_lock
-          - sensor.bedroom_trv_linkquality
-          - switch.bedroom_trv_valve_detection
-          - switch.bedroom_trv_window_detection
-          - sensor.bedroom_trv_position
-          - sensor.bedroom_trv_calibration
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "*\\.bedroom_trv*"
 

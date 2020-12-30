@@ -24,8 +24,15 @@
   scan_interval: 1800
 
 - platform: uptime
-  name: "HA Uptime"
-  unit_of_measurement: minutes
+  name: "HA Online"
+
+- platform: template
+  sensors:
+    ha_uptime:
+      friendly_name: HA Uptime
+      icon_template: mdi:clock
+      value_template: "{{ ((as_timestamp(now()) | int - as_timestamp(states('sensor.ha_online')) | int) / 60 ) | int }}"
+      unit_of_measurement: minutes
 
 - platform: rest
   resource: https://version.home-assistant.io/stable.json

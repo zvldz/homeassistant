@@ -1,0 +1,11 @@
+ha1_restart:
+  url: "{{ states('input_text.ha1_url') }}api/services/homeassistant/restart"
+  method: POST
+  headers:
+    authorization: !secret ha1_token
+
+ha2_restart:
+  url: "{{ states('input_text.ha2_url') }}api/services/homeassistant/restart"
+  method: POST
+  headers:
+    authorization: !secret ha2_token

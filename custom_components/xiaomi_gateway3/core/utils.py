@@ -56,9 +56,9 @@ DEVICES = [{
         ['4.1.85', 'channel_0', 'switch', 'switch'],  # to4ko
     ]
 }, {
-    'lumi.ctrl_ln1': ["Aqara", "Wall Single Switch", "QBKG11LM"],
-    'lumi.ctrl_ln1.aq1': ["Aqara", "Wall Single Switch", "QBKG11LM"],
-    'lumi.switch.b1nacn02': ["Aqara", "D1 Wall Single Switch", "QBKG23LM"],
+    'lumi.ctrl_ln1': ["Aqara", "Single Wall Switch", "QBKG11LM"],
+    'lumi.ctrl_ln1.aq1': ["Aqara", "Single Wall Switch", "QBKG11LM"],
+    'lumi.switch.b1nacn02': ["Aqara", "Single Wall Switch D1", "QBKG23LM"],
     'params': [
         ['0.12.85', 'load_power', 'power', 'sensor'],
         ['0.13.85', None, 'consumption', 'sensor'],
@@ -69,9 +69,9 @@ DEVICES = [{
 }, {
     # dual channel on/off, power measurement
     'lumi.relay.c2acn01': ["Aqara", "Relay", "LLKZMK11LM"],  # tested
-    'lumi.ctrl_ln2': ["Aqara", "Wall Double Switch", "QBKG12LM"],
-    'lumi.ctrl_ln2.aq1': ["Aqara", "Wall Double Switch", "QBKG12LM"],
-    'lumi.switch.b2nacn02': ["Aqara", "D1 Wall Double Switch", "QBKG24LM"],
+    'lumi.ctrl_ln2': ["Aqara", "Double Wall Switch", "QBKG12LM"],
+    'lumi.ctrl_ln2.aq1': ["Aqara", "Double Wall Switch", "QBKG12LM"],
+    'lumi.switch.b2nacn02': ["Aqara", "Double Wall Switch D1", "QBKG24LM"],
     'params': [
         # ['0.11.85', 'load_voltage', 'power', 'sensor'],  # 0
         ['0.12.85', 'load_power', 'power', 'sensor'],
@@ -87,8 +87,8 @@ DEVICES = [{
     ]
 }, {
     # on/off
-    'lumi.ctrl_neutral1': ["Aqara", "Wall Single Switch", "QBKG04LM"],
-    'lumi.switch.b1lacn02': ["Aqara", "D1 Wall Single Switch", "QBKG21LM"],
+    'lumi.ctrl_neutral1': ["Aqara", "Single Wall Switch", "QBKG04LM"],
+    'lumi.switch.b1lacn02': ["Aqara", "Single Wall Switch D1", "QBKG21LM"],
     'params': [
         ['4.1.85', 'channel_0', 'switch', 'switch'],  # or neutral_0?
         ['13.1.85', None, 'button', None],
@@ -96,7 +96,7 @@ DEVICES = [{
     ]
 }, {
     # dual channel on/off
-    'lumi.ctrl_neutral2': ["Aqara", "Wall Double Switch", "QBKG03LM"],
+    'lumi.ctrl_neutral2': ["Aqara", "Double Wall Switch", "QBKG03LM"],
     'params': [
         ['4.1.85', 'neutral_0', 'channel 1', 'switch'],  # to4ko
         ['4.2.85', 'neutral_1', 'channel 2', 'switch'],
@@ -106,7 +106,7 @@ DEVICES = [{
         [None, None, 'action', 'sensor'],
     ]
 }, {
-    'lumi.switch.b2lacn02': ["Aqara", "D1 Wall Double Switch", "QBKG22LM"],
+    'lumi.switch.b2lacn02': ["Aqara", "Double Wall Switch D1", "QBKG22LM"],
     'params': [
         ['4.1.85', 'channel_0', 'channel 1', 'switch'],
         ['4.2.85', 'channel_1', 'channel 2', 'switch'],
@@ -117,7 +117,7 @@ DEVICES = [{
     ]
 }, {
     # triple channel on/off, no neutral wire
-    'lumi.switch.l3acn3': ["Aqara", "D1 Wall Triple Switch", "QBKG25LM"],
+    'lumi.switch.l3acn3': ["Aqara", "Triple Wall Switch D1", "QBKG25LM"],
     'params': [
         ['4.1.85', 'neutral_0', 'channel 1', 'switch'],  # to4ko
         ['4.2.85', 'neutral_1', 'channel 2', 'switch'],
@@ -132,7 +132,7 @@ DEVICES = [{
     ]
 }, {
     # with neutral wire, thanks @Mantoui
-    'lumi.switch.n3acn3': ["Aqara", "D1 Wall Triple Switch", "QBKG26LM"],
+    'lumi.switch.n3acn3': ["Aqara", "Triple Wall Switch D1", "QBKG26LM"],
     'params': [
         ['0.12.85', 'load_power', 'power', 'sensor'],
         ['0.13.85', None, 'consumption', 'sensor'],
@@ -188,7 +188,7 @@ DEVICES = [{
     'lumi.sensor_switch.aq3': ["Aqara", "Shake Button", "WXKG12LM"],
     'lumi.sensor_86sw1': ["Aqara", "Single Wall Button", "WXKG03LM"],
     'lumi.remote.b186acn01': ["Aqara", "Single Wall Button", "WXKG03LM"],
-    'lumi.remote.b186acn02': ["Aqara", "D1 Single Wall Button", "WXKG06LM"],
+    'lumi.remote.b186acn02': ["Aqara", "Single Wall Button D1", "WXKG06LM"],
     'params': [
         ['13.1.85', None, 'button', None],
         [None, None, 'action', 'sensor'],
@@ -199,7 +199,7 @@ DEVICES = [{
     'lumi.sensor_86sw2': ["Aqara", "Double Wall Button", "WXKG02LM"],
     'lumi.remote.b286acn01': ["Aqara", "Double Wall Button", "WXKG02LM"],
     'lumi.sensor_86sw2.es1': ["Aqara", "Double Wall Button", "WXKG02LM"],
-    'lumi.remote.b286acn02': ["Aqara", "D1 Double Wall Button", "WXKG07LM"],
+    'lumi.remote.b286acn02': ["Aqara", "Double Wall Button D1", "WXKG07LM"],
     'lumi.remote.b286opcn01': ["Aqara", "Opple Two Button", "WXCJKG11LM"],
     'lumi.remote.b486opcn01': ["Aqara", "Opple Four Button", "WXCJKG12LM"],
     'lumi.remote.b686opcn01': ["Aqara", "Opple Six Button", "WXCJKG13LM"],
@@ -303,7 +303,7 @@ DEVICES = [{
         ['14.4.85', 'run_state', 'run_state', None],
     ]
 }, {
-    'lumi.curtain.hagl04': ["Aqara", "B1 Curtain", "ZNCLDJ12LM"],
+    'lumi.curtain.hagl04': ["Aqara", "Curtain B1", "ZNCLDJ12LM"],
     'params': [
         ['1.1.85', 'curtain_level', 'position', None],
         ['14.2.85', None, 'motor', 'cover'],
@@ -314,6 +314,7 @@ DEVICES = [{
 }, {
     'lumi.lock.aq1': ["Aqara", "Door Lock S1", "ZNMS11LM"],
     'lumi.lock.acn02': ["Aqara", "Door Lock S2", "ZNMS12LM"],
+    'lumi.lock.acn03': ["Aqara", "Door Lock S2 Pro", "ZNMS12LM"],
     'params': [
         ['13.1.85', None, 'key_id', 'sensor'],
         ['13.20.85', 'lock_state', 'lock', 'binary_sensor'],
@@ -336,12 +337,24 @@ DEVICES = [{
         ['13.1.85', None, 'channels', 'sensor']
     ]
 }, {
-    # without N
-    'lumi.switch.l0agl1': ["Aqara", "Relay T1", "DLKZMK12LM"],
-    # with N
+    # no N, https://www.aqara.com/en/single_switch_T1_no-neutral.html
+    'lumi.switch.l0agl1': ["Aqara", "Relay T1", "SSM-U02"],
+    'mi_spec': [
+        ['2.1', '2.1', 'switch', 'switch'],
+    ]
+}, {
+    # with N, https://www.aqara.com/en/single_switch_T1_with-neutral.html
     'lumi.switch.n0agl1': ["Aqara", "Relay T1", "SSM-U01"],
     'mi_spec': [
         ['2.1', '2.1', 'switch', 'switch'],
+        ['3.2', '3.2', 'power', 'sensor'],
+        # ['5.7', '5.7', 'voltage', 'sensor'],
+    ]
+}, {
+    'lumi.motion.agl04': ["Aqara", "Precision Motion Sensor", "RTCGQ13LM"],
+    'mi_spec': [
+        ['4.1', None, 'motion', 'binary_sensor'],
+        ['3.1', '3.1', 'battery', 'sensor'],
     ]
 }]
 
@@ -374,6 +387,27 @@ GLOBAL_PROP = {
     '8.0.2101': 'nl_invert',  # ctrl_86plug
     '8.0.2102': 'alive',
     '8.0.9001': 'battery_end_of_life'
+}
+
+CLUSTERS = {
+    0x0000: 'Basic',
+    0x0001: 'PowerCfg',
+    0x0003: 'Identify',
+    0x0006: 'OnOff',
+    0x0008: 'LevelCtrl',
+    0x000A: 'Time',
+    0x000C: 'AnalogInput',  # cube, gas sensor
+    0x0012: 'Multistate',
+    0x0019: 'OTA',  # illuminance sensor
+    0x0101: 'DoorLock',
+    0x0400: 'Illuminance',  # motion sensor
+    0x0402: 'Temperature',
+    0x0403: 'Pressure',
+    0x0405: 'Humidity',
+    0x0406: 'Occupancy',  # motion sensor
+    0x0500: 'IasZone',  # gas sensor
+    0x0B04: 'ElectrMeasur',
+    0xFCC0: 'Xiaomi'
 }
 
 
@@ -409,8 +443,7 @@ def fix_xiaomi_props(params) -> dict:
         elif k == 'battery' and v and v > 1000:
             params[k] = round((min(v, 3200) - 2500) / 7)
         elif k == 'run_state':
-            params[k] = ['offing', 'oning', 'stop',
-                         'hinder_stop'].index(v)
+            params[k] = ['offing', 'oning', 'stop', 'hander_stop'].index(v)
 
     return params
 
@@ -469,15 +502,21 @@ def get_buttons(model: str):
     return None
 
 
+def migrate_options(data):
+    data = dict(data)
+    options = {k: data.pop(k) for k in ('ble', 'zha') if k in data}
+    return {'data': data, 'options': options}
+
+
 TITLE = "Xiaomi Gateway 3 Debug"
-NOTIFY_TEXT = '<a href="%s" target="_blank">Open Log<a>'
+NOTIFY_TEXT = '<a href="%s?r=10" target="_blank">Open Log<a>'
 HTML = (f'<!DOCTYPE html><html><head><title>{TITLE}</title>'
         '<meta http-equiv="refresh" content="%s"></head>'
         '<body><pre>%s</pre></body></html>')
 
 
 class XiaomiGateway3Debug(logging.Handler, HomeAssistantView):
-    name = "sonoff_debug"
+    name = "xiaomi_debug"
     requires_auth = False
 
     text = ''

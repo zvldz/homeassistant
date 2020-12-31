@@ -14,4 +14,5 @@ views:
   - !include includes/lovelace/rf_bridge.yaml
   - !include includes/lovelace/esp.yaml
   - !include includes/lovelace/system.yaml
+  - !include includes/lovelace/gw3.yaml
   - !include includes/lovelace/automation.yaml

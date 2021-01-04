@@ -126,6 +126,23 @@ script:
                 payload: '{{ calibration_local }}'
 
 automation:
+  - alias: "Sync TRV with Boiler"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: switch.esp_boiler_relay
+    action:
+      - service: >
+          {% if trigger.to_state.state == 'on' %}
+            climate.turn_on
+          {% elif trigger.to_state.state == 'off' %}
+            climate.turn_off
+          {% endif %}
+        entity_id:
+          - climate.living_room_trv_climate
+          - climate.master_bedroom_trv_climate
+          - climate.bedroom_trv_climate
+
 # - alias: "Sync Pump with Boiler"
 #   initial_state: true
 #   trigger:

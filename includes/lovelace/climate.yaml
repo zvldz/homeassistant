@@ -69,10 +69,6 @@ cards:
         name: false
         sensors:
           - entity: sensor.temperature_158d0002bfe958
-        control:
-#         hvac: true
-          preset:
-            none: false
 
       - type: gauge
         name: Positions
@@ -107,10 +103,6 @@ cards:
         name: false
         sensors:
           - entity: sensor.temperature_158d0002323856
-        control:
-#         hvac: true
-          preset:
-            none: false
 
       - type: gauge
         name: Positions
@@ -146,10 +138,6 @@ cards:
         name: false
         sensors:
           - entity: sensor.temperature_158d0001ab2a27
-        control:
-#         hvac: true
-          preset:
-            none: false
 
       - type: gauge
         name: Positions

@@ -16,35 +16,16 @@ cards:
           - type: light
             entity: light.living_room_lamp_ambilight
 
-      - type: custom:button-card
-        name: "Spots"
-        styles:
-          card:
-            - background-color: "#203040"
-
       - type: horizontal-stack
         cards:
           - type: entities
             entities:
-              - group.living_room_spot_left
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - group.living_room_spot_right
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:auto-entities
-            card:
-              type: entities
-              show_header_toggle: false
-            filter:
-              include:
-                - entity_id: "light.living_room_spot_left_*"
-                  sort: name
-                - type: divider
-                - entity_id: "light.living_room_spot_right_*"
-                  sort: name
+              - type: custom:fold-entity-row
+                head: group.living_room_spot_left
+                entity: group.living_room_spot_left
+              - type: custom:fold-entity-row
+                head: group.living_room_spot_right
+                entity: group.living_room_spot_right
 
   - type: vertical-stack
     cards:

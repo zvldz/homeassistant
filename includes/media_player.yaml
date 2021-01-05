@@ -1,6 +1,6 @@
-- platform: androidtv
-  name: kitchen_tv
-  host: !secret kitchen_tv_ip
+#- platform: androidtv
+#  name: kitchen_tv
+#  host: !secret kitchen_tv_ip
 
 - platform: sox
   name: Vacuum

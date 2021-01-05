@@ -20,4 +20,6 @@ resources:
     type: module
   - url:  /hacsfiles/flex-table-card/flex-table-card.js
     type: module
+  - url: /hacsfiles/lovelace-fold-entity-row/fold-entity-row.js
+    type: module
 

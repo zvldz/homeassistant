@@ -8,15 +8,14 @@ group:
       - automation.sync_input_boolean
       - automation.sync_thermostat_temperature
       - automation.gas_counter
-      - automation.system_start
       - automation.system_entity_change
+#     - automation.system_start
 #     - automation.system_error_counter
 #     - automation.system_warning_counter
-      - automation.reset_system_counters
+#     - automation.reset_system_counters
 
   sync_input_boolean:
     entities:
-      - sensor.ha1_pump_schedule
       - sensor.ha1_gas_boiler_schedule
       - sensor.ha1_auto_turn_off_lights
       - sensor.ha1_auto_fan
@@ -24,13 +23,6 @@ group:
       - sensor.ha1_vacuum_notification
 
 sensor:
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.pump_schedule"
-    name: ha1_pump_schedule
-    headers:
-      authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
-
   - platform: rest
     resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
     name: ha1_gas_boiler_schedule
@@ -91,7 +83,6 @@ automation:
       - platform: state
 #       entity_id: group.sync_input_boolean # not working
         entity_id:
-          - sensor.ha1_pump_schedule
           - sensor.ha1_gas_boiler_schedule
           - sensor.ha1_auto_turn_off_lights
           - sensor.ha1_auto_fan

@@ -236,7 +236,7 @@ sensor.bw_plug_1_power:
   friendly_name: "Socket 2 Power"
 
 sensor.bw_plug_1_daily_energy:
-  friendly_name: "Socket DE"
+  friendly_name: "Socket 2 DE"
 
 binary_sensor.sonoff_pump_status:
   friendly_name: "Pump"

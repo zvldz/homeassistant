@@ -75,12 +75,18 @@ cards:
         unit: '%'
         entity: sensor.living_room_trv_position
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "*living_room_trv*"
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: "Details"
+            filter:
+              include:
+                - entity_id: "*living_room_trv*"
+                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -109,13 +115,18 @@ cards:
         unit: '%'
         entity: sensor.master_bedroom_trv_position
 
-
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "*master_bedroom_trv*"
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: "Details"
+            filter:
+              include:
+                - entity_id: "*master_bedroom_trv*"
+                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -144,10 +155,16 @@ cards:
         unit: '%'
         entity: sensor.bedroom_trv_position
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "*\\.bedroom_trv*"
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: "Details"
+            filter:
+              include:
+                - entity_id: "*\\.bedroom_trv*"
+                  sort: entity_id
 

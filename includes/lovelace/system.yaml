@@ -92,6 +92,25 @@ cards:
               card:
                 - font-size: 14px
 
+          - type: conditional
+            conditions:
+              - entity: sensor.instance_name
+                state: "HA2"
+            card:
+              type: custom:button-card
+              name: "Reboot HA1"
+              icon: "mdi:autorenew"
+              tap_action:
+                confirmation: true
+                action: call-service
+                service: script.turn_on
+                service_data:
+                  entity_id: script.reboot_ha1
+              size: 18%
+              styles:
+                card:
+                  - font-size: 14px
+
       - type: custom:button-card
         name: "Graphs"
         styles:
@@ -143,6 +162,7 @@ cards:
             - background-color: "#203040"
 
       - type: entities
+        show_header_toggle: false
         entities:
           - input_number.gas_counter
           - binary_sensor.door_window_sensor_158d000393f29a
@@ -179,30 +199,31 @@ cards:
               card:
                 - font-size: 14px
 
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            hour24: true
-            points_per_hour: 1
-            unit: "㎥"
+      - type: entities
+        entities:
+          - type: custom:fold-entity-row
+            head:
+              type: section
+              label: Details Graphs
             entities:
-              - entity: sensor.gas_hourly
+              - type: custom:mini-graph-card
+                hour24: true
+                points_per_hour: 1
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_hourly
 
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            hours_to_show: 720
-            unit: "㎥"
-            entities:
-              - entity: sensor.gas_monthly
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_monthly
 
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            hours_to_show: 720
-            unit: "㎥"
-            entities:
-              - entity: sensor.gas_yearly
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_yearly
 
   - type: conditional
     conditions:
@@ -212,33 +233,24 @@ cards:
       type: vertical-stack
       cards:
         - type: custom:button-card
-          name: "Raspberry PI UPS"
+          name: "UPS"
           styles:
             card:
               - background-color: "#203040"
 
-        - type: custom:auto-entities
-          card:
-            type: entities
-            show_header_toggle: false
-          filter:
-            include:
-              - entity_id: "sensor.raspberry_ups_*"
-                sort: entity_id
-
-        - type: custom:button-card
-          name: "Reboot HA1"
-          icon: "mdi:autorenew"
-          tap_action:
-            confirmation: true
-            action: call-service
-            service: script.turn_on
-            service_data:
-              entity_id: script.reboot_ha1
-          size: 20%
-          styles:
-            card:
-              - font-size: 14px
+        - type: entities
+          entities:
+            - type: custom:auto-entities
+              card:
+                type: custom:fold-entity-row
+                head:
+                  type: section
+                  label: "Details"
+                padding: 0
+              filter:
+                include:
+                  - entity_id: "sensor.raspberry_ups_*"
+                    sort: entity_id
 
   - type: conditional
     conditions:
@@ -248,17 +260,22 @@ cards:
       type: vertical-stack
       cards:
         - type: custom:button-card
-          name: "MUSTEK UPS"
+          name: "UPS"
           styles:
             card:
               - background-color: "#203040"
 
-        - type: custom:auto-entities
-          card:
-            type: entities
-            show_header_toggle: false
-          filter:
-            include:
-              - entity_id: "sensor.mustek_*"
-                sort: entity_id
+        - type: entities
+          entities:
+            - type: custom:auto-entities
+              card:
+                type: custom:fold-entity-row
+                head:
+                  type: section
+                  label: "Details"
+                padding: 0
+              filter:
+                include:
+                  - entity_id: "sensor.mustek_*"
+                    sort: entity_id
 

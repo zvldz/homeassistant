@@ -40,39 +40,116 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*connected_ssid"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*wifi_signal"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*ip_address"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*uptime"
-              sort: entity_id
-              options:
-                type: custom:template-entity-row
-                state: >
-                  {% set uptime = states(config.entity) | int %}
-                  {% set minutes = ((uptime % 3600) / 60) | int %}
-                  {% set hours = ((uptime % 86400) / 3600) | int %}
-                  {% set days = (uptime / 86400) | int %}
-                  {%if days > 0 %}{{ days }}d {% endif %}{% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% else %}<1m{% endif %}
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*free_heap"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*current"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*voltage"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*power"
-              sort: entity_id
-            - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*daily_energy"
-              sort: entity_id
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: WiFi SSID
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*connected_ssid"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: WiFi Signal
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*wifi_signal"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: IP Address
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*ip_address"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Uptime
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*uptime"
+                  sort: entity_id
+                  options:
+                    type: custom:template-entity-row
+                    state: >
+                      {% set uptime = states(config.entity) | int %}
+                      {% set minutes = ((uptime % 3600) / 60) | int %}
+                      {% set hours = ((uptime % 86400) / 3600) | int %}
+                      {% set days = (uptime / 86400) | int %}
+                      {%if days > 0 %}{{ days }}d {% endif %}{% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% else %}<1m{% endif %}
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: ESP Home Version
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
+                  sort: entity_id
+#         - type: custom:auto-entities
+#           card:
+#             type: custom:fold-entity-row
+#             head:
+#               type: section
+#               label: Free Heap
+#           filter:
+#             include:
+#               - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*free_heap"
+#                 sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Current
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*current"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Voltage
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*voltage"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Power
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*power"
+                  sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Daily Energy
+            filter:
+              include:
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*daily_energy"
+                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -82,23 +159,29 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-          show_header_toggle: false
-        filter:
-          include:
-            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*"
-              sort: entity_id
-          exclude:
-            - entity_id: "*restart"
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Switches
+            filter:
+              include:
+                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*"
+                  sort: entity_id
+              exclude:
+                - entity_id: "*restart"
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: Restart
-        filter:
-          include:
-            - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
-              sort: entity_id
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: Restart
+            filter:
+              include:
+                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
+                  sort: entity_id
 

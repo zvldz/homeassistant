@@ -2,6 +2,7 @@ import base64
 import logging
 import re
 import time
+from socket import socket, AF_INET, SOCK_DGRAM
 from telnetlib import Telnet
 from typing import Union
 
@@ -87,6 +88,9 @@ class TelnetShell(Telnet):
         # fix CPU 90% full time bug
         self.exec("killall zigbee_gw")
 
+    def run_ntpd(self):
+        self.exec("ntpd -l")
+
     def get_running_ps(self) -> str:
         return self.exec("ps")
 
@@ -107,9 +111,12 @@ class TelnetShell(Telnet):
         # use `tail` because input for Z3 is required;
         # add `-l 0` to disable all output, we'll enable it later with
         # `debugprint on 1` command
-        self.exec("tail -f /dev/null | Lumi_Z3GatewayHost_MQTT -n 1 -b 115200 "
-                  f"-l 0 -p '/dev/ttyS2' -d '/data/silicon_zigbee_host/'{arg} "
-                  "| mosquitto_pub -t log/z3 -l &")
+        self.exec(
+            "nohup tail -f /dev/null 2>&1 | "
+            "nohup Lumi_Z3GatewayHost_MQTT -n 1 -b 115200 -l 0 "
+            f"-p '/dev/ttyS2' -d '/data/silicon_zigbee_host/'{arg} 2>&1 | "
+            "mosquitto_pub -t log/z3 -l &"
+        )
 
         self.exec("daemon_app.sh &")
 
@@ -137,3 +144,24 @@ class TelnetShell(Telnet):
         raw = self.read_file('/etc/rootfs_fw_info')
         m = RE_VERSION.search(raw.decode())
         return m[1]
+
+
+NTP_DELTA = 2208988800  # 1970-01-01 00:00:00
+NTP_QUERY = b'\x1b' + 47 * b'\0'
+
+
+def ntp_time(host: str) -> float:
+    """Return server send time"""
+    try:
+        sock = socket(AF_INET, SOCK_DGRAM)
+        sock.settimeout(2)
+
+        sock.sendto(NTP_QUERY, (host, 123))
+        raw = sock.recv(1024)
+
+        integ = int.from_bytes(raw[-8:-4], 'big')
+        fract = int.from_bytes(raw[-4:], 'big')
+        return integ + float(fract) / 2 ** 32 - NTP_DELTA
+
+    except:
+        return 0

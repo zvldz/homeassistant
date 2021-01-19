@@ -224,6 +224,7 @@ cards:
                 unit: "㎥"
                 entities:
                   - entity: sensor.gas_yearly
+
   - type: vertical-stack
     cards:
       - type: custom:button-card
@@ -237,9 +238,9 @@ cards:
           - entity: sensor.instance_name
             state: "HA2"
         card:
-          - type: entities
-            entities:
-              type: custom:auto-entities
+          type: entities
+          entities:
+            - type: custom:auto-entities
               card:
                 type: custom:fold-entity-row
                 head:

@@ -14,8 +14,11 @@ cards:
           type: glance
         filter:
           include:
-            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*"
+            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*status"
+            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*button"
               sort: entity_id
+          exclude:
+            - entity_id: "*rf_br*"
 
       - type: custom:button-card
         name: "Light"
@@ -173,6 +176,7 @@ cards:
                   sort: entity_id
               exclude:
                 - entity_id: "*restart"
+                - entity_id: "*_rf_br_*"
 
           - type: custom:auto-entities
             card:
@@ -184,4 +188,113 @@ cards:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
                   sort: entity_id
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "RF Bridge"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_rf_br_2_status
+          - binary_sensor.sonoff_rf_br_3_status
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            entity: switch.sonoff_rf_br_2_sb_rf
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.sonoff_rf_br_2_gate1
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.sonoff_rf_br_2_gate2
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.sonoff_rf_br_2_key4
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_sb_rf
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_sb_rf
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_gate1
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_gate1
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_gate2
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_gate2
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            icon: "mdi:flash"
+            entity: script.rf_br_3_key4
+            tap_action:
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.rf_br_3_key4
+            size: 30%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.sonoff_rf_br_2_sb_rf
+          - binary_sensor.sonoff_rf_br_2_gate1
+          - binary_sensor.sonoff_rf_br_2_gate2
+          - binary_sensor.sonoff_rf_br_2_key4
+
+      - type: glance
+        show_header_toggle: false
+        entities:
+          - binary_sensor.rf_br_3_sb_rf
+          - binary_sensor.rf_br_3_gate1
+          - binary_sensor.rf_br_3_gate2
+          - binary_sensor.rf_br_3_key4
+
 

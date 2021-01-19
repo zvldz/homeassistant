@@ -41,15 +41,19 @@ binary_sensor:
     sensors:
       rf_br_3_sb_rf:
         friendly_name: "rf br 3 sb rf"
+        device_class: power
         value_template: false
       rf_br_3_gate1:
         friendly_name: "rf br 3 gate1"
+        device_class: door
         value_template: false
       rf_br_3_gate2:
         friendly_name: "rf br 3 gate2"
+        device_class: door
         value_template: false
       rf_br_3_key4:
         friendly_name: "rf br 3 key4"
+        device_class: power
         value_template: false
 
 automation:

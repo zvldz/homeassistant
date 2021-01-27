@@ -1,3 +1,4 @@
+# Bedroom
 - alias: "Set brightness for lamp in bedroom"
   initial_state: true
   trigger:
@@ -15,3 +16,92 @@
         entity_id: light.bedroom_lamp
         brightness: 70
         kelvin: 4000
+
+- alias: "Turn on light in Bedroom on conditions"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d000488d1c2
+      to: 'on'
+  condition:
+#   - condition: numeric_state
+#     entity_id: sensor.illumination_158d000488d1c2
+#     below: 10
+    - condition: state
+      entity_id: light.bedroom_lamp
+      state: 'off'
+  action:
+    - service: light.turn_on
+      entity_id: light.bedroom_lamp
+
+- alias: "Turn on Bedroom timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.bedroom_lamp
+      to: 'on'
+  action:
+    - service: timer.cancel
+      entity_id: timer.bedroom_light
+    - service: timer.start
+      entity_id: timer.bedroom_light
+
+- alias: "Reset Bedroom timer"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.motion
+      event_data:
+        entity_id: binary_sensor.motion_sensor_158d000488d1c2
+  condition:
+    - condition: state
+      entity_id: light.bedroom_lamp
+      state: 'on'
+  action:
+    - service: timer.cancel
+      entity_id: timer.bedroom_light
+    - service: timer.start
+      entity_id: timer.bedroom_light
+
+- alias: "Turn off light in Bedroom"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.bedroom_light
+  condition:
+    - condition: state
+      entity_id: input_boolean.auto_turn_off_lights
+      state: 'on'
+    - condition: state
+      entity_id: light.bedroom_lamp
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id: light.bedroom_lamp
+
+- alias: "Turn off Bedroom timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.bedroom_lamp
+      to: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.bedroom_light
+
+- alias: "Start Bedroom timer if not starting"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: light.bedroom_lamp
+        state: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.bedroom_light

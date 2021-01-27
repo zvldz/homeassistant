@@ -14,6 +14,10 @@ bathroom_light:
   name: "Bathroom timer"
   duration: '00:05:00'
 
+bedroom_light:
+  name: "Bedroom timer"
+  duration: '00:05:00'
+
 bathroom_fan:
   name: "Baroom fan timer"
   duration: '00:15:00'

@@ -21,10 +21,13 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
       - type: glance
         show_header_toggle: false
         entities:
           - binary_sensor.bedroom_lamp_nightlight
+          - binary_sensor.motion_sensor_158d000488d1c2
+          - sensor.illumination_158d000488d1c2
 
       - type: custom:button-card
         name: "Climate"
@@ -48,3 +51,19 @@ cards:
             entities:
               - entity: sensor.humidity_158d0001ab2a27
 
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Timers"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+        - type: entity-filter
+          show_header_toggle: false
+          entities:
+            - entity: timer.bedroom_light
+          state_filter:
+            - 'active'

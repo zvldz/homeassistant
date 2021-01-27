@@ -1,0 +1,5 @@
+- platform: ping
+  name: camera1
+  host: 192.168.1.10
+  count: 2
+  scan_interval: 30

@@ -329,3 +329,12 @@ sensor.battery_158d0004466f8f:
 sensor.battery_158d00044a26ba:
   friendly_name: "Bathroom Motion"
 
+binary_sensor.motion_sensor_158d000488d1c2:
+  friendly_name: "Bedroom Motion"
+
+sensor.battery_158d000488d1c2:
+  friendly_name: "Bedroom Motion"
+
+sensor.illumination_158d000488d1c2:
+  friendly_name: "Bedroom Illum"
+

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
 
 # Bluetooth Model: [Manufacturer, Device Name, Device Model]
 # params: [siid, piid, hass attr name, hass domain]
@@ -18,11 +18,12 @@ DEVICES = [{
     1695: ["Aqara", "Door Lock N200", "ZNMS17LM"],
     1747: ["Xiaomi", "ZenMeasure Clock", "MHO-C303"],
     1983: ["Yeelight", "Button S1", "YLAI003"],
-    2038: ["Xiaomi", "Night Light 2", "MJYD02YL-A"],
+    2038: ["Xiaomi", "Night Light 2", "MJYD02YL-A"],  # 15,4103,4106,4119,4120
     2443: ["Xiaomi", "Door Sensor 2", "MCCGQ02HL"],
     2444: ["Xiaomi", "Door Lock", "XMZNMST02YD"],
     2480: ["Xiaomi", "Safe Box", "BGX-5/X1-3001"],
-    2701: ["Xiaomi", "Motion Sensor 2", "RTCGQ02LM"],
+    # logs: https://github.com/AlexxIT/XiaomiGateway3/issues/180
+    2701: ["Xiaomi", "Motion Sensor 2", "RTCGQ02LM"],  # 15,4119,4120
 }, {
     # Mesh Light
     0: ["Xiaomi", "Mesh Group", "Mesh Group"],
@@ -49,7 +50,7 @@ DEVICES = [{
 }, {
     2007: ["Unknown", "Mesh Switch Controller", "2007"],
     'params': [
-        [2, 1, None, 'switch']
+        [2, 1, 'switch', 'switch']
     ]
 }, {
     2093: ["PTX", "Mesh Wall Triple Switch", "PTX-TK3/M"],
@@ -147,7 +148,7 @@ ACTIONS = {
 def get_ble_domain(param: str) -> Optional[str]:
     if param in (
             'sleep', 'lock', 'opening', 'water_leak', 'smoke', 'gas', 'light',
-            'contact'):
+            'contact', 'motion'):
         return 'binary_sensor'
 
     elif param in (
@@ -191,8 +192,14 @@ def parse_xiaomi_ble(event: dict, pdid: int) -> Optional[dict]:
         return {'humidity': int.from_bytes(data, 'little') / 10.0}
 
     elif eid == 0x1007 and length == 3:  # 4103
+        value = int.from_bytes(data, 'little')
+
+        if pdid == 2038:
+            # Night Light 2: 1 - no light, 100 - light
+            return {'light': int(value >= 100)}
+
         # Range: 0-120000, lux
-        return {'illuminance': int.from_bytes(data, 'little')}
+        return {'illuminance': value}
 
     elif eid == 0x1008 and length == 1:  # 4104
         # Humidity percentage, range: 0-100
@@ -316,9 +323,10 @@ def parse_xiaomi_ble(event: dict, pdid: int) -> Optional[dict]:
     elif eid == 0x0F:  # 15
         # Night Light 2: 1 - moving no light, 100 - moving with light
         # Motion Sensor 2: 0 - moving no light, 256 - moving with light
+        value = int.from_bytes(data, 'little')
         return {
             'motion': 1,
-            'light': 1 if int.from_bytes(data, 'little') >= 100 else 0
+            'light': int(value >= 100)
         }
 
     return None

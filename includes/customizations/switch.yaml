@@ -74,4 +74,11 @@ switch.esp_boiler_relay:
   friendly_name: "Boiler"
   icon: "mdi:water-boiler"
 
+switch.bw_plug_2_relay:
+  friendly_name: "Socket 3"
+  icon: "mdi:power-socket-eu"
+
+switch.bw_plug_2_relay_usb:
+  friendly_name: "Socket 3 USB"
+  icon: "mdi:power-socket-eu"
 

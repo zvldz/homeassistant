@@ -59,8 +59,13 @@ class Gateway3Entity(Gateway3Device, ToggleEntity):
                                                  "Xiaomi Gateway 3")
 
         elif 'removed_did' in data:
-            self.debug(f"Handle removed_did: {data['removed_did']}")
-            utils.remove_device(self.hass, data['removed_did'])
+            # https://github.com/AlexxIT/XiaomiGateway3/issues/122
+            did = data['removed_did']['did'] \
+                if isinstance(data['removed_did'], dict) \
+                else data['removed_did']
+            if did.startswith('lumi.'):
+                self.debug(f"Handle removed_did: {did}")
+                utils.remove_device(self.hass, did)
 
         self.async_write_ha_state()
 

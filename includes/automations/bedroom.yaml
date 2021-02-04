@@ -24,9 +24,9 @@
       entity_id: binary_sensor.motion_sensor_158d000488d1c2
       to: 'on'
   condition:
-#   - condition: numeric_state
-#     entity_id: sensor.illumination_158d000488d1c2
-#     below: 10
+    - condition: numeric_state
+      entity_id: sensor.illumination_158d000488d1c2
+      below: 16
     - condition: state
       entity_id: light.bedroom_lamp
       state: 'off'

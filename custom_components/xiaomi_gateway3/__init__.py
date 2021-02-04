@@ -9,7 +9,6 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_registry import EntityRegistry
 from homeassistant.helpers.storage import Store
-from homeassistant.util import sanitize_filename
 
 from .core import utils
 from .core.gateway3 import Gateway3
@@ -19,7 +18,7 @@ from .core.xiaomi_cloud import MiCloud
 _LOGGER = logging.getLogger(__name__)
 
 DOMAINS = ['binary_sensor', 'climate', 'cover', 'light', 'remote', 'sensor',
-           'switch']
+           'switch', 'alarm_control_panel']
 
 CONF_DEVICES = 'devices'
 CONF_DEBUG = 'debug'
@@ -97,6 +96,10 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    # check unload cloud integration
+    if entry.entry_id not in hass.data[DOMAIN]:
+        return
+
     # remove all stats entities if disable stats
     if not entry.options.get('stats'):
         suffix = ('_gateway', '_zigbee')
@@ -147,8 +150,7 @@ async def _setup_micloud_entry(hass: HomeAssistant, config_entry):
             _LOGGER.error("Can't login to MiCloud")
 
     # load devices from or save to .storage
-    filename = sanitize_filename(data['username'])
-    store = Store(hass, 1, f"{DOMAIN}/{filename}.json")
+    store = Store(hass, 1, f"{DOMAIN}/{data['username']}.json")
     if devices is None:
         _LOGGER.debug("Loading a list of devices from the .storage")
         devices = await store.async_load()

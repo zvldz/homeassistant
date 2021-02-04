@@ -50,12 +50,9 @@ system_log:
 logger:
   default: info
   logs:
-    midea: debug
-    custom_components.rest.switch: debug
-    custom_components.tcp2.sensor: debug
-#   homeassistant.components.xiaomi_miio.light: fatal
+    custom_components.xiaomi_gateway3: debug
+#   midea: debug
 #   custom_components.sonoff: debug
-#   miio.device: fatal
 
 recorder:
   db_url: !secret db_mysql
@@ -153,11 +150,6 @@ notify:
 #  password: !secret sonoff_password
 #  mode: local
 #  reload: always
-
-
-xiaomi_gateway3:
-# debug: true
-  debug: bluetooth
 
 switch:         !include_dir_merge_list includes/switches
 sensor:         !include_dir_merge_list includes/sensors

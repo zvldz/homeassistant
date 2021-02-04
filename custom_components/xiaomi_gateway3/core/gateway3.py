@@ -480,7 +480,7 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
                 shell.redirect_miio2mqtt(pattern, self.ver_miio)
 
             if self.options.get('buzzer'):
-                if "basic_gw -b" in ps:
+                if "dummy:basic_gw" not in ps:
                     self.debug("Disable buzzer")
                     shell.stop_buzzer()
             else:
@@ -544,6 +544,9 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
         """Load devices info for Coordinator, Zigbee and Mesh."""
 
         # 1. Read coordinator info
+        raw = shell.read_file('/data/miio/device.conf').decode()
+        m = re.search(r'did=(\d+)', raw)
+
         raw = shell.read_file('/data/zigbee/coordinator.info')
         device = json.loads(raw)
         devices = [{
@@ -552,7 +555,8 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
             'mac': device['mac'],
             'type': 'gateway',
             'init': {
-                'firmware lock': shell.check_firmware_lock()
+                'firmware lock': shell.check_firmware_lock(),
+                'alarm_did': m[1]
             }
         }]
 
@@ -577,7 +581,7 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
                 db = Unqlite(raw)
                 data = db.read_all()
             else:
-                raw = re.sub(br'}\s+{', b',', raw)
+                raw = re.sub(br'}\s*{', b',', raw)
                 data = json.loads(raw)
 
             # data = {} or data = {'dev_list': 'null'}
@@ -919,7 +923,9 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
                 else:
                     payload[prop] = param['arguments']
 
-        ts = round(ts - data['time'] * 0.001 + self.time_offset, 2)
+        # no time in device add command
+        ts = round(ts - data['time'] * 0.001 + self.time_offset, 2) \
+            if 'time' in data else '?'
         self.debug(f"{device['did']} {device['model']} <= {payload} [{ts}]")
 
         if payload:
@@ -1011,11 +1017,14 @@ class Gateway3(Thread, GatewayV, GatewayMesh, GatewayStats):
 
         # init entities if needed
         for k in payload.keys():
-            # don't retain action
-            if k in device['init'] or k == 'action':
+            # don't retain action and motion
+            if k in device['init']:
                 continue
 
-            device['init'][k] = payload[k]
+            if k in ('action', 'motion'):
+                device['init'][k] = ''
+            else:
+                device['init'][k] = payload[k]
 
             domain = bluetooth.get_ble_domain(k)
             if not domain:

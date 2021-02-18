@@ -188,6 +188,8 @@ automation:
           entity_id: climate.gas_boiler
           temperature: 20.5
           hvac_mode: heat
+      - service: switch.turn_on
+        entity_id: switch.sonoff_pump_relay
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true

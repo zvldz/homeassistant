@@ -1,8 +1,0 @@
-weather:
-  - platform: gismeteo
-
-sensor:
-  - platform: gismeteo
-    forecast: true
-    monitored_conditions:
-      - weather

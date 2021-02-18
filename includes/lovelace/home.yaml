@@ -34,10 +34,6 @@ cards:
         show_header_toggle: false
         entity: weather.openweathermap
 
-      - type: weather-forecast
-        show_header_toggle: false
-        entity: weather.gismeteo
-
   - type: vertical-stack
     cards:
       - type: custom:button-card

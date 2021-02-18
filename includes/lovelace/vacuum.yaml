@@ -134,7 +134,7 @@ cards:
             - background-color: "#203040"
 
       - type: 'custom:valetudo-map-card'
-        entity: sensor.xiaomi_map
+        entity: camera.map
         rotate: -1
         map_scale: 1.3
         min_height: 0

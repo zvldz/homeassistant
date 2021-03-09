@@ -1,6 +1,7 @@
 {
   "domain": "sox",
   "name": "SoX",
+  "version": "0.9.0",
   "documentation": "https://sourceforge.net/projects/sox/",
   "requirements": [],
   "dependencies": [],

@@ -1,6 +1,7 @@
 {
   "domain": "custom_filters",
   "name": "Custom filters for jinja2",
+  "version": "0.9.0",
   "documentation": "https://github.com/zvldz/ha_custom_filters",
   "dependencies": [],
   "requirements": [],

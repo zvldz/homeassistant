@@ -34,13 +34,24 @@ light.living_room_spot_left_2:
 light.living_room_spot_left_3:
   friendly_name: "Left Spot 3"
 
-light.living_room_spot_right_1:
+#light.living_room_spot_right_1:
+# friendly_name: "Right Spot 1"
+
+#light.living_room_spot_right_2:
+# friendly_name: "Right Spot 2"
+
+#light.living_room_spot_right_3:
+# friendly_name: "Right Spot 3"
+
+light.12ed88b3dec2e000_light:
+  friendly_name: "Right Spots"
+
+light.28d12721e0ee_light:
   friendly_name: "Right Spot 1"
 
-light.living_room_spot_right_2:
+light.28d12721b455_light:
   friendly_name: "Right Spot 2"
 
-light.living_room_spot_right_3:
+light.28d1273a1200_light:
   friendly_name: "Right Spot 3"
-
 

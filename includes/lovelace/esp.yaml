@@ -103,16 +103,6 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
                   sort: entity_id
-#         - type: custom:auto-entities
-#           card:
-#             type: custom:fold-entity-row
-#             head:
-#               type: section
-#               label: Free Heap
-#           filter:
-#             include:
-#               - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*free_heap"
-#                 sort: entity_id
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row

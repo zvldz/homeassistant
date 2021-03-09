@@ -16,20 +16,21 @@
   token: !secret living_room_spot_left_3_token
   model: philips.light.downlight
 
+#- platform: xiaomi_miio
+# name: living_room_spot_right_1
+# host: !secret living_room_spot_right_1_ip
+# token: !secret living_room_spot_right_1_token
+# model: philips.light.downlight
+
 - platform: xiaomi_miio
-  name: living_room_spot_right_1
-  host: !secret living_room_spot_right_1_ip
-  token: !secret living_room_spot_right_1_token
+  name: wc_spot_1
+  host: !secret wc_spot_1_ip
+  token: !secret wc_spot_1_token
   model: philips.light.downlight
 
 - platform: xiaomi_miio
-  name: living_room_spot_right_2
-  host: !secret living_room_spot_right_2_ip
-  token: !secret living_room_spot_right_2_token
+  name: wc_spot_2
+  host: !secret wc_spot_2_ip
+  token: !secret wc_spot_2_token
   model: philips.light.downlight
 
-- platform: xiaomi_miio
-  name: living_room_spot_right_3
-  host: !secret living_room_spot_right_3_ip
-  token: !secret living_room_spot_right_3_token
-  model: philips.light.downlight

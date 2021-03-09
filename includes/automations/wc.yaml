@@ -1,5 +1,17 @@
 # WC
 # Light
+- alias: "Toggle light in WC"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: sensor.0x158d00022360fe_action
+        click_type: single
+  action:
+    - service: light.toggle
+      entity_id: group.wc_spots
+
 - alias: "Turn on light in WC on conditions"
   initial_state: true
   trigger:
@@ -12,21 +24,17 @@
         entity_id: binary_sensor.motion_sensor_158d0004466f8f
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       state: 'off'
   action:
-    - service: switch.turn_on
-      entity_id: switch.wall_switch_ln_158d00022360fe
-#   - service: timer.cancel
-#     entity_id: timer.wc_light
-#   - service: timer.start
-#     entity_id: timer.wc_light
+    - service: light.turn_on
+      entity_id: group.wc_spots
 
 - alias: "Turn on WC timer"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       to: 'on'
   action:
     - service: timer.cancel
@@ -46,7 +54,7 @@
         entity_id: binary_sensor.motion_sensor_158d0004466f8f
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       state: 'on'
   action:
     - service: timer.cancel
@@ -66,20 +74,20 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       state: 'on'
     - condition: state
       entity_id: binary_sensor.door_window_sensor_158d00024de627
       state: 'off'
   action:
-    - service: switch.turn_off
-      entity_id: switch.wall_switch_ln_158d00022360fe
+    - service: light.turn_off
+      entity_id: group.wc_spots
 
 - alias: "Turn off wc timer if light is off"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       to: 'off'
   action:
     - service: timer.cancel
@@ -144,7 +152,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_158d00022360fe
+      entity_id: group.wc_spots
       state: 'on'
   action:
     - service: timer.start

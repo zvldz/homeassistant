@@ -24,8 +24,12 @@ cards:
                 head: group.living_room_spot_left
                 entity: group.living_room_spot_left
               - type: custom:fold-entity-row
+#               head: light.12ed88b3dec2e000_light
                 head: group.living_room_spot_right
-                entity: group.living_room_spot_right
+                entities:
+                  - light.28d12721e0ee_light
+                  - light.28d12721b455_light
+                  - light.28d1273a1200_light
 
   - type: vertical-stack
     cards:

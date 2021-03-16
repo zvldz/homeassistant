@@ -5,6 +5,7 @@ from typing import Optional
 # params: [siid, piid, hass attr name, hass domain]
 DEVICES = [{
     # BLE
+    131: ["Xiaomi", "Kettle", "YM-K1501"],
     152: ["Xiaomi", "Flower Care", "HHCCJCY01"],
     426: ["Xiaomi", "TH Sensor", "LYWSDCGQ/01ZM"],
     794: ["Xiaomi", "Door Lock", "MJZNMS02LM"],
@@ -28,6 +29,7 @@ DEVICES = [{
     2691: ["Xiaomi", "Qingping Motion Sensor", "CGPR1"],
     # logs: https://github.com/AlexxIT/XiaomiGateway3/issues/180
     2701: ["Xiaomi", "Motion Sensor 2", "RTCGQ02LM"],  # 15,4119,4120
+    2888: ["Xiaomi", "Qingping TH Sensor", "CGG1"],  # same model as 839?!
 }, {
     # Mesh Light
     0: ["Xiaomi", "Mesh Group", "Mesh Group"],
@@ -39,6 +41,7 @@ DEVICES = [{
     1772: ["Xiaomi", "Mesh Downlight", "MJTS01YL"],
     2076: ["Yeelight", "Mesh Downlight M2", "YLTS02YL/YLTS04YL"],
     2342: ["Yeelight", "Mesh Bulb M2", "YLDP25YL/YLDP26YL"],
+    2584: ["XinGuang", "XinGuang Smart Light", "LIBMDA09X"],
     'params': [
         [2, 1, 'light', 'light'],
         [2, 2, 'brightness', None],
@@ -51,6 +54,11 @@ DEVICES = [{
         [2, 1, 'left_switch', 'switch'],
         [3, 1, 'right_switch', 'switch'],
     ]
+}, {
+    1945: ["Xiaomi", "Mesh Wall Switch", "DHKG01ZM"],
+    'params': [
+        [2, 1, 'switch', 'switch']
+    ],
 }, {
     2007: ["Unknown", "Mesh Switch Controller"],
     'params': [
@@ -83,7 +91,27 @@ DEVICES = [{
         [8, 1, 'backlight', 'switch'],
         [8, 2, 'smart', 'switch'],
     ]
+}, {
+    2717: ["Xiaomi", "Mesh Wall Triple Switch", "ISA-KG03HL"],
+    'params': [
+        [2, 1, 'left_switch', 'switch'],
+        [3, 1, 'middle_switch', 'switch'],
+        [4, 1, 'right_switch', 'switch'],
+        [6, 1, 'humidity', 'sensor'],
+        [6, 7, 'temperature', 'sensor'],
+    ]
+},{
+    3083: ["Xiaomi", "Mi Smart Electrical Outlet", "ZNCZ01ZM"],
+    'params': [
+        [2, 1, 'outlet', 'switch'],
+        [4, 1, 'backlight', 'switch'],
+    ]
 }]
+
+# if color temp not default 2700..6500
+COLOR_TEMP = {
+    2584: [3000, 6400],
+}
 
 BLE_FINGERPRINT_ACTION = [
     "Match successful", "Match failed", "Timeout", "Low quality",
@@ -153,7 +181,7 @@ ACTIONS = {
 def get_ble_domain(param: str) -> Optional[str]:
     if param in (
             'sleep', 'lock', 'opening', 'water_leak', 'smoke', 'gas', 'light',
-            'contact', 'motion'):
+            'contact', 'motion', 'power'):
         return 'binary_sensor'
 
     elif param in (
@@ -193,6 +221,10 @@ def parse_xiaomi_ble(event: dict, pdid: int) -> Optional[dict]:
         return {
             'temperature': int.from_bytes(data, 'little', signed=True) / 10.0
         }
+
+    elif eid == 0x1005 and length == 2:  # 4101
+        # Kettle, thanks https://github.com/custom-components/ble_monitor/
+        return {'power': data[0], 'temperature': data[1]}
 
     elif eid == 0x1006 and length == 2:  # 4102
         # Humidity percentage, ranging from 0-1000
@@ -353,7 +385,9 @@ def get_device(pdid: int, default_name: str) -> Optional[dict]:
                 'device_manufacturer': desc[0],
                 'device_name': desc[0] + ' ' + desc[1],
                 'device_model': desc[2] if len(desc) > 2 else pdid,
-                'params': device.get('params')
+                'params': device.get('params'),
+                # if color temp not default 2700..6500
+                'color_temp': COLOR_TEMP.get(pdid),
             }
 
     return {

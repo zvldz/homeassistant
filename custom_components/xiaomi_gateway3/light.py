@@ -61,7 +61,7 @@ class Gateway3Light(Gateway3Device, LightEntity):
         if 'color_temp' in data:
             self._color_temp = int(data['color_temp'])
 
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
     def turn_on(self, **kwargs):
         if ATTR_TRANSITION not in kwargs:
@@ -134,6 +134,8 @@ class Gateway3Light(Gateway3Device, LightEntity):
 class Gateway3MeshLight(Gateway3Device, LightEntity):
     _brightness = None
     _color_temp = None
+    _min_mireds = int(1000000 / 6500)
+    _max_mireds = int(1000000 / 2700)
 
     @property
     def should_poll(self) -> bool:
@@ -154,15 +156,23 @@ class Gateway3MeshLight(Gateway3Device, LightEntity):
 
     @property
     def min_mireds(self):
-        return 153
+        return self._min_mireds
 
     @property
     def max_mireds(self):
-        return 370
+        return self._max_mireds
 
     @property
     def supported_features(self):
         return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+
+        color_temp = self.device.get('color_temp')
+        if color_temp:
+            self._min_mireds = int(1000000 / color_temp[0])
+            self._max_mireds = int(1000000 / color_temp[1])
 
     def update(self, data: dict = None):
         if data is None:
@@ -181,7 +191,7 @@ class Gateway3MeshLight(Gateway3Device, LightEntity):
             self._color_temp = \
                 color.color_temperature_kelvin_to_mired(data['color_temp'])
 
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
     def turn_on(self, **kwargs):
         # instantly change the HA state, and after 2 seconds check the actual
@@ -194,6 +204,10 @@ class Gateway3MeshLight(Gateway3Device, LightEntity):
 
         if ATTR_COLOR_TEMP in kwargs:
             self._color_temp = kwargs[ATTR_COLOR_TEMP]
+            if self._color_temp < self._min_mireds:
+                self._color_temp = self._min_mireds
+            if self._color_temp > self._max_mireds:
+                self._color_temp = self._max_mireds
             payload['color_temp'] = \
                 color.color_temperature_mired_to_kelvin(self._color_temp)
 
@@ -204,7 +218,7 @@ class Gateway3MeshLight(Gateway3Device, LightEntity):
 
         self.gw.send_mesh(self.device, payload)
 
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
     def turn_off(self):
         # instantly change the HA state, and after 2 seconds check the actual
@@ -213,7 +227,7 @@ class Gateway3MeshLight(Gateway3Device, LightEntity):
 
         self.gw.send_mesh(self.device, {self._attr: False})
 
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
 
 class Gateway3MeshGroup(Gateway3MeshLight):

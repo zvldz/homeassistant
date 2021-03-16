@@ -78,7 +78,7 @@
 
 # Brightness
 - alias: "Set brightness for lamp in kitchen"
-  initial_state: true
+  initial_state: false
   trigger:
     platform: state
     entity_id: light.kitchen_lamp

@@ -1,5 +1,5 @@
 - alias: "Set brightness for lamp in master bedroom"
-  initial_state: true
+  initial_state: false
   trigger:
     platform: state
     entity_id: light.master_bedroom_lamp

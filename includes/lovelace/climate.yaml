@@ -65,7 +65,7 @@ cards:
           - entity: sensor.humidity_158d0002bfe958
 
       - type: custom:simple-thermostat
-        entity: climate.living_room_trv_climate
+        entity: climate.living_room_trv
         name: false
         sensors:
           - entity: sensor.temperature_158d0002bfe958
@@ -105,7 +105,7 @@ cards:
           - entity: sensor.humidity_158d0002323856
 
       - type: custom:simple-thermostat
-        entity: climate.master_bedroom_trv_climate
+        entity: climate.master_bedroom_trv
         name: false
         sensors:
           - entity: sensor.temperature_158d0002323856
@@ -145,7 +145,7 @@ cards:
           - entity: sensor.humidity_158d0001ab2a27
 
       - type: custom:simple-thermostat
-        entity: climate.bedroom_trv_climate
+        entity: climate.bedroom_trv
         name: false
         sensors:
           - entity: sensor.temperature_158d0001ab2a27

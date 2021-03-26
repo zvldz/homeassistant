@@ -53,15 +53,15 @@ sensor:
   - platform: template
     sensors:
       living_room_trv_calibration:
-        value_template: "{{ state_attr('climate.living_room_trv_climate', 'local_temperature_calibration') }}"
+        value_template: "{{ state_attr('climate.living_room_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
       master_bedroom_trv_calibration:
-        value_template: "{{ state_attr('climate.master_bedroom_trv_climate', 'local_temperature_calibration') }}"
+        value_template: "{{ state_attr('climate.master_bedroom_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
       bedroom_trv_calibration:
-        value_template: "{{ state_attr('climate.bedroom_trv_climate', 'local_temperature_calibration') }}"
+        value_template: "{{ state_attr('climate.bedroom_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
 script:
@@ -92,7 +92,7 @@ script:
         example: 'Bedroom TRV'
       objectvalve:
         description: "Climate domain object name"
-        example: 'climate.bedroom_trv_climate'
+        example: 'climate.bedroom_trv'
       objectvalvewindow:
         description: "Object name of window sensor"
         example: 'switch.bedroom_trv_window_detection'
@@ -139,9 +139,9 @@ automation:
             climate.turn_off
           {% endif %}
         entity_id:
-          - climate.living_room_trv_climate
-          - climate.master_bedroom_trv_climate
-          - climate.bedroom_trv_climate
+          - climate.living_room_trv
+          - climate.master_bedroom_trv
+          - climate.bedroom_trv
 
 # - alias: "Sync Pump with Boiler"
 #   initial_state: true
@@ -233,19 +233,19 @@ automation:
       - service: script.auto_local_temperature_calibration_trv
         data:
           namevalve: 'living_room_trv'
-          objectvalve: 'climate.living_room_trv_climate'
+          objectvalve: 'climate.living_room_trv'
           objectvalvewindow: 'switch.living_room_trv_window_detection'
           objectsensortemperature: 'sensor.temperature_158d0002bfe958'
       - service: script.auto_local_temperature_calibration_trv
         data:
           namevalve: 'master_bedroom_trv'
-          objectvalve: 'climate.master_bedroom_trv_climate'
+          objectvalve: 'climate.master_bedroom_trv'
           objectvalvewindow: 'switch.master_bedroom_trv_window_detection'
           objectsensortemperature: 'sensor.temperature_158d0002323856'
       - service: script.auto_local_temperature_calibration_trv
         data:
           namevalve: 'bedroom_trv'
-          objectvalve: 'climate.bedroom_trv_climate'
+          objectvalve: 'climate.bedroom_trv'
           objectvalvewindow: 'switch.bedroom_trv_window_detection'
           objectsensortemperature: 'sensor.temperature_158d0001ab2a27'
 

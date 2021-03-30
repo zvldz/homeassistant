@@ -22,7 +22,7 @@ cards:
 
           - type: custom:button-card
             name: "Reboot HA3 2"
-            icon: "mdi:backup-restore"
+            icon: "mdi:rotate-3d-variant"
             tap_action:
               confirmation: true
               action: call-service
@@ -50,7 +50,7 @@ cards:
 
           - type: custom:button-card
             name: "Dump HA3 2"
-            icon: "mdi:rotate-3d-variant"
+            icon: "mdi:backup-restore"
             tap_action:
               confirmation: true
               action: call-service

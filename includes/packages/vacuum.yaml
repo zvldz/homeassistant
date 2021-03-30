@@ -220,6 +220,26 @@ automation:
       - service: script.turn_on
         entity_id: script.vacuum_hallway
 
+  - alias: "Go To Kitchen"
+    initial_state: true
+    trigger:
+      - platform: time
+        at: '09:15:00'
+    condition:
+      - condition: state
+        entity_id: input_boolean.vacuum_schedule
+        state: 'on'
+      - condition: time
+        weekday:
+          - sat
+      - condition: state
+        entity_id: group.persons
+        state: 'home'
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_goto_kitchen
+
+
 script:
   vacuum_all_except_balcony:
     alias: "Clean Up All Except Balcony"
@@ -368,4 +388,13 @@ script:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: reset_consumable
           params: sensor_dirty_time
+
+  vacuum_goto_kitchen:
+    alias: "Go To Kitchen"
+    sequence:
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_goto_target
+          params: [ 34660,33370 ]
 

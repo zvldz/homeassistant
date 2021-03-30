@@ -27,10 +27,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     gw.add_setup('light', setup)
 
 
-async def async_unload_entry(hass, entry):
-    return True
-
-
 class XiaomiZigbeeLight(XiaomiEntity, LightEntity):
     _brightness = None
     _color_temp = None
@@ -232,14 +228,19 @@ class XiaomiMeshLight(XiaomiEntity, LightEntity):
 
 class XiaomiMeshGroup(XiaomiMeshLight):
     async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+
         if 'childs' in self.device:
+            # add group to child bulb entities for processing update
             for did in self.device['childs']:
-                self.gw.devices[did]['updates'].append(self.update)
+                self.gw.devices[did]['entities']['group'] = self
 
     async def async_will_remove_from_hass(self) -> None:
+        await super().async_will_remove_from_hass()
+
         if 'childs' in self.device:
             for did in self.device['childs']:
-                self.gw.devices[did]['updates'].remove(self.update)
+                self.gw.devices[did]['entities'].pop('group')
 
     @property
     def should_poll(self):

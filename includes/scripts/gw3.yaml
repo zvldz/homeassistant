@@ -1,0 +1,27 @@
+reboot_gateway_1:
+  sequence:
+    - service: remote.send_command
+      entity_id: remote.0x588e81fffe771b2a_pair
+      data:
+        command: reboot
+
+reboot_gateway_2:
+  sequence:
+    - service: remote.send_command
+      entity_id: remote.0x680ae2fffe266ed5_pair
+      data:
+        command: reboot
+
+dump_gateway_1:
+  sequence:
+    - service: remote.send_command
+      entity_id: remote.0x588e81fffe771b2a_pair
+      data:
+        command: dump
+
+dump_gateway_2:
+  sequence:
+    - service: remote.send_command
+      entity_id: remote.0x680ae2fffe266ed5_pair
+      data:
+        command: dump

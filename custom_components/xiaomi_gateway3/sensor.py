@@ -51,7 +51,7 @@ async def async_setup_entry(hass, entry, add_entities):
         if attr == 'action':
             add_entities([XiaomiAction(gateway, device, attr)])
         elif attr == 'gateway':
-            add_entities([GatewayStats(gateway, device, attr)])
+            add_entities([GatewayStats(gateway, device, attr)], True)
         elif attr == 'zigbee':
             add_entities([ZigbeeStats(gateway, device, attr)])
         elif attr == 'ble':
@@ -61,10 +61,6 @@ async def async_setup_entry(hass, entry, add_entities):
 
     gw: Gateway3 = hass.data[DOMAIN][entry.entry_id]
     gw.add_setup('sensor', setup)
-
-
-async def async_unload_entry(hass, entry):
-    return True
 
 
 class XiaomiSensor(XiaomiEntity):
@@ -106,6 +102,7 @@ class GatewayStats(XiaomiSensor):
         self.update()
 
     async def async_will_remove_from_hass(self) -> None:
+        await super().async_will_remove_from_hass()
         self.gw.remove_stats(self.device['did'], self.update)
 
     def update(self, data: dict = None):
@@ -147,6 +144,7 @@ class ZigbeeStats(XiaomiSensor):
         self.gw.add_stats(self._attrs['ieee'], self.update)
 
     async def async_will_remove_from_hass(self) -> None:
+        await super().async_will_remove_from_hass()
         self.gw.remove_stats(self._attrs['ieee'], self.update)
 
     def update(self, data: dict = None):
@@ -218,6 +216,7 @@ class BLEStats(XiaomiSensor):
         self.gw.add_stats(self.device['did'], self.update)
 
     async def async_will_remove_from_hass(self) -> None:
+        await super().async_will_remove_from_hass()
         self.gw.remove_stats(self.device['did'], self.update)
 
     def update(self, data: dict = None):
@@ -268,7 +267,7 @@ class XiaomiAction(XiaomiEntity):
         for k, v in data.items():
             if k == 'button':
                 # fix 1.4.7_0115 heartbeat error (has button in heartbeat)
-                if 'voltage' in data:
+                if 'battery' in data:
                     return
                 data[self.attr] = BUTTON.get(v, 'unknown')
                 break

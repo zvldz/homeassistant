@@ -113,7 +113,11 @@ class GatewayMesh(GatewayBase):
         bulk = {}
 
         for param in data:
-            if param.get('code', 0) != 0:
+            code = param.get('code', 0)
+            if code == -4004:
+                # handle device offline state
+                param['value'] = None
+            elif code != 0:
                 continue
 
             did = param['did']
@@ -131,6 +135,10 @@ class GatewayMesh(GatewayBase):
 
             if did not in bulk:
                 bulk[did] = {}
+
+            # TODO: fix this dirty hack
+            if device['model'] == 3083 and prop == 'power':
+                param['value'] /= 100.0
 
             bulk[did][prop] = param['value']
 
@@ -572,7 +580,10 @@ class GatewayEntry(Thread, GatewayStats):
                 dev_list = json.loads(data.get('dev_list', 'null')) or []
 
                 for did in dev_list:
-                    model = data[did + '.model']
+                    model = data.get(did + '.model')
+                    if not model:
+                        self.debug(f"{did} has not in devices DB")
+                        continue
                     desc = zigbee.get_device(model)
 
                     # skip unknown model
@@ -595,10 +606,10 @@ class GatewayEntry(Thread, GatewayStats):
                         'mac': '0x' + data[did + '.mac'],
                         'ieee': ieee,
                         'nwk': nwks.get(ieee),
-                        'model': data[did + '.model'],
+                        'model': model,
                         'type': 'zigbee',
                         'fw_ver': retain.get('fw_ver'),
-                        'init': zigbee.fix_xiaomi_props(params),
+                        'init': zigbee.fix_xiaomi_props(model, params),
                         'online': retain.get('alive', 1) == 1
                     }
                     devices.append(device)
@@ -674,7 +685,7 @@ class GatewayEntry(Thread, GatewayStats):
             return None
 
         except Exception as e:
-            self.debug(f"Can't read devices: {e}")
+            _LOGGER.exception(f"{self.host} | Can't read devices: {e}")
             return None
 
     def lock_firmware(self, enable: bool):
@@ -876,10 +887,12 @@ class GatewayEntry(Thread, GatewayStats):
 
             # https://github.com/Koenkk/zigbee2mqtt/issues/798
             # https://www.maero.dk/aqara-temperature-humidity-pressure-sensor-teardown/
-            if prop == 'temperature':
+            if (prop == 'temperature' and
+                    device['model'] != 'lumi.airmonitor.acn01'):
                 if -4000 < param['value'] < 12500:
                     payload[prop] = param['value'] / 100.0
-            elif prop == 'humidity':
+            elif (prop == 'humidity' and
+                  device['model'] != 'lumi.airmonitor.acn01'):
                 if 0 <= param['value'] <= 10000:
                     payload[prop] = param['value'] / 100.0
             elif prop == 'pressure':
@@ -888,9 +901,11 @@ class GatewayEntry(Thread, GatewayStats):
                 # sometimes voltage and battery came in one payload
                 if prop == 'voltage' and 'battery' in payload:
                     continue
+                # I do not know if the formula is correct, so battery is more
+                # important than voltage
                 payload['battery'] = (
                     param['value'] if param['value'] < 1000
-                    else round((min(param['value'], 3200) - 2500) / 7)
+                    else int((min(param['value'], 3200) - 2600) / 6)
                 )
             elif prop == 'alive' and param['value']['status'] == 'offline':
                 device['online'] = False
@@ -931,6 +946,9 @@ class GatewayEntry(Thread, GatewayStats):
             device['type'] = 'zigbee'
             device['init'] = payload
             self.setup_devices([device])
+
+        # return for tests purpose
+        return payload
 
     def process_ble_event(self, data: dict):
         self.debug(f"Process BLE {data}")
@@ -1115,7 +1133,7 @@ class GatewayEntry(Thread, GatewayStats):
                     shell.run_ftp()
                 elif command == 'dump':
                     raw = shell.tar_data()
-                    filename = Path().absolute() / f"{self.name}.tar.gz"
+                    filename = Path().absolute() / f"{self.host}.tar.gz"
                     with open(filename, 'wb') as f:
                         f.write(raw)
                 else:

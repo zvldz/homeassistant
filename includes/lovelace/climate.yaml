@@ -57,7 +57,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_813900000011
-        name: "A/C"
+        name: "A/C Living Room"
         icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0002bfe958
@@ -98,7 +98,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_823900000011
-        name: "A/C"
+        name: "A/C Master Bedroom"
         icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0002323856
@@ -138,7 +138,7 @@ cards:
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_e0470000000f
-        name: "A/C"
+        name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.temperature_158d0001ab2a27

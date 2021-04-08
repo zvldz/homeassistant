@@ -229,6 +229,10 @@ automation:
     trigger:
       - platform: time_pattern
         minutes: "/30"
+    condition:
+      - condition: state
+        entity_id: input_boolean.gas_boiler_schedule
+        state: 'on'
     action:
       - service: script.auto_local_temperature_calibration_trv
         data:

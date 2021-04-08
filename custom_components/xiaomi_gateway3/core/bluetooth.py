@@ -104,6 +104,7 @@ DEVICES = [{
     3083: ["Xiaomi", "Mi Smart Electrical Outlet", "ZNCZ01ZM"],
     'params': [
         [2, 1, 'outlet', 'switch'],
+        [3, 1, 'power', 'sensor'],
         [4, 1, 'backlight', 'switch'],
     ]
 }]
@@ -111,6 +112,10 @@ DEVICES = [{
 # if color temp not default 2700..6500
 COLOR_TEMP = {
     2584: [3000, 6400],
+}
+# if max brightness not default 65535
+MAX_BRIGHTNESS = {
+    2584: 100
 }
 
 BLE_FINGERPRINT_ACTION = [
@@ -388,6 +393,7 @@ def get_device(pdid: int, default_name: str) -> Optional[dict]:
                 'params': device.get('params'),
                 # if color temp not default 2700..6500
                 'color_temp': COLOR_TEMP.get(pdid),
+                'max_brightness': MAX_BRIGHTNESS.get(pdid)
             }
 
     return {

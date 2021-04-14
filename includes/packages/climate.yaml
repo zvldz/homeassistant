@@ -171,7 +171,7 @@ automation:
 #     - service: switch.turn_off
 #       entity_id: switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 20.5`schedule"
+  - alias: "Set temperature to 20.5 on schedule"
     initial_state: true
     trigger:
       - platform: time
@@ -190,6 +190,10 @@ automation:
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
+      - service: persistent_notification.create
+        data:
+          title: "Thermostat"
+          message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true

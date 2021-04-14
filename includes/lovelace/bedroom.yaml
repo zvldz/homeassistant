@@ -14,6 +14,15 @@ cards:
           - type: light
             entity: light.bedroom_lamp
 
+      - type: custom:button-card
+        name: "Camera"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: 'custom:webrtc-camera'
+        url: 'rtsp://192.168.1.10:8554/mainstream'
+
   - type: vertical-stack
     cards:
       - type: custom:button-card

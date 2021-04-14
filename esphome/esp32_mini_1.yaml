@@ -7,15 +7,21 @@ esphome:
   board: wemos_d1_mini32
 
 wifi:
-  output_power: 20dB
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  output_power: 18dB
+  ssid: !secret wifi_ssid_4
+  password: !secret wifi_pass_4
+
+time:
+  - platform: homeassistant
 
 logger:
 api:
 ota:
 captive_portal:
 esp32_ble_tracker:
+  scan_parameters:
+    interval: 512ms
+    window: 48ms
 
 binary_sensor:
   - platform: status
@@ -87,5 +93,4 @@ switch:
   - platform: restart
     name: ${device_name}_restart
     icon: mdi:restart
-
 

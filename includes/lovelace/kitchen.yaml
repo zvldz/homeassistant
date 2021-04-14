@@ -95,8 +95,3 @@ cards:
           state_filter:
             - 'active'
 
-      - type: picture-glance
-        show_header_toggle: false
-        entities: []
-        camera_image: camera.camera1
-

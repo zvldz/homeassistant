@@ -56,7 +56,7 @@ logger:
 
 recorder:
   db_url: !secret db_mysql
-  purge_keep_days: 7
+  purge_keep_days: 3
   exclude:
     entities:
       - sensor.uptime

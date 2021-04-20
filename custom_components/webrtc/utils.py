@@ -4,8 +4,10 @@ import subprocess
 from threading import Thread
 from typing import Optional
 
+from homeassistant.components.camera import Camera
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
+from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.typing import HomeAssistantType
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,6 +18,10 @@ ARCH = {
     'armv7l': 'armv7',
     'aarch64': 'aarch64',
     'x86_64': 'amd64',
+    'i386': 'i386',
+    'i486': 'i386',
+    'i586': 'i386',
+    'i686': 'i386',
 }
 
 
@@ -23,6 +29,8 @@ def get_arch() -> Optional[str]:
     uname = ('Windows',) if os.name == 'nt' else os.uname()
     if uname[0] == 'Windows':
         return 'amd64.exe'
+    elif uname[0] == 'Darwin':
+        return 'darwin'
     elif uname[0] == 'Linux' and uname[4] in ARCH:
         return ARCH[uname[4]]
     return None
@@ -35,6 +43,13 @@ def get_binary_name(version: str) -> str:
 def get_binary_url(version: str) -> str:
     return "https://github.com/AlexxIT/RTSPtoWebRTC/releases/download/" \
            f"{version}/rtsp2webrtc_{get_arch()}"
+
+
+async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
+    component: EntityComponent = hass.data['camera']
+    camera: Camera = next(e for e in component.entities
+                          if e.entity_id == entity)
+    return await camera.stream_source()
 
 
 async def init_resource(hass: HomeAssistantType, url: str) -> bool:
@@ -62,8 +77,8 @@ class Server(Thread):
         super().__init__(name=DOMAIN, daemon=True)
         self.enabled = None
         self.process = None
-        self.udp_min = str(options.get('udp_min', 50000))
-        self.udp_max = str(options.get('udp_max', 50009))
+        self.udp_min = str(options.get('udp_min', 0))
+        self.udp_max = str(options.get('udp_max', 0))
 
     @property
     def available(self):

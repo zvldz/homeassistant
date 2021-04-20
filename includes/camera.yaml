@@ -1,0 +1,4 @@
+- platform: ffmpeg
+  name: camera1
+  input: -rtsp_transport tcp -i rtsp://192.168.1.10:8554/mainstream
+  extra_arguments: -vf select="eq(pict_type\,I)"

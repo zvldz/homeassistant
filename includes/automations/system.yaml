@@ -1,12 +1,9 @@
 - alias: system_entity_change
   initial_state: true
-  mode: parallel
+  mode: queued
   trigger:
     - platform: event
       event_type: entity_registry_updated
-  condition:
-    - condition: template
-      value_template: "{{ trigger.event.data.action != 'update' }}"
   action:
     - service: notify.telegram
       data:

@@ -3,8 +3,11 @@ import os
 import pathlib
 from urllib.parse import urlparse
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from aiohttp import web
 from homeassistant.components import websocket_api
+from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -49,7 +52,10 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     if await utils.init_resource(hass, url_path):
         _LOGGER.debug(f"Init new lovelace custom card: {url_path}")
 
+    # component uses websocket, but some users can use REST API for integrate
+    # WebRTC to their software
     websocket_api.async_register_command(hass, websocket_webrtc_stream)
+    hass.http.register_view(WebRTCStreamView)
 
     return True
 
@@ -77,16 +83,14 @@ async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-@websocket_api.websocket_command({
-    vol.Required('type'): 'webrtc/stream',
-    vol.Required('url'): str,
-    vol.Required('sdp64'): str
-})
-@websocket_api.async_response
-async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
+async def start_stream(hass: HomeAssistantType, sdp64: str, url: str = None,
+                       entity: str = None, **kwargs):
     try:
-        # just check if url valid, e.g. wrong chars in password
-        urlparse(msg['url'])
+        if entity:
+            url = await utils.get_stream_source(hass, entity)
+
+        # also check if url valid, e.g. wrong chars in password
+        assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
 
         server = hass.data[DOMAIN]
         if not server.available:
@@ -95,12 +99,35 @@ async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
 
         session = async_get_clientsession(hass)
         r = await session.post(f"http://localhost:{server.port}/stream", data={
-            'url': msg['url'], 'sdp64': msg['sdp64']
+            'url': url, 'sdp64': sdp64
         })
         raw = await r.json()
 
-        _LOGGER.debug(f"New stream to url: {msg['url']}")
-        connection.send_result(msg['id'], raw)
+        _LOGGER.debug(f"New stream to url: {url}")
+        return raw
 
     except Exception as e:
-        _LOGGER.error(f"Can't start stream: {msg['url']}, because: {e}")
+        _LOGGER.error(f"Can't start stream: {url}, because: {e}")
+
+
+@websocket_api.websocket_command({
+    vol.Required('type'): 'webrtc/stream',
+    vol.Optional('url'): vol.Any(cv.string, None),
+    vol.Optional('entity'): vol.Any(cv.entity_id, None),
+    vol.Required('sdp64'): str
+})
+@websocket_api.async_response
+async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
+    result = await start_stream(hass, **msg)
+    connection.send_result(msg['id'], result)
+
+
+class WebRTCStreamView(HomeAssistantView):
+    url = '/api/webrtc/stream'
+    name = 'api:webrtc:stream'
+
+    async def post(self, request: web.Request):
+        hass = request.app['hass']
+        data = await request.post()
+        result = await start_stream(hass, **data)
+        return web.json_response(result)

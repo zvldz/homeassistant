@@ -23,6 +23,11 @@ cards:
       - type: 'custom:webrtc-camera'
         url: 'rtsp://192.168.1.10:8554/mainstream'
 
+      - type: picture-glance
+        show_header_toggle: false
+        entities: []
+        camera_image: camera.camera1
+
   - type: vertical-stack
     cards:
       - type: custom:button-card

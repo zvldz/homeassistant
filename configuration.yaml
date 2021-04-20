@@ -40,9 +40,6 @@ http:
     - 127.0.0.1
 
 discovery:
-  ignore:
-    - yeelight
-    - homekit
 
 system_log:
   fire_event: true

@@ -21,6 +21,9 @@ cards:
             - entity_id: sensor.nodemcu_3_outdoor_temperature
               options:
                 secondary_info: last-changed
+            - entity_id: sensor.fazenda_outdoor_temperature
+              options:
+                secondary_info: last-changed
           exclude:
             - entity_id: "*battery"
 
@@ -52,6 +55,9 @@ cards:
                 secondary_info: last-changed
               sort: name
             - entity_id: sensor.outdoor_humidity
+              options:
+                secondary_info: last-changed
+            - entity_id: sensor.fazenda_outdoor_humidity
               options:
                 secondary_info: last-changed
           exclude:
@@ -90,6 +96,9 @@ cards:
                 secondary_info: last-changed
               sort: name
             - entity_id: sensor.outdoor_pressure
+              options:
+                secondary_info: last-changed
+            - entity_id: sensor.fazenda_outdoor_pressure
               options:
                 secondary_info: last-changed
           exclude:

@@ -69,6 +69,17 @@
     - state
 
 - platform: rest
+  resource_template: "{{ states('input_text.has_url') }}api/states/sensor.ha_uptime"
+  name: has_uptime
+  device_class: timestamp
+  force_update: true
+  headers:
+    authorization: !secret has_token
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  json_attributes:
+    - state
+
+- platform: rest
   resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
   name: ha_fazenda_uptime
   device_class: timestamp

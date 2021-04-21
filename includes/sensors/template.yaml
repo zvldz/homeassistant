@@ -9,3 +9,13 @@
       value_template: "{{ states('sensor.nodemcu_3_outdoor_temperature') |int * 0 }}"
       unit_of_measurement: "hPa"
       icon_template: "mdi:gauge"
+
+    fazenda_outdoor_humidity:
+      value_template: "{{ states('sensor.fazenda_outdoor_temperature') |int * 0 }}"
+      unit_of_measurement: "%"
+      icon_template: "mdi:water-percent"
+
+    fazenda_outdoor_pressure:
+      value_template: "{{ states('sensor.fazenda_outdoor_temperature') |int * 0 }}"
+      unit_of_measurement: "hPa"
+      icon_template: "mdi:gauge"

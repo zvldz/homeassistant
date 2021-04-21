@@ -25,6 +25,9 @@ sensor.ha1_uptime:
 sensor.ha2_uptime:
   friendly_name: HA2 Uptime
 
+sensor.has_uptime:
+  friendly_name: HAS Uptime
+
 sensor.ha_fazenda_uptime:
   friendly_name: HA Fazenda Uptime
 
@@ -129,6 +132,15 @@ sensor.outdoor_humidity:
 
 sensor.outdoor_pressure:
   friendly_name: "Outdoor DS"
+
+sensor.fazenda_outdoor_temperature:
+  friendly_name: "Fazenda Outdoor DS"
+
+sensor.fazenda_outdoor_humidity:
+  friendly_name: "Fazenda Outdoor DS"
+
+sensor.fazenda_outdoor_pressure:
+  friendly_name: "Fazenda Outdoor DS"
 
 sensor.temperature_158d000273011f:
   friendly_name: "Bathroom"

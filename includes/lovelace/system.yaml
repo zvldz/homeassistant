@@ -17,6 +17,8 @@ cards:
             format: total
           - entity: sensor.ha2_uptime
             format: total
+          - entity: sensor.has_uptime
+            format: total
           - entity: sensor.ha_fazenda_uptime
             format: total
           - entity: sensor.ha_init

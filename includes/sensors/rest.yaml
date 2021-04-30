@@ -1,0 +1,12 @@
+- platform: rest
+  resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.nodemcu_4_outdoor_temperature"
+  name: fazenda_outdoor_temperature
+  unit_of_measurement: "°C"
+  device_class: temperature
+  force_update: true
+  headers:
+    authorization: !secret ha_fazenda_token
+  value_template: "{{ value_json.state }}"
+  json_attributes:
+    - state
+

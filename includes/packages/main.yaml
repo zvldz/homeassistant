@@ -24,4 +24,4 @@ automation:
           message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored"
       - delay: '00:00:40'
       - service: switch.turn_on
-        entity_id: switch.wall_switch_ln_158d00022360fe
+        entity_id: switch.0x158d00022360fe_switch

@@ -26,10 +26,6 @@ switch.wall_switch_ln_left_158d00022a8150:
   friendly_name: "Bathroom"
   icon: "mdi:light-switch"
 
-switch.wall_switch_ln_158d00022360fe:
-  friendly_name: "WC"
-  icon: "mdi:light-switch"
-
 switch.wall_switch_ln_158d0001f9aaae:
   friendly_name: "Hallway 1"
   icon: "mdi:light-switch"

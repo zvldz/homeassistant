@@ -21,7 +21,8 @@ cards:
             - background-color: "#203040"
 
       - type: 'custom:webrtc-camera'
-        url: 'rtsp://192.168.1.10:8554/mainstream'
+        entity: camera.camera1
+#       url: 'rtsp://192.168.1.10:8554/mainstream'
 
       - type: picture-glance
         show_header_toggle: false

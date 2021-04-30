@@ -95,3 +95,9 @@
     instance_name:
       value_template: !secret home_name
 
+    total_entities_unavail:
+      friendly_name: Total Entities Unavailable
+      unit_of_measurement: 'ea'
+      value_template: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | list | count }}"
+      icon_template: mdi:counter
+

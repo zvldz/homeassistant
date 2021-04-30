@@ -23,6 +23,9 @@
     - platform: state
       entity_id: switch.wall_switch_ln_158d000211434a
       to: 'on'
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'on'
   action:
     - service: timer.cancel
       entity_id: timer.kitchen_light
@@ -77,23 +80,23 @@
       entity_id: timer.kitchen_light
 
 # Brightness
-- alias: "Set brightness for lamp in kitchen"
-  initial_state: false
-  trigger:
-    platform: state
-    entity_id: light.kitchen_lamp
-    from: 'off'
-    to: 'on'
-  action:
-    - service: yeelight.set_mode
-      data:
-        entity_id: light.kitchen_lamp
-        mode: normal
-    - service: yeelight.set_color_temp_scene
-      data:
-        entity_id: light.kitchen_lamp
-        brightness: 70
-        kelvin: 4000
+#- alias: "Set brightness for lamp in kitchen"
+#  initial_state: false
+#  trigger:
+#    platform: state
+#    entity_id: light.kitchen_lamp
+#    from: 'off'
+#    to: 'on'
+#  action:
+#    - service: yeelight.set_mode
+#      data:
+#        entity_id: light.kitchen_lamp
+#        mode: normal
+#    - service: yeelight.set_color_temp_scene
+#      data:
+#        entity_id: light.kitchen_lamp
+#        brightness: 70
+#        kelvin: 4000
 
 # Start HA
 - alias: "Start Kitchen timer if not starting"

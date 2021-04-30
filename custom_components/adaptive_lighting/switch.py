@@ -529,10 +529,17 @@ class AdaptiveSwitch(SwitchEntity, RestoreEntity):
         self._transition = min(
             data[CONF_TRANSITION], self._interval.total_seconds() // 2
         )
+        _loc = get_astral_location(self.hass)
+        if isinstance(_loc, tuple):
+            # Astral v2.2
+            location, _ = _loc
+        else:
+            # Astral v1
+            location = _loc
 
         self._sun_light_settings = SunLightSettings(
             name=self._name,
-            astral_location=get_astral_location(self.hass),
+            astral_location=location,
             max_brightness=data[CONF_MAX_BRIGHTNESS],
             max_color_temp=data[CONF_MAX_COLOR_TEMP],
             min_brightness=data[CONF_MIN_BRIGHTNESS],
@@ -1029,8 +1036,14 @@ class SunLightSettings:
         ) + self.sunset_offset
 
         if self.sunrise_time is None and self.sunset_time is None:
-            solar_noon = location.solar_noon(date, local=False)
-            solar_midnight = location.solar_midnight(date, local=False)
+            try:
+                # Astral v1
+                solar_noon = location.solar_noon(date, local=False)
+                solar_midnight = location.solar_midnight(date, local=False)
+            except AttributeError:
+                # Astral v2
+                solar_noon = location.noon(date, local=False)
+                solar_midnight = location.midnight(date, local=False)
         else:
             solar_noon = sunrise + (sunset - sunrise) / 2
             solar_midnight = sunset + ((sunrise + timedelta(days=1)) - sunset) / 2

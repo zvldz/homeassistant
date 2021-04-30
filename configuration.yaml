@@ -38,8 +38,11 @@ http:
   use_x_forwarded_for: true
   trusted_proxies:
     - 127.0.0.1
+    - ::1
 
 discovery:
+  ignore:
+    - yeelight
 
 system_log:
   fire_event: true
@@ -47,7 +50,11 @@ system_log:
 logger:
   default: info
   logs:
-    custom_components.xiaomi_gateway3: debug
+#   custom_components.xiaomi_gateway3: debug
+#   homeassistant.components.yeelight: debug
+#   homeassistant.components.yeelight.light: debug
+#   yeelight: debug
+#   yeelight.light: debug
 #   midea: debug
 #   custom_components.sonoff: debug
 
@@ -157,7 +164,6 @@ automation:     !include_dir_merge_list includes/automations
 script:         !include_dir_merge_named includes/scripts
 group:          !include includes/groups.yaml
 media_player:   !include includes/media_player.yaml
-yeelight:       !include includes/yeelight.yaml
 input_boolean:  !include includes/input_boolean.yaml
 input_number:   !include includes/input_number.yaml
 input_select:   !include includes/input_select.yaml

@@ -28,6 +28,30 @@ cards:
           - type: divider
 
       - type: custom:button-card
+        name: "Unavailable entities"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - entity: sensor.total_entities_unavail
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: "Details"
+              padding: 0
+            filter:
+              include:
+                - entity_id: "*"
+                  state: 'unavailable'
+                  sort: name
+                  options:
+                    secondary_info: last-changed
+
+      - type: custom:button-card
         name: "Voltage"
         styles:
           card:

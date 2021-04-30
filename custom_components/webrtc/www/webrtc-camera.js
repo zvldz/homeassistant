@@ -1,33 +1,46 @@
 class WebRTCCamera extends HTMLElement {
-    async _connect(hass, pc) {
-        const data = await hass.callWS({
-            type: 'webrtc/stream',
-            url: this.config.url || null,
-            entity: this.config.entity || null,
-            sdp64: btoa(pc.localDescription.sdp)
-        });
-
-        if (data) {
-            const remoteDesc = new RTCSessionDescription({
-                type: 'answer',
-                sdp: atob(data.sdp64)
+    async exchangeSDP(hass, pc) {
+        let data;
+        try {
+            data = await hass.callWS({
+                type: 'webrtc/stream',
+                url: this.config.url || null,
+                entity: this.config.entity || null,
+                sdp64: btoa(pc.localDescription.sdp)
             });
-            await pc.setRemoteDescription(remoteDesc);
+        } catch (e) {
+            data = {error: JSON.stringify(e)}
+        }
+
+        if (typeof data.sdp64 !== 'undefined') {
+            // remove docker IP-address
+            const sdp = atob(data.sdp64).replace(
+                /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
+            );
+
+            await pc.setRemoteDescription(new RTCSessionDescription({
+                type: 'answer',
+                sdp: sdp
+            }));
 
             // check external IP-address
-            const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
-            return m !== null;
+            this.status = (sdp.indexOf(' typ srflx ') > 0)
+                ? "Trying to connect"
+                : "Trying to connect over LAN";
         } else {
-            return null;
+            this.status = (typeof data.error !== 'undefined')
+                ? `ERROR: ${data.error}`
+                : "ERROR: Empty response from Hass";
+
+            setTimeout(async () => {
+                this.status = "Restart connection";
+
+                await this.exchangeSDP(hass, pc);
+            }, 10000);
         }
     }
 
-    async _init(hass) {
-        // don't know if this may happen
-        if (typeof this.config === 'undefined') {
-            this.config = {}
-        }
-
+    async initConnection(hass) {
         const pc = new RTCPeerConnection({
             iceServers: [{
                 urls: ['stun:stun.l.google.com:19302']
@@ -36,35 +49,23 @@ class WebRTCCamera extends HTMLElement {
         });
 
         pc.onicecandidate = async (ev) => {
-            if (ev.candidate === null) {
-                try {
-                    // only for debug purpose
-                    const iceTransport = pc.getSenders()[0].transport.iceTransport;
-                    iceTransport.onselectedcandidatepairchange = () => {
-                        const pair = iceTransport.getSelectedCandidatePair();
-                        const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
-                        this.status = `Connecting over ${type}`;
-                    }
-                } catch (e) {
-                    // Hi to Safari and Firefox...
-                }
+            if (ev.candidate) return;
 
-                this.status = "Trying to start stream";
-                const hasPublicIP = await this._connect(hass, pc);
-                if (hasPublicIP === true) {
-                    // everything is fine, waiting for the connection
-                    this.status = "Trying to connect";
-                } else if (hasPublicIP === false) {
-                    // try to connect in parallel
-                    this.status = "Trying to connect over LAN";
-                } else if (hasPublicIP === null) {
-                    this.status = "Reconnect in 10 seconds";
-                    setTimeout(async () => {
-                        this.status = "Restart connection";
-                        await this._init(hass);
-                    }, 10000);
+            try {
+                // only for debug purpose
+                const iceTransport = pc.getSenders()[0].transport.iceTransport;
+                iceTransport.onselectedcandidatepairchange = () => {
+                    const pair = iceTransport.getSelectedCandidatePair();
+                    const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
+                    this.status = `Connecting over ${type}`;
                 }
+            } catch (e) {
+                // Hi to Safari and Firefox...
             }
+
+            this.status = "Trying to start stream";
+
+            await this.exchangeSDP(hass, pc);
         }
 
         pc.ontrack = (ev) => {
@@ -104,21 +105,6 @@ class WebRTCCamera extends HTMLElement {
             pc.addTransceiver('audio', {'direction': direction});
         }
 
-        const pingChannel = pc.createDataChannel('foo');
-        let intervalId;
-        pingChannel.onopen = () => {
-            intervalId = setInterval(() => {
-                try {
-                    pingChannel.send('ping');
-                } catch (e) {
-                    console.warn(e);
-                }
-            }, 1000);
-        }
-        pingChannel.onclose = () => {
-            clearInterval(intervalId);
-        }
-
         await pc.setLocalDescription(await pc.createOffer());
     }
 
@@ -128,7 +114,7 @@ class WebRTCCamera extends HTMLElement {
         header.style.display = value ? 'block' : 'none';
     }
 
-    _ui(card) {
+    renderCustomGUI(card) {
         const video = this.getElementsByTagName('video')[0];
         video.controls = false;
         video.style.pointerEvents = 'none';
@@ -188,21 +174,49 @@ class WebRTCCamera extends HTMLElement {
         });
         video.onpause = () => {
             pause.icon = 'mdi:play';
+            this.setPTZVisibility(false);
         };
         video.onplay = () => {
             pause.icon = 'mdi:pause';
+            this.setPTZVisibility(true);
         };
         video.onwaiting = () => {
             spinner.style.display = 'block';
+            this.setPTZVisibility(false);
         };
         video.onplaying = () => {
             spinner.style.display = 'none';
+            this.setPTZVisibility(true);
         };
     }
 
-    set hass(hass) {
-        if (this.firstChild) return;
+    renderPTZ(card, hass) {
+        const ptz = document.createElement('div');
+        ptz.className = 'ptz'
+        ptz.style.opacity = this.config.ptz.opacity || '0.4';
+        ptz.innerHTML = `
+            <ha-icon class="right" icon="mdi:arrow-right"></ha-icon>
+            <ha-icon class="left" icon="mdi:arrow-left"></ha-icon>
+            <ha-icon class="up" icon="mdi:arrow-up"></ha-icon>
+            <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
+        `;
+        card.appendChild(ptz);
 
+        const handlePTZ = (ev) => {
+            const [domain, service] = this.config.ptz.service.split('.', 2);
+            const data = this.config.ptz['data_' + ev.target.className];
+            if (data) {
+                hass.callService(domain, service, data);
+            }
+        }
+
+        const buttons = ptz.getElementsByTagName('ha-icon');
+        Array.from(buttons).forEach(function (el) {
+            el.addEventListener('click', handlePTZ);
+        });
+    }
+
+    async renderGUI(hass) {
         const style = document.createElement('style');
         style.textContent = `
             ha-card {
@@ -210,10 +224,12 @@ class WebRTCCamera extends HTMLElement {
                 margin: auto;
                 overflow: hidden;
                 width: 100%;
+                position: relative;
             }
             video, .fix-safari {
                 width: 100%;
                 display: block;
+                z-index: 0;
             }
             .box {
                 position: absolute;
@@ -224,10 +240,11 @@ class WebRTCCamera extends HTMLElement {
             }
             .header {
                 color: var(--ha-picture-card-text-color, white);
-                margin: 4px 16px;
+                margin: 14px 16px;
                 font-size: 16px;
                 font-weight: 500;
-                line-height: 40px;
+                line-height: 20px;
+                word-wrap: break-word;
             }
             .spinner {
                 position: absolute;
@@ -253,6 +270,45 @@ class WebRTCCamera extends HTMLElement {
             .volume {
                 right: 35px;
                 bottom: 5px;
+            }
+            .ptz {
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                transition: opacity .3s ease-in-out;
+                display: none;
+                z-index: 10;
+                border-radius: 50%;
+                width: 80px;
+                height: 80px;
+            }
+            .show {
+                display: block;
+            }
+            .ptz:hover {
+                opacity: 1 !important;
+            }
+            .up {
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .down {
+                bottom: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .left {
+                left: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .right {
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
             }
         `;
         this.appendChild(style);
@@ -284,8 +340,19 @@ class WebRTCCamera extends HTMLElement {
         video.onloadeddata = () => {
             if (video.readyState >= 1) {
                 this.status = this.config.title || '';
+                this.setPTZVisibility(true);
+            } else {
+                this.setPTZVisibility(false);
             }
         }
+
+        video.onpause = () => {
+            this.setPTZVisibility(false);
+        };
+
+        video.onplay = () => {
+            this.setPTZVisibility(true);
+        };
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -301,27 +368,56 @@ class WebRTCCamera extends HTMLElement {
         );
         observer.observe(video);
 
-        this.status = "Init connection";
-
         if (this.config.ui) {
-            this._ui(card);
+            this.renderCustomGUI(card);
         }
 
-        this._init(hass);
+        if (this.config.ptz) {
+            this.renderPTZ(card, hass);
+        }
+    }
+
+    set hass(hass) {
+        if (this.firstChild || typeof this.config === 'undefined') return;
+
+        this.renderGUI(hass).then(async () => {
+            this.status = "Init connection";
+            await this.initConnection(hass);
+        });
+    }
+
+    setPTZVisibility(show) {
+        const ptz = this.getElementsByClassName('ptz')[0];
+        if (ptz) {
+            if (show) {
+                ptz.classList.add('show');
+            } else {
+                ptz.classList.remove('show');
+            }
+        }
     }
 
     setConfig(config) {
-        if (!config.url && !config.entity) {
-            throw new Error('Missing `url: "..."` or `entity: "..."`');
+        if (typeof config.url !== 'string' && typeof config.entity !== 'string') {
+            throw new Error('Missing `url` or `entity`');
         }
 
-        var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+        // this integraion https://github.com/thomasloven/hass-fontawesome
+        // breaks the `!!window.opera` check in all browsers
+        const isOpera = (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
         if (isOpera) {
-            // UDP test fails: https://test.webrtc.org/
             throw new Error("Opera doesn't supported");
         }
 
+        if (config.ptz && !config.ptz.service) {
+            throw new Error("Missing `service` for `ptz`");
+        }
+
         this.config = config;
+    }
+
+    getCardSize() {
+        return 5;
     }
 
     static getStubConfig() {
@@ -332,7 +428,6 @@ class WebRTCCamera extends HTMLElement {
 }
 
 customElements.define('webrtc-camera', WebRTCCamera);
-
 
 window.customCards = window.customCards || [];
 window.customCards.push({

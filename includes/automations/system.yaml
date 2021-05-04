@@ -18,8 +18,8 @@
       hours: "/1"
   condition:
     - condition: time
-      after: ‘08:00:00’
-      before: ‘23:30:00’
+      after: "08:00:00"
+      before: "23:30:00"
     - condition: template
       value_template: >
         {% set time_limit = as_timestamp(now()) - 2*60*60 %}

@@ -49,7 +49,7 @@ system_log:
 
 logger:
   default: info
-  logs:
+# logs:
 #   custom_components.xiaomi_gateway3: debug
 #   homeassistant.components.yeelight: debug
 #   homeassistant.components.yeelight.light: debug

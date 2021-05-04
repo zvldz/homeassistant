@@ -4,28 +4,90 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Temperature"
+        name: "Climate"
         styles:
           card:
             - background-color: "#203040"
 
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "sensor.temperature*"
-              options:
-                secondary_info: last-changed
-              sort: name
-            - entity_id: sensor.nodemcu_3_outdoor_temperature
-              options:
-                secondary_info: last-changed
-            - entity_id: sensor.fazenda_outdoor_temperature
-              options:
-                secondary_info: last-changed
-          exclude:
-            - entity_id: "*battery"
+      - entity: sensor.temperature_158d000231f03e
+        type: custom:multiple-entity-row
+        name: Hallway
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d000231f03e
+            name: false
+          - entity: sensor.humidity_158d000231f03e
+            name: false
+
+      - entity: sensor.temperature_158d0002ca0395
+        type: custom:multiple-entity-row
+        name: Kitchen
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d0002ca0395
+            name: false
+          - entity: sensor.humidity_158d0002ca0395
+            name: false
+
+      - entity: sensor.temperature_158d0002bfe958
+        type: custom:multiple-entity-row
+        name: Living Room
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d0002bfe958
+            name: false
+          - entity: sensor.humidity_158d0002bfe958
+            name: false
+
+      - entity: sensor.temperature_158d0002323856
+        type: custom:multiple-entity-row
+        name: Master Bedroom
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d0002323856
+            name: false
+          - entity: sensor.humidity_158d0002323856
+            name: false
+
+      - entity: sensor.temperature_158d0001ab2a27
+        type: custom:multiple-entity-row
+        name: Bedroom
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d0001ab2a27
+            name: false
+          - entity: sensor.humidity_158d0001ab2a27
+            name: false
+
+      - entity: sensor.temperature_158d000273011f
+        type: custom:multiple-entity-row
+        name: Bathroom
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d000273011f
+            name: false
+          - entity: sensor.humidity_158d000273011f
+            name: false
+
+      - entity: sensor.temperature_158d00027300cc
+        type: custom:multiple-entity-row
+        name: Balcony
+        secondary_info: last-changed
+        entities:
+          - entity: sensor.pressure_158d00027300cc
+            name: false
+          - entity: sensor.humidity_158d00027300cc
+            name: false
+
+      - entity: sensor.nodemcu_3_outdoor_temperature
+        type: custom:multiple-entity-row
+        name: Outdoor DS
+        secondary_info: last-changed
+
+      - entity: sensor.fazenda_outdoor_temperature
+        type: custom:multiple-entity-row
+        name: Fazenda Outdoor DS
+        secondary_info: last-changed
 
       - type: custom:button-card
         name: "Weather"
@@ -40,34 +102,11 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Humidity"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "sensor.humidity*"
-              options:
-                secondary_info: last-changed
-              sort: name
-            - entity_id: sensor.outdoor_humidity
-              options:
-                secondary_info: last-changed
-            - entity_id: sensor.fazenda_outdoor_humidity
-              options:
-                secondary_info: last-changed
-          exclude:
-            - entity_id: "*battery"
-
-      - type: custom:button-card
         name: "Day"
         styles:
           card:
             - background-color: "#203040"
+
       - type: entities
         show_header_toggle: false
         entities:
@@ -80,30 +119,6 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Pressure"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "sensor.pressure*"
-              options:
-                secondary_info: last-changed
-              sort: name
-            - entity_id: sensor.outdoor_pressure
-              options:
-                secondary_info: last-changed
-            - entity_id: sensor.fazenda_outdoor_pressure
-              options:
-                secondary_info: last-changed
-          exclude:
-            - entity_id: "*battery"
-
       - type: custom:button-card
         name: "Home"
         styles:

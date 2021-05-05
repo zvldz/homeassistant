@@ -1,0 +1,8 @@
+- platform: snmp
+  host: !secret mikrotik_ip
+  community: public
+  baseoid: 1.3.6.1.2.1.4.22.1.2
+  track_new_devices: false
+  interval_seconds: 30
+  consider_home: 120
+

@@ -12,7 +12,7 @@
 
 - alias: zigbee2mqtt_devices_last_seen
   id: zigbee2mqtt_devices_last_seen
-  initial_state: 'true'
+  initial_state: 'false'
   trigger:
     - platform: time_pattern
       hours: "/1"

@@ -1,0 +1,16 @@
+default: info
+logs:
+  libav.rtsp: critical
+  pychromecast.socket_client: fatal
+# custom_components.xiaomi_gateway3: debug
+# homeassistant.components.yeelight: debug
+# homeassistant.components.yeelight.light: debug
+# yeelight: debug
+# yeelight.light: debug
+# midea: debug
+# custom_components.sonoff: debug
+# climate: debug
+# xiaomi_gateway: debug
+  custom_components.tcp_mod.sensor: debug
+  custom_components.rest_mod.switch: debug
+  custom_components.rest_mod.sensor: debug

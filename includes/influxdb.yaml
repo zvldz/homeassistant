@@ -1,0 +1,14 @@
+host: 127.0.0.1
+max_retries: 5
+default_measurement: state
+exclude:
+  domains:
+    - automation
+  entities:
+    - sensor.uptime
+    - sensor.time
+    - sensor.time_date
+    - sensor.date
+    - sensor.date_time
+    - sensor.xiaomi_map
+

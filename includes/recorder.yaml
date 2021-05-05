@@ -1,0 +1,23 @@
+db_url: !secret db_mysql
+purge_keep_days: 3
+commit_interval: 60
+exclude:
+  entities:
+    - sensor.uptime
+    - sensor.time
+    - sensor.time_date
+    - sensor.date
+    - sensor.date_time
+    - sensor.xiaomi_map
+  domains:
+    - updater
+    - script
+    - camera
+    - alarm_control_panel
+    - persistent_notification
+    - zone
+  entity_globs:
+    - sensor.openweathermap*
+    - sensor.*_uptime
+    - sensor.*_ble
+

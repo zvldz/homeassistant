@@ -23,11 +23,10 @@ map:
 sun:
 ffmpeg:
 stream:
+discovery:
 
 hacs:
   token: !secret my_github_access_token
-
-lovelace: !include includes/lovelace.yaml
 
 frontend:
   themes: !include_dir_merge_named themes
@@ -40,106 +39,13 @@ http:
     - 127.0.0.1
     - ::1
 
-discovery:
-  ignore:
-    - yeelight
-
 system_log:
   fire_event: true
-
-logger:
-  default: info
-# logs:
-#   custom_components.xiaomi_gateway3: debug
-#   homeassistant.components.yeelight: debug
-#   homeassistant.components.yeelight.light: debug
-#   yeelight: debug
-#   yeelight.light: debug
-#   midea: debug
-#   custom_components.sonoff: debug
-
-recorder:
-  db_url: !secret db_mysql
-  purge_keep_days: 3
-  exclude:
-    entities:
-      - sensor.uptime
-      - sensor.time
-      - sensor.time_date
-      - sensor.date
-      - sensor.date_time
-      - sensor.xiaomi_map
-
-logbook:
-  exclude:
-    entities:
-      - sensor.uptime
-      - sensor.time
-      - sensor.time_date
-      - sensor.date
-      - sensor.date_time
-      - sensor.xiaomi_map
-
-influxdb:
-  host: 127.0.0.1
-  max_retries: 5
-  default_measurement: state
-  exclude:
-    domains:
-      - automation
-    entities:
-      - sensor.uptime
-      - sensor.time
-      - sensor.time_date
-      - sensor.date
-      - sensor.date_time
-      - sensor.xiaomi_map
 
 tts:
   - platform: google_translate
     service_name: google_say
     language: 'ru'
-
-google_assistant:
-  project_id: !secret google_home_id
-  service_account: !include ga_ha.json
-  exposed_domains:
-    - light
-    - vacuum
-    - switch
-    - script
-
-mqtt:
-  broker: 127.0.0.1
-  discovery: true
-  discovery_prefix: homeassistant
-  birth_message:
-    topic: 'hass/status'
-    payload: 'online'
-  will_message:
-    topic: 'hass/status'
-    payload: 'offline'
-
-device_tracker:
-  - platform: snmp
-    host: !secret mikrotik_ip
-    community: public
-    baseoid: 1.3.6.1.2.1.4.22.1.2
-    track_new_devices: false
-    interval_seconds: 30
-    consider_home: 120
-
-telegram_bot:
-  - platform: polling
-    api_key: !secret telegram_bot_api_key
-    parse_mode: html
-    allowed_chat_ids:
-      - !secret telegram_bot_allowed_chat_id1
-
-notify:
-  - name: telegram
-    platform: telegram
-    chat_id: !secret telegram_bot_allowed_chat_id1
 
 #samsungtv:
 #  - host: !secret livingroom_tv_ip
@@ -155,23 +61,33 @@ notify:
 #  mode: local
 #  reload: always
 
-switch:         !include_dir_merge_list includes/switches
-sensor:         !include_dir_merge_list includes/sensors
-binary_sensor:  !include_dir_merge_list includes/binary_sensors
-light:          !include_dir_merge_list includes/lights
-climate:        !include_dir_merge_list includes/climate
-automation:     !include_dir_merge_list includes/automations
-script:         !include_dir_merge_named includes/scripts
-group:          !include includes/groups.yaml
-media_player:   !include includes/media_player.yaml
-input_boolean:  !include includes/input_boolean.yaml
-input_number:   !include includes/input_number.yaml
-input_select:   !include includes/input_select.yaml
-input_text:     !include includes/input_text.yaml
-panel_iframe:   !include includes/panel_iframe.yaml
-timer:          !include includes/timer.yaml
-counter:        !include includes/counter.yaml
-camera:         !include includes/camera.yaml
-scene:          !include includes/scenes.yaml
-rest_command:   !include includes/rest_command.yaml
+switch:             !include_dir_merge_list includes/switches
+sensor:             !include_dir_merge_list includes/sensors
+binary_sensor:      !include_dir_merge_list includes/binary_sensors
+light:              !include_dir_merge_list includes/lights
+climate:            !include_dir_merge_list includes/climate
+automation:         !include_dir_merge_list includes/automations
+script:             !include_dir_merge_named includes/scripts
+lovelace:           !include includes/lovelace.yaml
+recorder:           !include includes/recorder.yaml
+logbook:            !include includes/logbook.yaml
+influxdb:           !include includes/influxdb.yaml
+logger:             !include includes/logger.yaml
+mqtt:               !include includes/mqtt.yaml
+device_tracker:     !include includes/device_tracker.yaml
+telegram_bot:       !include includes/telegram_bot.yaml
+notify:             !include includes/notify.yaml
+google_assistant:   !include includes/google_assistant.yaml
+group:              !include includes/groups.yaml
+media_player:       !include includes/media_player.yaml
+input_boolean:      !include includes/input_boolean.yaml
+input_number:       !include includes/input_number.yaml
+input_select:       !include includes/input_select.yaml
+input_text:         !include includes/input_text.yaml
+panel_iframe:       !include includes/panel_iframe.yaml
+timer:              !include includes/timer.yaml
+counter:            !include includes/counter.yaml
+camera:             !include includes/camera.yaml
+scene:              !include includes/scenes.yaml
+rest_command:       !include includes/rest_command.yaml
 

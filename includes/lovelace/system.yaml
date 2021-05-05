@@ -25,7 +25,6 @@ cards:
           - entity: sensor.ha_current
           - entity: sensor.ha_latest
           - entity: sensor.ha_beta
-          - type: divider
 
       - type: custom:button-card
         name: "Unavailable entities"
@@ -50,23 +49,6 @@ cards:
                   sort: name
                   options:
                     secondary_info: last-changed
-
-      - type: custom:button-card
-        name: "Voltage"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Voltage"
-            hour24: true
-            points_per_hour: 1
-            entities:
-              - entity: sensor.sonoff_pump_voltage
-              - entity: sensor.bw_plug_1_voltage
-                color: red
 
   - type: vertical-stack
     cards:
@@ -311,4 +293,22 @@ cards:
               exclude:
                 - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
                 - entity_id: "*pressure*"
+
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Voltage"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.sonoff_pump_voltage
+              - entity: sensor.bw_plug_1_voltage
+                color: red
+
 

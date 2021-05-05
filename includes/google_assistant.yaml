@@ -1,0 +1,8 @@
+project_id: !secret google_home_id
+service_account: !include ../ga_ha.json
+exposed_domains:
+  - light
+  - vacuum
+  - switch
+  - script
+

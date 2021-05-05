@@ -1,0 +1,10 @@
+broker: 127.0.0.1
+discovery: true
+discovery_prefix: homeassistant
+birth_message:
+  topic: 'hass/status'
+  payload: 'online'
+will_message:
+  topic: 'hass/status'
+  payload: 'offline'
+

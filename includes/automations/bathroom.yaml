@@ -17,10 +17,6 @@
   action:
     - service: switch.turn_on
       entity_id: switch.wall_switch_ln_left_158d00022a8150
-#   - service: timer.cancel
-#     entity_id: timer.bathroom_light
-#   - service: timer.start
-#     entity_id: timer.bathroom_light
 
 - alias: "Turn on Bathroom timer"
   initial_state: true

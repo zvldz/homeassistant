@@ -1,6 +1,7 @@
 db_url: !secret db_mysql
 purge_keep_days: 3
-commit_interval: 60
+auto_purge: false
+commit_interval: 30
 exclude:
   entities:
     - sensor.uptime

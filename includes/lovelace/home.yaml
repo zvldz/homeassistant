@@ -91,16 +91,6 @@ cards:
             name: Fazenda Outdoor DS
             secondary_info: last-changed
 
-      - type: custom:button-card
-        name: "Weather"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: weather-forecast
-        show_header_toggle: false
-        entity: weather.openweathermap
-
   - type: vertical-stack
     cards:
       - type: custom:button-card
@@ -118,6 +108,17 @@ cards:
           - sensor.sun_dusk
           - sun.sun
           - sensor.sun_elevation
+
+      - type: custom:button-card
+        name: "Weather"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: weather-forecast
+        show_header_toggle: false
+        entity: weather.openweathermap
+
 
   - type: vertical-stack
     cards:

@@ -25,9 +25,6 @@ ffmpeg:
 stream:
 discovery:
 
-hacs:
-  token: !secret my_github_access_token
-
 frontend:
   themes: !include_dir_merge_named themes
 

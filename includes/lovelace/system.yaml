@@ -11,6 +11,7 @@ cards:
 
       - type: entities
         entities:
+          - entity: sensor.myip
           - entity: sensor.last_boot
             format: total
           - entity: sensor.ha1_uptime

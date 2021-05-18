@@ -7,7 +7,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Reboot HA3 1"
+            name: "Reboot GW3 1"
             icon: "mdi:rotate-3d-variant"
             tap_action:
               confirmation: true
@@ -21,7 +21,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Reboot HA3 2"
+            name: "Reboot GW3 2"
             icon: "mdi:rotate-3d-variant"
             tap_action:
               confirmation: true
@@ -35,7 +35,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Dump HA3 1"
+            name: "Dump GW3 1"
             icon: "mdi:backup-restore"
             tap_action:
               confirmation: true
@@ -49,7 +49,7 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Dump HA3 2"
+            name: "Dump GW3 2"
             icon: "mdi:backup-restore"
             tap_action:
               confirmation: true

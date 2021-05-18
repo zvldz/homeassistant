@@ -109,6 +109,14 @@ cards:
           - sun.sun
           - sensor.sun_elevation
 
+      - type: custom:sun-card
+        darkMode: true
+        timeFormat: 24h
+        showAzimuth: true
+        showElevation: true
+
+  - type: vertical-stack
+    cards:
       - type: custom:button-card
         name: "Weather"
         styles:
@@ -120,8 +128,6 @@ cards:
         entity: weather.openweathermap
 
 
-  - type: vertical-stack
-    cards:
       - type: custom:button-card
         name: "Home"
         styles:

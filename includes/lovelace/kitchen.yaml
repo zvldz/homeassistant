@@ -74,8 +74,16 @@ cards:
           - type: custom:button-card
             entity: switch.wall_switch_ln_158d000211434a
             icon: mdi:light-switch
-#           size: 20%
-            size: 10%
+            size: 20%
+#           size: 10%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.kitchen_lamp_mini
+            icon: mdi:light-switch
+            size: 20%
+#           size: 10%
             styles:
               card:
                 - font-size: 14px

@@ -79,25 +79,6 @@
     - service: timer.cancel
       entity_id: timer.kitchen_light
 
-# Brightness
-#- alias: "Set brightness for lamp in kitchen"
-#  initial_state: false
-#  trigger:
-#    platform: state
-#    entity_id: light.kitchen_lamp
-#    from: 'off'
-#    to: 'on'
-#  action:
-#    - service: yeelight.set_mode
-#      data:
-#        entity_id: light.kitchen_lamp
-#        mode: normal
-#    - service: yeelight.set_color_temp_scene
-#      data:
-#        entity_id: light.kitchen_lamp
-#        brightness: 70
-#        kelvin: 4000
-
 # Start HA
 - alias: "Start Kitchen timer if not starting"
   initial_state: true
@@ -116,4 +97,31 @@
   action:
     - service: timer.start
       entity_id: timer.kitchen_light
+
+# Check kitchen lamp
+- alias: "Check kitchen lamp"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'unavailable'
+      for:
+        minutes: 2
+    - platform: numeric_state
+      entity_id: sensor.ha_uptime
+      above: 0
+      below: 2
+  condition:
+    - condition: state
+      entity_id: light.kitchen_lamp
+      state: 'unavailable'
+  action:
+    - service: notify.telegram
+      data:
+        message: "\U00002620 Restart Kitchen lamp"
+    - service: switch.turn_off
+      entity_id: switch.kitchen_lamp_mini
+    - delay: '00:00:05'
+    - service: switch.turn_on
+      entity_id: switch.kitchen_lamp_mini
 

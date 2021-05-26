@@ -134,7 +134,8 @@ cards:
             - background-color: "#203040"
 
       - type: 'custom:valetudo-map-card'
-        entity: camera.map
+#       entity: camera.map
+        entity: camera.map_data
         rotate: -1
         map_scale: 1.2
         min_height: 0

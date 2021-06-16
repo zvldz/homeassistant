@@ -44,14 +44,6 @@ tts:
     service_name: google_say
     language: 'ru'
 
-#samsungtv:
-#  - host: !secret livingroom_tv_ip
-#    name: livingroom_tv
-#    turn_on_action:
-#      - service: wake_on_lan.send_magic_packet
-#        data:
-#          mac: !secret livingroom_tv_mac
-
 #sonoff:
 #  username: !secret sonoff_username
 #  password: !secret sonoff_password

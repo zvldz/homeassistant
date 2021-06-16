@@ -23,6 +23,7 @@ cards:
           - entity: sensor.ha_fazenda_uptime
             format: total
           - entity: sensor.ha_init
+          - entity: sensor.start_time
           - entity: sensor.ha_current
           - entity: sensor.ha_latest
           - entity: sensor.ha_beta
@@ -201,6 +202,26 @@ cards:
               card:
                 - font-size: 14px
 
+      - type: conditional
+        conditions:
+          - entity: sensor.instance_name
+            state: "HA1"
+        card:
+          type: custom:button-card
+          name: "Zigbee2MQTT"
+          styles:
+            card:
+              - background-color: "#203040"
+
+      - type: conditional
+        conditions:
+          - entity: sensor.instance_name
+            state: "HA1"
+        card:
+          type: entities
+          entities:
+            - entity: sensor.zigbee2mqtt_bridge_state
+            - entity: sensor.zigbee2mqtt_version
 
       - type: custom:button-card
         name: "Gas"

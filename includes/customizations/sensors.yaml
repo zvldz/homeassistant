@@ -7,14 +7,14 @@ sensor.time:
 sun.sun:
   friendly_name: "Sun"
 
-sensor.ha_init:
-  icon: "mdi:clock-check"
-
 sensor.ha_latest:
   icon: "mdi:package-down"
 
 sensor.ha_beta:
   icon: "mdi:beta"
+
+sensor.ha_init:
+  icon: "mdi:home-assistant"
 
 sensor.last_boot:
   friendly_name: "Host Uptime"
@@ -350,3 +350,5 @@ sensor.battery_158d000488d1c2:
 sensor.illumination_158d000488d1c2:
   friendly_name: "Bedroom Illum"
 
+sensor.start_time:
+  unit_of_measurement: sec

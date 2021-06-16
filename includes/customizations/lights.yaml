@@ -13,6 +13,9 @@ light.bedroom_lamp:
 light.kitchen_lamp:
   friendly_name: "Kitchen Lamp"
 
+light.kitchen_lamp_nightlight:
+  friendly_name: "Kitchen Lamp Nightlight"
+
 light.living_room_lamp:
   friendly_name: "Living Room Lamp"
 

@@ -22,3 +22,37 @@ automation:
       - service: notify.telegram
         data:
           message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored"
+
+
+  - alias: zigbee2mqtt_z2m_bridge_status
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.zigbee2mqtt_bridge_state
+    action:
+      - service: notify.telegram
+        data:
+          message: >
+            {%if is_state('sensor.zigbee2mqtt_bridge_state','online')%}{{"\U00002705"}} Z2M is offline!
+            {%else%}{{"\U0000274C"}} Attention! Z2M is offline!
+            {%endif%}
+
+sensor:
+  # Sensor for monitoring the bridge state
+  - platform: mqtt
+    name: Zigbee2MQTT Bridge state
+    state_topic: "zigbee2mqtt/bridge/state"
+    icon: mdi:router-wireless
+  # Sensor for Showing the Zigbee2MQTT Version
+  - platform: mqtt
+    name: Zigbee2MQTT Version
+    state_topic: "zigbee2mqtt/bridge/config"
+    value_template: "{{ value_json.version }}"
+    icon: mdi:zigbee
+  # Sensor for Showing the Coordinator Version
+  - platform: mqtt
+    name: Zigbee Coordinator Version
+    state_topic: "zigbee2mqtt/bridge/config"
+    value_template: "{{ value_json.coordinator }}"
+    icon: mdi:chip
+

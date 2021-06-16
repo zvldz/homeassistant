@@ -1,7 +1,7 @@
 import asyncio
-import base64
 import logging
 import os
+import stat
 import time
 import uuid
 from urllib.parse import urlparse, urlencode
@@ -65,7 +65,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
         r = await session.get(url)
         raw = await r.read()
         open(filepath, 'wb').write(raw)
-        os.chmod(filepath, 744)
+        os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
 
     Server.filepath = filepath
 
@@ -74,7 +74,8 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
     utils.register_static_path(hass.http.app, url_path, path)
 
-    version = hass.data['integrations'][DOMAIN].version
+    # version supported only after 2021.3.0
+    version = getattr(hass.data['integrations'][DOMAIN], 'version', 0)
 
     # remove lovelace card from previous version
     await utils.init_resource(hass, url_path, str(version))

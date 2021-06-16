@@ -203,7 +203,7 @@ class GatewayStats(GatewayMesh):
 
     def process_gw_stats(self, payload: dict = None):
         # empty payload - update available state
-        self.debug(f"gateway <= {payload or self.available} | {self.did}")
+        self.debug(f"gateway <= {payload or self.available}")
 
         if self.did not in self.stats:
             return

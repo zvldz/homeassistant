@@ -8,7 +8,7 @@ wc_light:
 
 wc_fan:
   name: "WC fan timer"
-  duration: '00:15:00'
+  duration: '00:05:00'
 
 bathroom_light:
   name: "Bathroom timer"

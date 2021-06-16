@@ -2,7 +2,7 @@
 #  name: kitchen_tv
 #  host: !secret kitchen_tv_ip
 
-- platform: sox
-  name: Vacuum
-  host: !secret xiaomi_vacuum_ip
-  port: 7777
+#- platform: sox
+#  name: Vacuum
+#  host: !secret xiaomi_vacuum_ip
+#  port: 7777

@@ -98,7 +98,6 @@
     - service: timer.start
       entity_id: timer.kitchen_light
 
-# Check kitchen lamp
 - alias: "Check kitchen lamp"
   initial_state: true
   trigger:
@@ -125,3 +124,15 @@
     - service: switch.turn_on
       entity_id: switch.kitchen_lamp_mini
 
+- alias: "Turn on kitchen_lamp_mini if turned off"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition:
+    - condition: state
+      entity_id: switch.kitchen_lamp_mini
+      state: 'off'
+  action:
+    - service: timer.start
+      entity_id: timer.bathroom_light

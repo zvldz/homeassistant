@@ -21,36 +21,15 @@
         keep_days: 3
         repack: true
 
-- alias: zigbee2mqtt_devices_last_seen
-  id: zigbee2mqtt_devices_last_seen
-  initial_state: 'false'
+- alias: notify unavailable entities
+  initial_state: true
   trigger:
-    - platform: time_pattern
-      hours: "/1"
-  condition:
-    - condition: time
-      after: "08:00:00"
-      before: "23:30:00"
-    - condition: template
-      value_template: >
-        {% set time_limit = as_timestamp(now()) - 2*60*60 %}
-        {{ states | selectattr('attributes.last_seen', 'defined') | selectattr('attributes.linkquality', 'defined') | selectattr('attributes.last_seen', '<', time_limit * 1000 ) | map(attribute = 'name') | list | count  >= 1 }}
+    - platform: numeric_state
+      entity_id: sensor.total_entities_unavail
+      above: 10
+      for:
+        minutes: 5
   action:
-    - service: telegram_bot.send_message
+    - service: notify.telegram
       data:
-        title: >-
-                  {% set time_limit = as_timestamp(now()) - 2*60*60 %}
-                  {% set missing = states | selectattr('attributes.last_seen', 'defined') | selectattr('attributes.linkquality', 'defined') | selectattr('attributes.last_seen', '<', time_limit * 1000 ) | map(attribute = 'attributes.device.friendlyName') | unique | list  | join(', ') %}
-                  {% set missing_count = states | selectattr('attributes.last_seen', 'defined') | selectattr('attributes.linkquality', 'defined') | selectattr('attributes.last_seen', '<', time_limit * 1000 ) | map(attribute = 'attributes.device.friendlyName') | unique | list | count %}
-
-                  {%- if missing_count > 0 %} {{ '\U000026a0' }} {%- else %} {{ '\U00002705' }} {%- endif %} *Monitoring Zigbee devices*
-        disable_notification: true
-        target: !secret telegram_bot_allowed_chat_id1
-        message: >
-          {% set time_limit = as_timestamp(now()) - 2*60*60 %}
-          {% set missing = states | selectattr('attributes.last_seen', 'defined') | selectattr('attributes.linkquality', 'defined') | selectattr('attributes.last_seen', '<', time_limit * 1000 ) | map(attribute = 'attributes.device.friendlyName') | unique | list  | join(', ') %}
-          {% set missing_count = states | selectattr('attributes.last_seen', 'defined') | selectattr('attributes.linkquality', 'defined') | selectattr('attributes.last_seen', '<', time_limit * 1000 ) | map(attribute = 'attributes.device.friendlyName') | unique | list | count %}
-
-          {% if missing_count > 0 %}For more than 2 hours there was no data from: {{ missing }}
-          {% else %}All devices are available.{% endif %}
-
+        message: "\U00002620 {{ states('sensor.total_entities_unavail') }} entities are unavailable"

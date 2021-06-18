@@ -22,6 +22,9 @@ automation:
       - service: notify.telegram
         data:
           message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored"
+      - delay: '00:02:00'
+      - service: switch.turn_on
+        entity_id: switch.kitchen_lamp_mini
 
 
   - alias: zigbee2mqtt_z2m_bridge_status

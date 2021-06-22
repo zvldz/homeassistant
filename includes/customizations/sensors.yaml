@@ -10,6 +10,9 @@ sun.sun:
 sensor.ha_latest:
   icon: "mdi:package-down"
 
+sensor.latest_tasmota:
+  icon: "mdi:package-down"
+
 sensor.ha_beta:
   icon: "mdi:beta"
 

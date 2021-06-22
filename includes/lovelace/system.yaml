@@ -208,7 +208,7 @@ cards:
             state: "HA1"
         card:
           type: custom:button-card
-          name: "Zigbee2MQTT"
+          name: "Zigbee"
           styles:
             card:
               - background-color: "#203040"
@@ -222,6 +222,28 @@ cards:
           entities:
             - entity: sensor.zigbee2mqtt_bridge_state
             - entity: sensor.zigbee2mqtt_version
+            - entity: sensor.zigbee_bridge_uptime
+            - entity: sensor.zigbee_coordinator_version
+            - entity: sensor.zigbee_bridge_fw
+            - entity: sensor.latest_tasmota
+
+      - type: conditional
+        conditions:
+          - entity: sensor.instance_name
+            state: "HA1"
+        card:
+          type: entities
+          entities:
+            - type: custom:fold-entity-row
+              head:
+                type: section
+                label: Exception
+              entities:
+                - type: attribute
+                  entity: sensor.zigbee_bridge_exception
+                  attribute: StatusSTK
+                  show_name: false
+                  name: ""
 
       - type: custom:button-card
         name: "Gas"

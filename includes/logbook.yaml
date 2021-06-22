@@ -12,3 +12,6 @@ exclude:
     - persistent_notification
     - zone
 
+include:
+  entities:
+    - sensor.zigbee_bridge_uptime

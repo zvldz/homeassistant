@@ -4,6 +4,8 @@ default_measurement: state
 exclude:
   domains:
     - automation
+    - climate
+    - lock
   entities:
     - sensor.uptime
     - sensor.time
@@ -11,4 +13,7 @@ exclude:
     - sensor.date
     - sensor.date_time
     - sensor.xiaomi_map
-
+  entity_globs:
+    - binary_sensor.*_trv_*
+    - sensor.*_trv_*
+    - switch.*_trv_*

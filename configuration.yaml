@@ -66,7 +66,6 @@ mqtt:               !include includes/mqtt.yaml
 device_tracker:     !include includes/device_tracker.yaml
 telegram_bot:       !include includes/telegram_bot.yaml
 notify:             !include includes/notify.yaml
-google_assistant:   !include includes/google_assistant.yaml
 group:              !include includes/groups.yaml
 media_player:       !include includes/media_player.yaml
 input_boolean:      !include includes/input_boolean.yaml
@@ -79,4 +78,5 @@ counter:            !include includes/counter.yaml
 camera:             !include includes/camera.yaml
 scene:              !include includes/scenes.yaml
 rest_command:       !include includes/rest_command.yaml
+xiaomi_gateway3:    !include includes/gateway3.yaml
 

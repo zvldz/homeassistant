@@ -162,7 +162,7 @@ class MiCloud:
                 'signature': signature,
                 '_nonce': nonce,
                 'data': data
-            }, timeout=10)
+            }, timeout=20)
 
             resp = await r.json(content_type=None)
             # _LOGGER.debug(f"Response from MIoT API {url}: {resp}")

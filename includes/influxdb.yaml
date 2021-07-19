@@ -6,6 +6,15 @@ exclude:
     - automation
     - climate
     - lock
+    - switch
+    - remote
+    - script
+    - media_player
+    - alarm_control_panel
+    - camera
+    - timer
+    - weather
+    - zone
   entities:
     - sensor.uptime
     - sensor.time

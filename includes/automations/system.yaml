@@ -61,9 +61,9 @@
           Hallway:     {{ states('sensor.0x158d000231f03e_temperature') }}°C
           Kitchen:     {{ states('sensor.0x158d0002ca0395_temperature') }}°C
           Living Room: {{ states('sensor.0x158d0002bfe958_temperature') }}°C
-          Bedroom1:    {{ states('sensor.temperature_158d0002323856') }}°C
-          Bedroom2:    {{ states('sensor.temperature_158d0001ab2a27') }}°C
-          Bathroom:    {{ states('sensor.temperature_158d000273011f') }}°C
+          Bedroom1:    {{ states('sensor.0x158d0002323856_temperature') }}°C
+          Bedroom2:    {{ states('sensor.0x158d0001ab2a27_temperature') }}°C
+          Bathroom:    {{ states('sensor.0x158d000273011f_temperature') }}°C
           Balcony:     {{ states('sensor.0x158d00027300cc_temperature') }}°C
           Outdoor:     {{ states('sensor.nodemcu_3_outdoor_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C

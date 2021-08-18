@@ -41,34 +41,34 @@ cards:
               - entity: sensor.0x158d0002bfe958_humidity
                 name: false
 
-          - entity: sensor.temperature_158d0002323856
+          - entity: sensor.0x158d0002323856_temperature
             type: custom:multiple-entity-row
             name: Master Bedroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d0002323856
+              - entity: sensor.0x158d0002323856_pressure
                 name: false
-              - entity: sensor.humidity_158d0002323856
+              - entity: sensor.0x158d0002323856_humidity
                 name: false
 
-          - entity: sensor.temperature_158d0001ab2a27
+          - entity: sensor.0x158d0001ab2a27_temperature
             type: custom:multiple-entity-row
             name: Bedroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d0001ab2a27
+              - entity: sensor.0x158d0001ab2a27_pressure
                 name: false
-              - entity: sensor.humidity_158d0001ab2a27
+              - entity: sensor.0x158d0001ab2a27_humidity
                 name: false
 
-          - entity: sensor.temperature_158d000273011f
+          - entity: sensor.0x158d000273011f_temperature
             type: custom:multiple-entity-row
             name: Bathroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d000273011f
+              - entity: sensor.0x158d000273011f_pressure
                 name: false
-              - entity: sensor.humidity_158d000273011f
+              - entity: sensor.0x158d000273011f_humidity
                 name: false
 
           - entity: sensor.0x158d00027300cc_temperature

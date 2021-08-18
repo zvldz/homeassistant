@@ -139,13 +139,25 @@ switch.0x158d0002114338_switch:
   friendly_name: "Balcony 3"
   icon: "mdi:light-switch"
 
-switch.wall_switch_ln_left_158d00022a8150:
+switch.0x158d00022a8150_channel_1:
   friendly_name: "Bathroom"
   icon: "mdi:light-switch"
 
-switch.wall_switch_ln_right_158d00022a8150:
+switch.0x158d00022a8150_channel_2:
   friendly_name: "Hallway 3"
   icon: "mdi:light-switch"
+
+sensor.0x158d00022a8150_power:
+  friendly_name: "Hallway 3"
+
+sensor.0x158d00022a8150_energy:
+  friendly_name: "Hallway 3"
+
+sensor.0x158d00022a8150_action:
+  friendly_name: "Hallway 3"
+
+sensor.0x158d00022a8150_zigbee:
+  friendly_name: "Hallway 3"
 
 switch.sonoff_rf_br_1_sb_rf:
   friendly_name: "RF Sonoff"

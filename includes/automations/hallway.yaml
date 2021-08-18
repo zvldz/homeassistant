@@ -119,13 +119,13 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: switch.wall_switch_ln_right_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_2
       state: 'on'
       for:
         minutes: 5
   action:
     service: switch.turn_off
-    entity_id: switch.wall_switch_ln_right_158d00022a8150
+    entity_id: switch.0x158d00022a8150_channel_2
 
 - alias: "Hallway button is pressed and held"
   initial_state: true

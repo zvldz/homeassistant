@@ -43,7 +43,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_right_158d00022a8150
+            entity: switch.0x158d00022a8150_channel_2
             size: 20%
             styles:
               card:
@@ -59,7 +59,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_left_158d00022a8150
+            entity: switch.0x158d00022a8150_channel_1
             size: 14%
             styles:
               card:
@@ -109,7 +109,7 @@ cards:
             points_per_hour: 2
             entities:
               - entity: sensor.0x158d000231f03e_temperature
-              - entity: sensor.temperature_158d000273011f
+              - entity: sensor.0x158d000273011f_temperature
                 color: red
 
       - type: horizontal-stack
@@ -120,7 +120,7 @@ cards:
             points_per_hour: 2
             entities:
               - entity: sensor.0x158d000231f03e_humidity
-              - entity: sensor.humidity_158d000273011f
+              - entity: sensor.0x158d000273011f_humidity
                 color: red
 
       - type: custom:button-card
@@ -162,14 +162,14 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.illumination_7811dcb245b2
-          - binary_sensor.water_leak_sensor_158d00023aa420
-          - binary_sensor.water_leak_sensor_158d000233ddf2
+          - binary_sensor.0x158d00023aa420_moisture
+          - binary_sensor.0x158d000233ddf2_moisture
 
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.door_window_sensor_158d00024de627
-          - binary_sensor.door_window_sensor_158d0002fd4381
+          - binary_sensor.0x158d00024de627_contact
+          - binary_sensor.0x158d0002fd4381_contact
           - binary_sensor.0x158d00032b7db7_contact
 
       - type: glance
@@ -182,13 +182,13 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - sensor.temperature_158d000273011f
-          - sensor.humidity_158d000273011f
-          - sensor.pressure_158d000273011f
+          - sensor.0x158d000273011f_temperature
+          - sensor.0x158d000273011f_humidity
+          - sensor.0x158d000273011f_pressure
 
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.motion_sensor_158d00044a26ba
-          - binary_sensor.motion_sensor_158d0004466f8f
+          - binary_sensor.0x158d00044a26ba_motion
+          - binary_sensor.0x158d0004466f8f_motion
 

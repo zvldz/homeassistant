@@ -55,7 +55,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.temperature_158d0001ab2a27
+              - entity: sensor.0x158d0001ab2a27_temperature
 
       - type: horizontal-stack
         cards:
@@ -63,7 +63,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.humidity_158d0001ab2a27
+              - entity: sensor.0x158d0001ab2a27_humidity
 
   - type: vertical-stack
     cards:

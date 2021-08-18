@@ -4,25 +4,25 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      entity_id: binary_sensor.0x158d0002fd4381_contact
       to: 'on'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.motion_sensor_158d00044a26ba
+        entity_id: binary_sensor.0x158d00044a26ba_motion
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
 
 - alias: "Turn on Bathroom timer"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       to: 'on'
   action:
     - service: timer.cancel
@@ -34,15 +34,15 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      entity_id: binary_sensor.0x158d0002fd4381_contact
       to: 'off'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.motion_sensor_158d00044a26ba
+        entity_id: binary_sensor.0x158d00044a26ba_motion
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       state: 'on'
   action:
     - service: timer.cancel
@@ -62,20 +62,20 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       state: 'on'
     - condition: state
-      entity_id: binary_sensor.door_window_sensor_158d0002fd4381
+      entity_id: binary_sensor.0x158d0002fd4381_contact
       state: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
 
 - alias: "Turn off Bathroom timer if light is off"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       to: 'off'
   action:
     - service: timer.cancel
@@ -105,7 +105,7 @@
       entity_id: switch.sonoff_br_relay_1
       to: 'on'
     - platform: numeric_state
-      entity_id: sensor.humidity_158d000273011f
+      entity_id: sensor.0x158d000273011f_humidity
       above: 68
   action:
     - service: switch.turn_on
@@ -148,7 +148,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_left_158d00022a8150
+      entity_id: switch.0x158d00022a8150_channel_1
       state: 'on'
   action:
     - service: timer.start

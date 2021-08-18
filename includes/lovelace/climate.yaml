@@ -17,8 +17,8 @@ cards:
             sensors:
               - entity: sensor.0x158d000231f03e_temperature
               - entity: sensor.0x158d0002bfe958_temperature
-              - entity: sensor.temperature_158d0002323856
-              - entity: sensor.temperature_158d0001ab2a27
+              - entity: sensor.0x158d0002323856_temperature
+              - entity: sensor.0x158d0001ab2a27_temperature
               - entity: sensor.0x158d0002ca0395_temperature
               - entity: sensor.0x158d00027300cc_temperature
               - entity: sensor.nodemcu_3_outdoor_temperature
@@ -101,14 +101,14 @@ cards:
         name: "A/C Master Bedroom"
         icon: "mdi:air-conditioner"
         sensors:
-          - entity: sensor.temperature_158d0002323856
-          - entity: sensor.humidity_158d0002323856
+          - entity: sensor.0x158d0002323856_temperature
+          - entity: sensor.0x158d0002323856_humidity
 
       - type: custom:simple-thermostat
         entity: climate.master_bedroom_trv
         name: false
         sensors:
-          - entity: sensor.temperature_158d0002323856
+          - entity: sensor.0x158d0002323856_temperature
 
       - type: gauge
         name: Positions
@@ -141,14 +141,14 @@ cards:
         name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
         sensors:
-          - entity: sensor.temperature_158d0001ab2a27
-          - entity: sensor.humidity_158d0001ab2a27
+          - entity: sensor.0x158d0001ab2a27_temperature
+          - entity: sensor.0x158d0001ab2a27_humidity
 
       - type: custom:simple-thermostat
         entity: climate.bedroom_trv
         name: false
         sensors:
-          - entity: sensor.temperature_158d0001ab2a27
+          - entity: sensor.0x158d0001ab2a27_temperature
 
       - type: gauge
         name: Positions

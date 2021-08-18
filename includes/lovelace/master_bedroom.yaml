@@ -29,7 +29,7 @@ cards:
         entities:
           - binary_sensor.master_bedroom_lamp_nightlight
           - sensor.illumination_7c49eb1ce708
-          - binary_sensor.switch_158d0001a66df0
+          - sensor.0x158d0001a66df0_action
 
       - type: custom:button-card
         name: "Climate"
@@ -43,7 +43,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.temperature_158d0002323856
+              - entity: sensor.0x158d0002323856_temperature
 
       - type: horizontal-stack
         cards:
@@ -51,5 +51,5 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.humidity_158d0002323856
+              - entity: sensor.0x158d0002323856_humidity
 

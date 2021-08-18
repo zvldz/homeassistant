@@ -249,13 +249,13 @@ automation:
           namevalve: 'master_bedroom_trv'
           objectvalve: 'climate.master_bedroom_trv'
           objectvalvewindow: 'switch.master_bedroom_trv_window_detection'
-          objectsensortemperature: 'sensor.temperature_158d0002323856'
+          objectsensortemperature: 'sensor.0x158d0002323856_temperature'
       - service: script.auto_local_temperature_calibration_trv
         data:
           namevalve: 'bedroom_trv'
           objectvalve: 'climate.bedroom_trv'
           objectvalvewindow: 'switch.bedroom_trv_window_detection'
-          objectsensortemperature: 'sensor.temperature_158d0001ab2a27'
+          objectsensortemperature: 'sensor.0x158d0001ab2a27_temperature'
 
 utility_meter:
   gas_hourly:

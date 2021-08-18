@@ -29,12 +29,12 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.door_window_sensor_158d00024de627
+      entity_id: binary_sensor.0x158d00024de627_contact
       to: 'on'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.motion_sensor_158d0004466f8f
+        entity_id: binary_sensor.0x158d0004466f8f_motion
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -59,12 +59,12 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.door_window_sensor_158d00024de627
+      entity_id: binary_sensor.0x158d00024de627_contact
       to: 'off'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.motion_sensor_158d0004466f8f
+        entity_id: binary_sensor.0x158d0004466f8f_motion
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -90,7 +90,7 @@
       entity_id: group.wc_spots
       state: 'on'
     - condition: state
-      entity_id: binary_sensor.door_window_sensor_158d00024de627
+      entity_id: binary_sensor.0x158d00024de627_contact
       state: 'off'
   action:
     - service: light.turn_off
@@ -139,7 +139,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.door_window_sensor_158d00024de627
+      entity_id: binary_sensor.0x158d00024de627_contact
       to: 'on'
       for: "00:00:30"
   action:

@@ -26,7 +26,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.temperature_158d0002ca0395
+              - entity: sensor.0x158d0002ca0395_temperature
               - entity: sensor.kitchen_bt_temperature
                 color: red
 
@@ -36,7 +36,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.humidity_158d0002ca0395
+              - entity: sensor.0x158d0002ca0395_humidity
               - entity: sensor.kitchen_bt_humidity
                 color: red
 
@@ -52,10 +52,10 @@ cards:
         show_header_toggle: false
         entities:
           - entity: binary_sensor.kitchen_lamp_nightlight
-          - entity: binary_sensor.motion_sensor_158d00022515fe
+          - entity: binary_sensor.0x158d00022515fe_motion
             show_last_changed: true
-          - entity: sensor.illumination_158d00022515fe
-          - entity: binary_sensor.water_leak_sensor_158d000232989c
+          - entity: sensor.0x158d00022515fe_illuminance
+          - entity: binary_sensor.0x158d000232989c_moisture
 
       - type: custom:button-card
         name: "Switches"
@@ -72,7 +72,7 @@ cards:
 #             card:
 #               - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_158d000211434a
+            entity: switch.0x158d000211434a_switch
             icon: mdi:light-switch
             size: 20%
 #           size: 10%

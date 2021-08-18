@@ -12,27 +12,27 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.wall_switch_ln_158d0002235125
+            entity: switch.0x158d0002235125_switch
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_158d00022ab4bf
+            entity: switch.0x158d00022ab4bf_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_158d0001f9aa37
+            entity: switch.0x158d0001f9aa37_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.wall_switch_ln_158d0002114338
+            entity: switch.0x158d0002114338_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
@@ -100,9 +100,10 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - binary_sensor.wall_switch_158d000183d2d5
-          - binary_sensor.wall_switch_158d000183dd12
-          - binary_sensor.door_window_sensor_158d0002537042
+          - sensor.0x158d000183d2d5_action
+          - sensor.0x158d000183dd12_action
+          - binary_sensor.0x158d0002537042_contact
+          - sensor.0x54ef4410000c1dec_illuminance
 
       - type: custom:button-card
         name: "Climate"
@@ -115,7 +116,7 @@ cards:
           - type: custom:mini-graph-card
             name: 'Temperature'
             entities:
-              - entity: sensor.temperature_158d00027300cc
+              - entity: sensor.0x158d00027300cc_temperature
               - entity: sensor.nodemcu_3_outdoor_temperature
                 color: red
 
@@ -124,5 +125,5 @@ cards:
           - type: custom:mini-graph-card
             name: 'Humidity'
             entities:
-              - entity: sensor.humidity_158d00027300cc
+              - entity: sensor.0x158d00027300cc_humidity
 

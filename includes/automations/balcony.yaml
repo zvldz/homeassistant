@@ -4,32 +4,35 @@
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id: binary_sensor.wall_switch_158d000183dd12
+        entity_id: sensor.0x158d000183dd12_action
         click_type: single
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id: binary_sensor.wall_switch_158d000183d2d5
+        entity_id: sensor.0x158d000183d2d5_action
         click_type: single
   action:
     service: switch.toggle
     entity_id:
-      - switch.wall_switch_ln_158d00022ab4bf
-      - switch.wall_switch_ln_158d0001f9aa37
-      - switch.wall_switch_ln_158d0002114338
+      - switch.0x158d00022ab4bf_switch
+      - switch.0x158d0001f9aa37_switch
+      - switch.0x158d0002114338_switch
 
 - alias: "Turn led strip on balcony"
   initial_state: true
   trigger:
-    platform: sun
-    event: sunset
-    offset: '+00:10:00'
+    - platform: numeric_state
+      entity_id: sensor.0x54ef4410000c1dec_illuminance
+      below: 10
+  condition:
+    - condition: state
+      entity_id: light.balcony_strip
+      state: 'off'
   action:
-    service: light.turn_on
-    entity_id: light.balcony_strip
-    data:
-      brightness_pct: 20
-#     kelvin: 6500
+    - service: light.turn_on
+      entity_id: light.balcony_strip
+      data:
+        brightness_pct: 20
 
 - alias: "Turn off led strip on balcony"
   initial_state: true
@@ -39,6 +42,6 @@
         - '00:15:00'
         - '01:15:00'
   action:
-    service: light.turn_off
-    entity_id: light.balcony_strip
+    - service: light.turn_off
+      entity_id: light.balcony_strip
 

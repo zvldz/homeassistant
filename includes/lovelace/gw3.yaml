@@ -125,6 +125,10 @@ cards:
           - data: friendly_name
             name: Friendly Name
             modify: 'x.replace(/ Zigbee$/,"")'
+          - data: gate
+            name: Gate
+            align: center
+            modify: x+''
           - data: ieee
             name: IEEE
             align: center

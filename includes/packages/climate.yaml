@@ -14,8 +14,8 @@ input_number:
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
-    heater: switch.esp_boiler_relay
-    target_sensor: sensor.temperature_158d0002bfe958
+    heater: switch.boiler_shelly
+    target_sensor: sensor.0x158d0002bfe958_temperature
     ac_mode: false
     min_temp: 15
     max_temp: 25
@@ -130,7 +130,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: switch.esp_boiler_relay
+        entity_id: switch.boiler_shelly
     action:
       - service: >
           {% if trigger.to_state.state == 'on' %}
@@ -147,7 +147,7 @@ automation:
 #   initial_state: true
 #   trigger:
 #     - platform: state
-#       entity_id: switch.esp_boiler_relay
+#       entity_id: switch.boiler_shelly
 #   action:
 #     - service: >
 #         {% if trigger.to_state.state == 'on' %}
@@ -161,7 +161,7 @@ automation:
 #   initial_state: true
 #   trigger:
 #     - platform: numeric_state
-#       entity_id: sensor.temperature_158d0002ca0395
+#       entity_id: sensor.0x158d0002ca0395_temperature
 #       above: 23
 #   condition:
 #     - condition: state
@@ -217,7 +217,7 @@ automation:
     initial_state: true
     trigger:
       platform: state
-      entity_id: binary_sensor.door_window_sensor_158d000393f29a
+      entity_id: binary_sensor.0x158d000393f29a_contact
       from: 'on'
       to: 'off'
       for:
@@ -243,7 +243,7 @@ automation:
           namevalve: 'living_room_trv'
           objectvalve: 'climate.living_room_trv'
           objectvalvewindow: 'switch.living_room_trv_window_detection'
-          objectsensortemperature: 'sensor.temperature_158d0002bfe958'
+          objectsensortemperature: 'sensor.0x158d0002bfe958_temperature'
       - service: script.auto_local_temperature_calibration_trv
         data:
           namevalve: 'master_bedroom_trv'

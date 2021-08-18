@@ -11,34 +11,34 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.temperature_158d000231f03e
+          - entity: sensor.0x158d000231f03e_temperature
             type: custom:multiple-entity-row
             name: Hallway
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d000231f03e
+              - entity: sensor.0x158d000231f03e_pressure
                 name: false
-              - entity: sensor.humidity_158d000231f03e
+              - entity: sensor.0x158d000231f03e_humidity
                 name: false
 
-          - entity: sensor.temperature_158d0002ca0395
+          - entity: sensor.0x158d0002ca0395_temperature
             type: custom:multiple-entity-row
             name: Kitchen
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d0002ca0395
+              - entity: sensor.0x158d0002ca0395_pressure
                 name: false
-              - entity: sensor.humidity_158d0002ca0395
+              - entity: sensor.0x158d0002ca0395_humidity
                 name: false
 
-          - entity: sensor.temperature_158d0002bfe958
+          - entity: sensor.0x158d0002bfe958_temperature
             type: custom:multiple-entity-row
             name: Living Room
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d0002bfe958
+              - entity: sensor.0x158d0002bfe958_pressure
                 name: false
-              - entity: sensor.humidity_158d0002bfe958
+              - entity: sensor.0x158d0002bfe958_humidity
                 name: false
 
           - entity: sensor.temperature_158d0002323856
@@ -71,14 +71,14 @@ cards:
               - entity: sensor.humidity_158d000273011f
                 name: false
 
-          - entity: sensor.temperature_158d00027300cc
+          - entity: sensor.0x158d00027300cc_temperature
             type: custom:multiple-entity-row
             name: Balcony
             secondary_info: last-changed
             entities:
-              - entity: sensor.pressure_158d00027300cc
+              - entity: sensor.0x158d00027300cc_pressure
                 name: false
-              - entity: sensor.humidity_158d00027300cc
+              - entity: sensor.0x158d00027300cc_humidity
                 name: false
 
           - entity: sensor.nodemcu_3_outdoor_temperature

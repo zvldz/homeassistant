@@ -1,3 +1,12 @@
+- alias: 'Set theme at startup'
+  trigger:
+    platform: homeassistant
+    event: start
+  action:
+    service: frontend.set_theme
+    data:
+      name: "slate"
+
 - alias: system_entity_change
   initial_state: true
   mode: queued
@@ -32,7 +41,11 @@
   action:
     - service: notify.telegram
       data:
-        message: "\U00002620 {{ states('sensor.total_entities_unavail') }} entities are unavailable"
+        message: |
+          <pre>
+          {{ "\U00002620" }} {{ states('sensor.total_entities_unavail') }} entities are unavailable:
+          {{ states | selectattr('state', 'equalto', 'unavailable') |  map(attribute='name') | list | join('\n')}}
+          </pre>
 
 - alias: Good morning
   initial_state: true
@@ -44,14 +57,14 @@
       data:
         message: |
           <pre>
-          {{"\U0001F305" }} Good morning!
-          Hallway:     {{ states('sensor.temperature_158d000231f03e') }}°C
-          Kitchen:     {{ states('sensor.temperature_158d0002ca0395') }}°C
-          Living Room: {{ states('sensor.temperature_158d0002bfe958') }}°C
+          {{ "\U0001F305" }} Good morning!
+          Hallway:     {{ states('sensor.0x158d000231f03e_temperature') }}°C
+          Kitchen:     {{ states('sensor.0x158d0002ca0395_temperature') }}°C
+          Living Room: {{ states('sensor.0x158d0002bfe958_temperature') }}°C
           Bedroom1:    {{ states('sensor.temperature_158d0002323856') }}°C
-          Bedroom2:    {{ states('sensor.temperature_158d000231f03e') }}°C
-          Bathroom:    {{ states('sensor.temperature_158d0001ab2a27') }}°C
-          Balcony:     {{ states('sensor.temperature_158d00027300cc') }}°C
+          Bedroom2:    {{ states('sensor.temperature_158d0001ab2a27') }}°C
+          Bathroom:    {{ states('sensor.temperature_158d000273011f') }}°C
+          Balcony:     {{ states('sensor.0x158d00027300cc_temperature') }}°C
           Outdoor:     {{ states('sensor.nodemcu_3_outdoor_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
           Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}

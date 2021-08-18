@@ -15,12 +15,12 @@ cards:
             entity: climate.gas_boiler
             name: false
             sensors:
-              - entity: sensor.temperature_158d000231f03e
-              - entity: sensor.temperature_158d0002bfe958
+              - entity: sensor.0x158d000231f03e_temperature
+              - entity: sensor.0x158d0002bfe958_temperature
               - entity: sensor.temperature_158d0002323856
               - entity: sensor.temperature_158d0001ab2a27
-              - entity: sensor.temperature_158d0002ca0395
-              - entity: sensor.temperature_158d00027300cc
+              - entity: sensor.0x158d0002ca0395_temperature
+              - entity: sensor.0x158d00027300cc_temperature
               - entity: sensor.nodemcu_3_outdoor_temperature
             control:
               hvac:
@@ -36,7 +36,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.esp_boiler_relay
+            entity: switch.boiler_shelly
             size: 18%
             styles:
               card:
@@ -56,19 +56,19 @@ cards:
             - background-color: "#203040"
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_813900000011
+        entity: climate.midea_ac_18691697686913
         name: "A/C Living Room"
         icon: "mdi:air-conditioner"
         sensors:
-          - entity: sensor.temperature_158d0002bfe958
+          - entity: sensor.0x158d0002bfe958_temperature
           - entity: sensor.living_room_bt_temperature
-          - entity: sensor.humidity_158d0002bfe958
+          - entity: sensor.0x158d0002bfe958_humidity
 
       - type: custom:simple-thermostat
         entity: climate.living_room_trv
         name: false
         sensors:
-          - entity: sensor.temperature_158d0002bfe958
+          - entity: sensor.0x158d0002bfe958_temperature
 
       - type: gauge
         name: Positions
@@ -97,7 +97,7 @@ cards:
             - background-color: "#203040"
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_823900000011
+        entity: climate.midea_ac_18691697686914
         name: "A/C Master Bedroom"
         icon: "mdi:air-conditioner"
         sensors:
@@ -137,7 +137,7 @@ cards:
             - background-color: "#203040"
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_e0470000000f
+        entity: climate.midea_ac_16492674435040
         name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
         sensors:

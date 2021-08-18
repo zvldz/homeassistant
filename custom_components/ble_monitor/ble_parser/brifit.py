@@ -18,7 +18,6 @@ def parse_brifit(self, data, source_mac, rssi):
 
         brifit_mac = data[6:12]
         xvalue = data[12:19]
-        print(xvalue.hex())
         (volt, temp, humi, batt) = unpack(">hHHB", xvalue)
         result = {
             "temperature": temp / 100,
@@ -43,8 +42,8 @@ def parse_brifit(self, data, source_mac, rssi):
         _LOGGER.debug("Invalid MAC address for Brifit device")
         return None
 
-    # check for MAC presence in whitelist, if needed
-    if self.discovery is False and brifit_mac.lower() not in self.whitelist:
+    # check for MAC presence in sensor whitelist, if needed
+    if self.discovery is False and brifit_mac.lower() not in self.sensor_whitelist:
         _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(brifit_mac))
         return None
 

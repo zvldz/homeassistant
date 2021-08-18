@@ -3,7 +3,7 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.water_leak_sensor_158d000232989c
+      - binary_sensor.0x158d000232989c_moisture
       - binary_sensor.water_leak_sensor_158d000233ddf2
       - binary_sensor.water_leak_sensor_158d00023aa420
     to: 'on'
@@ -27,7 +27,7 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.water_leak_sensor_158d000232989c
+      - binary_sensor.0x158d000232989c_moisture
       - binary_sensor.water_leak_sensor_158d000233ddf2
       - binary_sensor.water_leak_sensor_158d00023aa420
     from: 'on'

@@ -1,21 +1,3 @@
-- alias: "Set brightness for lamp in master bedroom"
-  initial_state: false
-  trigger:
-    platform: state
-    entity_id: light.master_bedroom_lamp
-    from: 'off'
-    to: 'on'
-  action:
-    - service: yeelight.set_mode
-      data:
-        entity_id: light.master_bedroom_lamp
-        mode: normal
-    - service: yeelight.set_color_temp_scene
-      data:
-        entity_id: light.master_bedroom_lamp
-        brightness: 70
-        kelvin: 4000
-
 - alias: "Turn on bedside lamp"
   initial_state: true
   trigger:
@@ -70,7 +52,7 @@
         - light.master_bedroom_lamp
     - service: switch.turn_off
       entity_id:
-        - switch.wall_switch_ln_158d000211434a
+        - switch.0x158d000211434a_switch
 
 - alias: "Bedroom1 button is pressed double"
   initial_state: true
@@ -88,4 +70,4 @@
         - light.master_bedroom_lamp
     - service: switch.turn_on
       entity_id:
-        - switch.wall_switch_ln_158d000211434a
+        - switch.0x158d000211434a_switch

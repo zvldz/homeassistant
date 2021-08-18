@@ -1,29 +1,11 @@
-- alias: "Set brightness for lamp in living room"
-  initial_state: false
-  trigger:
-    platform: state
-    entity_id: light.living_room_lamp
-    from: 'off'
-    to: 'on'
-  action:
-    - service: yeelight.set_mode
-      data:
-        entity_id: light.living_room_lamp
-        mode: normal
-    - service: yeelight.set_color_temp_scene
-      data:
-        entity_id: light.living_room_lamp
-        brightness: 75
-        kelvin: 3000
-
 - alias: "Livingroom switch left"
   initial_state: true
   trigger:
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_left_158d0002afc3c7
-      click_type: single
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_1_single
   action:
     service: light.toggle
     entity_id:
@@ -35,8 +17,8 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_right_158d0002afc3c7
-      click_type: single
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_2_single
   action:
     service: light.toggle
     entity_id:
@@ -48,8 +30,8 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_left_158d0002afc3c7
-      click_type: long
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_1_hold
   action:
     service: light.turn_off
     entity_id:
@@ -61,8 +43,8 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_right_158d0002afc3c7
-      click_type: long
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_2_hold
   action:
     service: light.turn_off
     entity_id:
@@ -74,8 +56,8 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_both_158d0002afc3c7
-      click_type: both
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_both_single
   action:
     service: light.toggle
     entity_id:
@@ -88,8 +70,8 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.wall_switch_both_158d0002afc3c7
-      click_type: long_both
+      entity_id: sensor.0x158d0002afc3c7_action
+      click_type: button_both_hold
   action:
     service: light.turn_off
     entity_id:

@@ -29,6 +29,8 @@ _LOGGER = logging.getLogger(__name__)
 
 CONF_HOST = 'host'
 CONF_ID = 'id'
+CONF_TOKEN = 'token'
+CONF_K1 = 'k1'
 CONF_PORT = 'port'
 CONF_PROMPT_TONE = 'prompt_tone'
 CONF_TEMP_STEP = 'temp_step'
@@ -41,6 +43,8 @@ SCAN_INTERVAL = timedelta(seconds=15)
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_HOST): cv.string,
     vol.Required(CONF_ID): cv.string,
+    vol.Optional(CONF_TOKEN, default=""): cv.string,
+    vol.Optional(CONF_K1, default=""): cv.string,
     vol.Optional(CONF_PORT, default=6444): vol.Coerce(int),
     vol.Optional(CONF_PROMPT_TONE, default=True): vol.Coerce(bool),
     vol.Optional(CONF_TEMP_STEP, default=1.0): vol.Coerce(float),
@@ -57,19 +61,23 @@ async def async_setup_platform(hass, config, async_add_entities,
                                discovery_info=None):
     """Set up the Midea cloud service and query appliances."""
 
-    from msmart.device import device as midea_device
+    from msmart.device import air_conditioning_device as ac
 
     device_ip = config.get(CONF_HOST)
     device_id = config.get(CONF_ID)
+    device_token = config.get(CONF_TOKEN)
+    device_k1 = config.get(CONF_K1)
     device_port = config.get(CONF_PORT)
     prompt_tone = config.get(CONF_PROMPT_TONE)
     temp_step = config.get(CONF_TEMP_STEP)
     include_off_as_state = config.get(CONF_INCLUDE_OFF_AS_STATE)
     use_fan_only_workaround = config.get(CONF_USE_FAN_ONLY_WORKAROUND)
-    keep_last_known_online_state = config.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE)    
+    keep_last_known_online_state = config.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE)
 
-    client = midea_device(device_ip, int(device_id), device_port)
-    device = client.setup()
+    device = ac(device_ip, int(device_id), device_port)
+    if device_token and device_k1:
+        device.authenticate(device_k1, device_token)
+    # device = client.setup()
     device.prompt_tone = prompt_tone
     device.keep_last_known_online_state = keep_last_known_online_state
     entities = []

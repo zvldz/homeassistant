@@ -43,9 +43,7 @@ cards:
         show_header_toggle: false
         entities:
           - binary_sensor.living_room_lamp_nightlight
-          - binary_sensor.wall_switch_both_158d0002afc3c7
-          - binary_sensor.wall_switch_left_158d0002afc3c7
-          - binary_sensor.wall_switch_right_158d0002afc3c7
+          - sensor.0x158d0002afc3c7_action
 
       - type: custom:button-card
         name: "Switches"
@@ -65,7 +63,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.plug_158d0002677c89
+            entity: switch.0x158d0002677c89_switch
             size: 15%
             styles:
               card:
@@ -91,7 +89,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.temperature_158d0002bfe958
+              - entity: sensor.0x158d0002bfe958_temperature
               - entity: sensor.living_room_bt_temperature
                 color: red
 
@@ -101,7 +99,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.humidity_158d0002bfe958
+              - entity: sensor.0x158d0002bfe958_humidity
               - entity: sensor.living_room_bt_humidity
                 color: red
 

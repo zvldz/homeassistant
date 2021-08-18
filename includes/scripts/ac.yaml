@@ -1,0 +1,16 @@
+turn_on_all_ac:
+  sequence:
+    - service: climate.turn_on
+      entity_id:
+        - climate.midea_ac_18691697686913
+        - climate.midea_ac_18691697686914
+        - climate.midea_ac_16492674435040
+
+turn_off_all_ac:
+  sequence:
+    - service: climate.turn_off
+      entity_id:
+        - climate.midea_ac_18691697686913
+        - climate.midea_ac_18691697686914
+        - climate.midea_ac_16492674435040
+

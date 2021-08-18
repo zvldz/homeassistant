@@ -4,11 +4,11 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: binary_sensor.door_window_sensor_158d00032b7db7
+    entity_id: binary_sensor.0x158d00032b7db7_contact
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.wall_switch_ln_158d0002112b1e
+    entity_id: switch.0x158d0002112b1e_switch
     state: 'off'
     for:
       minutes: 2
@@ -18,8 +18,8 @@
         message: "\U0001F6AA The front door opened"
     - service: switch.turn_on
       entity_id:
-        - switch.wall_switch_ln_158d0002112b1e
-        - switch.wall_switch_ln_158d0001f9aaae
+        - switch.0x158d0002112b1e_switch
+        - switch.0x158d0001f9aaae_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -29,16 +29,16 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.wall_switch_ln_158d0002112b1e
+    entity_id: switch.0x158d0002112b1e_switch
     from: 'off'
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.wall_switch_ln_158d0001f9aaae
+    entity_id: switch.0x158d0001f9aaae_switch
     state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.wall_switch_ln_158d0001f9aaae
+      entity_id: switch.0x158d0001f9aaae_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -48,12 +48,12 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.wall_switch_ln_158d0002112b1e
+    entity_id: switch.0x158d0002112b1e_switch
     from: 'on'
     to: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.wall_switch_ln_158d0001f9aaae
+      entity_id: switch.0x158d0001f9aaae_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
 
@@ -61,16 +61,16 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.wall_switch_ln_158d0001f9aaae
+    entity_id: switch.0x158d0001f9aaae_switch
     from: 'off'
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.wall_switch_ln_158d0002112b1e
+    entity_id: switch.0x158d0002112b1e_switch
     state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.wall_switch_ln_158d0002112b1e
+      entity_id: switch.0x158d0002112b1e_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -80,12 +80,12 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.wall_switch_ln_158d0001f9aaae
+    entity_id: switch.0x158d0001f9aaae_switch
     from: 'on'
     to: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.wall_switch_ln_158d0002112b1e
+      entity_id: switch.0x158d0002112b1e_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
 
@@ -101,13 +101,13 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: binary_sensor.door_window_sensor_158d00032b7db7
+      entity_id: binary_sensor.0x158d00032b7db7_contact
       state: 'off'
   action:
     service: switch.turn_off
     entity_id:
-      - switch.wall_switch_ln_158d0002112b1e
-      - switch.wall_switch_ln_158d0001f9aaae
+      - switch.0x158d0002112b1e_switch
+      - switch.0x158d0001f9aaae_switch
 
 - alias: "Turn off light in hallway sw3"
   initial_state: true
@@ -133,7 +133,7 @@
     platform: event
     event_type: xiaomi_aqara.click
     event_data:
-      entity_id: binary_sensor.switch_158d0002e22617
+      entity_id: sensor.0x158d0002e22617_action
       click_type: hold
   action:
     - service: input_boolean.toggle
@@ -147,7 +147,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_158d0002112b1e
+      entity_id: switch.0x158d0002112b1e_switch
       state: 'on'
   action:
     - service: timer.start

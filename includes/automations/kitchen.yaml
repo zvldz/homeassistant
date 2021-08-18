@@ -4,24 +4,25 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.motion_sensor_158d00022515fe
+      entity_id: binary_sensor.0x158d00022515fe_motion
+      from: 'off'
       to: 'on'
   condition:
     - condition: numeric_state
-      entity_id: sensor.illumination_158d00022515fe
+      entity_id: sensor.0x158d00022515fe_illuminance
       below: 10
     - condition: state
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
 
 - alias: "Turn on Kitchen timer"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
       to: 'on'
     - platform: state
       entity_id: light.kitchen_lamp
@@ -38,10 +39,10 @@
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.motion_sensor_158d00022515fe
+        entity_id: binary_sensor.0x158d00022515fe_motion
   condition:
     - condition: state
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
       state: 'on'
   action:
     - service: timer.cancel
@@ -61,19 +62,19 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
       state: 'on'
   action:
     - service: switch.turn_off
-      entity_id: switch.wall_switch_ln_158d000211434a
-    - service: light.turn_off
-      entity_id: light.kitchen_lamp
+      entity_id:
+        - switch.0x158d000211434a_switch
+        - light.kitchen_lamp
 
 - alias: "Turn off Kitchen timer"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.wall_switch_ln_158d000211434a
+      entity_id: switch.0x158d000211434a_switch
       to: 'off'
   action:
     - service: timer.cancel
@@ -89,7 +90,7 @@
     condition: or
     conditions:
       - condition: state
-        entity_id: switch.wall_switch_ln_158d000211434a
+        entity_id: switch.0x158d000211434a_switch
         state: 'on'
       - condition: state
         entity_id: light.kitchen_lamp

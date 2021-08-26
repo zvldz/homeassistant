@@ -1,9 +1,9 @@
 {
         "domain": "midea_ac",
         "name": "Midea Smart Aircon",
-        "version": "0.1.29",
+        "version": "0.1.31",
         "documentation": "",
-        "requirements": ["msmart==0.1.29", "pycryptodome", "midea"],
+        "requirements": ["msmart==0.1.31", "pycryptodome", "pycryptodomex", "click"],
         "dependencies": [],
         "codeowners": ["@mac-zhou"]
 }

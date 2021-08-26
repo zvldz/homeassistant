@@ -1,6 +1,7 @@
 title: !secret home_name
 views:
   - !include includes/lovelace/home.yaml
+  - !include includes/lovelace/system.yaml
   - !include includes/lovelace/hallway.yaml
   - !include includes/lovelace/livingroom.yaml
   - !include includes/lovelace/kitchen.yaml
@@ -10,7 +11,6 @@ views:
   - !include includes/lovelace/climate.yaml
   - !include includes/lovelace/vacuum.yaml
   - !include includes/lovelace/ring.yaml
-  - !include includes/lovelace/system.yaml
   - !include includes/lovelace/gw3.yaml
   - !include includes/lovelace/esp.yaml
   - !include includes/lovelace/automation.yaml

@@ -12,6 +12,7 @@ from .qingping import parse_qingping
 from .ruuvitag import parse_ruuvitag
 from .teltonika import parse_teltonika
 from .thermoplus import parse_thermoplus
+from .sensorpush import parse_sensorpush
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +99,10 @@ class BleParser:
                     if adstruct[0] == 0x15 and (comp_id == 0x0010 or comp_id == 0x0011):  # Thermoplus
                         sensor_data = parse_thermoplus(self, adstruct, mac, rssi)
                         break
-                    if adstruct[0] == 0x0A and comp_id == 0xEC88:  # Govee H5051/H5074
+                    if adstruct[0] == 0x0C and comp_id == 0xEC88:  # Govee H5051
+                        sensor_data = parse_govee(self, adstruct, mac, rssi)
+                        break
+                    if adstruct[0] == 0x0A and comp_id == 0xEC88:  # Govee H5074
                         sensor_data = parse_govee(self, adstruct, mac, rssi)
                         break
                     if adstruct[0] == 0x09 and comp_id == 0xEC88:  # Govee H5072/H5075
@@ -121,6 +125,11 @@ class BleParser:
                         break
                     if adstruct[0] == 0x0E and adstruct[3] == 0x82:  # iNode
                         sensor_data = parse_inode(self, adstruct, mac, rssi)
+                        break
+                elif adstuct_type == 0x06 and adstuct_size > 16:
+                    sensorpush_uuid_reversed = b'\xb0\x0a\x09\xec\xd7\x9d\xb8\x93\xba\x42\xd6\x11\x00\x00\x09\xef'
+                    if str(adstruct[2:]) == str(sensorpush_uuid_reversed):
+                        sensor_data = parse_sensorpush(self, data[adpayload_start:], mac, rssi)
                         break
                 else:
                     if self.report_unknown == "Other":

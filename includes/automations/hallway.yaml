@@ -25,6 +25,29 @@
     - service: timer.start
       entity_id: timer.hallway_light
 
+- alias: "Door opened more than"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.0x158d00032b7db7_contact
+      to: 'on'
+      for:
+        minutes: 2
+    - platform: state
+      entity_id: binary_sensor.0x158d00032b7db7_contact
+      to: 'on'
+      for:
+        minutes: 5
+    - platform: state
+      entity_id: binary_sensor.0x158d00032b7db7_contact
+      to: 'on'
+      for:
+        minutes: 10
+  action:
+    - service: notify.telegram
+      data:
+        message: "\U0001F6AA The door is open for more than {{ trigger.for }}"
+
 - alias: "Turn on light in Hallway sw1"
   initial_state: true
   trigger:

@@ -53,8 +53,10 @@
     - platform: time
       at: '08:01:00'
   action:
-    - service: notify.telegram
+    - service: telegram_bot.send_message
       data:
+        disable_notification: true
+        target: !secret telegram_bot_allowed_chat_id1
         message: |
           <pre>
           {{ "\U0001F305" }} Good morning!

@@ -15,17 +15,15 @@ switch.bw_plug_1_relay:
   friendly_name: "Socket 2"
   icon: "mdi:power-socket-eu"
 
-switch.sonoff_wc_relay:
+switch.0x54ef4410001f5dd8_switch:
   friendly_name: "WC Fan"
   icon: "mdi:light-switch"
 
-switch.sonoff_br_relay_1:
-  friendly_name: "Bathroom Fan"
-  icon: "mdi:light-switch"
+sensor.0x54ef4410001f5dd8_action:
+  friendly_name: "WC Fan"
 
-switch.sonoff_br_relay_2:
-  friendly_name: "Bathroom Mirror"
-  icon: "mdi:light-switch"
+sensor.0x54ef4410001f5dd8_zigbee:
+  friendly_name: "WC Fan"
 
 switch.0x158d000211434a_switch:
   friendly_name: "Kitchen"
@@ -204,3 +202,16 @@ sensor.0x158d00022360fe_zigbee:
 switch.0x158d00022360fe_switch:
   friendly_name: "WC"
 
+switch.0x54ef4410000f490e_channel_1:
+  friendly_name: "Bathroom Fan"
+  icon: "mdi:light-switch"
+
+switch.0x54ef4410000f490e_channel_2:
+  friendly_name: "Bathroom Mirror"
+  icon: "mdi:light-switch"
+
+sensor.0x54ef4410000f490e_action:
+  friendly_name: "Bathroom Switch"
+
+sensor.0x54ef4410000f490e_zigbee:
+  friendly_name: "Bathroom Switch"

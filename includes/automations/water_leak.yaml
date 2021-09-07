@@ -13,11 +13,6 @@
         gw_mac: !secret xgate_1_mac
         ringtone_id: 0
         ringtone_vol: 80
-    - service: xiaomi_aqara.play_ringtone
-      data:
-        gw_mac: !secret xgate_2_mac
-        ringtone_id: 0
-        ringtone_vol: 80
     - service: notify.telegram
       data:
         message: "\U0001F4A6 {{ trigger.from_state.attributes.friendly_name }}age !!!"

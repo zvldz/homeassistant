@@ -25,9 +25,6 @@ light.living_room_lamp_ambilight:
 light.gateway_light_7811dcb245b2:
   friendly_name: "Hub 1 Light"
 
-light.gateway_light_7c49eb1ce708:
-  friendly_name: "Hub 2 Light"
-
 light.living_room_spot_left_1:
   friendly_name: "Left Spot 1"
 

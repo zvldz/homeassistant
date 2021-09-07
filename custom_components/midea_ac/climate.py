@@ -59,7 +59,7 @@ SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE \
 
 async def async_setup_platform(hass, config, async_add_entities,
                                discovery_info=None):
-    """Set up the Midea cloud service and query appliances."""
+    """Set up the Midea lan service and query appliances."""
 
     from msmart.device import air_conditioning_device as ac
 
@@ -102,8 +102,8 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
         if include_off_as_state:
             self._operation_list.append("off")
         self._support_flags = SUPPORT_FLAGS
-        #the LED display on the AC should use the same unit as that in homeassistant
-        device.farenheit_unit = (hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
+        # the LED display on the AC should use the same unit as that in homeassistant
+        device.fahrenheit_unit = (hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
         self._device = device
         self._unit_of_measurement = TEMP_CELSIUS
         self._target_temperature_step = temp_step
@@ -257,26 +257,33 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperatures."""
         if kwargs.get(ATTR_TEMPERATURE) is not None:
-            self._device.target_temperature = (kwargs.get(ATTR_TEMPERATURE))
+            # grab temperature from front end UI
+            temp = kwargs.get(ATTR_TEMPERATURE)
+
+            # round temperature to nearest .5
+            temp = round(temp * 2) / 2
+
+            # send temperature to unit
+            self._device.target_temperature = temp
             self._changed = True
             await self.apply_changes()
 
     async def async_set_swing_mode(self, swing_mode):
-        """Set new target temperature."""
+        """Set swing mode."""
         from msmart.device import air_conditioning_device as ac
         self._device.swing_mode = ac.swing_mode_enum[swing_mode]
         self._changed = True
         await self.apply_changes()
 
     async def async_set_fan_mode(self, fan_mode):
-        """Set new target temperature."""
+        """Set fan mode."""
         from msmart.device import air_conditioning_device as ac
         self._device.fan_speed = ac.fan_speed_enum[fan_mode]
         self._changed = True
         await self.apply_changes()
 
     async def async_set_hvac_mode(self, hvac_mode):
-        """Set new target temperature."""
+        """Set hvac mode."""
         from msmart.device import air_conditioning_device as ac
         if self._include_off_as_state and hvac_mode == "off":
             self._device.power_state = False

@@ -111,7 +111,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
       to: 'off'
     - platform: event
       event_type: timer.finished
@@ -119,7 +119,7 @@
         entity_id: timer.wc_fan
   action:
     - service: switch.turn_off
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
     - service: timer.cancel
       entity_id: timer.wc_fan
 
@@ -127,7 +127,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
       to: 'on'
   action:
     - service: timer.cancel
@@ -144,7 +144,7 @@
       for: "00:00:30"
   action:
     - service: switch.turn_on
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
 
 - alias: "Turn on WC fan on schedule"
   initial_state: true
@@ -160,7 +160,7 @@
       state: 'on'
   action:
     - service: switch.turn_on
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
     - service: timer.cancel
       entity_id: timer.wc_fan
     - service: timer.start
@@ -189,7 +189,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.sonoff_wc_relay
+      entity_id: switch.0x54ef4410001f5dd8_switch
       state: 'on'
   action:
     - service: timer.start

@@ -318,6 +318,40 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
+        name: "Power"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Power"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Voltage"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.sonoff_pump_voltage
+#             - entity: sensor.bw_plug_1_voltage
+#               color: red
+              - entity: sensor.shellyem_c45bbe602cfc_channel_1_voltage
+                color: blue
+
+      - type: custom:button-card
         name: "UPS"
         styles:
           card:
@@ -391,22 +425,5 @@ cards:
               exclude:
                 - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
                 - entity_id: "*pressure*"
-
-      - type: custom:button-card
-        name: "Voltage"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Voltage"
-            hour24: true
-            points_per_hour: 1
-            entities:
-              - entity: sensor.sonoff_pump_voltage
-              - entity: sensor.bw_plug_1_voltage
-                color: red
-
+                - entity_id: "*m2007j20cg*"
 

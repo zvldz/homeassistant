@@ -40,8 +40,8 @@ cards:
         show_header_toggle: false
         entities:
           - binary_sensor.bedroom_lamp_nightlight
-          - binary_sensor.motion_sensor_158d000488d1c2
-          - sensor.illumination_158d000488d1c2
+          - binary_sensor.0x158d00023f32de_motion
+          - sensor.0x158d00023f32de_zigbee
 
       - type: custom:button-card
         name: "Climate"

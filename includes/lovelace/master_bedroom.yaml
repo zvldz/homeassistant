@@ -13,8 +13,6 @@ cards:
         entity: light.master_bedroom_lamp
       - type: light
         entity: light.bedside
-      - type: light
-        entity: light.gateway_light_7c49eb1ce708
 
   - type: vertical-stack
     cards:
@@ -28,7 +26,6 @@ cards:
         show_header_toggle: false
         entities:
           - binary_sensor.master_bedroom_lamp_nightlight
-          - sensor.illumination_7c49eb1ce708
           - sensor.0x158d0001a66df0_action
 
       - type: custom:button-card

@@ -2,6 +2,7 @@ attributes_template: |
   {% if attr in ('ble', 'zigbee', 'battery') %}{{{
     "name": device["device_name"],
     "gate": gateway["device_name"],
+    "fw_version": device["fw_ver"],
     "integration": "gw3"
   }}}{% endif %}
 

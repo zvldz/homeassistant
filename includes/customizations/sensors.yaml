@@ -40,6 +40,9 @@ sensor.has_uptime:
 sensor.ha_fazenda_uptime:
   friendly_name: HA Fazenda Uptime
 
+sensor.ha_off_uptime:
+  friendly_name: HA Office Uptime
+
 binary_sensor.0x158d00022515fe_motion:
   friendly_name: "Kitchen Motion"
 

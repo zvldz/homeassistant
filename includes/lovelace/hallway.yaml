@@ -68,13 +68,13 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x54ef4410000f490e_channel_1
+            entity: switch.0x54ef4410001ad4c2_channel_1
             size: 20%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x54ef4410000f490e_channel_2
+            entity: switch.0x54ef4410001ad4c2_channel_2
             size: 20%
             styles:
               card:
@@ -156,7 +156,7 @@ cards:
           - sensor.0x158d0002e22617_action
           - sensor.0x54ef4410001f5dd8_zigbee
           - sensor.0x54ef4410001f5dd8_action
-          - sensor.0x54ef4410000f490e_action
+          - sensor.0x54ef4410001ad4c2_action
 
       - type: glance
         show_header_toggle: false

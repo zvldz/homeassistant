@@ -9,3 +9,7 @@ has_url:
 
 ha_fazenda_url:
   initial: !secret ha_fazenda_url
+
+ha_off_url:
+  initial: !secret ha_off_url
+

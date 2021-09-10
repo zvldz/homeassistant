@@ -44,3 +44,27 @@
       data:
         message: "\U00002705 {{ states.sensor.date_time.state }} | HA2 is now working"
 
+- alias: ha_off_server_off
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.ha_off_uptime
+      to: "unavailable"
+      for: "00:02:00"
+  action:
+    - service: notify.telegram
+      data:
+        message: "\U00002620 {{ states.sensor.date_time.state }} | HA_OFF is not working"
+
+- alias: ha_off_server_on
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.ha_off_uptime
+      from: "unavailable"
+  action:
+    - service: notify.telegram
+      data:
+        message: "\U00002705 {{ states.sensor.date_time.state }} | HA_OFF is now working"
+
+

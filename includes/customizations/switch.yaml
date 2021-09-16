@@ -202,11 +202,11 @@ sensor.0x158d00022360fe_zigbee:
 switch.0x158d00022360fe_switch:
   friendly_name: "WC"
 
-switch.0x54ef4410001ad4c2_channel_1:
+switch.0x54ef4410001ad4c2_channel_2:
   friendly_name: "Bathroom Fan"
   icon: "mdi:light-switch"
 
-switch.0x54ef4410001ad4c2_channel_2:
+switch.0x54ef4410001ad4c2_channel_1:
   friendly_name: "Bathroom Mirror"
   icon: "mdi:light-switch"
 
@@ -215,3 +215,4 @@ sensor.0x54ef4410001ad4c2_action:
 
 sensor.0x54ef4410001ad4c2_zigbee:
   friendly_name: "Bathroom Switch"
+

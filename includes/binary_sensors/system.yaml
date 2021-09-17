@@ -1,9 +1,0 @@
-- platform: template
-  sensors:
-    update_available:
-      value_template: >
-        {% if states('sensor.ha_latest') in ['unavailable', 'unknown', 'none'] or states('sensor.ha_current') ==  states('sensor.ha_latest')%}
-          false
-        {% else %}
-          true
-        {% endif %}

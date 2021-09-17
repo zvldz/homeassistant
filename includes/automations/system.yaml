@@ -34,7 +34,7 @@
   initial_state: true
   trigger:
     - platform: numeric_state
-      entity_id: sensor.total_entities_unavail
+      entity_id: sensor.total_entities_unavailable
       above: 10
       for:
         minutes: 5
@@ -43,7 +43,7 @@
       data:
         message: |
           <pre>
-          {{ "\U00002620" }} {{ states('sensor.total_entities_unavail') }} entities are unavailable:
+          {{ "\U00002620" }} {{ states('sensor.total_entities_unavailable') }} entities are unavailable:
           {{ states | selectattr('state', 'equalto', 'unavailable') |  map(attribute='name') | list | join('\n')}}
           </pre>
 
@@ -70,6 +70,6 @@
           Outdoor:     {{ states('sensor.nodemcu_3_outdoor_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
           Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}
-          {{ states('sensor.total_entities_unavail') }} entities are unavailable
+          {{ states('sensor.total_entities_unavailable') }} entities are unavailable
           </pre>
 

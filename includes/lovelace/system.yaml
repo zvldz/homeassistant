@@ -38,7 +38,7 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.total_entities_unavail
+          - entity: sensor.total_entities_unavailable
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row

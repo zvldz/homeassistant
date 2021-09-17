@@ -1,20 +1,16 @@
-sensor:
-  - platform: template
-    sensors:
-      front_door_last_activity_date:
-        friendly_name: Last Activity
-        icon_template: "mdi:clock"
-        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+template:
+  - sensor:
+      - name: "Front Door Last Activity Date"
+        icon: "mdi:clock"
+        state: "{{ as_timestamp(state_attr('sensor.front_door_last_activity', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-      front_door_last_ding_date:
-        friendly_name: Last Ding
-        icon_template: "mdi:clock"
-        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+      - name: "Front Door Last Ding Date"
+        icon: "mdi:clock"
+        state: "{{ as_timestamp(state_attr('sensor.front_door_last_ding', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-      front_door_last_motion_date:
-        friendly_name: Last Motion
-        icon_template: "mdi:clock"
-        value_template: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
+      - name: "Front Door Last Motion Date"
+        icon: "mdi:clock"
+        state: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at')) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
 downloader:
   download_dir: downloads

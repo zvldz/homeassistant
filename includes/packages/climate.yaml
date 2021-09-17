@@ -50,18 +50,19 @@ sensor:
       authorization: !secret ha2_token
     value_template: "{{ value_json.state }}"
 
-  - platform: template
-    sensors:
-      living_room_trv_calibration:
-        value_template: "{{ state_attr('climate.living_room_trv', 'local_temperature_calibration') }}"
+
+template:
+  - sensor:
+      - name: "Living Room TRV Calibration"
+        state: "{{ state_attr('climate.living_room_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
-      master_bedroom_trv_calibration:
-        value_template: "{{ state_attr('climate.master_bedroom_trv', 'local_temperature_calibration') }}"
+      - name: "Master Bedroom TRV Calibration"
+        state: "{{ state_attr('climate.master_bedroom_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
-      bedroom_trv_calibration:
-        value_template: "{{ state_attr('climate.bedroom_trv', 'local_temperature_calibration') }}"
+      - name: "Bedroom_TRV_Calibration"
+        state: "{{ state_attr('climate.bedroom_trv', 'local_temperature_calibration') }}"
         unit_of_measurement: "°C"
 
 script:

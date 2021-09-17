@@ -28,14 +28,6 @@
 - platform: uptime
   name: "HA Online"
 
-- platform: template
-  sensors:
-    ha_uptime:
-      friendly_name: HA Uptime
-      icon_template: mdi:clock
-      value_template: "{{ ((as_timestamp(now()) | int - as_timestamp(states('sensor.ha_online')) | int) / 60 ) | int }}"
-      unit_of_measurement: minutes
-
 - platform: rest
   resource: https://version.home-assistant.io/stable.json
   name: "HA Latest"
@@ -102,15 +94,4 @@
   value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
-
-- platform: template
-  sensors:
-    instance_name:
-      value_template: !secret home_name
-
-    total_entities_unavail:
-      friendly_name: Total Entities Unavailable
-      unit_of_measurement: 'ea'
-      value_template: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | list | count }}"
-      icon_template: mdi:counter
 

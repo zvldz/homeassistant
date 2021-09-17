@@ -53,6 +53,7 @@ tts:
 switch:             !include_dir_merge_list includes/switches
 sensor:             !include_dir_merge_list includes/sensors
 binary_sensor:      !include_dir_merge_list includes/binary_sensors
+template:           !include_dir_merge_list includes/template
 light:              !include_dir_merge_list includes/lights
 climate:            !include_dir_merge_list includes/climate
 #automation:         !include_dir_merge_list includes/automations

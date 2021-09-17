@@ -1,5 +1,4 @@
 # Hallway
-# Light
 - alias: "Turn on lights in Hallway on conditions"
   initial_state: true
   trigger:
@@ -132,24 +131,6 @@
       - switch.0x158d0002112b1e_switch
       - switch.0x158d0001f9aaae_switch
 
-- alias: "Turn off light in hallway sw3"
-  initial_state: true
-  trigger:
-    platform: time_pattern
-    minutes: '/1'
-  condition:
-    - condition: state
-      entity_id: input_boolean.auto_turn_off_lights
-      state: 'on'
-    - condition: state
-      entity_id: switch.0x158d00022a8150_channel_2
-      state: 'on'
-      for:
-        minutes: 5
-  action:
-    service: switch.turn_off
-    entity_id: switch.0x158d00022a8150_channel_2
-
 - alias: "Hallway button is pressed and held"
   initial_state: true
   trigger:
@@ -175,4 +156,58 @@
   action:
     - service: timer.start
       entity_id: timer.hallway_light
+
+- alias: "Start Hallway sw3 timer"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition:
+    - condition: state
+      entity_id: switch.0x158d00022a8150_channel_2
+      state: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.hallway_light_sw3
+
+- alias: "Start Hallway sw3 timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0x158d00022a8150_channel_2
+      from: 'off'
+      to: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.hallway_light_sw3
+
+- alias: "Turn off Hallway timer sw3"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0x158d00022a8150_channel_2
+      to: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.hallway_light_sw3
+
+- alias: "Turn off light in Hallway sw3"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.hallway_light_sw3
+  condition:
+    - condition: state
+      entity_id: input_boolean.auto_turn_off_lights
+      state: 'on'
+    - condition: state
+      entity_id: switch.0x158d00022a8150_channel_2
+      state: 'on'
+  action:
+    service: switch.turn_off
+    entity_id:
+      - switch.0x158d00022a8150_channel_2
+
 

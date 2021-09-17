@@ -61,21 +61,36 @@
     - condition: state
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
-    - condition: state
-      entity_id: switch.0x158d000211434a_switch
-      state: 'on'
   action:
     - service: switch.turn_off
       entity_id:
         - switch.0x158d000211434a_switch
         - light.kitchen_lamp
 
-- alias: "Turn off Kitchen timer"
+- alias: "Turn off Kitchen timer 1"
   initial_state: true
   trigger:
     - platform: state
       entity_id: switch.0x158d000211434a_switch
       to: 'off'
+  condition:
+    - condition: state
+      entity_id: light.kitchen_lamp
+      state: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.kitchen_light
+
+- alias: "Turn off Kitchen timer 2"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'off'
+  condition:
+    - condition: state
+      entity_id: switch.0x158d000211434a_switch
+      state: 'off'
   action:
     - service: timer.cancel
       entity_id: timer.kitchen_light
@@ -121,7 +136,7 @@
         message: "\U00002620 Restart Kitchen lamp"
     - service: switch.turn_off
       entity_id: switch.kitchen_lamp_mini
-    - delay: '00:00:05'
+    - delay: '00:00:02'
     - service: switch.turn_on
       entity_id: switch.kitchen_lamp_mini
     - service: timer.cancel

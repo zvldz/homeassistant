@@ -135,6 +135,7 @@ cards:
           show_header_toggle: false
           entities:
             - entity: timer.hallway_light
+            - entity: timer.hallway_light_sw3
             - entity: timer.bathroom_light
             - entity: timer.wc_light
             - entity: timer.bathroom_fan

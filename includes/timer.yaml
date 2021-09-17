@@ -25,3 +25,7 @@ bathroom_fan:
 hallway_light:
   name: "Hallway timer"
   duration: '00:06:00'
+
+hallway_light_sw3:
+  name: "Hallway timer sw3"
+  duration: '00:05:00'

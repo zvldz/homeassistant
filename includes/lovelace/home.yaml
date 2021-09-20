@@ -102,12 +102,21 @@ cards:
       - type: entities
         show_header_toggle: false
         entities:
-          - sensor.date
-          - sensor.time
-          - sensor.sun_dawn
-          - sensor.sun_dusk
-          - sun.sun
-          - sensor.sun_elevation
+          - entity: sensor.date
+            type: custom:multiple-entity-row
+            name: Date
+            entities:
+              - entity: sensor.time
+                name: false
+          - entity: sun.sun
+            type: custom:multiple-entity-row
+            name: Sun
+            entities:
+              - attribute: next_dawn
+                format: time
+              - attribute: next_dusk
+                format: time
+              - attribute: elevation
 
       - type: custom:sun-card
         darkMode: true

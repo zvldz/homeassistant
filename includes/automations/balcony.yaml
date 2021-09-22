@@ -18,7 +18,7 @@
       - switch.0x158d0001f9aa37_switch
       - switch.0x158d0002114338_switch
 
-- alias: "Turn led strip on balcony"
+- alias: "Turn on led strip on balcony"
   initial_state: true
   trigger:
     - platform: numeric_state

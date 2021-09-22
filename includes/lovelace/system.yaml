@@ -24,11 +24,19 @@ cards:
             format: total
           - entity: sensor.ha_off_uptime
             format: total
-          - entity: sensor.ha_init
           - entity: sensor.start_time
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.ha_init
+                name: false
           - entity: sensor.ha_current
-          - entity: sensor.ha_latest
-          - entity: sensor.ha_beta
+            name: HA Version
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.ha_latest
+                name: false
+              - entity: sensor.ha_beta
+                name: false
 
       - type: custom:button-card
         name: "Unavailable entities"

@@ -2,8 +2,16 @@
 - alias: "Turn on switch in WC (decoupled mode)"
   initial_state: true
   trigger:
-    - platform: time_pattern
-      minutes: "/5"
+#   - platform: time_pattern
+#     minutes: "/5"
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id: switch.0x158d00022360fe_switch
+      from: 'unavailable'
+    - platform: state
+      entity_id: switch.0x158d00022360fe_switch
+      to: 'off'
   condition:
     - condition: state
       entity_id: switch.0x158d00022360fe_switch

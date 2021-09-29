@@ -13,7 +13,6 @@ homeassistant:
 config:
 api:
 system_health:
-upnp:
 conversation:
 history:
 wake_on_lan:

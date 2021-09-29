@@ -147,6 +147,20 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
+        name: "Shelly Firmware"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:auto-entities
+        card:
+          type: glance
+        filter:
+          include:
+            - entity_id: "binary_sensor.*_firmware_update"
+              sort: entity_id
+
+      - type: custom:button-card
         name: "Switches"
         styles:
           card:

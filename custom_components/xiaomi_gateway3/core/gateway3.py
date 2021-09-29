@@ -11,7 +11,7 @@ import yaml
 
 from paho.mqtt.client import Client, MQTTMessage
 from . import bluetooth, utils, zigbee
-from .helpers import DevicesRegistry, XiaomiEntity
+from .helpers import DevicesRegistry
 from .mini_miio import SyncmiIO
 from .shell import TelnetShell, ntp_time
 from .unqlite import Unqlite, SQLite
@@ -21,6 +21,11 @@ _LOGGER = logging.getLogger(__name__)
 RE_NWK_KEY = re.compile(r'lumi send-nwk-key (0x.+?) {(.+?)}')
 
 TELNET_CMD = '{"method":"enable_telnet_service","params":""}'
+
+GW3_ERROR = (
+    "Check if [issue](https://github.com/AlexxIT/XiaomiGateway3/issues) "
+    "exists or create new one:\n```\n%s\n```"
+)
 
 
 class GatewayBase(DevicesRegistry):
@@ -339,113 +344,66 @@ class GatewayStats(GatewayMesh):
             self.debug(f"Can't update parents: {e}")
 
 
-class GatewayBLE(GatewayStats):
-    def process_ble_event(self, data: dict):
-        self.debug(f"Process BLE {data}")
+class GatewayGW3(GatewayStats):
+    ble_known = {}
+    ble_retain = {}
 
-        mac = data['dev']['mac'].replace(':', '').lower() \
-            if 'mac' in data['dev'] else data['dev']['did']
-
+    def process_gw3_state(self, mac: str, data: dict):
+        mac = mac.lower().replace(':', '')
         if mac not in self.devices:
-            # some devices doesn't send mac, only number did
-            # https://github.com/AlexxIT/XiaomiGateway3/issues/24
-            device = self.find_or_create_device({
-                'did': data['dev'].get('did'),
-                'mac': mac,
-                'model': data['dev']['pdid'],
-                'type': 'ble',
-                'init': {}
-            })
-        else:
-            device = self.devices[mac]
-
-        if device.get('seq') == data['frmCnt']:
+            # save data for first init with device/info topic
+            self.ble_retain[mac] = data
             return
-        device['seq'] = data['frmCnt']
-
-        pdid = data['dev'].get('pdid')
-
-        if isinstance(data['evt'], list):
-            # check if only one
-            assert len(data['evt']) == 1, data
-            payload = bluetooth.parse_xiaomi_ble(data['evt'][0], pdid)
-        elif isinstance(data['evt'], dict):
-            payload = bluetooth.parse_xiaomi_ble(data['evt'], pdid)
-        else:
-            payload = None
-
-        if payload:
-            self.process_ble_payload(device, payload)
-
-    def process_ble_event_fix(self, data: dict):
-        self.debug(f"Process BLE Fix {data}")
-
-        device = next((
-            device for device in self.devices.values()
-            if device['did'] == data['did']
-        ), None)
-
-        if not device:
-            self.debug(f"Unregistered BLE device {data}")
-            return
-
-        if device.get('seq') == data['seq']:
-            return
-        device['seq'] = data['seq']
-
-        payload = bluetooth.parse_xiaomi_ble(data, data['pdid'])
-        if payload:
-            self.process_ble_payload(device, payload)
-
-    def process_ble_payload(self, device: dict, payload: dict):
-        mac = device['mac']
-
-        # init entities if needed
-        init = device['init']
-        for k in payload.keys():
-            if k in init:
-                # update for retain
-                init[k] = payload[k]
-                continue
-
-            init[k] = payload[k]
-
-            domain = bluetooth.get_ble_domain(k)
-            self.add_entity(domain, device, k)
-
-        for entity in device['entities'].values():
-            if entity:
-                entity.update(payload)
-
-        if self.stats_enable:
-            self.add_stats(device)
-
-        self.process_ble_stats(mac)
-
-        raw = json.dumps(init, separators=(',', ':'))
-        self.mqtt.publish(f"ble/{mac}", raw, retain=True)
-
-    def process_ble_retain(self, mac: str, payload: dict):
-        if mac not in self.devices:
-            self.debug(f"BLE device {mac} is no longer on the gateway")
-            return
-
-        self.debug(f"{mac} retain: {payload}")
 
         device = self.devices[mac]
 
+        # skip messages with same sequence numb
+        if 'seq' in data:
+            if device.get('seq') == data['seq']:
+                return
+            device['seq'] = data['seq']
+
+        # don't create stats if device don't have entities
+        if self.stats_enable and device['entities']:
+            self.add_stats(device)
+            self.process_ble_stats(mac)
+
+        self.process_ble_payload(device, data)
+
+    def process_gw3_info(self, mac: str, data: dict):
+        if data['type'] != 'ble':
+            return
+
+        mac = mac.lower().replace(':', '')
+        # defaults can be set from: YAML, Cloud and integrations GUI
+        if mac not in self.defaults:
+            name = f"{data['brand']} {data['name']} ({mac.upper()})"
+            self.debug(f"Skip new BLE device: {name}")
+            self.ble_known[mac] = name
+            return
+
+        device = self.find_or_create_device({
+            'mac': mac,
+            'type': 'ble',
+            'model': None,
+            'init': {},
+            'device_manufacturer': data['brand'],
+            'device_name': data['brand'] + ' ' + data['name'],
+            'device_model': data['model'],
+        })
+
+        if mac in self.ble_retain:
+            self.process_ble_payload(device, self.ble_retain[mac])
+
+    def process_ble_payload(self, device: dict, payload: dict):
         # init entities if needed
-        for k in payload.keys():
-            # don't retain action and motion
+        for k, v in payload.items():
             if k in device['entities']:
                 continue
 
-            if k in ('action', 'motion'):
-                device['init'][k] = ''
-            else:
-                device['init'][k] = payload[k]
+            device['init'][k] = payload[k]
 
-            domain = bluetooth.get_ble_domain(k)
+            domain = bluetooth.get_ble_domain(k, v)
             self.add_entity(domain, device, k)
 
         for entity in device['entities'].values():
@@ -454,7 +412,7 @@ class GatewayBLE(GatewayStats):
 
 
 # noinspection PyUnusedLocal
-class GatewayEntry(Thread, GatewayBLE):
+class GatewayEntry(Thread, GatewayGW3):
     """Main class for working with the gateway via Telnet (23), MQTT (1883) and
     miIO (54321) protocols.
     """
@@ -492,6 +450,14 @@ class GatewayEntry(Thread, GatewayBLE):
     @property
     def telnet_cmd(self):
         return self.options.get('telnet_cmd') or TELNET_CMD
+
+    @property
+    def hass(self):
+        for device in self.devices.values():
+            for entity in device['entities'].values():
+                if entity and entity.hass:
+                    return entity.hass
+        return None
 
     def stop(self, *args):
         self.enabled = False
@@ -574,19 +540,12 @@ class GatewayEntry(Thread, GatewayBLE):
                 # run NTPd for sync time
                 shell.run_ntpd()
 
-            if shell.check_bt():
-                if "-t log/ble" not in ps:
-                    self.debug("Run fixed BT")
-                    shell.run_bt()
-            else:
-                self.debug("Fixed BT don't supported")
-
             if "-t log/miio" not in ps:
                 # all data or only necessary events
                 pattern = (
                     '\\{"' if 'miio' in self.debug_mode else
                     "ot_agent_recv_handler_one.+"
-                    "ble_event|properties_changed|heartbeat"
+                    "properties_changed|heartbeat"
                 )
                 self.debug(f"Redirect miio to MQTT")
                 shell.redirect_miio2mqtt(pattern)
@@ -599,6 +558,22 @@ class GatewayEntry(Thread, GatewayBLE):
                 if "dummy:basic_gw" in ps:
                     self.debug("Enable buzzer")
                     shell.run_buzzer()
+
+            # running gw3 last because it touches the daemon_miio.sh file
+            if self.ble_mode:
+                # check if binary has latest version
+                if shell.check_gw3():
+                    if "/gw3" not in ps:
+                        self.debug("Run gw3")
+                        shell.run_gw3()
+                else:
+                    if "/gw3" in ps:
+                        shell.stop_gw3()
+                    self.debug("Download and run gw3")
+                    shell.run_gw3()
+            elif "/gw3" in ps:
+                self.debug("Stop gw3")
+                shell.stop_gw3()
 
             if self.options.get('zha'):
                 # stop lumi without checking if it's running
@@ -740,19 +715,6 @@ class GatewayEntry(Thread, GatewayBLE):
                 try:
                     db = SQLite(raw)
 
-                    # load BLE devices
-                    rows = db.read_table('gateway_authed_table')
-                    for row in rows:
-                        device = {
-                            'did': row[4],
-                            'mac': utils.reverse_mac(row[1]),
-                            'model': row[2],
-                            'type': 'ble',
-                            'online': True,
-                            'init': {}
-                        }
-                        devices.append(device)
-
                     # load Mesh groups
                     mesh_groups = {}
 
@@ -857,16 +819,33 @@ class GatewayEntry(Thread, GatewayBLE):
                 payload = json.loads(msg.payload)
                 self.process_zigbee_message(payload)
 
+            elif topic == 'gw3/stderr':
+                _LOGGER.warning(msg.payload)
+
+                message = GW3_ERROR % msg.payload.decode("utf-8")
+                utils.notification(self.hass, message)
+
+                # restore gw3 application
+                self._prepare_gateway()
+
+            elif topic.startswith('gw3/'):
+                items = topic.split('/')
+                if len(items) != 3:
+                    return
+
+                payload = json.loads(msg.payload)
+                if items[2] in ('state', 'event'):
+                    self.process_gw3_state(items[1], payload)
+                elif items[2] == 'info':
+                    self.process_gw3_info(items[1], payload)
+
             elif topic == 'log/miio':
                 # don't need to process another data
                 if b'ot_agent_recv_handler_one' not in msg.payload:
                     return
 
                 for raw in utils.extract_jsons(msg.payload):
-                    if self.ble_mode and b'_async.ble_event' in raw:
-                        data = json.loads(raw)['params']
-                        self.process_ble_event(data)
-                    elif self.ble_mode and b'properties_changed' in raw:
+                    if self.ble_mode and b'properties_changed' in raw:
                         data = json.loads(raw)['params']
                         self.debug(f"Process props {data}")
                         self.process_mesh_data(data)
@@ -875,10 +854,6 @@ class GatewayEntry(Thread, GatewayBLE):
                         self.process_gw_stats(payload)
                         # time offset may changed right after gw.heartbeat
                         self.update_time_offset()
-
-            elif topic == 'log/ble':
-                payload = json.loads(msg.payload)
-                self.process_ble_event_fix(payload)
 
             elif topic == 'log/z3':
                 self.process_z3(msg.payload.decode())
@@ -890,11 +865,6 @@ class GatewayEntry(Thread, GatewayBLE):
             elif topic.endswith(('/MessageReceived', '/devicestatechange')):
                 payload = json.loads(msg.payload)
                 self.process_zb_stats(payload)
-
-            # read only retained ble
-            elif topic.startswith('ble') and msg.retain:
-                payload = json.loads(msg.payload)
-                self.process_ble_retain(topic[4:], payload)
 
             elif self.pair_model and topic.endswith('/commands'):
                 self.process_pair(msg.payload)
@@ -1095,25 +1065,34 @@ class GatewayEntry(Thread, GatewayBLE):
 
         # convert hass prop to lumi prop
         if device['miot_spec']:
-            params = []
-            for k, v in data.items():
-                if k == 'switch':
-                    v = bool(v)
-                k = next(p[0] for p in device['miot_spec'] if p[2] == k)
-                params.append({
-                    'siid': int(k[0]), 'piid': int(k[2]), 'value': v
-                })
+            try:
+                params = []
+                for k, v in data.items():
+                    k = next(p[0] for p in device['miot_spec'] if p[2] == k)
+                    if k == 'switch':
+                        v = bool(v)
+                    params.append({
+                        'siid': int(k[0]), 'piid': int(k[2]), 'value': v
+                    })
 
-            # Attention! mi_spec are used in payload
-            payload['mi_spec'] = params
-        else:
-            params = [{
-                'res_name': next(p[0] for p in device['lumi_spec']
-                                 if p[2] == k),
-                'value': v
-            } for k, v in data.items()]
+                # Attention! mi_spec are used in payload
+                payload['mi_spec'] = params
+            except StopIteration:
+                pass
 
-            payload['params'] = params
+        # lumi_spec and miot_spec persist simultaneously only in gateway
+        if device['lumi_spec']:
+            try:
+                params = [{
+                    'res_name': next(
+                        p[0] for p in device['lumi_spec'] if p[2] == k
+                    ),
+                    'value': v
+                } for k, v in data.items()]
+
+                payload['params'] = params
+            except StopIteration:
+                pass
 
         self.debug(f"{device['did']} {device['model']} => {payload}")
         payload = json.dumps(payload, separators=(',', ':')).encode()

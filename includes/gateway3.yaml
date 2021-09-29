@@ -6,3 +6,5 @@ attributes_template: |
     "integration": "gw3"
   }}}{% endif %}
 
+#gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+gw3_command: "/data/gw3 -log=syslog,debug,miio 2>&1 | mosquitto_pub -t gw3/stderr -s &"

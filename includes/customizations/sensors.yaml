@@ -327,6 +327,9 @@ sensor.bw_plug_1_power:
 sensor.bw_plug_1_daily_energy:
   friendly_name: "Socket 2 DE"
 
+sensor.bw_plug_2_daily_energy:
+  friendly_name: "Socket 3 DE"
+
 binary_sensor.sonoff_pump_status:
   friendly_name: "Pump"
 
@@ -466,9 +469,14 @@ sensor.0x54ef4410000c1dec_battery:
 sensor.0x54ef4410000c1dec_zigbee:
   friendly_name: "Balcony Light Sensor"
 
-
 sensor.shellyem_c45bbe602cfc_channel_1_voltage:
   friendly_name: "ShellyEM"
 
 sensor.shellyem_c45bbe602cfc_channel_1_power:
   friendly_name: "Apartment Power"
+
+binary_sensor.boiler_shelly_firmware_update:
+  friendly_name: "Shelly Boiler"
+
+binary_sensor.shellyem_c45bbe602cfc_firmware_update:
+  friendly_name: "Shelly EM"

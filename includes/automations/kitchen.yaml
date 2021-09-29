@@ -63,9 +63,9 @@
       state: 'on'
   action:
     - service: switch.turn_off
-      entity_id:
-        - switch.0x158d000211434a_switch
-        - light.kitchen_lamp
+      entity_id: switch.0x158d000211434a_switch
+    - service: light.turn_off
+      entity_id: light.kitchen_lamp
 
 - alias: "Turn off Kitchen timer 1"
   initial_state: true
@@ -150,10 +150,14 @@
   trigger:
     - platform: homeassistant
       event: start
+    - platform: state
+      entity_id: switch.kitchen_lamp_mini
+      to: 'off'
   condition:
     - condition: state
       entity_id: switch.kitchen_lamp_mini
       state: 'off'
   action:
-    - service: timer.start
-      entity_id: timer.bathroom_light
+    - service: switch.turn_on
+      entity_id: switch.kitchen_lamp_mini
+

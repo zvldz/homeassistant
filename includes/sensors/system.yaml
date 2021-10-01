@@ -47,7 +47,7 @@
   force_update: true
   headers:
     authorization: !secret ha1_token
-  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
 
@@ -58,7 +58,7 @@
   force_update: true
   headers:
     authorization: !secret ha2_token
-  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
 
@@ -69,7 +69,7 @@
   force_update: true
   headers:
     authorization: !secret has_token
-  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
 
@@ -80,7 +80,7 @@
   force_update: true
   headers:
     authorization: !secret ha_fazenda_token
-  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
 
@@ -91,7 +91,7 @@
   force_update: true
   headers:
     authorization: !secret ha_off_token
-  value_template: "{{ (as_timestamp(now()) - (value_json.state | float * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
+  value_template: "{{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
   json_attributes:
     - state
 

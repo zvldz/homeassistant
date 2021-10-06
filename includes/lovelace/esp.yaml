@@ -55,6 +55,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*connected_ssid"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -65,6 +66,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*wifi_signal"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -75,6 +77,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*ip_address"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -93,6 +96,7 @@ cards:
                       {% set hours = ((uptime % 86400) / 3600) | int %}
                       {% set days = (uptime / 86400) | int %}
                       {%if days > 0 %}{{ days }}d {% endif %}{% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% else %}<1m{% endif %}
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -103,6 +107,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -113,6 +118,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*current"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -123,6 +129,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*voltage"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -133,6 +140,7 @@ cards:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*power"
                   sort: entity_id
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row

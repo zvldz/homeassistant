@@ -6,5 +6,15 @@ attributes_template: |
     "integration": "gw3"
   }}}{% endif %}
 
-#gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio 2>&1 | mosquitto_pub -t gw3/stderr -s &"
-gw3_command: "/data/gw3 -log=syslog,debug,miio 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+#gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+gw3_command: "/data/gw3 -log=syslog,debug,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+
+logger:
+  filename: xiaomi_gateway3.log       # default empty
+  propagate: False                    # if False - disable log to home-assistant.log and console, default True
+  max_bytes: 0                        # file size, default 0
+  backup_count: 3                     # file rotation count, default 0
+  debug_mode: true,miio,mqtt          # global modes for all gateways, default empty
+  level: debug                        # default
+  mode: a                             # a - append to file, w - write new file, default
+  format: "%(asctime)s %(message)s"   # default

@@ -161,7 +161,7 @@ class ZigbeeStats(XiaomiSensor):
             ieee = '0x' + self.device['did'][5:].rjust(16, '0').upper()
             self._attrs = {
                 'ieee': ieee,
-                'nwk': None,
+                'nwk': self.device['nwk'],
                 'msg_received': 0,
                 'msg_missed': 0,
                 'unresponsive': 0,
@@ -176,7 +176,6 @@ class ZigbeeStats(XiaomiSensor):
 
     def update(self, data: dict = None):
         if 'sourceAddress' in data:
-            self._attrs['nwk'] = data['sourceAddress']
             self._attrs['link_quality'] = data['linkQuality']
             self._attrs['rssi'] = data['rssi']
 
@@ -213,9 +212,10 @@ class ZigbeeStats(XiaomiSensor):
             self._state = now().isoformat(timespec='seconds')
 
         elif 'parent' in data:
-            ago = timedelta(seconds=data.pop('ago'))
+            ago = timedelta(seconds=data['ago'])
             self._state = (now() - ago).isoformat(timespec='seconds')
-            self._attrs.update(data)
+            self._attrs['type'] = data['type']
+            self._attrs['parent'] = data['parent']
 
         elif data.get('deviceState') == 17:
             self._attrs['unresponsive'] += 1

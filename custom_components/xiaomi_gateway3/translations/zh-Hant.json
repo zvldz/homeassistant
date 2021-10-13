@@ -31,12 +31,6 @@
           "token": "權杖",
           "telnet_cmd": "開啟 Telnet 指令"
         }
-      },
-      "ble": {
-        "title": "新增 BLE 裝置",
-        "data": {
-          "mac": "裝置"
-        }
       }
     }
   },

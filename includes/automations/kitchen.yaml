@@ -158,6 +158,7 @@
       entity_id: switch.kitchen_lamp_mini
       state: 'off'
   action:
+    - delay: '00:00:04'
     - service: switch.turn_on
       entity_id: switch.kitchen_lamp_mini
 

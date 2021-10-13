@@ -604,7 +604,7 @@ def fix_xiaomi_props(model, params) -> dict:
                 params[k] = 2
 
     # fix lumi.weather on gateway fw v1.4.6
-    if 'battery' not in params and 'battery_percent' in params:
+    if not params.get('battery') and params.get('battery_percent'):
         params['battery'] = params['battery_percent']
 
     return params
@@ -621,24 +621,33 @@ def fix_xiaomi_battery(value: int) -> int:
     return int((value - 2700) / 5)
 
 
-def get_buttons(model: str):
-    model, _ = model.split(' ', 1)
+def get_buttons(device_model: str):
+    zigbee_model, _ = device_model.split(' ', 1)
     for device in DEVICES:
-        if model in device:
+        if zigbee_model not in device:
+            continue
+        if 'lumi_spec' in device:
             return [
                 param[2] for param in device['lumi_spec']
                 if param[2].startswith('button')
             ]
+        elif 'miot_spec' in device:
+            buttons = []
+            for _, _, param, _ in device['miot_spec']:
+                if not param.startswith('button'):
+                    continue
+                param, _ = param.split(':', 1)
+                if param not in buttons:
+                    buttons.append(param)
+            return buttons
     return None
 
 
 def get_fw_ver(device: dict) -> int:
-    """Support int (30) and str (1.0.0_0034) versions."""
-    version = device.get('fw_ver', 0)
-    if isinstance(version, int):
-        return version
     try:
-        return int(version.rsplit('_', 1)[1])
+        # mod: 21 hw: 0 fw: 21
+        _, fw = device['fw_ver'].rsplit(' ', 1)
+        return int(fw)
     except:
         return 0
 

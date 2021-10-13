@@ -213,24 +213,17 @@ ACTIONS = {
 }
 
 
-def get_ble_domain(param: str, value) -> Optional[str]:
+def get_ble_domain(param: str) -> Optional[str]:
     if param in (
-            'contact', 'gas', 'light', 'lock', 'motion', 'opening', 'power',
-            'sleep', 'smoke', 'water_leak',
-    ):
+            'sleep', 'lock', 'opening', 'water_leak', 'smoke', 'gas', 'light',
+            'contact', 'motion', 'power'):
         return 'binary_sensor'
 
-    if param in (
-            'battery', 'conductivity', 'formaldehyde', 'humidity', 'idle_time',
-            'illuminance', 'moisture', 'supply', 'temperature',
-    ):
+    elif param in (
+            'action', 'rssi', 'temperature', 'humidity', 'illuminance',
+            'moisture', 'conductivity', 'battery', 'formaldehyde',
+            'supply', 'idle_time'):
         return 'sensor'
-
-    if param == 'action' and value not in ('motion', 'tracker', 'weigth'):
-        return 'sensor'
-
-    if param == 'tracker':
-        return 'device_tracker'
 
     return None
 

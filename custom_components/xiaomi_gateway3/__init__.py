@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.entity_registry import EntityRegistry
 from homeassistant.helpers.storage import Store
 
-from .core import logger, shell, utils
+from .core import logger
 from .core.gateway3 import Gateway3
 from .core.helpers import DevicesRegistry
 from .core.utils import DOMAIN, XiaomiGateway3Debug
@@ -20,12 +20,10 @@ from .core.xiaomi_cloud import MiCloud
 _LOGGER = logging.getLogger(__name__)
 
 DOMAINS = ['binary_sensor', 'climate', 'cover', 'light', 'remote', 'sensor',
-           'switch', 'alarm_control_panel', 'device_tracker']
+           'switch', 'alarm_control_panel']
 
 CONF_DEVICES = 'devices'
 CONF_ATTRIBUTES_TEMPLATE = 'attributes_template'
-CONF_GW3_COMMAND = 'gw3_command'
-CONF_GW3_UPDATE = 'gw3_update'
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
@@ -35,9 +33,7 @@ CONFIG_SCHEMA = vol.Schema({
             }, extra=vol.ALLOW_EXTRA),
         },
         CONF_LOGGER: logger.CONFIG_SCHEMA,
-        vol.Optional(CONF_ATTRIBUTES_TEMPLATE): cv.template,
-        vol.Optional(CONF_GW3_COMMAND): cv.string,
-        vol.Optional(CONF_GW3_UPDATE): cv.boolean,
+        vol.Optional(CONF_ATTRIBUTES_TEMPLATE): cv.template
     }, extra=vol.ALLOW_EXTRA),
 }, extra=vol.ALLOW_EXTRA)
 
@@ -55,26 +51,11 @@ async def async_setup(hass: HomeAssistant, hass_config: dict):
         if 'debug_mode' in config[CONF_LOGGER]:
             setattr(Gateway3, 'debug_mode', config[CONF_LOGGER]['debug_mode'])
 
-    if CONF_GW3_COMMAND in config:
-        # custom gw3 run command
-        shell.RUN_GW3 = config[CONF_GW3_COMMAND]
-
-    if config.get(CONF_GW3_UPDATE) is False:
-        # disable gw3 update
-        shell.MD5_GW3 = ''
-
     if CONF_DEVICES in config:
         for k, v in config[CONF_DEVICES].items():
             # AA:BB:CC:DD:EE:FF => aabbccddeeff
             k = k.replace(':', '').lower()
-            # support empty device defaults
-            DevicesRegistry.defaults[k] = v or {}
-
-    # adds all devices in registry to BLE include list
-    for device in utils.device_registry(hass).devices.values():
-        for conn in device.connections:
-            if conn and len(conn) == 2 and conn[0] == 'bluetooth':
-                DevicesRegistry.defaults.setdefault(conn[1], {})
+            DevicesRegistry.defaults[k] = v
 
     hass.data[DOMAIN] = {
         CONF_ATTRIBUTES_TEMPLATE: config.get(CONF_ATTRIBUTES_TEMPLATE)
@@ -248,11 +229,6 @@ async def _handle_device_remove(hass: HomeAssistant):
             if gw_device['type'] == 'zigbee':
                 gw.debug(f"Remove device: {gw_device['did']}")
                 gw.miio.send('remove_device', [gw_device['did']])
-            elif gw_device['type'] == 'ble':
-                # remove device from BLE include list
-                mac = gw_device['mac']
-                gw.debug(f"Remove device: {mac}")
-                DevicesRegistry.defaults.pop(mac, None)
             break
 
         # remove from Hass

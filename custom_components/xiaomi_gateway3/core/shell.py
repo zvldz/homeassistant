@@ -8,8 +8,8 @@ from typing import Union
 
 _LOGGER = logging.getLogger(__name__)
 
-# We should use HTTP-link because wget doesn't support HTTPS and curl removed
-# in lastest fw. But it's not a problem because we check md5
+# We should use HTTP-link because wget don't support HTTPS and curl removed in
+# lastest fw. But it's not a problem because we check md5
 
 # original link http://pkg.musl.cc/socat/mipsel-linux-musln32/bin/socat
 # original link https://busybox.net/downloads/binaries/1.21.1/busybox-mipsel
@@ -36,12 +36,16 @@ TAR_DATA = b"tar -czOC /data basic_app basic_gw conf factory miio " \
            b"mijia_automation silicon_zigbee_host zigbee zigbee_gw " \
            b"ble_info miioconfig.db 2>/dev/null | base64\n"
 
-# default log: `tail -F /var/log/messages | grep gw3`
-# publish error on app crush to mqtt: `gw3/stderr`
-RUN_GW3 = "/data/gw3 -log=syslog,info 2>&1|mosquitto_pub -t gw3/stderr -s -r &"
-
+MD5_BT = {
+    '1.4.6_0012': '367bf0045d00c28f6bff8d4132b883de',
+    '1.4.6_0043': 'c4fa99797438f21d0ae4a6c855b720d2',
+    '1.4.7_0115': 'be4724fbc5223fcde60aff7f58ffea28',
+    '1.4.7_0160': '9290241cd9f1892d2ba84074f07391d4',
+    '1.5.0_0026': '9290241cd9f1892d2ba84074f07391d4',
+    '1.5.0_0102': '9290241cd9f1892d2ba84074f07391d4',
+}
 MD5_BUSYBOX = '099137899ece96f311ac5ab554ea6fec'
-MD5_GW3 = '59d94e9ba5a5336296833f0296faa985'
+# MD5_GW3 = 'c81b91816d4b9ad9bb271a5567e36ce9'  # alpha
 MD5_SOCAT = '92b77e1a93c4f4377b4b751a5390d979'
 
 
@@ -59,9 +63,6 @@ class TelnetShell(Telnet):
 
         self.ver = self.get_version()
 
-        # adds /tmp to PATH because gw3 uses it
-        self.exec("export PATH=/tmp:$PATH")
-
     def exec(self, command: str, as_bytes=False) -> Union[str, bytes]:
         """Run command and return it result."""
         self.write(command.encode() + b"\n")
@@ -78,15 +79,15 @@ class TelnetShell(Telnet):
         else:
             return False
 
-    def check_gw3(self):
-        return self.check_bin('gw3', MD5_GW3)
+    # def check_gw3(self):
+    #     return self.check_bin('gw3', MD5_GW3)
 
-    def run_gw3(self):
-        if self.check_bin('gw3', MD5_GW3, 'gw3/' + MD5_GW3):
-            self.exec(RUN_GW3)
+    # def run_gw3(self, params=''):
+    #     if self.check_bin('gw3', MD5_GW3, 'gw3/' + MD5_GW3):
+    #         self.exec(f"/data/gw3 {params}&")
 
-    def stop_gw3(self):
-        self.exec(f"killall gw3")
+    # def stop_gw3(self):
+    #     self.exec(f"killall gw3")
 
     def run_zigbee_tcp(self, port=8888):
         if self.check_bin('socat', MD5_SOCAT, 'bin/socat'):
@@ -123,6 +124,24 @@ class TelnetShell(Telnet):
         if self.check_bin('busybox', MD5_BUSYBOX, 'bin/busybox'):
             self.exec(RUN_FTP)
 
+    def check_bt(self) -> bool:
+        md5 = MD5_BT.get(self.ver)
+        if not md5:
+            return False
+        # we use same name for bt utis so gw can kill it in case of update etc.
+        return self.check_bin('silabs_ncp_bt', md5, md5 + '/silabs_ncp_bt')
+
+    def run_bt(self):
+        self.exec(
+            "killall silabs_ncp_bt; pkill -f log/ble; "
+            "/data/silabs_ncp_bt /dev/ttyS1 1 2>&1 >/dev/null | "
+            "mosquitto_pub -t log/ble -l &"
+        )
+
+    def sniff_bluetooth(self):
+        """Deprecated"""
+        self.write(b"killall silabs_ncp_bt; silabs_ncp_bt /dev/ttyS1 1\n")
+
     def run_public_mosquitto(self):
         self.exec("killall mosquitto")
         time.sleep(.5)
@@ -148,18 +167,23 @@ class TelnetShell(Telnet):
     def run_public_zb_console(self):
         self.stop_lumi_zigbee()
 
-        # run Gateway with open console port (`-v` param)
-        arg = " -r 'c'" if self.ver >= '1.4.7_0063' else ''
-
-        # use `tail` because input for Z3 is required;
         # add `-l 0` to disable all output, we'll enable it later with
         # `debugprint on 1` command
-        self.exec(
-            "nohup tail -f /dev/null 2>&1 | "
-            "nohup Lumi_Z3GatewayHost_MQTT -n 1 -b 115200 -l 0 "
-            f"-p '/dev/ttyS2' -d '/data/silicon_zigbee_host/'{arg} 2>&1 | "
-            "mosquitto_pub -t log/z3 -l &"
-        )
+        if self.ver >= '1.4.7_0063':
+            # nohub and tail fixed in latest fw
+            self.exec(
+                "Lumi_Z3GatewayHost_MQTT -n 1 -b 115200 -l 0 -p '/dev/ttyS2' "
+                "-d '/data/silicon_zigbee_host/' -r 'c' 2>&1 | "
+                "mosquitto_pub -t log/z3 -l &"
+            )
+        else:
+            # use `tail` because input for Z3 is required;
+            self.exec(
+                "nohup tail -f /dev/null 2>&1 | "
+                "nohup Lumi_Z3GatewayHost_MQTT -n 1 -b 115200 -l 0 "
+                f"-p '/dev/ttyS2' -d '/data/silicon_zigbee_host/' 2>&1 | "
+                "mosquitto_pub -t log/z3 -l &"
+            )
 
         self.run_lumi_zigbee()
 

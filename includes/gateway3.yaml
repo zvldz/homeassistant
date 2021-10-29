@@ -18,3 +18,4 @@ logger:
   level: debug                        # default
   mode: a                             # a - append to file, w - write new file, default
   format: "%(asctime)s %(message)s"   # default
+

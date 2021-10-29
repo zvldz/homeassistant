@@ -122,6 +122,16 @@
       to: 'unavailable'
       for:
         minutes: 2
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'unavailable'
+      for:
+        minutes: 5
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: 'unavailable'
+      for:
+        minutes: 10
     - platform: numeric_state
       entity_id: sensor.ha_uptime
       above: 0
@@ -133,7 +143,7 @@
   action:
     - service: notify.telegram
       data:
-        message: "\U00002620 Restart Kitchen lamp"
+        message: "\U00002620 Restart Kitchen lamp ({{ trigger.for }})"
     - service: rest_command.ha1_kitchen_lamp_reload
 #   - service: switch.turn_off
 #     entity_id: switch.kitchen_lamp_mini

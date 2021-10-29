@@ -20,7 +20,7 @@ bedroom_light:
 
 bathroom_fan:
   name: "Baroom fan timer"
-  duration: '00:15:00'
+  duration: '00:20:00'
 
 hallway_light:
   name: "Hallway timer"

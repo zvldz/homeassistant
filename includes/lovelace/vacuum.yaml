@@ -14,23 +14,23 @@ cards:
 #       map: camera.rockrobo_map
         stats:
           default:
-            - attribute: filter_left
+            - entity_id: sensor.xiaomi_vacuum_cleaner_filter_left
               unit: hours
               subtitle: Filter
-            - attribute: side_brush_left
+            - entity_id: sensor.xiaomi_vacuum_cleaner_side_brush_left
               unit: hours
               subtitle: Side brush
-            - attribute: main_brush_left
+            - entity_id: sensor.xiaomi_vacuum_cleaner_main_brush_left
               unit: hours
               subtitle: Main brush
-            - attribute: sensor_dirty_left
+            - entity_id: sensor.xiaomi_vacuum_cleaner_sensor_dirty_left
               unit: hours
               subtitle: Sensors
           cleaning:
-            - attribute: cleaned_area
+            - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_area
               unit: m2
               subtitle: Cleaning area
-            - attribute: cleaning_time
+            - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_duration
               unit: minutes
               subtitle: Cleaning time
         actions:

@@ -97,6 +97,30 @@ cards:
             name: RSSI
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : (100 + parseInt(x, 10)) * -1'
+          - attr_as_list: bluetooth
+            name: BTX
+            align: center
+            modify: x.tx
+          - attr_as_list: bluetooth
+            name: BRX
+            align: center
+            modify: x.rx
+          - attr_as_list: bluetooth
+            name: BERR
+            align: center
+            modify: 'isNaN(parseInt(x.oe, 10)) ? "-" : parseInt(x.oe, 10)'
+          - attr_as_list: zigbee
+            name: ZTX
+            align: center
+            modify: x.tx
+          - attr_as_list: zigbee
+            name: ZRX
+            align: center
+            modify: x.rx
+          - attr_as_list: zigbee
+            name: ZERR
+            align: center
+            modify: 'isNaN(parseInt(x.oe)) ? "-" : parseInt(x.oe, 10)'
           - data: uptime
             name: Uptime
             align: center
@@ -148,10 +172,6 @@ cards:
             name: Parent
             align: center
             modify: (x+'').replace(/^0x/,"").toLowerCase()
-          - data: type
-            name: Type
-            align: center
-            modify: (x+'').replace(/^-$/, "child device")
           - data: msg_received
             name: Received
             align: center
@@ -164,6 +184,10 @@ cards:
             name: Unresponsive
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
+          - data: reset_cnt
+            name: Resets
+            align: center
+            modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - data: link_quality
             name: LQI
             align: center
@@ -173,7 +197,7 @@ cards:
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
           - data: last_msg
-            name: Last Message
+            name: Last Msg
             align: center
             modify: x+''
           - data: state

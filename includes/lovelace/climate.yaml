@@ -42,6 +42,11 @@ cards:
               card:
                 - font-size: 14px
 
+      - type: history-graph
+        title: 'History'
+        entities:
+          - switch.boiler_shelly
+
       - type: entities
         show_header_toggle: false
         entities:

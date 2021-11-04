@@ -59,7 +59,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d00022a8150_channel_1
+            entity: switch.0x54ef4410001f5dd8_switch
             size: 14%
             styles:
               card:
@@ -80,7 +80,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x54ef4410001f5dd8_switch
+            entity: switch.0x158d00022a8150_channel_1
             size: 20%
             styles:
               card:

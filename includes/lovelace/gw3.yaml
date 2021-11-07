@@ -86,37 +86,37 @@ cards:
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
           - data: free_mem
-            name: Memory Free (KB)
+            name: Mem Free (KB)
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
           - data: load_avg
             name: Load Avg
             align: center
             modify: '(x+"").split("|").slice(0, 3).join(", ")'
-          - attr_as_list: zigbee
+          - data: zigbee_tx
             name: Z_TX
             align: center
-            modify: x.tx
-          - attr_as_list: zigbee
+            modify: x
+          - data: zigbee_rx
             name: Z_RX
             align: center
-            modify: x.rx
-          - attr_as_list: zigbee
+            modify: x
+          - data: zigbee_oe
             name: Z_ERR
             align: center
-            modify: x.oe
-          - attr_as_list: bluetooth
+            modify: x
+          - data: bluetooth_tx
             name: B_TX
             align: center
-            modify: x.tx
-          - attr_as_list: bluetooth
+            modify: x
+          - data: bluetooth_rx
             name: B_RX
             align: center
-            modify: x.rx
-          - attr_as_list: bluetooth
+            modify: x
+          - data: bluetooth_oe
             name: B_ERR
             align: center
-            modify: x.oe
+            modify: x
           - data: rssi
             name: RSSI
             align: center

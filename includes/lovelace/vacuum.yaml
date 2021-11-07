@@ -33,7 +33,7 @@ cards:
             - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_duration
               unit: minutes
               subtitle: Cleaning time
-        actions:
+        shortcuts:
           - name: Clean All
             service: script.vacuum_all_except_balcony
             icon: "mdi:all-inclusive"

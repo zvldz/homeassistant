@@ -91,7 +91,7 @@ cards:
                   options:
                     type: custom:template-entity-row
                     state: >
-                      {% set uptime = states(config.entity) | int %}
+                      {% set uptime = states(config.entity) | int(0) %}
                       {% set minutes = ((uptime % 3600) / 60) | int %}
                       {% set hours = ((uptime % 86400) / 3600) | int %}
                       {% set days = (uptime / 86400) | int %}

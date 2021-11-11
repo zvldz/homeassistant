@@ -20,16 +20,16 @@ template:
           {% endif %}
 
       - name: "Vacuum Cleaner Filter Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_filter_left') | float / 3600) | int }}"
+        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_filter_left') | float(0) / 3600) | int }}"
 
       - name: "Vacuum Cleaner Side Brush Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_side_brush_left') | float / 3600) | int }}"
+        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_side_brush_left') | float(0) / 3600) | int }}"
 
       - name: "Vacuum Cleaner Main Brush Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_main_brush_left') | float / 3600) | int }}"
+        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_main_brush_left') | float(0) / 3600) | int }}"
 
       - name: "Vacuum Cleaner Sensor Dirty Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_sensor_dirty_left') | float / 3600) | int }}"
+        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_sensor_dirty_left') | float(0) / 3600) | int }}"
 
 automation:
   - alias: "Vacuum Time Clean 1"

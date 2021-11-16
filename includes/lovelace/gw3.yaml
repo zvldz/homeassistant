@@ -104,7 +104,7 @@ cards:
           - data: zigbee_oe
             name: Z_ERR
             align: center
-            modify: x
+            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
           - data: bluetooth_tx
             name: B_TX
             align: center
@@ -116,7 +116,7 @@ cards:
           - data: bluetooth_oe
             name: B_ERR
             align: center
-            modify: x
+            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
           - data: rssi
             name: RSSI
             align: center

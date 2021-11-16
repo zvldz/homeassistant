@@ -155,7 +155,6 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.0x158d0002e22617_action
-          - sensor.0x54ef4410001f5dd8_zigbee
           - sensor.0x54ef4410001f5dd8_action
           - sensor.0x54ef4410001ad4c2_action
 

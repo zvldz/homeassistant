@@ -39,7 +39,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.ty20538630c44f33f7b81b
+            entity: switch.gosund_socket_1
             name: "Socket"
             icon: "mdi:power-socket-de"
             size: 35%

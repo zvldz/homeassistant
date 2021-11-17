@@ -74,6 +74,7 @@ cards:
         name: false
         sensors:
           - entity: sensor.0x158d0002bfe958_temperature
+          - entity: number.living_room_trv_local_temperature_calibration
 
       - type: gauge
         name: Positions
@@ -114,6 +115,7 @@ cards:
         name: false
         sensors:
           - entity: sensor.0x158d0002323856_temperature
+          - entity: number.master_bedroom_trv_local_temperature_calibration
 
       - type: gauge
         name: Positions
@@ -154,6 +156,7 @@ cards:
         name: false
         sensors:
           - entity: sensor.0x158d0001ab2a27_temperature
+          - entity: number.bedroom_trv_local_temperature_calibration
 
       - type: gauge
         name: Positions

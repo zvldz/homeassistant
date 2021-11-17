@@ -119,13 +119,13 @@ script:
     sequence:
       - variables:
           calibration_local: >
-            {{  128 + ((states(objectsensortemperature) | float
-              - state_attr(objectvalve, 'local_temperature') | float) / 0.5) | round(0) * 0.5
-              + state_attr(objectvalve, 'local_temperature_calibration') | float
+            {{ 128 + ((states(objectsensortemperature) | float(0.0)
+              - state_attr(objectvalve, 'local_temperature') | float(0.0)) / 0.5) | round(0, 'common', 0) * 0.5
+              + states(objectvalve | replace('number.', 'sensor.') + '_local_temperature_calibration') | float(0.0)
             }}
           calibration_local_condition: >
-            {{ 128 + ((states(objectsensortemperature) | float
-              - state_attr(objectvalve, 'local_temperature') | float) / 0.5) | round(0) * 0.5
+            {{ 128 + ((states(objectsensortemperature) | float(0.0)
+              - states(objectvalve | replace('climate.', 'sensor.') + '_local_temperature') | float(0.0)) / 0.5) | round(0, 'common', 0) * 0.5
             }}
       - choose:
         - conditions:
@@ -249,7 +249,7 @@ automation:
     initial_state: 'true'
     trigger:
       - platform: time_pattern
-        minutes: "/30"
+        minutes: "/10"
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule

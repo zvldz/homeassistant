@@ -45,7 +45,7 @@ sensor.ha_off_uptime:
 
 binary_sensor.0x158d00022515fe_motion:
   friendly_name: "Kitchen Motion"
-  occupancy_timeout: [-120, 240, 300]  # progressive timer
+  occupancy_timeout: 5
 
 sensor.0x158d00022515fe_battery:
   friendly_name: "Kitchen Motion"

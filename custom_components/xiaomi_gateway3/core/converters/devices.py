@@ -58,6 +58,8 @@ battery not exist on some firmwares of some devices.
 The name of the attribute defines the device class, icon and unit of measure.
 Recommended attributes names:
 
+- motion - the sensor can only send motion detection (timeout in Hass)
+- occupancy - the sensor can send motion start and motion stop
 - plug - for sockets with male connector
 - outlet - for sockets with only female connector (wall installation)
 - switch - for relays and switches with buttons (wall installation, remotes)
@@ -324,8 +326,8 @@ DEVICES += [{
     "optional": [ZigbeeStats, BatteryPer],
 }, {
     # door window sensor
-    "lumi.sensor_magnet": ["Xiaomi", "Door Sensor", "MCCGQ01LM"],
-    "lumi.sensor_magnet.aq2": ["Aqara", "Door Sensor", "MCCGQ11LM"],
+    "lumi.sensor_magnet": ["Xiaomi", "Door/Window Sensor", "MCCGQ01LM"],
+    "lumi.sensor_magnet.aq2": ["Aqara", "Door/Window Sensor", "MCCGQ11LM"],
     "required": [
         # hass: On means open, Off means closed
         BoolConv("contact", "binary_sensor", mi="3.1.85"),
@@ -720,18 +722,38 @@ DEVICES += [{
     "optional": [ZigbeeStats, ZTuyaPowerOn],
 }, {
     "01MINIZB": ["Sonoff", "Mini", "ZBMINI"],
+    "Lamp_01": ["Ksentry Electronics", "OnOff Controller", "KS-SM001"],
+    "SA-003-Zigbee": ["eWeLink", "Zigbee OnOff Controller", "SA-003-Zigbee"],
     "support": 5,
     "required": [ZOnOffConv("switch", "switch")],
     "optional": [ZigbeeStats],
 }, {
     "WB01": ["Sonoff", "Button", "SNZB-01"],
-    "support": 1,  # TODO: binding, battery, tests
-    "required": [ZSonoffButtonConv("action", "sensor")],
+    "support": 5,
+    "required": [
+        ZSonoffButtonConv("action", "sensor"),
+        ZBatteryConv("battery", "sensor"),
+    ],
     "optional": [ZigbeeStats],
+    "config": [
+        ZBindConf(clusters={6}, ep=1),
+    ]
 }, {
     "MS01": ["Sonoff", "Motion Sensor", "SNZB-03"],
-    "support": 3,  # TODO: battery, tests
-    "required": [ZMotionConv("motion", "binary_sensor")],
+    "support": 5,
+    "required": [
+        ZIASZoneConv("occupancy", "binary_sensor"),
+        ZBatteryConv("battery", "sensor"),
+    ],
+    "optional": [ZigbeeStats],
+}, {
+    # wrong zigbee model (ewelink bug)
+    "TH01": ["Sonoff", "Door/Window Sensor", "SNZB-04"],
+    "support": 5,
+    "required": [
+        ZIASZoneConv("contact", "binary_sensor"),
+        ZBatteryConv("battery", "sensor"),
+    ],
     "optional": [ZigbeeStats],
 }, {
     "FNB56-ZSC01LX1.2": ["Unknown", "Dimmer", "LXZ8-02A"],
@@ -744,6 +766,24 @@ DEVICES += [{
         ZBrightnessConv("brightness", parent="light"),
     ],
     "optional": [ZigbeeStats],
+}, {
+    "SML001": ["Philips", "Hue motion sensor", "9290012607"],
+    "support": 4,  # TODO: sensitivity, occupancy_timeout, led
+    "required": [
+        ZOccupancyConv("occupancy", "binary_sensor", ep=2),
+        ZIlluminance("illuminance", "sensor", ep=2),
+        ZTemperatureConv("temperature", "sensor", ep=2),
+        ZBatteryConv("battery", "sensor", ep=2),
+        # ZHueLed("led", "switch"),
+    ],
+    "optional": [ZigbeeStats],
+    "config": [
+        ZBindConf(clusters={1, 0x400, 0x402, 0x406}, ep=2),
+        ZReportConf(type="battery_percentage_remaining", ep=2),
+        ZReportConf(type="occupancy", ep=2),
+        ZReportConf(type="temperature", ep=2),
+        ZReportConf(type="illuminance", ep=2),
+    ]
 }, {
     "LWB010": ["Philips", "Hue white 806 lm", "9290011370B"],
     "support": 2,  # TODO: state change, effect?
@@ -770,9 +810,9 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
     "config": [
-        ZBindConfig(clusters={6, 8}, ep=1),
-        ZBindConfig(clusters={1, 64512}, ep=2),
-        ZHueConfig(),
+        ZBindConf(clusters={6, 8}, ep=1),
+        ZBindConf(clusters={1, 64512}, ep=2),
+        ZHueConf(),
     ]
 }, {
     "default": "zigbee",  # default zigbee device
@@ -784,7 +824,7 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
     "config": [
-        ZBindConfig(clusters={6, 8}, ep=1),  # maybe button
+        ZBindConf(clusters={6, 8}, ep=1),  # maybe button
     ]
 }]
 

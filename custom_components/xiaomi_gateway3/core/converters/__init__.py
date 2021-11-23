@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -11,6 +12,8 @@ try:
     from xiaomi_gateway3 import DEVICES
 except ModuleNotFoundError:
     pass
+except:
+    logging.getLogger(__name__).exception("Can't load external converters")
 
 
 @dataclass
@@ -35,7 +38,7 @@ def get_device_info(model: str, type: str) -> Optional[XDeviceInfo]:
         if type == GATEWAY:
             market = f"Wi-Fi {info[2]}"
         elif type == ZIGBEE:
-            market = f"Zigbee {info[2]}"
+            market = f"Zigbee {info[2]} ({model})"
         elif type == BLE:
             market = f"BLE {info[2]}"
         elif type == MESH:

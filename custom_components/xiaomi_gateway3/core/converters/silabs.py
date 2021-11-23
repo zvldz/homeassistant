@@ -264,7 +264,7 @@ def zcl_read(nwk: str, ep: int, cluster: int, attr) -> list:
 def zcl_write(nwk: str, ep: int, cluster: int, attr: int, type: int,
               data, mfg: int = None) -> list:
     """Generate Silabs Z3 write attribute command."""
-    if type == 0x30:
+    if type in (0x10, 0x30):
         data = f"{{{data:02x}}}"
     pre = [
         {"commandcli": f"zcl mfg-code {mfg}"}
@@ -279,4 +279,15 @@ def zdo_bind(nwk: str, ep: int, cluster: int, src: str, dst: str) -> list:
     """Generate Silabs Z3 bind command."""
     return [{
         "commandcli": f"zdo bind {nwk} {ep} 1 {cluster} {{{src}}} {{{dst}}}"
+    }]
+
+
+# zcl global send-me-a-report [cluster:2] [attributeId:2] [dataType:1] [minReportTime:2] [maxReportTime:2] [reportableChange:-1]
+def zdb_report(nwk: str, ep: int, cluster: int, attr: int, type: int,
+               mint: int, maxt: int, change: int):
+    change = int(change).to_bytes(2, "little").hex()
+    return [{
+        "commandcli": f"zcl global send-me-a-report {cluster} {attr} {type} {mint} {maxt} {{{change}}}"
+    }, {
+        "commandcli": f"send {nwk} 1 {ep}"
     }]

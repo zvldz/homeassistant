@@ -1,27 +1,52 @@
 reboot_gateway_1:
   sequence:
-    - service: remote.send_command
-      entity_id: remote.0x588e81fffe771b2a_pair
+    - service: select.select_option
+      target:
+        entity_id: select.6490c178ac26_command
       data:
-        command: reboot
+        option: "Other Commands"
+    - service: select.select_option
+      target:
+        entity_id: select.6490c178ac26_data
+      data:
+        option: "reboot"
 
 reboot_gateway_2:
   sequence:
-    - service: remote.send_command
-      entity_id: remote.0x680ae2fffe266ed5_pair
+    - service: select.select_option
+      target:
+        entity_id: select.6490c1783f01_command
       data:
-        command: reboot
+        option: "Other Commands"
+    - service: select.select_option
+      target:
+        entity_id: select.6490c1783f01_data
+      data:
+        option: "reboot"
 
 dump_gateway_1:
   sequence:
-    - service: remote.send_command
-      entity_id: remote.0x588e81fffe771b2a_pair
+    - service: select.select_option
+      target:
+        entity_id: select.6490c178ac26_command
       data:
-        command: dump
+        option: "Other Commands"
+    - service: select.select_option
+      target:
+        entity_id: select.6490c178ac26_data
+      data:
+        option: "dump"
 
 dump_gateway_2:
   sequence:
-    - service: remote.send_command
-      entity_id: remote.0x680ae2fffe266ed5_pair
+    - service: select.select_option
+      target:
+        entity_id: select.6490c1783f01_command
       data:
-        command: dump
+        option: "Other Commands"
+    - service: select.select_option
+      target:
+        entity_id: select.6490c1783f01_data
+      data:
+        option: "dump"
+

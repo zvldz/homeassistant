@@ -511,7 +511,6 @@ class XEntity(Entity):
             if isinstance(attrs, dict):
                 self._attr_extra_state_attributes.update(attrs)
         except AttributeError:
-            _LOGGER.exception("AttributeError")
             pass
         except:
             _LOGGER.exception("Can't render attributes")

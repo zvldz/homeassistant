@@ -215,13 +215,14 @@ DEVICES += [{
     "optional": [ZigbeeStats, Energy],
 }, {
     "lumi.relay.c2acn01": ["Aqara", "Relay", "LLKZMK11LM"],  # tested
+    "support": 4,  # TODO: test load_s0 8.0.2034 load_s1 8.0.2035
     "required": [
         ChannelC1, ChannelC2, Current, Power, Voltage,
         Action, Button1, Button2, ButtonBoth,
     ],
     "optional": [
         ZigbeeStats, Energy,
-        Converter("interlock", "switch", mi="4.9.85"),
+        BoolConv("interlock", "switch", mi="4.9.85"),
     ]
 }, {
     "lumi.ctrl_neutral2": ["Aqara", "Double Wall Switch", "QBKG03LM"],
@@ -483,9 +484,17 @@ DEVICES += [{
         Converter("illuminance", "sensor", mi="2.p.1"),
         BatteryConv("battery", "sensor", mi="3.p.1"),  # voltage, mV
     ],
+    "optional": [ZigbeeStats]
+}, {
+    "lumi.magnet.acn001": ["Aqara", "Door/Window Sensor E1", "MCCGQ14LM"],
+    "support": 5,
+    "required": [
+        MapConv("contact", "binary_sensor", mi="2.p.1", map=INVERSE),
+        BatteryConv("battery", "sensor", mi="3.p.2"),  # voltage, mV
+    ],
     "optional": [
         ZigbeeStats,
-        Converter("battery_voltage", "sensor", mi="3.p.1"),
+        MapConv("battery_low", "binary_sensor", mi="3.p.1", map=BATTERY_LOW),
     ]
 }, {
     # no N, https://www.aqara.com/en/single_switch_T1_no-neutral.html
@@ -532,7 +541,7 @@ DEVICES += [{
     # https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:motion-sensor:0000A014:lumi-agl04:1:0000C813
     # for spec names Fibaro has good example: https://manuals.fibaro.com/motion-sensor/
     "lumi.motion.agl04": ["Aqara", "Precision Motion Sensor", "RTCGQ13LM"],
-    "support": 4,  # TODO: blind_time number setting
+    "support": 5,
     "required": [
         ConstConv("motion", "binary_sensor", mi="4.e.1", value=True),
         BatteryConv("battery", "sensor", mi="3.p.1"),  # voltage, mV
@@ -542,7 +551,7 @@ DEVICES += [{
         MapConv("sensitivity", "select", mi="8.p.1", map={
             1: "low", 2: "medium", 3: "high"
         }),
-        Converter("blind_time", mi="10.p.1"),  # from 2 to 180
+        MathConv("blind_time", "number", mi="10.p.1", min=2, max=180),
         MapConv("battery_low", "binary_sensor", mi="5.p.1", map=BATTERY_LOW),
     ],
 }, {
@@ -736,7 +745,7 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
     "config": [
-        ZBindConf(clusters={6}, ep=1),
+        ZBindConf(ZSonoffButtonConv, ep=1),
     ]
 }, {
     "MS01": ["Sonoff", "Motion Sensor", "SNZB-03"],
@@ -756,33 +765,27 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
 }, {
-    "FNB56-ZSC01LX1.2": ["Unknown", "Dimmer", "LXZ8-02A"],
-    "support": 3,  # TODO: tests, effect?
-    "TRADFRI bulb E27 W opal 1000lm": [
-        "IKEA", "Bulb E27 1000 lm", "LED1623G12"
-    ],
-    "required": [
-        ZOnOffConv("light", "light"),
-        ZBrightnessConv("brightness", parent="light"),
-    ],
-    "optional": [ZigbeeStats],
-}, {
     "SML001": ["Philips", "Hue motion sensor", "9290012607"],
-    "support": 4,  # TODO: sensitivity, occupancy_timeout, led
+    "support": 4,  # TODO: sensitivity, led
     "required": [
         ZOccupancyConv("occupancy", "binary_sensor", ep=2),
-        ZIlluminance("illuminance", "sensor", ep=2),
+        ZIlluminanceConv("illuminance", "sensor", ep=2),
         ZTemperatureConv("temperature", "sensor", ep=2),
         ZBatteryConv("battery", "sensor", ep=2),
-        # ZHueLed("led", "switch"),
     ],
-    "optional": [ZigbeeStats],
+    "optional": [
+        ZigbeeStats,
+        ZOccupancyTimeoutConv("occupancy_timeout", "number", ep=2),
+    ],
     "config": [
-        ZBindConf(clusters={1, 0x400, 0x402, 0x406}, ep=2),
-        ZReportConf(type="battery_percentage_remaining", ep=2),
-        ZReportConf(type="occupancy", ep=2),
-        ZReportConf(type="temperature", ep=2),
-        ZReportConf(type="illuminance", ep=2),
+        ZBindConf(ZOccupancyConv, ep=2),
+        ZBindConf(ZIlluminanceConv, ep=2),
+        ZBindConf(ZTemperatureConv, ep=2),
+        ZBindConf(ZBatteryConv, ep=2),
+        ZReportConf(ZOccupancyConv, mint=0, maxt=3600, change=0, ep=2),
+        ZReportConf(ZIlluminanceConv, mint=10, maxt=3600, change=5, ep=2),
+        ZReportConf(ZTemperatureConv, mint=10, maxt=3600, change=100, ep=2),
+        ZReportConf(ZBatteryConv, mint=3600, maxt=62000, change=0, ep=2),
     ]
 }, {
     "LWB010": ["Philips", "Hue white 806 lm", "9290011370B"],
@@ -810,9 +813,30 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
     "config": [
-        ZBindConf(clusters={6, 8}, ep=1),
-        ZBindConf(clusters={1, 64512}, ep=2),
+        ZBindConf(ZHueDimmerOnConv),
+        ZBindConf(ZHueDimmerLevelConv),
+        # ZBindConf("power", 64512, ep=2),
         ZHueConf(),
+    ]
+}, {
+    "FNB56-ZSC01LX1.2": ["Unknown", "Dimmer", "LXZ8-02A"],
+    "TRADFRI bulb E27 W opal 1000lm": [
+        "IKEA", "Bulb E27 1000 lm", "LED1623G12"
+    ],
+    "support": 3,  # TODO: tests, effect?
+    "required": [
+        ZOnOffConv("light", "light"),
+        ZBrightnessConv("brightness", parent="light"),
+    ],
+    "optional": [ZigbeeStats],
+}, {
+    "TRADFRI remote control": ["IKEA", "TRADFRI remote control", "E1524/E1810"],
+    "required": [
+        IKEARemoteConv1("action", "sensor"),
+        IKEARemoteConv2("action"),
+    ],
+    "config": [
+        ZBindConf(ZOnOffConv),
     ]
 }, {
     "default": "zigbee",  # default zigbee device
@@ -824,7 +848,7 @@ DEVICES += [{
     ],
     "optional": [ZigbeeStats],
     "config": [
-        ZBindConf(clusters={6, 8}, ep=1),  # maybe button
+        ZBindConf(ZOnOffConv),  # maybe button
     ]
 }]
 
@@ -857,6 +881,7 @@ DEVICES += [{
     1647: ["Xiaomi", "Qingping TH Lite", "CGDK2"],
     1747: ["Xiaomi", "ZenMeasure Clock", "MHO-C303"],
     2888: ["Xiaomi", "Qingping TH Sensor", "CGG1"],  # same model as 839?!
+    4611: ["Xiaomi", "TH Sensor", "XMWSDJ04MMC"],
     "required": [
         MiBeacon, BLETemperature, BLEHumidity,
         BLEBatteryLazy,  # no battery info in new firmwares
@@ -887,6 +912,7 @@ DEVICES += [{
     # each device
     "default": "ble",  # default BLE device
     794: ["Xiaomi", "Door Lock", "MJZNMS02LM"],
+    955: ["Unknown", "Lock M2", "ydhome.lock.m2silver"],
     982: ["Xiaomi", "Qingping Door Sensor", "CGH1"],
     1034: ["Xiaomi", "Mosquito Repellent", "WX08ZM"],
     1161: ["Xiaomi", "Toothbrush T500", "MES601"],
@@ -932,36 +958,32 @@ DEVICES += [{
 
 DEVICES += [{
     # brightness 1..65535, color_temp 2700..6500
-    948: ["Yeelight", "Mesh Downlight", "YLSD01YL"],
-    995: ["Yeelight", "Mesh Bulb E14", "YLDP09YL"],
-    996: ["Yeelight", "Mesh Bulb E27", "YLDP10YL"],
-    997: ["Yeelight", "Mesh Spotlight", "YLSD04YL"],
-    1771: ["Xiaomi", "Mesh Bulb", "MJDP09YL"],
-    1772: ["Xiaomi", "Mesh Downlight", "MJTS01YL/MJTS003"],
-    2076: ["Yeelight", "Mesh Downlight M2", "YLTS02YL/YLTS04YL"],
-    2342: ["Yeelight", "Mesh Bulb M2", "YLDP25YL/YLDP26YL"],
-    "required": [
-        Converter("light", "light", mi="2.p.1"),
-        BrightnessConv("brightness", mi="2.p.2", parent="light", max=65535),
-        ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
-    ]
-}, {
-    1054: ["Xiaomi", "Mesh Group", "yeelink.light.mb1grp"],
-    "required": [
-        Converter("group", "light", mi="2.p.1"),
-        BrightnessConv("brightness", mi="2.p.2", parent="light", max=65535),
-        ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
-    ]
-}, {
-    2342: ["Yeelight", "Mesh Bulb M2", "YLDP25YL/YLDP26YL"],
+    948: ["Yeelight", "Mesh Downlight", "YLSD01YL"],  # flex
+    995: ["Yeelight", "Mesh Bulb E14", "YLDP09YL"],  # flex
+    996: ["Yeelight", "Mesh Bulb E27", "YLDP10YL"],  # flex
+    997: ["Yeelight", "Mesh Spotlight", "YLSD04YL"],  # flex
+    1771: ["Xiaomi", "Mesh Bulb", "MJDP09YL"],  # flex
+    1772: ["Xiaomi", "Mesh Downlight", "MJTS01YL/MJTS003"],  # flex
+    2076: ["Yeelight", "Mesh Downlight M2", "YLTS02YL/YLTS04YL"],  # flex
+    2342: ["Yeelight", "Mesh Bulb M2", "YLDP25YL/YLDP26YL"],  # flex
+    "support": 4,  # TODO: power_on_state values
     "required": [
         Converter("light", "light", mi="2.p.1"),
         BrightnessConv("brightness", mi="2.p.2", parent="light", max=65535),
         ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
     ],
     "optional": [
-        BoolConv("smart", "binary_sensor", mi="3.p.5"),
-        BoolConv("powerup", "binary_sensor", mi="3.p.11"),
+        BoolConv("flex_switch", "switch", mi="3.p.5"),  # uint8
+        BoolConv("power_on_state", "switch", mi="3.p.11"),
+    ]
+}, {
+    # brightness 1..65535, color_temp 2700..6500
+    1054: ["Xiaomi", "Mesh Group", "yeelink.light.mb1grp"],
+    "support": 4,  # TODO: check if support flex and power on
+    "required": [
+        Converter("group", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=65535),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
     ]
 }, {
     # brightness 1..100, color_temp 2700..6500
@@ -1083,6 +1105,20 @@ DEVICES += [{
         BoolConv("middle_smart", "switch", mi="3.p.2"),
         BoolConv("right_smart", "switch", mi="4.p.2"),
         Converter("baby_mode", "switch", mi="11.p.1"),
+    ]
+}, {
+    4160: ["Xiaomi", "Mosquito Repeller 2", "WX10ZM"],
+    "support": 5,
+    "required": [
+        Converter("switch", "switch", mi="2.p.1"),  # bool
+        Converter("battery", "sensor", mi="3.p.1"),  # percentage 0-100
+        Converter("supply", "sensor", mi="4.p.1"),  # percentage 0-100
+    ],
+    "optional": [
+        Converter("led", "switch", mi="9.p.1"),  # bool
+        MapConv("mode", "select", mi="2.p.2", map={
+            0: "auto", 1: "battery", 2: "usb"
+        })
     ]
 }, {
     "default": "mesh",  # default Mesh device

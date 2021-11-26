@@ -1,3 +1,9 @@
+notify:
+  - platform: file
+    name: climate_notify
+    filename: climate.log
+    timestamp: true
+
 input_boolean:
   gas_boiler_schedule:
     name: "Boiler work on schedule (Winter)"
@@ -49,21 +55,6 @@ sensor:
     headers:
       authorization: !secret ha2_token
     value_template: "{{ value_json.state }}"
-
-
-template:
-  - sensor:
-      - name: "Living Room TRV Calibration"
-        state: "{{ state_attr('climate.living_room_trv', 'local_temperature_calibration') }}"
-        unit_of_measurement: "°C"
-
-      - name: "Master Bedroom TRV Calibration"
-        state: "{{ state_attr('climate.master_bedroom_trv', 'local_temperature_calibration') }}"
-        unit_of_measurement: "°C"
-
-      - name: "Bedroom_TRV_Calibration"
-        state: "{{ state_attr('climate.bedroom_trv', 'local_temperature_calibration') }}"
-        unit_of_measurement: "°C"
 
 script:
   turn_on_all_ac:
@@ -121,11 +112,11 @@ script:
           calibration_local: >
             {{ 0 + ((states(objectsensortemperature) | float(0)
               - state_attr(objectvalve, 'local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
-              + states(objectvalve | replace('number.', 'sensor.') + '_local_temperature_calibration') | float(0)
+              + states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') | float(0)
             }}
           calibration_local_condition: >
             {{ 0 + ((states(objectsensortemperature) | float(0)
-              - states(objectvalve | replace('climate.', 'sensor.') + '_local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
+              - states(objectvalve | replace('climate.', 'number.') + '_local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
             }}
       - choose:
         - conditions:
@@ -141,6 +132,9 @@ script:
               data:
                 topic: "zigbee2mqtt/{{- namevalve -}}/set/local_temperature_calibration"
                 payload: '{{ calibration_local }}'
+            - service: notify.climate_notify
+              data:
+                message: "calibration_log {{ states(objectsensortemperature) }} - {{ state_attr(objectvalve, 'local_temperature') }} + {{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }}"
 
 automation:
   - alias: "Sync TRV with Boiler"
@@ -153,7 +147,7 @@ automation:
           {% if trigger.to_state.state == 'on' %}
             climate.turn_on
           {% elif trigger.to_state.state == 'off' %}
-            climate.turn_off
+            none.none
           {% endif %}
         entity_id:
           - climate.living_room_trv

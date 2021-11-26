@@ -3,7 +3,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.0x158d00023f32de_motion
+      entity_id: binary_sensor.0x00158d0002c08849_motion
       to: 'on'
   condition:
     - condition: numeric_state
@@ -34,7 +34,7 @@
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x158d00023f32de_motion
+        entity_id: binary_sensor.0x00158d0002c08849_motion
   condition:
     - condition: state
       entity_id: light.bedroom_lamp

@@ -452,13 +452,13 @@ sensor.0x158d00044a26ba_illuminance:
 sensor.0x158d00044a26ba_voltage:
   friendly_name: "Bathroom Motion"
 
-binary_sensor.0x158d00023f32de_motion:
+binary_sensor.0x00158d0002c08849_motion:
   friendly_name: "Bedroom Motion"
 
-sensor.0x158d00023f32de_battery:
+sensor.0x00158d0002c08849_battery:
   friendly_name: "Bedroom Motion"
 
-sensor.0x158d00023f32de_zigbee:
+sensor.0x00158d0002c08849_zigbee:
   friendly_name: "Bedroom Motion"
 
 sensor.0x54ef4410000c1dec_illuminance:

@@ -110,12 +110,12 @@ script:
     sequence:
       - variables:
           calibration_local: >
-            {{ 0 + ((states(objectsensortemperature) | float(0)
+            {{ ((states(objectsensortemperature) | float(0)
               - state_attr(objectvalve, 'local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
               + states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') | float(0)
             }}
           calibration_local_condition: >
-            {{ 0 + ((states(objectsensortemperature) | float(0)
+            {{ ((states(objectsensortemperature) | float(0)
               - states(objectvalve | replace('climate.', 'number.') + '_local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
             }}
       - choose:
@@ -134,7 +134,7 @@ script:
                 payload: '{{ calibration_local }}'
             - service: notify.climate_notify
               data:
-                message: "calibration_log {{ states(objectsensortemperature) }} - {{ state_attr(objectvalve, 'local_temperature') }} + {{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }}"
+                message: "calibration_log [{{ namevalve }}] {{ states(objectsensortemperature) }} - {{ state_attr(objectvalve, 'local_temperature') }} + {{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }}"
 
 automation:
   - alias: "Sync TRV with Boiler"
@@ -142,13 +142,9 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.boiler_shelly
+        to: 'on'
     action:
-      - service: >
-          {% if trigger.to_state.state == 'on' %}
-            climate.turn_on
-          {% elif trigger.to_state.state == 'off' %}
-            none.none
-          {% endif %}
+      - service: climate.turn_on
         entity_id:
           - climate.living_room_trv
           - climate.master_bedroom_trv
@@ -201,10 +197,10 @@ automation:
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
-      - service: persistent_notification.create
-        data:
-          title: "Thermostat"
-          message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
+#     - service: persistent_notification.create
+#       data:
+#         title: "Thermostat"
+#         message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true
@@ -246,7 +242,7 @@ automation:
         minutes: "/10"
     condition:
       - condition: state
-        entity_id: input_boolean.gas_boiler_schedule
+        entity_id: switch.boiler_shelly
         state: 'on'
     action:
       - service: script.auto_local_temperature_calibration_trv

@@ -11,11 +11,10 @@ cards:
 
       - type: custom:auto-entities
         card:
-          type: glance
+          type: entities
         filter:
           include:
             - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*status"
-            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*button"
               sort: entity_id
           exclude:
             - entity_id: "*rf_br*"
@@ -162,7 +161,7 @@ cards:
 
       - type: custom:auto-entities
         card:
-          type: glance
+          type: entities
         filter:
           include:
             - entity_id: "binary_sensor.*_firmware_update"

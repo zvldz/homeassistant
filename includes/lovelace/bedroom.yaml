@@ -15,60 +15,7 @@ cards:
             entity: light.bedroom_lamp
 
       - type: custom:button-card
-        name: "Camera1"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: 'custom:webrtc-camera'
-        entity: camera.camera1
-
-#     - type: picture-glance
-#       show_header_toggle: false
-#       entities: []
-#       camera_image: camera.rcamera1
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.bedroom_lamp_nightlight
-          - binary_sensor.0x00158d0002c08849_motion
-          - sensor.0x00158d0002c08849_zigbee
-
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Temperature"
-            hour24: true
-            entities:
-              - entity: sensor.0x158d0001ab2a27_temperature
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Humidity"
-            hour24: true
-            entities:
-              - entity: sensor.0x158d0001ab2a27_humidity
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Timers"
+        name: "Switches"
         styles:
           card:
             - background-color: "#203040"
@@ -102,6 +49,62 @@ cards:
             - entity: timer.bedroom_light
           state_filter:
             - 'active'
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Climate"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Temperature"
+            hour24: true
+            entities:
+              - entity: sensor.0x158d0001ab2a27_temperature
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Humidity"
+            hour24: true
+            entities:
+              - entity: sensor.0x158d0001ab2a27_humidity
+
+      - type: custom:button-card
+        name: "Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - entity: sensor.0x158d0001ab2a27_temperature
+            type: custom:multiple-entity-row
+            name: Bedroom
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d0001ab2a27_pressure
+                name: false
+              - entity: sensor.0x158d0001ab2a27_humidity
+                name: false
+          - entity: binary_sensor.0x00158d0002c08849_motion
+            secondary_info: last-changed
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Camera1"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: 'custom:webrtc-camera'
+        entity: camera.camera1
+
 
       - type: custom:button-card
         name: "rCamera1"

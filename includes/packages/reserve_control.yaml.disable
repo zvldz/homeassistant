@@ -91,7 +91,7 @@ automation:
           - sensor.ha1_vacuum_notification
     condition:
       - condition: template
-        value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int) > 0 }}'
+        value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int(0)) > 0 }}'
     action:
       - service: >
           {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}

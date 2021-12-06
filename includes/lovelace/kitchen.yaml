@@ -15,6 +15,37 @@ cards:
             entity: light.kitchen_lamp
 
       - type: custom:button-card
+        name: "Switches"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+#         - type: custom:button-card
+#           entity: switch.kitchen_tv_power
+#           size: 20%
+#           styles:
+#             card:
+#               - font-size: 14px
+          - type: custom:button-card
+            entity: switch.0x158d000211434a_switch
+            icon: mdi:light-switch
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          - type: custom:button-card
+            entity: switch.kitchen_lamp_mini
+            icon: mdi:light-switch
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
         name: "Climate"
         styles:
           card:
@@ -48,45 +79,26 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: glance
-        show_header_toggle: false
+      - type: entities
         entities:
-          - entity: binary_sensor.kitchen_lamp_nightlight
-          - entity: binary_sensor.0x158d00022515fe_motion
-            show_last_changed: true
-          - entity: sensor.0x158d00022515fe_illuminance
+          - entity: sensor.0x158d0002ca0395_temperature
+            type: custom:multiple-entity-row
+            name: Kitchen
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d0002ca0395_pressure
+                name: false
+              - entity: sensor.0x158d0002ca0395_humidity
+                name: false
           - entity: binary_sensor.0x158d000232989c_moisture
-
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-#         - type: custom:button-card
-#           entity: switch.kitchen_tv_power
-#           size: 20%
-#           styles:
-#             card:
-#               - font-size: 14px
-          - type: custom:button-card
-            entity: switch.0x158d000211434a_switch
-            icon: mdi:light-switch
-            size: 20%
-#           size: 10%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
-            entity: switch.kitchen_lamp_mini
-            icon: mdi:light-switch
-            size: 20%
-#           size: 10%
-            styles:
-              card:
-                - font-size: 14px
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d00022515fe_motion
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.0x158d00022515fe_illuminance
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
 
       - type: custom:button-card
         name: "Timers"
@@ -102,4 +114,5 @@ cards:
             - entity: timer.kitchen_light
           state_filter:
             - 'active'
+
 

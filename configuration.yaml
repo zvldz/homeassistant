@@ -50,6 +50,8 @@ tts:
 #  mode: local
 #  reload: always
 
+python_script:
+
 switch:             !include_dir_merge_list includes/switches
 sensor:             !include_dir_merge_list includes/sensors
 binary_sensor:      !include_dir_merge_list includes/binary_sensors

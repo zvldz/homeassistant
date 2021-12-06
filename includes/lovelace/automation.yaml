@@ -11,7 +11,10 @@ cards:
 
       - type: custom:auto-entities
         card:
-          type: entities
+          type: custom:fold-entity-row
+          head:
+            type: section
+            label: Details
         filter:
           include:
             - domain: automation
@@ -41,7 +44,10 @@ cards:
 
       - type: custom:auto-entities
         card:
-          type: entities
+          type: custom:fold-entity-row
+          head:
+            type: section
+            label: Details
         filter:
           include:
             - domain: script

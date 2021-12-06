@@ -1,93 +1,53 @@
 - alias: ha1_server_off
   initial_state: true
+  mode: parallel
   trigger:
     - platform: state
       entity_id: sensor.ha1_uptime
       to: "unavailable"
       for: "00:02:00"
+    - platform: state
+      entity_id: sensor.ha2_uptime
+      to: "unavailable"
+      for: "00:02:00"
+    - platform: state
+      entity_id: sensor.has_uptime
+      to: "unavailable"
+      for: "00:02:00"
+    - platform: state
+      entity_id: sensor.ha_fazenda_uptime
+      to: "unavailable"
+      for: "00:02:00"
+    - platform: state
+      entity_id: sensor.ha_off_uptime
+      to: "unavailable"
+      for: "00:02:00"
   action:
     - service: notify.telegram
       data:
-        message: "\U00002620 {{ states.sensor.date_time.state }} | HA1 is not working"
+        message: "\U00002620 {{ states.sensor.date_time.state }} | {{ trigger.from_state.attributes.friendly_name | replace(' Uptime', '') }} is not working"
 
 - alias: ha1_server_on
   initial_state: true
+  mode: parallel
   trigger:
     - platform: state
       entity_id: sensor.ha1_uptime
       from: "unavailable"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002705 {{ states.sensor.date_time.state }} | HA1 is now working"
-
-- alias: ha2_server_off
-  initial_state: true
-  trigger:
-    - platform: state
-      entity_id: sensor.ha2_uptime
-      to: "unavailable"
-      for: "00:02:00"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002620 {{ states.sensor.date_time.state }} | HA2 is not working"
-
-- alias: ha2_server_on
-  initial_state: true
-  trigger:
     - platform: state
       entity_id: sensor.ha2_uptime
       from: "unavailable"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002705 {{ states.sensor.date_time.state }} | HA2 is now working"
-
-- alias: has_server_off
-  initial_state: true
-  trigger:
-    - platform: state
-      entity_id: sensor.has_uptime
-      to: "unavailable"
-      for: "00:02:00"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002620 {{ states.sensor.date_time.state }} | HAS is not working"
-
-- alias: has_server_on
-  initial_state: true
-  trigger:
     - platform: state
       entity_id: sensor.has_uptime
       from: "unavailable"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002705 {{ states.sensor.date_time.state }} | HAS is now working"
-
-- alias: ha_off_server_off
-  initial_state: true
-  trigger:
     - platform: state
-      entity_id: sensor.ha_off_uptime
-      to: "unavailable"
-      for: "00:02:00"
-  action:
-    - service: notify.telegram
-      data:
-        message: "\U00002620 {{ states.sensor.date_time.state }} | HA_OFF is not working"
-
-- alias: ha_off_server_on
-  initial_state: true
-  trigger:
+      entity_id: sensor.ha_fazenda_uptime
+      from: "unavailable"
     - platform: state
       entity_id: sensor.ha_off_uptime
       from: "unavailable"
   action:
     - service: notify.telegram
       data:
-        message: "\U00002705 {{ states.sensor.date_time.state }} | HA_OFF is now working"
-
+        message: "\U00002705 {{ states.sensor.date_time.state }} | {{ trigger.from_state.attributes.friendly_name | replace(' Uptime', '') }} is now working"
 

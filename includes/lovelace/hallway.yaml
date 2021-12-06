@@ -151,44 +151,49 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: glance
-        show_header_toggle: false
+      - type: entities
         entities:
-          - sensor.0x158d0002e22617_action
-          - sensor.0x54ef4410001f5dd8_action
-          - sensor.0x54ef4410001ad4c2_action
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - sensor.illumination_7811dcb245b2
-          - binary_sensor.0x158d00023aa420_moisture
-          - binary_sensor.0x158d000233ddf2_moisture
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.0x158d00024de627_contact
-          - binary_sensor.0x158d0002fd4381_contact
-          - binary_sensor.0x158d00032b7db7_contact
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - sensor.0x158d000231f03e_temperature
-          - sensor.0x158d000231f03e_humidity
-          - sensor.0x158d000231f03e_pressure
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - sensor.0x158d000273011f_temperature
-          - sensor.0x158d000273011f_humidity
-          - sensor.0x158d000273011f_pressure
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.0x158d00044a26ba_motion
-          - binary_sensor.0x158d0004466f8f_motion
+          - entity: sensor.0x158d000231f03e_temperature
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d000231f03e_pressure
+                name: false
+              - entity: sensor.0x158d000231f03e_humidity
+                name: false
+          - entity: sensor.0x158d000273011f_temperature
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d000273011f_pressure
+                name: false
+              - entity: sensor.0x158d000273011f_humidity
+                name: false
+          - entity: binary_sensor.0x158d00032b7db7_contact
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d00032b7db7_contact
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d0002fd4381_contact
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d00023aa420_moisture
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d00023aa420_moisture
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.illumination_7811dcb245b2
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d0004466f8f_motion
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x158d00044a26ba_motion
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x54ef441000268428_motion
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
 

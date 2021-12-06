@@ -173,6 +173,15 @@ class ZTemperatureConv(ZConverter):
             payload[self.attr] = value[self.zattr] / 100
 
 
+class ZHumidityConv(ZConverter):
+    zigbee = "humidity"
+    zattr = "measured_value"
+
+    def decode(self, device: 'XDevice', payload: dict, value: dict):
+        if isinstance(value.get(self.zattr), int):
+            payload[self.attr] = value[self.zattr] / 100
+
+
 class ZEnergyConv(MathConv):
     zigbee = "smartenergy_metering"
     zattr = "current_summ_delivered"
@@ -375,6 +384,8 @@ class IKEARemoteConv2(ZConverter):
 # Final converter classes
 ################################################################################
 
+ZSwitch = ZOnOffConv("switch", "switch")
+
 ZCurrent = ZElectricalConv(
     "current", "sensor", zattr="rms_current", multiply=0.001
 )
@@ -389,7 +400,7 @@ ZLight = ZOnOffConv("light", "light")
 ZBrightness = ZBrightnessConv("brightness", parent="light")
 ZColorTemp = ZColorTempConv("color_temp", parent="light")
 
-ZTuyaPowerOn = ZTuyaPowerOnConv("power_on_state", "select")
+ZTuyaPowerOn = ZTuyaPowerOnConv("power_on_state", "select", enabled=False)
 
 
 ################################################################################
@@ -437,3 +448,6 @@ class ZHueConf(Config):
             mfg=0x100B, type=0x19
         )
         payload.setdefault("commands", []).extend(cmd)
+
+
+ZBindOnOff = ZBindConf(ZOnOffConv)

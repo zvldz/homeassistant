@@ -1,10 +1,11 @@
 attributes_template: |
-  {% if attr in ('ble', 'zigbee', 'battery') %}{{{
-    "name": device["device_name"],
-    "gate": gateway["device_name"],
-    "fw_version": device["fw_ver"],
-    "integration": "gw3"
-  }}}{% endif %}
+  {{{
+    "device_name": device.info.name,
+    "device_fw_ver": device.fw_ver,
+    "device_model": device.model,
+    "device_market_model": device.info.model,
+    "gateway_name": gateway.info.name,
+  }}}
 
 #gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
 gw3_command: "/data/gw3 -log=syslog,debug,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"

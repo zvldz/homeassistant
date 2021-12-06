@@ -10,6 +10,10 @@
       event_type: xiaomi_aqara.motion
       event_data:
         entity_id: binary_sensor.0x158d00044a26ba_motion
+    - platform: event
+      event_type: xiaomi_aqara.motion
+      event_data:
+        entity_id: binary_sensor.0x54ef441000268428_motion
   condition:
     - condition: state
       entity_id: switch.0x158d00022a8150_channel_1
@@ -40,6 +44,10 @@
       event_type: xiaomi_aqara.motion
       event_data:
         entity_id: binary_sensor.0x158d00044a26ba_motion
+    - platform: event
+      event_type: xiaomi_aqara.motion
+      event_data:
+        entity_id: binary_sensor.0x54ef441000268428_motion
   condition:
     - condition: state
       entity_id: switch.0x158d00022a8150_channel_1

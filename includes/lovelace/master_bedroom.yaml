@@ -17,18 +17,6 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - binary_sensor.master_bedroom_lamp_nightlight
-          - sensor.0x158d0001a66df0_action
-
-      - type: custom:button-card
         name: "Climate"
         styles:
           card:
@@ -49,4 +37,17 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x158d0002323856_humidity
+
+      - type: horizontal-stack
+        cards:
+          - entity: sensor.0x158d0002323856_temperature
+            type: custom:multiple-entity-row
+            name: Master Bedroom
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d0002323856_pressure
+                name: false
+              - entity: sensor.0x158d0002323856_humidity
+                name: false
+
 

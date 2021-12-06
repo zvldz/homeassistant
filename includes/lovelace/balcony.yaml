@@ -4,6 +4,15 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
+        name: "Light"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: light
+        entity: light.balcony_strip
+
+      - type: custom:button-card
         name: "Switches"
         styles:
           card:
@@ -12,44 +21,44 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d0002235125_switch
-            size: 35%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
             entity: switch.0x158d00022ab4bf_switch
             icon: "mdi:light-switch"
-            size: 35%
+            size: 25%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
             entity: switch.0x158d0001f9aa37_switch
             icon: "mdi:light-switch"
-            size: 35%
+            size: 25%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
             entity: switch.0x158d0002114338_switch
             icon: "mdi:light-switch"
-            size: 35%
+            size: 25%
             styles:
               card:
                 - font-size: 14px
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            entity: switch.0x158d0002235125_switch
+            size: 15%
+            styles:
+              card:
+                - font-size: 14px
+
           - type: custom:button-card
             entity: switch.gosund_socket_1
             name: "Socket"
             icon: "mdi:power-socket-de"
-            size: 35%
+            size: 15%
             styles:
               card:
                 - font-size: 14px
-
-
-      - type: light
-        entity: light.balcony_strip
 
   - type: vertical-stack
     cards:
@@ -74,7 +83,7 @@ cards:
 
       - type: custom:miflora-card
         title: 'Flower 2'
-        image: img/flower2.jpg
+        image: img/flower1.jpg
         min_moisture: 15
         max_moisture: 60
         min_conductivity: 350
@@ -101,20 +110,6 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: glance
-        show_header_toggle: false
-        entities:
-          - sensor.0x158d000183d2d5_action
-          - sensor.0x158d000183dd12_action
-          - binary_sensor.0x158d0002537042_contact
-          - sensor.0x54ef4410000c1dec_illuminance
-
-      - type: custom:button-card
         name: "Climate"
         styles:
           card:
@@ -135,4 +130,26 @@ cards:
             name: 'Humidity'
             entities:
               - entity: sensor.0x158d00027300cc_humidity
+
+      - type: custom:button-card
+        name: "Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - entity: sensor.0x158d00027300cc_temperature
+            type: custom:multiple-entity-row
+            name: Balcony
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d00027300cc_pressure
+                name: false
+              - entity: sensor.0x158d00027300cc_humidity
+                name: false
+          - entity: binary_sensor.0x158d0002537042_contact
+            secondary_info: last-changed
+          - entity: sensor.0x54ef4410000c1dec_illuminance
+            secondary_info: last-changed
 

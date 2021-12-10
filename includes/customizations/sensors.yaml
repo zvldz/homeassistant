@@ -328,6 +328,15 @@ sensor.bw_plug_1_power:
 sensor.bw_plug_1_daily_energy:
   friendly_name: "Socket 2 DE"
 
+sensor.bw_plug_2_current:
+  friendly_name: "Socket 3 Amperage"
+
+sensor.bw_plug_2_voltage:
+  friendly_name: "Socket 3 Voltage"
+
+sensor.bw_plug_2_power:
+  friendly_name: "Socket 3 Power"
+
 sensor.bw_plug_2_daily_energy:
   friendly_name: "Socket 3 DE"
 

@@ -105,7 +105,6 @@ cards:
       - type: 'custom:webrtc-camera'
         entity: camera.camera1
 
-
       - type: custom:button-card
         name: "rCamera1"
         styles:

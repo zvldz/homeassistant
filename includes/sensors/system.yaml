@@ -49,12 +49,10 @@
     authorization: !secret ha1_token
   value_template: >
     {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
     {% else %}
       {{ "unavailable" }}
     {% endif %}
-  json_attributes:
-    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
@@ -65,12 +63,10 @@
     authorization: !secret ha2_token
   value_template: >
     {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
     {% else %}
       {{ "unavailable" }}
     {% endif %}
-  json_attributes:
-    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.has_url') }}api/states/sensor.ha_uptime"
@@ -81,12 +77,10 @@
     authorization: !secret has_token
   value_template: >
     {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
     {% else %}
       {{ "unavailable" }}
     {% endif %}
-  json_attributes:
-    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
@@ -97,12 +91,10 @@
     authorization: !secret ha_fazenda_token
   value_template: >
     {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
     {% else %}
       {{ "unavailable" }}
     {% endif %}
-  json_attributes:
-    - state
 
 - platform: rest
   resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
@@ -113,10 +105,8 @@
     authorization: !secret ha_off_token
   value_template: >
     {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}
+      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
     {% else %}
       {{ "unavailable" }}
     {% endif %}
-  json_attributes:
-    - state
 

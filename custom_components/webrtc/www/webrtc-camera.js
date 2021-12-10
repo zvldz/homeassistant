@@ -1,6 +1,62 @@
+/**
+ * - IntersectionObserver - iOS 12.2+
+ *   https://caniuse.com/?search=IntersectionObserver
+ * - WebRTC Unified Plan SDP - iOS 12.2+ (iOS 11 supports only Plan B)
+ *   https://webkit.org/blog/8672/on-the-road-to-webrtc-1-0-including-vp8/
+ * - MediaSource - iPad OS 13+
+ *   https://caniuse.com/?search=MediaSource
+ */
 class WebRTCCamera extends HTMLElement {
-    subscriptions = [];
-    rendered = false;
+    constructor() {
+        super();
+        this.subscriptions = [];
+    }
+
+    set status(value) {
+        const header = this.querySelector('.header');
+        header.innerText = value;
+        header.style.display = value ? 'block' : 'none';
+    }
+
+    set readyState(value) {
+        const state = this.querySelector('.state');
+        switch (value) {
+            case 'websocket':
+                state.icon = 'mdi:download-network-outline';
+                break;
+            case 'mse':
+                state.icon = 'mdi:play-network-outline';
+                break;
+
+            case 'webrtc-pending':  // init WebRTC
+                state.icon = 'mdi:lan-pending';
+                break;
+            case 'webrtc-connecting':  // connect to LAN or WAN IP
+                state.icon = 'mdi:lan-connect';
+                break;
+            case 'webrtc-loading':  // load video stream
+                state.icon = 'mdi:lan-check';
+                break;
+            case 'webrtc-restart':  // restart WebRTC
+                state.icon = 'mdi:lan-disconnect';
+                break;
+            case 'webrtc':  // video stream switched to WebRTC
+                state.icon = 'mdi:webrtc';
+                break;
+        }
+    }
+
+    get isOpera() {
+        // this integraion https://github.com/thomasloven/hass-fontawesome
+        // breaks the `!!window.opera` check in all browsers
+        return (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
+    }
+
+    static getStubConfig() {
+        return {
+            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+        }
+    }
 
     async initMSE(hass, pc = null) {
         const ts = Date.now();
@@ -19,7 +75,7 @@ class WebRTCCamera extends HTMLElement {
         ws.binaryType = 'arraybuffer';
 
         let mediaSource, sourceBuffer;
-        
+
         this.subscriptions.push(() => {
             this.ws.onclose = null;
             this.ws.close();
@@ -29,16 +85,18 @@ class WebRTCCamera extends HTMLElement {
         ws.onopen = async () => {
             this.readyState = 'websocket';
 
-            if (this.config.mse !== false && 'MediaSource' in window) {
-                mediaSource = new MediaSource();
-                video.src = URL.createObjectURL(mediaSource);
-                video.srcObject = null;
+            if (this.config.mse !== false) {
+                if ('MediaSource' in window) {
+                    mediaSource = new MediaSource();
+                    video.src = URL.createObjectURL(mediaSource);
+                    video.srcObject = null;
 
-                mediaSource.onsourceopen = () => {
-                    ws.send(JSON.stringify({type: 'mse'}));
+                    mediaSource.onsourceopen = () => {
+                        ws.send(JSON.stringify({type: 'mse'}));
+                    }
+                } else {
+                    console.warn("MediaSource doesn't supported");
                 }
-            } else {
-                console.warn("MediaSource doesn't supported")
             }
 
             if (this.config.webrtc !== false && !this.isOpera) {
@@ -84,8 +142,9 @@ class WebRTCCamera extends HTMLElement {
                     this.status = `ERROR: ${data.error}`;
                 }
             } else if (sourceBuffer) {
-                if (!sourceBuffer.updating) {
+                try {
                     sourceBuffer.appendBuffer(ev.data);
+                } catch (e) {
                 }
                 // all the magic is here
                 if (!video.paused && video.seekable.length) {
@@ -299,6 +358,31 @@ class WebRTCCamera extends HTMLElement {
             spinner.style.display = 'none';
             this.setPTZVisibility(true);
         };
+
+        if (this.config.shortcuts && this.config.shortcuts.length > 0) {
+            this.renderShortcuts(card, this.config.shortcuts);
+        }
+    }
+
+    renderShortcuts(card, elements) {
+        const shortcuts = document.createElement('div');
+        shortcuts.className = 'shortcuts';
+
+        for (var i = 0; i < elements.length; i++) {
+            const element = elements[i];
+
+            const shortcut = document.createElement('ha-icon');
+            shortcut.className = 'shortcut shortcut-' + i;
+            shortcut.setAttribute('title', element.name);
+            shortcut.icon = element.icon;
+            shortcut.onclick = () => {
+                const [domain, name] = element.service.split('.');
+                this.hass.callService(domain, name, element.service_data || {});
+            };
+            shortcuts.appendChild(shortcut);
+        }
+
+        card.appendChild(shortcuts);
     }
 
     renderPTZ(card, hass) {
@@ -329,7 +413,7 @@ class WebRTCCamera extends HTMLElement {
             const [domain, service] = this.config.ptz.service.split('.', 2);
             const data = this.config.ptz['data_' + ev.target.className];
             if (data) {
-                hass.callService(domain, service, data);
+                this.hass.callService(domain, service, data);
             }
         }
 
@@ -467,6 +551,17 @@ class WebRTCCamera extends HTMLElement {
                 cursor: default;
                 opacity: 0.4;
             }
+            .shortcuts {
+                position: absolute;
+                top: 12px;
+                left: 0px;
+            }
+            .shortcuts > .shortcut {
+                margin-left: 12px;
+                position: relative;
+                display: inline-block;
+                opacity: .9;
+            }
         `;
         this.appendChild(style);
 
@@ -516,20 +611,22 @@ class WebRTCCamera extends HTMLElement {
 
         this.initPageVisibilityListener();
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    // console.debug("Video integsects:", entry.isIntersecting);
-                    if (entry.isIntersecting) {
-                        video.play().then(() => null, () => null);
-                    } else {
-                        video.pause();
-                    }
-                });
-            },
-            {threshold: this.config.intersection || 0.5}
-        );
-        observer.observe(video);
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        // console.debug("Video integsects:", entry.isIntersecting);
+                        if (entry.isIntersecting) {
+                            video.play().then(() => null, () => null);
+                        } else {
+                            video.pause();
+                        }
+                    });
+                },
+                {threshold: this.config.intersection || 0.5}
+            );
+            observer.observe(video);
+        }
 
         if (this.config.ui) {
             this.renderCustomGUI(card);
@@ -555,40 +652,6 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    set status(value) {
-        const header = this.querySelector('.header');
-        header.innerText = value;
-        header.style.display = value ? 'block' : 'none';
-    }
-
-    set readyState(value) {
-        const state = this.querySelector('.state');
-        switch (value) {
-            case 'websocket':
-                state.icon = 'mdi:download-network-outline';
-                break;
-            case 'mse':
-                state.icon = 'mdi:play-network-outline';
-                break;
-
-            case 'webrtc-pending':  // init WebRTC
-                state.icon = 'mdi:lan-pending';
-                break;
-            case 'webrtc-connecting':  // connect to LAN or WAN IP
-                state.icon = 'mdi:lan-connect';
-                break;
-            case 'webrtc-loading':  // load video stream
-                state.icon = 'mdi:lan-check';
-                break;
-            case 'webrtc-restart':  // restart WebRTC
-                state.icon = 'mdi:lan-disconnect';
-                break;
-            case 'webrtc':  // video stream switched to WebRTC
-                state.icon = 'mdi:webrtc';
-                break;
-        }
-    }
-
     setPTZVisibility(show) {
         const ptz = this.querySelector('.ptz');
         if (ptz) {
@@ -607,24 +670,15 @@ class WebRTCCamera extends HTMLElement {
         if (config.ptz && !config.ptz.service) {
             throw new Error("Missing `service` for `ptz`");
         }
+        if (!('RTCPeerConnection' in window)) {
+            throw new Error("Unsupported browser"); // macOS Desktop app
+        }
 
         this.config = config;
     }
 
-    get isOpera() {
-        // this integraion https://github.com/thomasloven/hass-fontawesome
-        // breaks the `!!window.opera` check in all browsers
-        return (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
-    }
-
     getCardSize() {
         return 5;
-    }
-
-    static getStubConfig() {
-        return {
-            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
-        }
     }
 
     initPageVisibilityListener() {
@@ -652,11 +706,10 @@ class WebRTCCamera extends HTMLElement {
     async connectedCallback() {
         if (!this.config) return;
 
-        if (!this.rendered) {
+        if (this.childElementCount === 0) {
             await this.renderGUI(this.hass);
-            this.rendered = true;
         }
-        
+
         if (this.ws && this.config.background === true) return;
 
         if (!this.ws || [this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
@@ -664,7 +717,7 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         if (this.config.background !== true) {
             this.subscriptions.forEach(callback => callback());
             this.subscriptions = [];

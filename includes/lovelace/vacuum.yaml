@@ -30,7 +30,7 @@ cards:
             - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_area
               unit: m2
               subtitle: Cleaning area
-            - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_duration
+            - entity_id: sensor.vacuum_cleaner_last_clean_duration
               unit: minutes
               subtitle: Cleaning time
         shortcuts:

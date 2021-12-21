@@ -73,6 +73,10 @@ cards:
           - data: friendly_name
             name: Name
             modify: '(x+"").replace(/ Gateway$/,"")'
+          - data: device_fw_ver
+            name: FW
+            align: center
+            modify: x+''
           - data: network_pan_id
             name: PAN ID
             align: center

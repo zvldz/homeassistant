@@ -13,6 +13,25 @@
   trigger:
     - platform: event
       event_type: entity_registry_updated
+  condition:
+    - |
+        {% if trigger.event.data.action == 'update' and 'battery' in trigger.event.data.entity_id -%}
+          {{ false }}
+        {% else -%}
+          {{ true }}
+        {% endif -%}
+    - |
+        {% if trigger.event.data.action == 'update' and 'akkumuliatora' in trigger.event.data.entity_id -%}
+          {{ false }}
+        {% else -%}
+          {{ true }}
+        {% endif -%}
+    - |
+        {% if trigger.event.data.action == 'update' and 'device_tracker' in trigger.event.data.entity_id -%}
+          {{ false }}
+        {% else -%}
+          {{ true }}
+        {% endif -%}
   action:
     - service: notify.telegram
       data:

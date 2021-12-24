@@ -37,9 +37,9 @@ class GateE1(LumiGateway, SilabsGateway, Z3Gateway):
             self.debug("Run public mosquitto")
             await sh.run_public_mosquitto()
 
-        if "ntpd" not in ps:
-            # run NTPd for sync time
-            await sh.run_ntpd()
+        # if "ntpd" not in ps:
+        #     # run NTPd for sync time
+        #     await sh.run_ntpd()
 
         if self.available is None and self.did is None:
             await self.e1_read_device(sh)

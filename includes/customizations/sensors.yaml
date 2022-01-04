@@ -252,7 +252,7 @@ binary_sensor.front_door_ding:
   friendly_name: "Doorbell Sensor"
 
 binary_sensor.front_door_motion:
-  friendly_name: "Dorbell Motion Sensor"
+  friendly_name: "Doorbell Motion Sensor"
 
 sensor.hallway_volume:
   friendly_name: "Chime Volume"

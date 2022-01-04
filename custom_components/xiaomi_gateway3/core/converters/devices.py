@@ -143,7 +143,7 @@ DEVICES = [{
         Converter("power_tx", mi="8.0.2012"),
         Converter("channel", mi="8.0.2024"),
 
-        MapConv("command", "select", map=GATE_COMMANDS),
+        MapConv("command", "select", map=E1_COMMANDS),
         Converter("data", "select"),
 
         GatewayStats
@@ -293,15 +293,20 @@ DEVICES += [{
     # multi button action, no retain
     "lumi.sensor_86sw2.es1": ["Aqara", "Double Wall Button", "WXKG02LM"],
     "lumi.sensor_86sw2": ["Aqara", "Double Wall Button", "WXKG02LM"],
-    "lumi.remote.b286acn01": ["Aqara", "Double Wall Button", "WXKG02LM"],
-    "lumi.remote.b286acn02": ["Aqara", "Double Wall Button D1", "WXKG07LM"],
-    # TODO: check opple chip temp
-    "lumi.remote.b286opcn01": ["Aqara", "Opple Two Button", "WXCJKG11LM"],
-    "lumi.remote.b486opcn01": ["Aqara", "Opple Four Button", "WXCJKG12LM"],
-    "lumi.remote.b686opcn01": ["Aqara", "Opple Six Button", "WXCJKG13LM"],
+    "lumi.remote.b286acn01": ["Aqara", "Double Wall Button CN", "WXKG02LM"],
+    "lumi.remote.b286acn02": ["Aqara", "Double Wall Button D1 CN", "WXKG07LM"],
     "spec": [
+        Action, Button1, Button2, ButtonBoth, Battery, BatteryLow, BatteryOrig,
+        ChipTemp
+    ],
+}, {
+    "lumi.remote.b286opcn01": ["Aqara", "Opple Two Button CN", "WXCJKG11LM"],
+    "lumi.remote.b486opcn01": ["Aqara", "Opple Four Button CN", "WXCJKG12LM"],
+    "lumi.remote.b686opcn01": ["Aqara", "Opple Six Button CN", "WXCJKG13LM"],
+    "spec": [
+        ZAqaraOppleMode("mode", "select", enabled=False),
         Action, Button1, Button2, Button3, Button4, Button5, Button6,
-        ButtonBoth, Battery, BatteryLow, BatteryOrig, ChipTemp
+        ButtonBoth, Battery, BatteryLow, BatteryOrig, ChipTemp,
     ],
 }, {
     # temperature and humidity sensor
@@ -363,13 +368,13 @@ DEVICES += [{
     # cube action, no retain
     "lumi.sensor_cube.aqgl01": ["Aqara", "Cube EU", "MFKZQ01LM"],  # tested
     "lumi.sensor_cube": ["Aqara", "Cube", "MFKZQ01LM"],
-    "support": 3,  # @AlexxIT TODO: need some tests
+    "support": 5,  # @AlexxIT
     "spec": [
         ZAqaraCubeMain("action", "sensor"),
-        # ZAqaraCubeRotate("angle"),
+        ZAqaraCubeRotate("angle"),
         # Converter("action", mi="13.1.85"),
-        Converter("duration", mi="0.2.85", parent="action"),
-        Converter("angle", mi="0.3.85", parent="action"),
+        # Converter("duration", mi="0.2.85", parent="action"),
+        # MathConv("angle", mi="0.3.85", parent="action", multiply=0.001),
         Battery, BatteryOrig
     ],
 }, {
@@ -410,9 +415,16 @@ DEVICES += [{
     "lumi.lock.aq1": ["Aqara", "Door Lock S1", "ZNMS11LM"],
     "lumi.lock.acn02": ["Aqara", "Door Lock S2 CN", "ZNMS12LM"],
     "spec": [
-        Action, Battery,
-        LockConv("key_id", "sensor", mi="13.1.85"),
-        BoolConv("lock", "binary_sensor", mi="13.20.85")
+        # dead_bolt or square_locked or 13.22.85
+        LockConv("square", "binary_sensor", mi="13.16.85", mask=0x10),
+        # anti_bolt or reverse_locked or 3.1.85
+        LockConv("reverse", "binary_sensor", mi="13.16.85", mask=0x04),
+        # latch_bolt
+        LockConv("latch", "binary_sensor", mi="13.16.85", mask=0x01),
+        # other sensors
+        Converter("battery", "sensor", mi="8.0.2001"),
+        LockActionConv("key_id", "sensor", mi="13.1.85"),
+        # BoolConv("lock", "binary_sensor", mi="13.20.85")
     ],
 }, {
     # it's better to read only one property 13.26.85 and ignore others

@@ -19,11 +19,9 @@ class GateE1(LumiGateway, SilabsGateway, Z3Gateway):
     async def e1_read_device(self, sh: shell.ShellE1):
         self.did = await sh.get_did()
         mac = await sh.get_wlan_mac()
-        self.devices[self.did] = device = XDevice(
-            GATEWAY, MODEL, did=self.did, mac=mac,
-        )
+        device = XDevice(GATEWAY, MODEL, self.did, mac)
         device.extra = {"fw_ver": sh.ver}
-        self.add_device(device)
+        self.add_device(self.did, device)
 
     async def e1_prepare_gateway(self, sh: shell.ShellE1):
         self.e1_init()
@@ -69,11 +67,11 @@ class GateE1(LumiGateway, SilabsGateway, Z3Gateway):
         if not sh:
             return
         try:
-            serial = await sh.read_file('/proc/tty/driver/ms_uart | grep -v ^0 | sort -r')
-            free_mem = await sh.read_file('/proc/meminfo | grep MemFree: | awk \'{print $2}\'');
-            load_avg = await sh.read_file('/proc/loadavg | sed \'s/ /|/g\'')
-            run_time = await sh.read_file('/proc/uptime | cut -f1 -d.')
-            rssi = await sh.read_file('/proc/net/wireless | grep wlan0 | awk \'{print $4}\' | cut -f1 -d.')
+            serial = await sh.read_file("/proc/tty/driver/ms_uart | grep -v ^0 | sort -r")
+            free_mem = await sh.read_file("/proc/meminfo | grep MemFree: | awk '{print $2}'")
+            load_avg = await sh.read_file("/proc/loadavg | sed 's/ /|/g'")
+            run_time = await sh.read_file("/proc/uptime | cut -f1 -d.")
+            rssi = await sh.read_file("/proc/net/wireless | grep wlan0 | awk '{print $4}' | cut -f1 -d.")
             payload = self.device.decode(GATEWAY, {
                 "serial": serial.decode(),
                 "free_mem": int(free_mem),

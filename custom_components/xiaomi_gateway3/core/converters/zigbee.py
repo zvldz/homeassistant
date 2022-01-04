@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import Any, TYPE_CHECKING, Optional, Union
+from typing import Any, TYPE_CHECKING, Optional
 
 import zigpy.device
 import zigpy.quirks
@@ -263,7 +263,9 @@ class ZTuyaPowerOnConv(ZConverter):
 
     def encode(self, device: "XDevice", payload: dict, value: str):
         v = next(k for k, v in self.map.items() if v == value)
-        cmd = zcl_write(device.nwk, self.ep, self.zigbee, self.attr, v, 0x30)
+        cmd = zcl_write(
+            device.nwk, self.ep, self.zigbee, self.zattr, v, type=0x30
+        )
         payload.setdefault("commands", []).extend(cmd)
 
 
@@ -282,17 +284,17 @@ class ZAqaraCubeMain(Converter):
             payload["action"] = "wakeup"
         elif value == 3:
             payload["action"] = "fall"
-        elif value >= 512:
-            payload.update({"action": "tap", "side": value - 512})
-        elif value >= 256:
-            payload.update({"action": "slide", "side": value - 256})
-        elif value >= 128:
-            payload.update({"action": "flip180", "side": value - 128})
-        elif value >= 64:
+        elif value & 0x200:
+            payload.update({"action": "tap", "side": value & 0b111})
+        elif value & 0x100:
+            payload.update({"action": "slide", "side": value & 0b111})
+        elif value & 0x80:
+            payload.update({"action": "flip180", "side": value & 0b111})
+        elif value & 0x40:
             payload.update({
                 "action": "flip90",
-                "from_side": math.floor((value - 64) / 8),
-                "to_side": value % 8,
+                "from_side": (value >> 3) & 0b111,
+                "to_side": value & 0b111,
             })
 
 
@@ -393,11 +395,11 @@ class ZHueLed(Converter):
             payload[self.attr] = bool(value[51])
 
     def encode(self, device: "XDevice", payload: dict, value: bool):
-        cmd = zcl_write(device.nwk, 2, 0, 51, 0x10, int(value))
+        cmd = zcl_write(device.nwk, 2, self.zigbee, 51, int(value), type=0x10)
         payload.setdefault("commands", []).extend(cmd)
 
     def read(self, device: "XDevice", payload: dict):
-        cmd = zcl_read(device.nwk, 2, 0, 51)
+        cmd = zcl_read(device.nwk, 2, self.zigbee, 51)
         payload.setdefault("commands", []).extend(cmd)
 
 
@@ -424,6 +426,22 @@ class IKEARemoteConv2(ZConverter):
     def decode(self, device: "XDevice", payload: dict, value: dict):
         if "command_id" in value:
             payload["button"] = self.map.get(value["command_id"])
+
+
+class ZAqaraOppleMode(ZConverter):
+    zigbee = 0xFCC0
+    map = {0: "binding", 1: "multiclick"}
+
+    def encode(self, device: "XDevice", payload: dict, value: Any):
+        value = next(k for k, v in self.map.items() if v == value)
+        cmd = zcl_write(
+            device.nwk, self.ep, self.zigbee, 9, value, type=0x20,
+            mfg=0x115f
+        )
+        payload.setdefault("commands", []).extend(cmd)
+
+    def read(self, device: "XDevice", payload: dict):
+        pass
 
 
 ################################################################################

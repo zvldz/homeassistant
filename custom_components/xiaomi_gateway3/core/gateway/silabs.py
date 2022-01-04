@@ -2,7 +2,8 @@ import json
 
 from .base import GatewayBase, SIGNAL_PREPARE_GW, SIGNAL_MQTT_PUB
 from .. import shell
-from ..converters import silabs, UNKNOWN, is_mihome_zigbee
+from ..converters import silabs, is_mihome_zigbee
+from ..converters.zigbee import ZConverter
 from ..device import XDevice, ZIGBEE
 from ..mini_mqtt import MQTTMessage
 
@@ -57,13 +58,12 @@ class SilabsGateway(GatewayBase):
         device: XDevice = self.devices.get(did)
         if not device:
             # we need to save device to know its NWK in future
-            self.devices[did] = device = XDevice(
-                ZIGBEE, UNKNOWN, did, mac, nwk
-            )
+            device = XDevice(ZIGBEE, None, did, mac, nwk)
+            self.add_device(did, device)
             self.debug_device(device, "new unknown device", tag="SLBS")
             return
 
-        if device.model == UNKNOWN:
+        if not device.model:
             # Sonoff Mini has a bug: it hasn't app_ver, so gw can't add it
             if data["clusterId"] == "0x0000":
                 if not zb_msg:
@@ -101,11 +101,11 @@ class SilabsGateway(GatewayBase):
             await self.silabs_prevent_unpair()
 
         device = self.devices.get(data["did"])
-        if device.model == UNKNOWN:
+        if not device.model:
             self.debug_device(device, "paired", data)
             device.update_model(data["model"])
             device.extra["fw_ver"] = parse_version(data["version"])
-            self.add_device(device)
+            self.add_device(device.did, device)
         else:
             self.debug_device(device, "model exist on pairing")
 
@@ -132,15 +132,15 @@ class SilabsGateway(GatewayBase):
 
     async def silabs_config(self, device: XDevice):
         """Run some config converters if device spec has them. Binds, etc."""
-        config = device.zigbee_config()
-        if not config:
+        payload = {}
+        for conv in device.converters:
+            if isinstance(conv, ZConverter):
+                conv.config(device, payload, self)
+
+        if not payload:
             return
 
-        self.debug_device(device, "config", config)
-
-        payload = {}
-        for conv in config:
-            conv.config(device, payload, self)
+        self.debug_device(device, "config")
         await self.mqtt.publish(f"gw/{self.ieee}/commands", payload)
 
     async def silabs_send_fake_version(self, device: XDevice, data: dict):
@@ -165,6 +165,26 @@ class SilabsGateway(GatewayBase):
             "firstjoined": 1
         }
         await self.mqtt.publish(f"gw/{self.ieee}/devicejoined", payload)
+
+    async def silabs_bind(self, bind_from: XDevice, bind_to: XDevice):
+        cmd = []
+        for cluster in ["on_off", "level", "light_color"]:
+            cmd += silabs.zdo_bind(
+                bind_from.nwk, 1, cluster, bind_from.mac[2:], bind_to.mac[2:]
+            )
+        await self.mqtt.publish(f"gw/{self.ieee}/commands", {"commands": cmd})
+
+    async def silabs_unbind(self, bind_from: XDevice, bind_to: XDevice):
+        cmd = []
+        for cluster in ["on_off", "level", "light_color"]:
+            cmd += silabs.zdo_unbind(
+                bind_from.nwk, 1, cluster, bind_from.mac[2:], bind_to.mac[2:]
+            )
+        await self.mqtt.publish(f"gw/{self.ieee}/commands", {"commands": cmd})
+
+    async def silabs_leave(self, device: XDevice):
+        cmd = silabs.zdo_leave(device.nwk)
+        await self.mqtt.publish(f"gw/{self.ieee}/commands", {"commands": cmd})
 
 
 def parse_version(value: str) -> int:

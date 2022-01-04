@@ -1,6 +1,5 @@
 import json
 import time
-from typing import List
 
 from .base import GatewayBase, SIGNAL_PREPARE_GW, SIGNAL_MQTT_CON, \
     SIGNAL_MQTT_PUB
@@ -25,13 +24,6 @@ class LumiGateway(GatewayBase):
         self.dispatcher_connect(SIGNAL_MQTT_CON, self.lumi_mqtt_connect)
         self.dispatcher_connect(SIGNAL_MQTT_PUB, self.lumi_mqtt_publish)
 
-    @property
-    def zigbee_devices(self) -> List[XDevice]:
-        return [
-            device for device in self.devices.values()
-            if device.type == ZIGBEE and self in device.gateways
-        ]
-
     async def lumi_read_devices(self, sh: shell.TelnetShell):
         # 2. Read zigbee devices
         raw = await sh.read_file('/data/zigbee/device.info')
@@ -43,14 +35,14 @@ class LumiGateway(GatewayBase):
             if not device:
                 # adds leading zeroes to mac
                 mac = f"0x{item['mac'][2:]:>016s}"
-                self.devices[did] = device = XDevice(
+                device = XDevice(
                     ZIGBEE, item['model'], did, mac, item['shortId']
                 )
                 device.extra = {'fw_ver': item['appVer']}
                 # 'hw_ver': item['hardVer'],
                 # 'mod_ver': item['model_ver'],
 
-            self.add_device(device)
+            self.add_device(did, device)
 
     async def lumi_prepare_gateway(self, sh: shell.TelnetShell):
         if self.available is None:
@@ -58,7 +50,7 @@ class LumiGateway(GatewayBase):
 
     async def lumi_mqtt_connect(self):
         payload = {"params": [{"res_name": "8.0.2102"}]}
-        for device in self.zigbee_devices:
+        for device in self.filter_devices("zigbee"):
             await self.lumi_read(device, payload)
 
     async def lumi_mqtt_publish(self, msg: MQTTMessage):

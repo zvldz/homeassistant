@@ -106,7 +106,7 @@ CONF_HMAX = 99.9
 
 # Sensors with deviating temperature range
 KETTLES = ('YM-K1501', 'YM-K1501EU', 'V-SK152')
-PROBES = ('iBBQ-2')
+PROBES = ('iBBQ-2', 'iBBQ-4', 'H5183')
 
 # Sensor entity description
 @dataclass
@@ -247,7 +247,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         key="temperature probe 1",
         sensor_class="TemperatureSensor",
         name="ble temperature probe 1",
-        unique_id="t_probe_1",
+        unique_id="t_probe_1_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -256,7 +256,25 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         key="temperature probe 2",
         sensor_class="TemperatureSensor",
         name="ble temperature probe 2",
-        unique_id="t_probe_2",
+        unique_id="t_probe_2_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature probe 3",
+        sensor_class="TemperatureSensor",
+        name="ble temperature probe 2",
+        unique_id="t_probe_3_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature probe 4",
+        sensor_class="TemperatureSensor",
+        name="ble temperature probe 4",
+        unique_id="t_probe_4_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -266,6 +284,15 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         sensor_class="TemperatureSensor",
         name="ble temperature outdoor",
         unique_id="t_outdoor_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature alarm",
+        sensor_class="TemperatureSensor",
+        name="ble temperature alarm",
+        unique_id="t_alarm_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -654,7 +681,7 @@ MEASUREMENT_DICT = {
     'YLYK01YL-VENFAN'         : [["rssi"], ["ventilator fan remote"], []],
     'YLYB01YL-BHFRC'          : [["rssi"], ["bathroom heater remote"], []],
     'YLKG07YL/YLKG08YL'       : [["rssi"], ["dimmer"], []],
-    'ATC'                     : [["temperature", "humidity", "battery", "voltage", "rssi"], [], []],
+    'ATC'                     : [["temperature", "humidity", "battery", "voltage", "rssi"], [], ["switch", "opening"]],
     'Mi Scale V1'             : [["rssi"], ["weight", "non-stabilized weight"], ["weight removed"]],
     'Mi Scale V2'             : [["rssi"], ["weight", "non-stabilized weight", "impedance"], ["weight removed"]],
     'TZC4'                    : [["rssi"], ["weight", "non-stabilized weight", "impedance"], []],
@@ -669,6 +696,7 @@ MEASUREMENT_DICT = {
     'H5074'                   : [["temperature", "humidity", "battery", "rssi"], [], []],
     'H5178'                   : [["temperature", "temperature outdoor", "humidity", "humidity outdoor", "battery", "rssi"], [], []],
     'H5179'                   : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'H5183'                   : [["temperature probe 1", "temperature alarm", "rssi"], [], []],
     'Ruuvitag'                : [["temperature", "humidity", "pressure", "battery", "voltage", "rssi"], ["acceleration"], ["motion"]],
     'iNode Energy Meter'      : [["battery", "voltage", "rssi"], ["energy", "power"], []],
     "iNode Care Sensor 1"     : [["temperature", "battery", "voltage", "rssi"], ["acceleration"], ["motion"]],
@@ -693,6 +721,8 @@ MEASUREMENT_DICT = {
     'b-parasite V1.1.0'       : [["temperature", "humidity", "moisture", "voltage", "rssi", "illuminance"], [], []],
     'SmartSeries 7000'        : [["rssi"], [], ["toothbrush"]],
     'iBBQ-2'                  : [["temperature probe 1", "temperature probe 2", "rssi"], [], []],
+    'iBBQ-4'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4","rssi"], [], []],
+    'IBS-TH2'                 : [["temperature", "humidity", "battery", "rssi"], [], []],
 }
 
 
@@ -755,6 +785,7 @@ MANUFACTURER_DICT = {
     'H5074'                   : 'Govee',
     'H5178'                   : 'Govee',
     'H5179'                   : 'Govee',
+    'H5183'                   : 'Govee',
     'Ruuvitag'                : 'Ruuvitag',
     'iNode Energy Meter'      : 'iNode',
     "iNode Care Sensor 1"     : 'iNode',
@@ -779,6 +810,8 @@ MANUFACTURER_DICT = {
     'b-parasite V1.1.0'       : 'rbaron',
     'SmartSeries 7000'        : 'Oral-B',
     'iBBQ-2'                  : 'Inkbird',
+    'iBBQ-4'                  : 'Inkbird',
+    'IBS-TH2'                 : 'Inkbird',
 }
 
 # Renamed model dictionary

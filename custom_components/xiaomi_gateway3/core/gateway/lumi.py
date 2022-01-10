@@ -1,5 +1,4 @@
 import json
-import time
 
 from .base import GatewayBase, SIGNAL_PREPARE_GW, SIGNAL_MQTT_CON, \
     SIGNAL_MQTT_PUB
@@ -21,7 +20,7 @@ class LumiGateway(GatewayBase):
         if self.zha_mode:
             return
         self.dispatcher_connect(SIGNAL_PREPARE_GW, self.lumi_prepare_gateway)
-        self.dispatcher_connect(SIGNAL_MQTT_CON, self.lumi_mqtt_connect)
+        # self.dispatcher_connect(SIGNAL_MQTT_CON, self.lumi_mqtt_connect)
         self.dispatcher_connect(SIGNAL_MQTT_PUB, self.lumi_mqtt_publish)
 
     async def lumi_read_devices(self, sh: shell.TelnetShell):
@@ -47,6 +46,10 @@ class LumiGateway(GatewayBase):
     async def lumi_prepare_gateway(self, sh: shell.TelnetShell):
         if self.available is None:
             await self.lumi_read_devices(sh)
+
+        uptime = await sh.read_file("/proc/uptime | cut -f1 -d.")
+        if int(uptime) >= 3600:
+            self.dispatcher_connect(SIGNAL_MQTT_CON, self.lumi_mqtt_connect)
 
     async def lumi_mqtt_connect(self):
         payload = {"params": [{"res_name": "8.0.2102"}]}
@@ -81,12 +84,12 @@ class LumiGateway(GatewayBase):
         # - write_ack - response from device (device receive command)
         if data['cmd'] == 'heartbeat':
             data = data['params'][0]
+        elif data['cmd'] in ("report", "read_rsp"):
+            pass
         elif data['cmd'] == 'write_rsp':
             # process write response only from Gateway
             if data['did'] != 'lumi.0':
                 return
-        elif data['cmd'] in ("report", "read_rsp"):
-            pass
         else:
             return
 
@@ -103,14 +106,6 @@ class LumiGateway(GatewayBase):
                 continue
 
             payload = device.decode_lumi(data[k])
-
-            # set device available on any message except online=False
-            device.available = payload.pop('online', True)
-
-            if not payload:
-                continue
-
-            device.last_seen = time.time()
             device.update(payload)
 
             # no time in device add command

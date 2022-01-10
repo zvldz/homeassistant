@@ -1,52 +1,28 @@
 reboot_gateway_1:
   sequence:
     - service: select.select_option
-      target:
+      data:
         entity_id: select.6490c178ac26_command
-      data:
-        option: "Other Commands"
-    - service: select.select_option
-      target:
-        entity_id: select.6490c178ac26_data
-      data:
-        option: "reboot"
+        option: "Gateway Reboot"
 
 reboot_gateway_2:
   sequence:
     - service: select.select_option
-      target:
+      data:
         entity_id: select.6490c1783f01_command
-      data:
-        option: "Other Commands"
-    - service: select.select_option
-      target:
-        entity_id: select.6490c1783f01_data
-      data:
-        option: "reboot"
+        option: "Gateway Reboot"
 
 dump_gateway_1:
   sequence:
     - service: select.select_option
-      target:
+      data:
         entity_id: select.6490c178ac26_command
-      data:
-        option: "Other Commands"
-    - service: select.select_option
-      target:
-        entity_id: select.6490c178ac26_data
-      data:
-        option: "dump"
+        option: "Gateway Dump Data"
 
 dump_gateway_2:
   sequence:
     - service: select.select_option
-      target:
+      data:
         entity_id: select.6490c1783f01_command
-      data:
-        option: "Other Commands"
-    - service: select.select_option
-      target:
-        entity_id: select.6490c1783f01_data
-      data:
-        option: "dump"
+        option: "Gateway Dump Data"
 

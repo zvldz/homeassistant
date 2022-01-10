@@ -2,7 +2,7 @@ import re
 import time
 
 from .base import GatewayBase, SIGNAL_PREPARE_GW, SIGNAL_MQTT_CON, \
-    SIGNAL_MQTT_PUB
+    SIGNAL_MQTT_PUB, SIGNAL_TIMER
 from .. import shell
 from ..device import ZIGBEE, XDevice
 from ..mini_mqtt import MQTTMessage
@@ -22,6 +22,7 @@ class Z3Gateway(GatewayBase):
         self.dispatcher_connect(SIGNAL_PREPARE_GW, self.z3_prepare_gateway)
         self.dispatcher_connect(SIGNAL_MQTT_CON, self.z3_mqtt_connect)
         self.dispatcher_connect(SIGNAL_MQTT_PUB, self.z3_mqtt_publish)
+        self.dispatcher_connect(SIGNAL_TIMER, self.z3_timer)
 
     async def z3_prepare_gateway(self, sh: shell.TelnetShell):
         assert self.ieee, "Z3Gateway depends on SilabsGateway"
@@ -29,13 +30,15 @@ class Z3Gateway(GatewayBase):
         sh.patch_zigbee_parents()
 
     async def z3_mqtt_connect(self):
-        self.z3_parent_scan = 1
+        # delay first scan
+        self.z3_parent_scan = time.time() + 10
 
     async def z3_mqtt_publish(self, msg: MQTTMessage):
         if msg.topic == 'log/z3':
             await self.z3_process_log(msg.text)
 
-        if time.time() >= self.z3_parent_scan:
+    async def z3_timer(self, ts: float):
+        if ts >= self.z3_parent_scan:
             await self.z3_run_parent_scan()
 
     async def z3_run_parent_scan(self):
@@ -98,8 +101,6 @@ class Z3Gateway(GatewayBase):
                 if state == "LEAVE_SENT":
                     continue
 
-                ago = int(ago)
-
                 if ieee in ct:
                     type_ = 'device'
                 elif ieee in rt:
@@ -122,17 +123,17 @@ class Z3Gateway(GatewayBase):
                 nwk = '0x' + nwk.lower()  # 0xffff
 
                 payload = {
-                    'eui64': '0x' + ieee,
-                    'nwk': nwk,
-                    'ago': ago,
+                    # 'eui64': '0x' + ieee,
+                    # 'nwk': nwk,
+                    # 'ago': int(ago),
                     'type': type_,
                     'parent': parent
                 }
 
-                did = 'lumi.' + str(payload['eui64']).lstrip('0x').lower()
+                did = 'lumi.' + ieee.lstrip('0').lower()
                 device = self.devices.get(did)
                 if not device:
-                    mac = payload['eui64'].lower()
+                    mac = '0x' + ieee.lower()
                     device = XDevice(ZIGBEE, None, did, mac, nwk)
                     self.add_device(did, device)
                     self.debug_device(device, "new unknown device", tag=" Z3 ")
@@ -144,6 +145,7 @@ class Z3Gateway(GatewayBase):
                 # the device remains in the gateway database after
                 # deletion and may appear on another gw with another nwk
                 if nwk == device.nwk:
+                    # payload = device.decode(ZIGBEE, payload)
                     device.update(payload)
                 else:
                     self.debug(f"Zigbee device with wrong NWK: {ieee}")

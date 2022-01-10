@@ -6,8 +6,9 @@ from homeassistant.core import callback
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import DOMAIN
-from .core.converters import MESH_GROUP_MODEL, Converter
-from .core.device import XDevice, XEntity, ZIGBEE
+from .core.converters import ZIGBEE, MESH_GROUP_MODEL, Converter
+from .core.device import XDevice
+from .core.entity import XEntity
 from .core.gateway import XGateway
 
 CONF_DEFAULT_TRANSITION = 'default_transition'
@@ -61,7 +62,7 @@ class XiaomiLight(XEntity, LightEntity, RestoreEntity):
 
     @callback
     def async_restore_last_state(self, state: str, attrs: dict):
-        self._attr_state = state == STATE_ON
+        self._attr_is_on = state == STATE_ON
         self._attr_brightness = attrs.get(ATTR_BRIGHTNESS)
         self._attr_color_temp = attrs.get(ATTR_COLOR_TEMP)
 

@@ -2,3 +2,15 @@
   name: camera1
   input: -rtsp_transport tcp -i rtsp://192.168.1.10:8554/mainstream
   extra_arguments: -vf select="eq(pict_type\,I)"
+
+#- platform: ffmpeg
+#  name: rcamera1
+#  input: -rtsp_transport tcp -i rtsp://192.168.1.12:8554/rcamera1
+## input: -rtsp_transport tcp -i rtsp://192.168.1.12:8554/rcamera1/subStreamm
+## extra_arguments: -vf select="eq(pict_type\,I)"
+
+- platform: generic
+  name: rcamera1
+# stream_source: rtsp://127.0.0.1:8554/rcamera1/subStream
+  stream_source: rtsp://192.168.1.12:8554/rcamera1/subStream
+  still_image_url: http://192.168.1.12/reolink_b800.jpg

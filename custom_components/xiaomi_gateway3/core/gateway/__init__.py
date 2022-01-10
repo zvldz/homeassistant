@@ -24,6 +24,7 @@ from .base import SIGNAL_PREPARE_GW, SIGNAL_MQTT_CON, SIGNAL_MQTT_DIS, \
 from .gate_e1 import GateE1
 from .gate_gw3 import GateGW3
 from .. import shell
+from ..converters import GATEWAY
 from ..mini_miio import AsyncMiIO
 from ..mini_mqtt import MiniMQTT, MQTTMessage
 
@@ -111,8 +112,8 @@ class XGateway(GateGW3, GateE1):
     async def timer(self):
         while True:
             ts = time.time()
+            asyncio.create_task(self.check_available(ts))
             await self.dispatcher_send(SIGNAL_TIMER, ts=ts)
-            # asyncio.create_task(self.check_available(ts))
             await asyncio.sleep(30)
 
     async def mqtt_connect(self):
@@ -120,7 +121,7 @@ class XGateway(GateGW3, GateE1):
 
         await self.mqtt.subscribe('#')
 
-        self.async_update_available(True)
+        self.update_available(True)
 
         await self.dispatcher_send(SIGNAL_MQTT_CON)
 
@@ -131,7 +132,7 @@ class XGateway(GateGW3, GateE1):
 
         self.timer_task.cancel()
 
-        self.async_update_available(False)
+        self.update_available(False)
 
         await self.dispatcher_send(SIGNAL_MQTT_DIS)
 
@@ -172,12 +173,12 @@ class XGateway(GateGW3, GateE1):
         finally:
             await sh.close()
 
-    def async_update_available(self, value: bool):
+    def update_available(self, value: bool):
         self.available = value
 
         for device in self.devices.values():
             if self in device.gateways:
-                device.async_update_available()
+                device.update_available()
 
     async def telnet_send(self, command: str):
         sh: shell.TelnetShell = await shell.connect(self.host)
@@ -199,11 +200,24 @@ class XGateway(GateGW3, GateE1):
         finally:
             await sh.close()
 
-    # async def async_check_available(self, ts: float):
-    #     for device in self.devices.values():
-    #         if self not in device.gateways or ts - device.last_seen < 600:
-    #             continue
-    #         entity = device.entities[0]
-    #         if "sensor" in entity.platform.domain:
-    #             continue
-    #         await entity.device_read({entity.attr})
+    async def check_available(self, ts: float):
+        for device in list(self.devices.values()):
+            if self not in device.gateways or device.type == GATEWAY:
+                continue
+
+            if (device.poll_timeout and
+                    ts - device.decode_ts > device.poll_timeout and
+                    ts - device.encode_ts > device.poll_timeout
+            ):
+                for attr, entity in device.entities.items():
+                    if not entity.hass:
+                        continue
+                    self.debug_device(device, "poll state", attr)
+                    await entity.async_device_update()
+                    break
+
+            if (device.available and device.available_timeout and
+                    ts - device.decode_ts > device.available_timeout
+            ):
+                self.debug_device(device, "set device offline")
+                device.available = False

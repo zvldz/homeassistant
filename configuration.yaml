@@ -22,8 +22,11 @@ map:
 sun:
 ffmpeg:
 stream:
-discovery:
 energy:
+
+discovery:
+  ignore:
+    - homekit
 
 frontend:
   themes: !include_dir_merge_named themes

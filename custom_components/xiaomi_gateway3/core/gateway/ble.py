@@ -77,16 +77,17 @@ class BLEGateway(GatewayBase):
             return
         device.extra['seq'] = data['frmCnt']
 
-        if BLE in device.entities:
-            device.update(device.decode(BLE, None))
-
         if isinstance(data['evt'], list):
-            payload = device.decode("mibeacon", data['evt'][0])
+            payload = data['evt'][0]
         elif isinstance(data['evt'], dict):
-            payload = device.decode("mibeacon", data['evt'])
+            payload = data['evt']
         else:
-            return
+            raise NotImplementedError
 
+        if BLE in device.entities:
+            device.update(device.decode(BLE, payload))
+
+        payload = device.decode("mibeacon", payload)
         device.update(payload)
         self.debug_device(device, "recv", payload, "BLEE")
 
@@ -107,7 +108,7 @@ class BLEGateway(GatewayBase):
         device.extra['seq'] = payload['seq']
 
         if BLE in device.entities:
-            device.update(device.decode(BLE, None))
+            device.update(device.decode(BLE, payload))
 
         payload = device.decode("mibeacon", payload)
         device.update(payload)

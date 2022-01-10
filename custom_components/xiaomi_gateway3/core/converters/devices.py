@@ -4,12 +4,14 @@ Each device has a specification:
     {
         "<model>": ["<brand>", "<name>", "<market model>"],
         "spec": [<list of converters>],
-        "support": <from 1 to 5>
+        "support": <from 1 to 5>,
+        "ttl": <time to live>
     }
 
 - model - `lumi.xxx` for Zigbee devices, number (pdid) for BLE and Mesh devices
 - spec - list of converters
 - support - optional score of support from 5 to 1
+- ttl - optional available timeout
 
 Each converter has:
 
@@ -43,7 +45,7 @@ By default, the entity is updated only if the decoded payload has its attribute.
 But one entity can process multiple attributes, example bulb: `light`,
 `brightness`, `color_temp`. In this case you should set `parent` attribute name:
 
-    BoolConv("light", "light", "4.1.85", "power_status")
+    BoolConv("light", "light", "4.1.85")
     BrightnessConv("brightness", mi="14.1.85", parent="light")
     Converter("color_temp", mi="14.2.85", parent="light")
 
@@ -853,6 +855,23 @@ DEVICES += [{
         MapConv("wireless_2", "switch", mi="10.p.1", map=INVERSE),
         MapConv("wireless_3", "switch", mi="11.p.1", map=INVERSE),
     ]
+}, {
+    "lumi.remote.b28ac1": ["Aqara", "Double Wall Button H1", "WRS-R02"],
+    "spec": [
+        Action,
+        ButtonMIConv("button_1", mi="3.e.1", value=1),  # single
+        ButtonMIConv("button_1", mi="3.e.2", value=2),  # double
+        ButtonMIConv("button_1", mi="3.e.3", value=16),  # long
+        ButtonMIConv("button_2", mi="4.e.1", value=1),  # single
+        ButtonMIConv("button_2", mi="4.e.2", value=2),  # double
+        ButtonMIConv("button_2", mi="4.e.3", value=16),  # long
+        BatteryConv("battery", "sensor", mi="6.p.2"),  # voltage
+        MapConv("battery_low", "binary_sensor", mi="6.p.1", map=BATTERY_LOW,
+                enabled=False),
+        MapConv("mode", "select", mi="8.p.1", map={
+            1: "single_click", 2: "multi_click"
+        }, enabled=False)
+    ]
 }]
 
 ################################################################################
@@ -1002,6 +1021,7 @@ DEVICES += [{
         MiBeacon, BLETemperature, BLEMoisture, BLEConductivity, BLEIlluminance,
         Converter("battery", "sensor", enabled=None),  # no in new firmwares
     ],
+    "ttl": "1m",  # new data every 10 seconds
 }, {
     349: ["Xiaomi", "Flower Pot", "HHCCPOT002"],
     "spec": [
@@ -1037,6 +1057,7 @@ DEVICES += [{
 }, {
     1249: ["Xiaomi", "Magic Cube", "XMMF01JQD"],
     "spec": [MiBeacon, Action],
+    "ttl": "7d",  # don't send any data
 }, {
     # logs: https://github.com/AlexxIT/XiaomiGateway3/issues/180
     2701: ["Xiaomi", "Motion Sensor 2", "RTCGQ02LM"],  # 15,4119,4120
@@ -1046,8 +1067,16 @@ DEVICES += [{
         Converter("idle_time", "sensor", enabled=False),
     ],
 }, {
+    2691: ["Xiaomi", "Qingping Motion Sensor", "CGPR1"],
+    "spec": [
+        MiBeacon, BLEMotion, BLELight, BLEIlluminance, BLEBattery,
+        Converter("idle_time", "sensor", enabled=False),
+    ],
+    "ttl": "34m",  # battery every 11 min
+}, {
     1983: ["Yeelight", "Button S1", "YLAI003"],
-    "spec": [MiBeacon, BLEAction, BLEBattery]
+    "spec": [MiBeacon, BLEAction, BLEBattery],
+    "ttl": "16m",  # battery every 5 min
 }, {
     # BLE devices can be supported witout spec. New spec will be added
     # "on the fly" when device sends them. But better to rewrite right spec for
@@ -1066,7 +1095,6 @@ DEVICES += [{
     2444: ["Xiaomi", "Door Lock", "XMZNMST02YD"],
     2455: ["Honeywell", "Smoke Alarm", "JTYJ-GD-03MI"],
     2480: ["Xiaomi", "Safe Box", "BGX-5/X1-3001"],
-    2691: ["Xiaomi", "Qingping Motion Sensor", "CGPR1"],
     3051: ["Aqara", "Door Lock D100", "ZNMS20LM"],
     "spec": [
         MiBeacon,
@@ -1136,11 +1164,12 @@ DEVICES += [{
     ]
 }, {
     # brightness 1..100, color_temp 3000..6400
+    1910: ["LeMesh", "Mesh Light (RF ready)", "lemesh.light.wy0c02"],
     2293: ["Unknown", "Mesh Lightstrip (RF ready)", "crzm.light.wy0a01"],
-    2351: ["Unknown", "Mesh Downlight", "lemesh.light.wy0c05"],
+    2351: ["LeMesh", "Mesh Downlight", "lemesh.light.wy0c05"],
     2584: ["XinGuang", "Smart Light", "LIBMDA09X"],
-    3164: ["Unknown", "Mesh Downlight (RF ready)", "lemesh.light.wy0c07"],
-    3531: ["Unknown", "ightctl Light", "lemesh.light.wy0c08"],
+    3164: ["LeMesh", "Mesh Light (RF ready)", "lemesh.light.wy0c07"],
+    3531: ["LeMesh", "Mesh Light", "lemesh.light.wy0c08"],
     "spec": [
         Converter("light", "light", mi="2.p.1"),
         BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),

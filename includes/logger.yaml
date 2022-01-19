@@ -1,4 +1,5 @@
 default: info
+#default: debug
 logs:
   libav.rtsp: critical
   pychromecast.socket_client: fatal
@@ -15,3 +16,4 @@ logs:
   custom_components.tcp_mod.sensor: debug
   custom_components.rest_mod.switch: debug
   custom_components.rest_mod.sensor: debug
+  homeassistant.components.discovery: debug

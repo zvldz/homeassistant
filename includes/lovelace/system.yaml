@@ -97,30 +97,26 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
+            name: "Power HAS"
             entity: switch.gosund_socket_2
             size: 20%
             styles:
               card:
                 - font-size: 14px
 
-          - type: conditional
-            conditions:
-              - entity: sensor.instance_name
-                state: "HA2"
-            card:
-              type: custom:button-card
-              name: "Reboot HA1"
-              icon: "mdi:autorenew"
-              tap_action:
-                confirmation: true
-                action: call-service
-                service: script.turn_on
-                service_data:
-                  entity_id: script.reboot_ha1
-              size: 18%
-              styles:
-                card:
-                  - font-size: 14px
+          - type: custom:button-card
+            name: "Reboot HA1"
+            icon: "mdi:autorenew"
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.reboot_ha1
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
 
       - type: custom:button-card
         name: "Graphs"
@@ -167,7 +163,7 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Purge DB"
+        name: "Maintenance"
         styles:
           card:
             - background-color: "#203040"
@@ -175,7 +171,21 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Purge to 0 days"
+            name: "Watchman"
+            icon: "mdi:file-find-outline"
+            tap_action:
+              confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.start_watchman
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+          
+          - type: custom:button-card
+            name: "Purge DB to 0 d"
             icon: "mdi:database-refresh-outline"
             tap_action:
               confirmation: true
@@ -184,13 +194,13 @@ cards:
               service_data:
                 keep_days: 0
                 repack: true
-            size: 18%
+            size: 20%
             styles:
               card:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Purge to 1 days"
+            name: "Purge DB to 1 d"
             icon: "mdi:database-refresh-outline"
             tap_action:
               confirmation: true
@@ -199,13 +209,13 @@ cards:
               service_data:
                 keep_days: 1
                 repack: true
-            size: 18%
+            size: 20%
             styles:
               card:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Purge to 2 days"
+            name: "Purge DB to 2 d"
             icon: "mdi:database-refresh-outline"
             tap_action:
               confirmation: true
@@ -214,7 +224,7 @@ cards:
               service_data:
                 keep_days: 2
                 repack: true
-            size: 18%
+            size: 20%
             styles:
               card:
                 - font-size: 14px

@@ -264,7 +264,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 3",
         sensor_class="TemperatureSensor",
-        name="ble temperature probe 2",
+        name="ble temperature probe 3",
         unique_id="t_probe_3_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -275,6 +275,24 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         sensor_class="TemperatureSensor",
         name="ble temperature probe 4",
         unique_id="t_probe_4_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature probe 5",
+        sensor_class="TemperatureSensor",
+        name="ble temperature probe 5",
+        unique_id="t_probe_5_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature probe 6",
+        sensor_class="TemperatureSensor",
+        name="ble temperature probe 6",
+        unique_id="t_probe_6_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -309,7 +327,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="humidity outdoor",
         sensor_class="HumiditySensor",
-        name="ble temperature outdoor",
+        name="ble humidity outdoor",
         unique_id="h_outdoor_",
         native_unit_of_measurement=PERCENTAGE,
         device_class=SensorDeviceClass.HUMIDITY,
@@ -721,8 +739,9 @@ MEASUREMENT_DICT = {
     'b-parasite V1.1.0'       : [["temperature", "humidity", "moisture", "voltage", "rssi", "illuminance"], [], []],
     'SmartSeries 7000'        : [["rssi"], [], ["toothbrush"]],
     'iBBQ-2'                  : [["temperature probe 1", "temperature probe 2", "rssi"], [], []],
-    'iBBQ-4'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4","rssi"], [], []],
-    'IBS-TH2'                 : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'iBBQ-4'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "rssi"], [], []],
+    'iBBQ-6'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "temperature probe 5", "temperature probe 6", "rssi"], [], []],
+    'IBS-TH'                  : [["temperature", "humidity", "battery", "rssi"], [], []],
 }
 
 
@@ -811,12 +830,14 @@ MANUFACTURER_DICT = {
     'SmartSeries 7000'        : 'Oral-B',
     'iBBQ-2'                  : 'Inkbird',
     'iBBQ-4'                  : 'Inkbird',
-    'IBS-TH2'                 : 'Inkbird',
+    'iBBQ-6'                  : 'Inkbird',
+    'IBS-TH'                  : 'Inkbird',
 }
 
 # Renamed model dictionary
 RENAMED_MODEL_DICT = {
-    'H5051/H5074': 'H5074'
+    'H5051/H5074': 'H5074',
+    'IBS-TH2': 'IBS-TH',
 }
 
 # Selection list for report_uknown

@@ -38,7 +38,7 @@ sensor.0x158d000211434a_zigbee:
 sensor.0x158d000211434a_power:
   friendly_name: "Kitchen Switch"
 
-sensor.0x158d000211434a_consumption:
+sensor.0x158d000211434a_energy:
   friendly_name: "Kitchen Switch"
 
 switch.0x158d0002235125_switch:
@@ -54,7 +54,7 @@ sensor.0x158d0002235125_zigbee:
 sensor.0x158d0002235125_power:
   friendly_name: "Storeroom Switch"
 
-sensor.0x158d0002235125_consumption:
+sensor.0x158d0002235125_energy:
   friendly_name: "Storeroom Switch"
 
 sensor.0x158d00022ab4bf_action:
@@ -66,7 +66,7 @@ sensor.0x158d00022ab4bf_zigbee:
 sensor.0x158d00022ab4bf_power:
   friendly_name: "Balcony 1 Switch"
 
-sensor.0x158d00022ab4bf_consumption:
+sensor.0x158d00022ab4bf_energy:
   friendly_name: "Balcony 1 Switch"
 
 switch.0x158d00022ab4bf_switch:
@@ -82,7 +82,7 @@ sensor.0x158d0001f9aa37_zigbee:
 sensor.0x158d0001f9aa37_power:
   friendly_name: "Balcony 2 Switch"
 
-sensor.0x158d0001f9aa37_consumption:
+sensor.0x158d0001f9aa37_energy:
   friendly_name: "Balcony 2 Switch"
 
 switch.0x158d0001f9aa37_switch:
@@ -98,7 +98,7 @@ sensor.0x158d0001f9aaae_zigbee:
 sensor.0x158d0001f9aaae_power:
   friendly_name: "Hallway 1 Switch"
 
-sensor.0x158d0001f9aaae_consumption:
+sensor.0x158d0001f9aaae_energy:
   friendly_name: "Hallway 1 Switch"
 
 switch.0x158d0001f9aaae_switch:
@@ -114,7 +114,7 @@ sensor.0x158d0002112b1e_zigbee:
 sensor.0x158d0002112b1e_power:
   friendly_name: "Hallway 2 Switch"
 
-sensor.0x158d0002112b1e_consumption:
+sensor.0x158d0002112b1e_energy:
   friendly_name: "Hallway 2 Switch"
 
 switch.0x158d0002112b1e_switch:
@@ -130,7 +130,7 @@ sensor.0x158d0002114338_zigbee:
 sensor.0x158d0002114338_power:
   friendly_name: "Balcony 3 Switch"
 
-sensor.0x158d0002114338_consumption:
+sensor.0x158d0002114338_energy:
   friendly_name: "Balcony 3 Switch"
 
 switch.0x158d0002114338_switch:
@@ -157,17 +157,17 @@ sensor.0x158d00022a8150_action:
 sensor.0x158d00022a8150_zigbee:
   friendly_name: "Hallway 3"
 
-switch.sonoff_rf_br_1_sb_rf:
-  friendly_name: "RF Sonoff"
+#switch.sonoff_rf_br_1_sb_rf:
+#  friendly_name: "RF Sonoff"
 
-switch.sonoff_rf_br_1_key4:
-  friendly_name: "RF Key 4"
+#switch.sonoff_rf_br_1_key4:
+#  friendly_name: "RF Key 4"
 
-switch.sonoff_rf_br_1_gate1:
-  friendly_name: "RF Gate 1"
+#switch.sonoff_rf_br_1_gate1:
+#  friendly_name: "RF Gate 1"
 
-switch.sonoff_rf_br_1_gate2:
-  friendly_name: "RF Gate 2"
+#switch.sonoff_rf_br_1_gate2:
+#  friendly_name: "RF Gate 2"
 
 switch.sonoff_pump_relay:
   friendly_name: "Pump"
@@ -190,7 +190,7 @@ switch.kitchen_lamp_mini:
 sensor.0x158d00022360fe_action:
   friendly_name: "WC Switch"
 
-sensor.0x158d00022360fe_consumption:
+sensor.0x158d00022360fe_energy:
   friendly_name: "WC Switch"
 
 sensor.0x158d00022360fe_power:

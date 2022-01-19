@@ -1,7 +1,7 @@
 notify:
   - platform: file
     name: climate_notify
-    filename: climate.log
+    filename: /config/climate.log
     timestamp: true
 
 input_boolean:

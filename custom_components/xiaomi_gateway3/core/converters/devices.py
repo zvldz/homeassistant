@@ -343,8 +343,8 @@ DEVICES += [{
     "lumi.sensor_motion.aq2": ["Aqara", "Motion Sensor", "RTCGQ11LM"],
     "spec": [
         BoolConv("motion", "binary_sensor", mi="3.1.85"),
-        # Converter("illuminance_lux", None, "0.3.85", "lux"),
-        Converter("illuminance", "sensor", mi="0.4.85"),
+        Converter("illuminance", "sensor", mi="0.3.85"),
+        # Converter("illuminance", "sensor", mi="0.4.85"),
         Battery, BatteryOrig
     ],
 }, {
@@ -493,6 +493,7 @@ DEVICES += [{
     ],
 }, {
     "lumi.magnet.acn001": ["Aqara", "Door/Window Sensor E1 CN", "MCCGQ14LM"],
+    "lumi.magnet.ac01": ["Aqara", "Door/Window Sensor P1", "MCCGQ13LM"],
     # "support": 5,
     "spec": [
         MapConv("contact", "binary_sensor", mi="2.p.1", map=INVERSE),
@@ -889,6 +890,15 @@ DEVICES += [{
         ZTuyaPowerOn,
     ],
 }, {
+    "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
+    "support": 4,
+    "spec": [
+        ZOnOffConv("plug", "switch"),
+        ZCurrent, ZPower, ZVoltagePoll,
+        ZEnergyConv("energy", "sensor", multiply=0.01),
+        ZTuyaPowerOn,
+    ],
+}, {
     "TS0115": ["UseeLink", "Power Strip", "SM-SO306E"],
     "support": 5,  # @AlexxIT
     "spec": [
@@ -898,6 +908,22 @@ DEVICES += [{
         ZOnOffConv("channel_4", "switch", ep=4),
         ZOnOffConv("usb", "switch", ep=7),
         ZTuyaPowerOn,
+    ],
+}, {
+    # tuya relay with neutral, 1 gang
+    "TS0001": ["Tuya", "Relay", "TS0001"],
+    "support": 4,
+    "spec": [
+        ZOnOffConv("switch", "switch", bind=True),
+        ZTuyaPowerOn,
+    ],
+}, {
+    # tuya relay with neutral, 2 gang
+    "TS0002": ["Tuya", "Relay", "TS0002"],
+    "support": 4,
+    "spec": [
+        ZOnOffConv("channel_1", "switch", ep=1, bind=True),
+        ZOnOffConv("channel_2", "switch", ep=2, bind=True),
     ],
 }, {
     # very simple relays
@@ -1091,7 +1117,6 @@ DEVICES += [{
     1694: ["Aqara", "Door Lock N100 (Bluetooth)", "ZNMS16LM"],
     1695: ["Aqara", "Door Lock N200", "ZNMS17LM"],
     2147: ["Xiaomi", "Water Leak Sensor", "SJWS01LM"],
-    2443: ["Xiaomi", "Door Sensor 2", "MCCGQ02HL"],
     2444: ["Xiaomi", "Door Lock", "XMZNMST02YD"],
     2455: ["Honeywell", "Smoke Alarm", "JTYJ-GD-03MI"],
     2480: ["Xiaomi", "Safe Box", "BGX-5/X1-3001"],
@@ -1121,6 +1146,13 @@ DEVICES += [{
         Converter("smoke", "binary_sensor", enabled=None),
         Converter("water_leak", "binary_sensor", enabled=None),
     ],
+    2443: ["Xiaomi", "Mi Door/Window Sensor 2", "MCCGQ02HL"],
+    "spec": [
+        MiBeacon, BLELight, BLEBattery,
+        Converter("contact", "binary_sensor"),
+    ],
+    "ttl": "3d",  # battery every 1 day
+
 }]
 
 ################################################################################

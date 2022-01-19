@@ -43,8 +43,8 @@ light.living_room_spot_left_3:
 #light.living_room_spot_right_3:
 # friendly_name: "Right Spot 3"
 
-light.12ed88b3dec2e000_light:
-  friendly_name: "Right Spots"
+#light.12ed88b3dec2e000_light:
+# friendly_name: "Right Spots"
 
 light.28d12721e0ee_light:
   friendly_name: "Right Spot 1"

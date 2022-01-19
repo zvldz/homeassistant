@@ -1,3 +1,18 @@
+script:
+  # dummy
+  reboot_ha1:
+    alias: "Reboot HA1"
+    sequence:
+      - delay: '00:00:02'
+
+  start_watchman:
+    alias: "Start watchman"
+    sequence:
+      - event: ad.watchman.audit
+        event_data:
+          create_file: true
+          send_notification: false
+
 automation:
   - alias: 'Notify when UPS goes on battery'
     initial_state: true

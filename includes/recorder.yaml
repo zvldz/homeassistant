@@ -4,12 +4,13 @@ auto_purge: false
 commit_interval: 30
 exclude:
   entities:
-    - sensor.uptime
     - sensor.time
     - sensor.time_date
     - sensor.date
     - sensor.date_time
-    - sensor.xiaomi_map
+    - camera.valetudo_rockrobo_map_data
+    - sensor.map_segments
+    - weather.openweathermap      
   domains:
     - updater
     - script

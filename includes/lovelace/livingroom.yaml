@@ -40,7 +40,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d0002677c89_switch
+            entity: switch.0x00158d0002677c89_plug
             size: 25%
             styles:
               card:

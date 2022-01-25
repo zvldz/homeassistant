@@ -58,6 +58,7 @@ CONF_DEVICE_TRACKER_SCAN_INTERVAL = "tracker_scan_interval"
 CONF_DEVICE_TRACKER_CONSIDER_HOME = "consider_home"
 CONF_DEVICE_DELETE_DEVICE = "delete device"
 CONF_PACKET = "packet"
+CONF_GATEWAY_ID = "gateway_id"
 CONFIG_IS_FLOW = "is_flow"
 
 SERVICE_CLEANUP_ENTRIES = "cleanup_entries"
@@ -742,6 +743,7 @@ MEASUREMENT_DICT = {
     'iBBQ-4'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "rssi"], [], []],
     'iBBQ-6'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "temperature probe 5", "temperature probe 6", "rssi"], [], []],
     'IBS-TH'                  : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'BEC07-5'                 : [["temperature", "humidity", "rssi"], [], []],
 }
 
 
@@ -832,6 +834,7 @@ MANUFACTURER_DICT = {
     'iBBQ-4'                  : 'Inkbird',
     'iBBQ-6'                  : 'Inkbird',
     'IBS-TH'                  : 'Inkbird',
+    'BEC07-5'                 : 'Jinou',
 }
 
 # Renamed model dictionary
@@ -848,6 +851,7 @@ REPORT_UNKNOWN_LIST = [
     "Govee",
     "Inkbird",
     "iNode",
+    "Jinou"
     "Kegtron",
     "Mi Scale",
     "Moat",

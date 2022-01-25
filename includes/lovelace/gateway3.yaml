@@ -130,7 +130,7 @@ cards:
             align: center
             modify: x+''
           - data: last_changed
-            name: Connected Since
+            name: Connected
             align: center
             modify: >
               var dt = new Date(x);
@@ -140,8 +140,7 @@ cards:
               hrs = (hrs < 10) ? "0" + hrs : hrs;
               min = (min < 10) ? "0" + min : min;
               sec = (sec < 10) ? "0" + sec : sec;
-              isFinite(dt) ? dt.toLocaleString(['ru-RU', 'en-US']) +
-              " (Up: " + hrs + ":" + min + ":" + sec + ")" : ""
+              isFinite(dt) ? hrs + ":" + min + ":" + sec  : ""
         css:
           table+: 'padding-top: 15px;'
           'tbody tr:nth-child(even)': 'background-color: #333333;'
@@ -234,16 +233,28 @@ cards:
         sort_by: mac
         columns:
           - data: friendly_name
-            name: Friendly Name
+            name: Name
             modify: 'x.replace(/ Ble$/,"")'
+          - data: gateway_name
+            name: Gateway
+            align: center
+            modify: x+''
           - data: mac
             name: MAC
             align: center
             modify: (x+'').replace(/(.{2}(?!$))/g,"$1:")
+          - data: available
+            name: Available
+            align: center
+            modify: x+''
           - data: msg_received
             name: Received
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
+          - data: last_msg
+            name: Last Msg
+            align: center
+            modify: x+''
           - data: state
             name: Last Seen
             align: center

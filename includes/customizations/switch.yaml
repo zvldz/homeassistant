@@ -1,14 +1,14 @@
-switch.0x158d0002677c89_switch:
+switch.0x00158d0002677c89_plug:
   friendly_name: "Socket 1"
   icon: "mdi:power-socket-au"
 
-sensor.0x158d0002677c89_power:
+sensor.0x00158d0002677c89_power:
   friendly_name: "Socket 1"
 
-sensor.0x158d0002677c89_zigbee:
+sensor.0xoo158d0002677c89_zigbee:
   friendly_name: "Socket 1"
 
-sensor.0x158d0002677c89_energy:
+sensor.0x00158d0002677c89_energy:
   friendly_name: "Socket 1"
 
 switch.bw_plug_1_relay:

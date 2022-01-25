@@ -51,6 +51,7 @@ cards:
         show_header_toggle: false
         entities:
           - input_boolean.gas_boiler_schedule
+          - script.auto_local_temperature_calibration_trv
 
   - type: vertical-stack
     cards:

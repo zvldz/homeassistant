@@ -5,7 +5,7 @@ switch.0x00158d0002677c89_plug:
 sensor.0x00158d0002677c89_power:
   friendly_name: "Socket 1"
 
-sensor.0xoo158d0002677c89_zigbee:
+sensor.0x00158d0002677c89_zigbee:
   friendly_name: "Socket 1"
 
 sensor.0x00158d0002677c89_energy:

@@ -24,6 +24,18 @@ cards:
 
       - type: horizontal-stack
         cards:
+          - entity: sensor.0x158d0002323856_temperature
+            type: custom:multiple-entity-row
+            name: Master Bedroom
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x158d0002323856_pressure
+                name: false
+              - entity: sensor.0x158d0002323856_humidity
+                name: false
+
+      - type: horizontal-stack
+        cards:
           - type: custom:mini-graph-card
             name: "Temperature"
             hour24: true
@@ -37,17 +49,4 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x158d0002323856_humidity
-
-      - type: horizontal-stack
-        cards:
-          - entity: sensor.0x158d0002323856_temperature
-            type: custom:multiple-entity-row
-            name: Master Bedroom
-            secondary_info: last-changed
-            entities:
-              - entity: sensor.0x158d0002323856_pressure
-                name: false
-              - entity: sensor.0x158d0002323856_humidity
-                name: false
-
 

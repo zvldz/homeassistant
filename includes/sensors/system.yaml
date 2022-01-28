@@ -7,8 +7,6 @@
     - type: disk_use_percent
       arg: /
 
-- platform: dnsip
-
 - platform: command_line
   name: "CPU Temperature"
   command: 'cat /sys/class/thermal/thermal_zone0/temp'
@@ -20,10 +18,6 @@
   command: grep -m 1 -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" /config/home-assistant.log | grep -o "[0-9]\+.[0-9]\+$" || echo -1
   scan_interval: 120
   unit_of_measurement: "sec"
-
-- platform: version
-  name: "HA Current"
-  scan_interval: 1800
 
 - platform: uptime
   name: "HA Online"

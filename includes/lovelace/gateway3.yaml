@@ -187,7 +187,7 @@ cards:
         entities:
           include:
             - sensor.*_zigbee
-        sort_by: ieee
+        sort_by: friendly_name
         columns:
           - data: friendly_name
             name: Name
@@ -264,7 +264,7 @@ cards:
           include:
             - sensor.*_ble
             - sensor.*_mesh
-        sort_by: mac
+        sort_by: friendly_name
         columns:
           - data: friendly_name
             name: Name

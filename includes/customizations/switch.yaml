@@ -142,20 +142,20 @@ switch.0x158d00022a8150_channel_1:
   icon: "mdi:light-switch"
 
 switch.0x158d00022a8150_channel_2:
-  friendly_name: "Hallway 3"
+  friendly_name: "Hallway 3 Switch"
   icon: "mdi:light-switch"
 
 sensor.0x158d00022a8150_power:
-  friendly_name: "Hallway 3"
+  friendly_name: "Hallway 3 Switch"
 
 sensor.0x158d00022a8150_energy:
-  friendly_name: "Hallway 3"
+  friendly_name: "Hallway 3 Switch"
 
 sensor.0x158d00022a8150_action:
-  friendly_name: "Hallway 3"
+  friendly_name: "Hallway 3 Switch"
 
 sensor.0x158d00022a8150_zigbee:
-  friendly_name: "Hallway 3"
+  friendly_name: "Hallway 3 Switch"
 
 #switch.sonoff_rf_br_1_sb_rf:
 #  friendly_name: "RF Sonoff"

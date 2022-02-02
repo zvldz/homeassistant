@@ -7,7 +7,6 @@
           true
         {% endif %}
 
-
 - sensor:
     - name: "Instance Name"
       state: !secret home_name

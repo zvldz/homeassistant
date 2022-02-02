@@ -93,7 +93,38 @@ cards:
               styles:
                 card:
                   - font-size: 14px
+#
+          - type: conditional
+            conditions:
+              - entity: sensor.instance_name
+                state: "HA2"
+            card:
+              type: custom:button-card
+              name: "Goto E1 CN"
+              icon: "mdi:router-wireless-settings"
+              tap_action:
+                action: navigate
+                navigation_path: "/config/devices/dashboard?historyBack=1&config_entry=6be3f5dc61c4a8f9c4ddf00435535174"
+              size: 15%
+              styles:
+                card:
+                  - font-size: 14px
 
+          - type: conditional
+            conditions:
+              - entity: sensor.instance_name
+                state: "HA1"
+            card:
+              type: custom:button-card
+              name: "Goto E1 CN"
+              icon: "mdi:router-wireless-settings"
+              tap_action:
+                action: navigate
+                navigation_path: "/config/devices/dashboard?historyBack=1&config_entry=447298eb862c17372a600337bfc99a16"
+              size: 15%
+              styles:
+                card:
+                  - font-size: 14px
 
       - type: 'custom:flex-table-card'
         clickable: true
@@ -200,10 +231,15 @@ cards:
             name: IEEE
             align: center
             modify: (x+'').toLowerCase()
-          - data: device_fw_ver
-            name: FW
+#         - data: device_fw_ver
+#           name: FW
+#           align: center
+#           modify: x+''
+          - data: update_available
+            name: OTA
             align: center
-            modify: x+''
+            prefix: '<style> cc { color: green; } </style>'
+            modify: 'if (x == "true") { "<cc>" + x + "</cc>" } else { typeof x === "string" ? x : "-" }'
           - data: nwk
             name: NWK
             align: center

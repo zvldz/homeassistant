@@ -134,7 +134,7 @@ script:
                 payload: '{{ calibration_local }}'
             - service: notify.climate_notify
               data:
-                message: "calibration_log [{{ namevalve }}] {{ states(objectsensortemperature) }} - {{ state_attr(objectvalve, 'local_temperature') }} + {{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }}"
+                message: "calibration_log [{{ namevalve }}] ({{ states(objectsensortemperature) }}) - ({{ state_attr(objectvalve, 'local_temperature') }}) + ({{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }})"
 
 automation:
   - alias: "Sync TRV with Boiler"

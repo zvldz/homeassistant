@@ -99,6 +99,15 @@ cards:
           - entity: sensor.0x158d00022515fe_illuminance
             type: custom:multiple-entity-row
             secondary_info: last-changed
+          - entity: binary_sensor.582d3460a918_motion
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.582d3460a918_illuminance
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.582d3460a918_light
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
 
       - type: custom:button-card
         name: "Timers"

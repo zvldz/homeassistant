@@ -16,8 +16,8 @@ template:
 automation:
   - alias: update_gw3_sensor_ota
     initial_state: true
-    mode: parallel
-    max: 100
+#   mode: parallel
+#   max: 100
     trigger:
       - platform: homeassistant
         event: start
@@ -41,7 +41,7 @@ automation:
       - condition: template
         value_template: "{{ (as_timestamp(now()) - as_timestamp(states('sensor.internal_ha_uptime'))) | int(0) > 10 }}"
 #     - condition: template
-#       value_template: "{{ (as_timestamp(now()) - as_timestamp(trigger.event.data.new_state.last_changed)) > 10 }}"
+#       value_template: "{{ (as_timestamp(now()) - as_timestamp(trigger.event.data.new_state.last_changed)) | int(0) > 10 }}"
       - condition: template
         value_template: "{{ trigger.event.data.entity_id.endswith('_zigbee') and state_attr(trigger.event.data.entity_id, 'tmp_update_flag') == none }}"
     action:
@@ -67,7 +67,7 @@ script:
             import json
 
             OTA_SENSOR='sensor.lumi_ota_list'
-            lumi_list =json.loads(hass.states.get(OTA_SENSOR).attributes['ota_list'])
+            lumi_list = json.loads(hass.states.get(OTA_SENSOR).attributes['ota_list'])
             gw3_devices = data['gw3_devices']
             # logger.info(f"update device(s): { gw3_devices }")
 
@@ -75,7 +75,7 @@ script:
                 device_fw_ver = hass.states.get(device).attributes['device_fw_ver']
                 device_model = hass.states.get(device).attributes['device_model']
                 device_ota_ver = 0
-                if device_model in lumi_list:
+                if device_fw_ver and device_model in lumi_list:
                     device_ota_ver = lumi_list[device_model]
                     state = hass.states.get(device).state
                     attrs = hass.states.get(device).attributes.copy()
@@ -90,8 +90,8 @@ script:
 
 
   update_sensor_ota:
-    mode: parallel
-    max: 100
+#   mode: parallel
+#   max: 100
     sequence:
       - service: python_script.exec
         data:

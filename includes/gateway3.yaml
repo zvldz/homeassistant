@@ -8,7 +8,7 @@ attributes_template: |
   }}}
 
 #gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
-gw3_command: "/data/gw3 -log=syslog,debug,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+#gw3_command: "/data/gw3 -log=syslog,debug,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
 
 logger:
   filename: xiaomi_gateway3.log       # default empty

@@ -4,12 +4,16 @@ group:
       - automation.ha_persistent_notification
       - automation.hacs_persistent_notification
       - automation.ha1_server_off_reserve_control
+      - automation.ha1_server_not_working
       - automation.check_ha1_on_start
       - automation.sync_input_boolean
       - automation.sync_thermostat_temperature
       - automation.gas_counter
       - automation.system_entity_change
       - automation.system_database_purge
+      - automation.telegram_msg_info
+      - automation.update_gw3_sensor_ota
+      - automation.update_gw3_zigbee_ota_fw
 #     - automation.system_start
 #     - automation.system_error_counter
 #     - automation.system_warning_counter
@@ -91,7 +95,8 @@ automation:
           - sensor.ha1_vacuum_notification
     condition:
       - condition: template
-        value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int(0)) > 0 }}'
+#       value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int(0)) > 0 }}'
+        value_template: '{{ (as_timestamp(now()) - as_timestamp(states("sensor.ha1_uptime"))) | int(0) > 90 }}'
     action:
       - service: >
           {% if trigger.to_state.state == 'on' and trigger.from_state.state == 'off' %}
@@ -119,6 +124,9 @@ automation:
       - platform: state
         entity_id: sensor.ha1_uptime
         from: "unavailable"
+      - platform: state
+        entity_id: sensor.ha1_uptime
+        from: "unknown"
     action:
       - delay: 00:00:30
       - service: notify.telegram
@@ -158,6 +166,19 @@ automation:
           message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
       - service: automation.turn_on
         entity_id: all
+
+  - alias: ha1_server_not_working
+    trigger:
+      - platform: state
+        entity_id: device_tracker.ha1
+        from: 'home'
+        to: 'not_home'
+#       for:
+#         minutes: 5
+    action:
+      - service: notify.telegram
+        data:
+          message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Need reboot !!!"
 
   - alias: sync_thermostat_temperature
     trigger:

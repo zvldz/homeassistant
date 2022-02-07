@@ -47,14 +47,6 @@ tts:
     service_name: google_say
     language: 'ru'
 
-#sonoff:
-#  username: !secret sonoff_username
-#  password: !secret sonoff_password
-#  mode: local
-#  reload: always
-
-python_script:
-
 switch:             !include_dir_merge_list includes/switches
 sensor:             !include_dir_merge_list includes/sensors
 binary_sensor:      !include_dir_merge_list includes/binary_sensors
@@ -85,5 +77,16 @@ counter:            !include includes/counter.yaml
 camera:             !include includes/camera.yaml
 scene:              !include includes/scenes.yaml
 rest_command:       !include includes/rest_command.yaml
+
+# custom integration
+python_script:
+watchman:           !include includes/watchman.yaml
 xiaomi_gateway3:    !include includes/gateway3.yaml
+
+#sonoff:
+#  username: !secret sonoff_username
+#  password: !secret sonoff_password
+#  mode: local
+#  reload: always
+
 

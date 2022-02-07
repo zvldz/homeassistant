@@ -1,5 +1,6 @@
 attributes_template: |
   {{{
+    "integration": "xiaomi_gateway3",
     "device_name": device.info.name,
     "device_fw_ver": device.fw_ver,
     "device_model": device.model,

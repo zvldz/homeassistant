@@ -5,14 +5,6 @@ script:
     sequence:
       - delay: '00:00:02'
 
-  start_watchman:
-    alias: "Start watchman"
-    sequence:
-      - event: ad.watchman.audit
-        event_data:
-          create_file: true
-          send_notification: false
-
 automation:
   - alias: 'Notify when UPS goes on battery'
     initial_state: true
@@ -109,7 +101,8 @@ sensor:
     state_topic: "stat/tasmota_AA4E10/STATUS12"
     value_template: "{{ value_json['StatusSTK'].Exception }}"
     json_attributes_topic: "stat/tasmota_AA4E10/STATUS12"
-    json_attributes_template: "{{ value_json | tojson }}"
+#   json_attributes_template: "{{ value_json | tojson }}"
+    json_attributes_template: "{{ value_json | tojson if value_json else 'None' }}"
     icon: "mdi:bug"
 
   - platform: command_line

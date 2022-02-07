@@ -1,0 +1,13 @@
+report_path: /config/watchman_report.txt
+columns_width: [ 40, 7, 60 ]
+ignored_files:
+  - /config/esphome/*
+  - /config/custom_components/*
+  - /config/www/*
+ignored_items:
+  - timer.cancelled
+  - timer.finished
+  - timer.started
+  - timer.restarted
+  - timer.paused
+  - sensor.bedroom_temperature

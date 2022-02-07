@@ -27,3 +27,6 @@ exclude:
     - binary_sensor.*_trv_*
     - sensor.*_trv_*
     - switch.*_trv_*
+    - sensor.*_zigbee
+    - sensor.*_ble
+    - sensor.*_mesh

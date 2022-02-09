@@ -129,6 +129,7 @@ DEVICES = [{
     ],
 }, {
     "lumi.gateway.aqcn02": ["Aqara", "Hub E1 CN", "ZHWG16LM"],
+    "lumi.gateway.aqcn03": ["Aqara", "Hub E1 EU", "HE1-G01"],
     "support": 3,  # @AlexxIT
     "spec": [
         MapConv("pair", mi="8.0.2109", map={60: True, 0: False}, parent="data"),
@@ -150,9 +151,6 @@ DEVICES = [{
 
         GatewayStats
     ],
-}, {
-    "lumi.gateway.aqcn03": ["Aqara", "Hub E1 EU", "HE1-G01"],
-    "support": 1,
 }]
 
 ################################################################################
@@ -489,7 +487,6 @@ DEVICES += [{
     ],
 }, {
     "lumi.magnet.acn001": ["Aqara", "Door/Window Sensor E1 CN", "MCCGQ14LM"],
-    "lumi.magnet.ac01": ["Aqara", "Door/Window Sensor P1", "MCCGQ13LM"],
     # "support": 5,
     "spec": [
         MapConv("contact", "binary_sensor", mi="2.p.1", map=INVERSE),
@@ -886,15 +883,6 @@ DEVICES += [{
         ZTuyaPowerOn,
     ],
 }, {
-    "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("plug", "switch"),
-        ZCurrent, ZPower, ZVoltagePoll,
-        ZEnergyConv("energy", "sensor", multiply=0.01, enabled=None),  # not working now
-        ZTuyaPowerOn,
-    ],
-}, {
     "TS0115": ["UseeLink", "Power Strip", "SM-SO306E"],
     "support": 5,  # @AlexxIT
     "spec": [
@@ -904,22 +892,6 @@ DEVICES += [{
         ZOnOffConv("channel_4", "switch", ep=4),
         ZOnOffConv("usb", "switch", ep=7),
         ZTuyaPowerOn,
-    ],
-}, {
-    # tuya relay with neutral, 1 gang
-    "TS0001": ["Tuya", "Relay", "TS0001"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("switch", "switch", bind=True),
-        ZTuyaPowerOn,
-    ],
-}, {
-    # tuya relay with neutral, 2 gang
-    "TS0002": ["Tuya", "Relay", "TS0002"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("channel_1", "switch", ep=1, bind=True),
-        ZOnOffConv("channel_2", "switch", ep=2, bind=True),
     ],
 }, {
     # very simple relays

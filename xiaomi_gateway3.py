@@ -1,6 +1,7 @@
 from custom_components.xiaomi_gateway3.core.converters.devices import *
 
 DEVICES = [{
+    # Neo Power Plug NAS-WR01B
     "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
     "support": 4,
     "spec": [

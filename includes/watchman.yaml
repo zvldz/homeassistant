@@ -1,5 +1,6 @@
 report_path: /config/watchman_report.txt
-columns_width: [ 40, 7, 60 ]
+columns_width: [ 60, 7, 60 ]
+friendly_names: true
 ignored_files:
   - /config/esphome/*
   - /config/custom_components/*

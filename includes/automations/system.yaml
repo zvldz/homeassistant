@@ -15,7 +15,7 @@
       event_type: entity_registry_updated
   condition:
     - |
-        {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg']  -%}
+        {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg', 'm2007j20cg']  -%}
         {% set result = namespace(bool=True) -%}
         {% if trigger.event.data.action == 'update' -%}
           {% for pattern in patterns -%}

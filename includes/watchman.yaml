@@ -12,3 +12,4 @@ ignored_items:
   - timer.restarted
   - timer.paused
   - sensor.bedroom_temperature
+  - sensor.ha1_

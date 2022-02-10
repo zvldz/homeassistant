@@ -25,6 +25,9 @@ POWER_POLL = 9 * 60  # 9 minutes
 
 # all legacy names for backward compatibility with 1st version
 LEGACY_ATTR_ID = {
+    "channel_1": "channel 1",
+    "channel_2": "channel 2",
+    "channel_3": "channel 3",
     "gas_density": "gas density",
     "group": "light",
     "outlet": "switch",
@@ -54,7 +57,7 @@ class XDevice:
             assert RE_NWK.match(nwk)
         elif type == BLE:
             assert isinstance(model, int)
-            assert did.startswith("blt.")
+            assert did.startswith("blt.") or did.isdecimal()
             assert RE_NETWORK_MAC.match(mac)
         elif model == MESH_GROUP_MODEL:
             assert did.startswith("group.")
@@ -248,6 +251,10 @@ class XDevice:
            - STAT_GLOBALS list
            - converters childs list (always sensor)
         """
+        if entities is None:
+            self.converters = self.info.spec
+            return
+
         self.converters = self.info.spec.copy()
 
         for attr, domain in entities.items():

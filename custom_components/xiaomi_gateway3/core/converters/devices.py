@@ -100,7 +100,8 @@ DEVICES = [{
     "spec": [
         # write pair=60 => report discovered_mac => report 8.0.2166? =>
         # write pair_command => report added_device => write pair=0
-        MapConv("pair", mi="8.0.2109", map={60: True, 0: False}, parent="data"),
+        MapConv("pair", mi="8.0.2109", map={60: True, 0: False},
+                parent="data"),
         MapConv("alarm", "alarm_control_panel", mi="3.p.1", map=GATE_ALARM),
         BoolConv("alarm_trigger", mi="3.p.22", parent="alarm"),
 
@@ -132,7 +133,8 @@ DEVICES = [{
     "lumi.gateway.aqcn03": ["Aqara", "Hub E1 EU", "HE1-G01"],
     "support": 3,  # @AlexxIT
     "spec": [
-        MapConv("pair", mi="8.0.2109", map={60: True, 0: False}, parent="data"),
+        MapConv("pair", mi="8.0.2109", map={60: True, 0: False},
+                parent="data"),
 
         Converter("discovered_mac", mi="8.0.2110", parent="data"),
         Converter("pair_command", mi="8.0.2111", parent="data"),
@@ -304,11 +306,13 @@ DEVICES += [{
 }, {
     # temperature and humidity sensor
     "lumi.sensor_ht": ["Xiaomi", "TH Sensor", "WSDCGQ01LM"],
-    "spec": [Temperature, Humidity, Battery, BatteryLow, BatteryOrig, ChipTemp],
+    "spec": [
+        Temperature, Humidity, Battery, BatteryLow, BatteryOrig, ChipTemp
+    ],
 }, {
     # temperature, humidity and pressure sensor
     "lumi.weather": ["Aqara", "TH Sensor", "WSDCGQ11LM"],
-    "lumi.sensor_ht.agl02": ["Aqara", "TH Sensor", "WSDCGQ12LM"],
+    "lumi.sensor_ht.agl02": ["Aqara", "TH Sensor T1", "WSDCGQ12LM"],
     "spec": [
         Temperature, Humidity, Battery, BatteryOrig,
         MathConv("pressure", "sensor", mi="0.3.85", multiply=0.01),
@@ -513,7 +517,9 @@ DEVICES += [{
     ],
 }, {
     # https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-monitor:0000A008:lumi-acn01:1
-    "lumi.airmonitor.acn01": ["Aqara", "Air Quality Monitor CN", "VOCKQJK11LM"],
+    "lumi.airmonitor.acn01": [
+        "Aqara", "Air Quality Monitor CN", "VOCKQJK11LM"
+    ],
     # "support": 5,
     "spec": [
         Converter("temperature", "sensor", mi="3.p.1"),  # celsius
@@ -534,7 +540,7 @@ DEVICES += [{
             0: "stop", 1: "close", 2: "open"
         }),
         Converter("target_position", mi="2.p.4"),
-        Converter("position", mi="2.p.5"),
+        CurtainPosConv("position", mi="2.p.5"),
         MapConv("run_state", mi="2.p.6", map=RUN_STATE),
         Converter("battery", "sensor", mi="3.p.4"),  # percent
         Converter("motor_reverse", "switch", mi="2.p.7", enabled=False),
@@ -557,7 +563,7 @@ DEVICES += [{
         ButtonMIConv("button", mi="2.e.1", value=1),  # single
         ButtonMIConv("button", mi="2.e.2", value=2),  # double
         ButtonMIConv("button", mi="2.e.3", value=16),  # long
-        Converter("battery", "sensor", mi="3.p.2"),
+        BatteryConv("battery", "sensor", mi="3.p.2"),
     ],
 }, {
     "lumi.remote.acn004": ["Aqara", "Double Wall Button E1 CN", "WXKG17LM"],
@@ -570,7 +576,7 @@ DEVICES += [{
         ButtonMIConv("button_2", mi="7.e.2", value=2),  # double
         ButtonMIConv("button_2", mi="7.e.3", value=16),  # long
         ButtonMIConv("button_both", mi="8.e.1", value=4),  # single
-        Converter("battery", "sensor", mi="3.p.2"),
+        BatteryConv("battery", "sensor", mi="3.p.2"),
     ],
 }]
 
@@ -609,7 +615,9 @@ DEVICES += [{
                 enabled=False),
     ],
 }, {
-    "lumi.switch.b1lc04": ["Aqara", "Single Wall Switch E1 (no N)", "QBKG38LM"],
+    "lumi.switch.b1lc04": [
+        "Aqara", "Single Wall Switch E1 (no N)", "QBKG38LM"
+    ],
     # "support": 5,
     "spec": [
         Converter("switch", "switch", mi="2.p.1"),
@@ -623,7 +631,9 @@ DEVICES += [{
         MapConv("mode", "select", mi="10.p.1", map=SWITCH_MODE, enabled=False)
     ],
 }, {
-    "lumi.switch.b2lc04": ["Aqara", "Double Wall Switch E1 (no N)", "QBKG39LM"],
+    "lumi.switch.b2lc04": [
+        "Aqara", "Double Wall Switch E1 (no N)", "QBKG39LM"
+    ],
     # "support": 5,
     "spec": [
         Converter("channel_1", "switch", mi="2.p.1"),
@@ -894,6 +904,34 @@ DEVICES += [{
         ZTuyaPowerOn,
     ],
 }, {
+    # Neo Power Plug NAS-WR01B
+    "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
+    "support": 3,
+    "spec": [
+        ZOnOffConv("plug", "switch"),
+        ZCurrent, ZPower, ZVoltagePoll,
+        # not working now
+        ZEnergyConv("energy", "sensor", multiply=0.01, enabled=None),
+        ZTuyaPowerOn,
+    ],
+}, {
+    # tuya relay with neutral, 1 gang
+    "TS0001": ["Tuya", "Relay", "TS0001"],
+    "support": 4,
+    "spec": [
+        ZOnOffConv("switch", "switch", bind=True),
+        ZTuyaPowerOn,
+    ],
+}, {
+    # tuya relay with neutral, 2 gang
+    "TS0002": ["Tuya", "Relay", "TS0002"],
+    "support": 3,  # @zvldz
+    "spec": [
+        ZOnOffConv("channel_1", "switch", ep=1, bind=True),
+        ZOnOffConv("channel_2", "switch", ep=2, bind=True),
+        ZTuyaPowerOn, ZTuyaMode,
+    ],
+}, {
     # very simple relays
     "01MINIZB": ["Sonoff", "Mini", "ZBMINI"],
     "SA-003-Zigbee": ["eWeLink", "Zigbee OnOff Controller", "SA-003-Zigbee"],
@@ -945,10 +983,15 @@ DEVICES += [{
     "SML001": ["Philips", "Hue motion sensor", "9290012607"],
     "support": 4,  # @AlexxIT TODO: sensitivity, led
     "spec": [
-        ZOccupancyConv("occupancy", "binary_sensor", ep=2, bind=True,
-                       report=True),
-        ZIlluminanceConv("illuminance", "sensor", ep=2, bind=True, report=True),
-        ZTemperatureConv("temperature", "sensor", ep=2, bind=True, report=True),
+        ZOccupancyConv(
+            "occupancy", "binary_sensor", ep=2, bind=True, report=True
+        ),
+        ZIlluminanceConv(
+            "illuminance", "sensor", ep=2, bind=True, report=True
+        ),
+        ZTemperatureConv(
+            "temperature", "sensor", ep=2, bind=True, report=True
+        ),
         ZBatteryConv("battery", "sensor", ep=2, bind=True, report=True),
         ZOccupancyTimeoutConv(
             "occupancy_timeout", "number", ep=2, enabled=False
@@ -988,7 +1031,9 @@ DEVICES += [{
         ZBrightnessConv("brightness", parent="light"),
     ],
 }, {
-    "TRADFRI remote control": ["IKEA", "TRADFRI remote control", "E1524/E1810"],
+    "TRADFRI remote control": [
+        "IKEA", "TRADFRI remote control", "E1524/E1810"
+    ],
     "support": 1,
     "spec": [
         IKEARemoteConv1("action", "sensor", bind=True),
@@ -1056,7 +1101,7 @@ DEVICES += [{
     # logs: https://github.com/AlexxIT/XiaomiGateway3/issues/180
     2701: ["Xiaomi", "Motion Sensor 2", "RTCGQ02LM"],  # 15,4119,4120
     "spec": [
-        MiBeacon, BLEMotion, BLEIlluminance, BLEBattery,
+        MiBeacon, BLEMotion, BLELight, BLEBattery,
         Converter("action", "sensor", enabled=False),
         Converter("idle_time", "sensor", enabled=False),
     ],
@@ -1188,6 +1233,7 @@ DEVICES += [{
 }, {
     2007: ["Unknown", "Mesh Switch Controller", "lemesh.switch.sw0a01"],
     3150: ["XinGuang", "Mesh Switch", "wainft.switch.sw0a01"],
+    3169: ["Unknown", "Mesh Switch Controller", "lemesh.switch.sw0a02"],
     "spec": [
         Converter("switch", "switch", mi="2.p.1"),
     ],
@@ -1279,6 +1325,13 @@ DEVICES += [{
         MapConv("power_mode", "select", mi="2.p.2", map={
             0: "auto", 1: "battery", 2: "usb"
         }, enabled=False)
+    ],
+}, {
+    # urn:miot-spec-v2:device:light:0000A001:yeelink-nl2:1:0000C81D 米家智能光感夜灯
+    4736: ["Xiaomi", "Mesh Night Light", "MJYD05YL"],
+    "spec": [
+        Converter("switch", "light", mi="2.p.1"),  # bool
+        BoolConv("light", "binary_sensor", mi="3.p.1")  # uint8 0-Dark 1-Bright
     ],
 }, {
     "default": "mesh",  # default Mesh device

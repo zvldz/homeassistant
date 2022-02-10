@@ -1,32 +1,6 @@
 from custom_components.xiaomi_gateway3.core.converters.devices import *
 
 DEVICES = [{
-    # Neo Power Plug NAS-WR01B
-    "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("plug", "switch"),
-        ZCurrent, ZPower, ZVoltagePoll,
-        ZEnergyConv("energy", "sensor", multiply=0.01, enabled=None),  # not working now
-        ZTuyaPowerOn,
-    ],
-}, {
-    # tuya relay with neutral, 1 gang
-    "TS0001": ["Tuya", "Relay", "TS0001"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("switch", "switch", bind=True),
-        ZTuyaPowerOn,
-    ],
-}, {
-    # tuya relay with neutral, 2 gang
-    "TS0002": ["Tuya", "Relay", "TS0002"],
-    "support": 4,
-    "spec": [
-        ZOnOffConv("channel_1", "switch", ep=1, bind=True),
-        ZOnOffConv("channel_2", "switch", ep=2, bind=True),
-    ],
-}, {
     # https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:motion-sensor:0000A014:lumi-agl04:1:0000C813
     # for spec names Fibaro has good example: https://manuals.fibaro.com/motion-sensor/
     "lumi.motion.agl04": ["Aqara", "Precision Motion Sensor EU", "RTCGQ13LM"],

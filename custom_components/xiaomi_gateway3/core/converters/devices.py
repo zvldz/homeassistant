@@ -85,7 +85,6 @@ Support levels:
 Nice project with MIoT spec description: https://home.miot-spec.com/
 """
 from .base import *
-from .const import *
 from .mibeacon import *
 from .stats import *
 from .zigbee import *
@@ -108,7 +107,7 @@ DEVICES = [{
         Converter("discovered_mac", mi="8.0.2110", parent="data"),
         Converter("pair_command", mi="8.0.2111", parent="data"),
         Converter("added_device", mi="8.0.2084", parent="data"),
-        Converter("remove_did", mi="8.0.2082", parent="data"),
+        RemoveDIDConv("remove_did", mi="8.0.2082", parent="data"),
 
         # also updated from child devices OTAConv
         Converter("ota_progress", parent="data"),
@@ -120,7 +119,9 @@ DEVICES = [{
         MapConv("command", "select", map=GW3_COMMANDS),
         Converter("data", "select"),
 
-        CloudLinkConv("cloud_link", "binary_sensor", enabled=False),
+        CloudLinkConv(
+            "cloud_link", "binary_sensor", mi="8.0.2155", enabled=False
+        ),
         BoolConv("led", "switch", mi="6.p.6", enabled=False),
 
         GatewayStats,
@@ -312,7 +313,6 @@ DEVICES += [{
 }, {
     # temperature, humidity and pressure sensor
     "lumi.weather": ["Aqara", "TH Sensor", "WSDCGQ11LM"],
-    "lumi.sensor_ht.agl02": ["Aqara", "TH Sensor T1", "WSDCGQ12LM"],
     "spec": [
         Temperature, Humidity, Battery, BatteryOrig,
         MathConv("pressure", "sensor", mi="0.3.85", multiply=0.01),
@@ -487,7 +487,7 @@ DEVICES += [{
         Converter("illuminance", "sensor", mi="2.p.1"),
         BatteryConv("battery", "sensor", mi="3.p.1"),  # voltage, mV
         # new gw firmwares has a bug - don't bind power cluster
-        ZBatteryVoltConv("battery", bind=True, report=True),
+        # ZBatteryVoltConv("battery", bind=True, report=True),
     ],
 }, {
     "lumi.magnet.acn001": ["Aqara", "Door/Window Sensor E1 CN", "MCCGQ14LM"],
@@ -496,6 +496,16 @@ DEVICES += [{
         MapConv("contact", "binary_sensor", mi="2.p.1", map=INVERSE),
         BatteryConv("battery", "sensor", mi="3.p.2"),  # voltage, mV
         MapConv("battery_low", "binary_sensor", mi="3.p.1", map=BATTERY_LOW,
+                enabled=False),
+    ],
+}, {
+    "lumi.sensor_ht.agl02": ["Aqara", "TH Sensor T1", "WSDCGQ12LM"],
+    "spec": [
+        Converter("temperature", "sensor", mi="2.p.1"),  # celsius
+        Converter("humidity", "sensor", mi="2.p.2"),  # percentage
+        Converter("pressure", "sensor", mi="2.p.3"),  # kilopascal
+        BatteryConv("battery", "sensor", mi="3.p.1"),  # voltage, mV
+        MapConv("battery_low", "binary_sensor", mi="4.p.1", map=BATTERY_LOW,
                 enabled=False),
     ],
 }, {
@@ -888,7 +898,9 @@ DEVICES += [{
     "support": 5,  # @AlexxIT
     "spec": [
         ZOnOffConv("plug", "switch"),
-        ZCurrent, ZPower, ZVoltagePoll,  # once per 60 seconds
+        ZVoltageConv("voltage", "sensor", poll=True),  # once per 60 seconds
+        ZCurrentConv("current", "sensor", multiply=0.001),
+        ZPowerConv("power", "sensor"),
         ZEnergyConv("energy", "sensor", multiply=0.01),  # once per 5 minutes
         ZTuyaPowerOn,
     ],
@@ -906,13 +918,19 @@ DEVICES += [{
 }, {
     # Neo Power Plug NAS-WR01B
     "TS011F": ["Neo", "Power Plug", "NAS-WR01B"],
-    "support": 3,
+    "support": 5,
     "spec": [
         ZOnOffConv("plug", "switch"),
-        ZCurrent, ZPower, ZVoltagePoll,
-        # not working now
-        ZEnergyConv("energy", "sensor", multiply=0.01, enabled=None),
-        ZTuyaPowerOn,
+        # default gateway software binds electrical_measurement and
+        # smartenergy_metering clusters, no need to repeat it
+        ZVoltageConv("voltage", "sensor", report="5s 1h 1"),
+        ZCurrentConv("current", "sensor", report="5s 1h 1", multiply=0.001),
+        ZPowerConv("power", "sensor", report="5s 1h 1"),
+        ZEnergyConv("energy", "sensor", report="5s 1h 1", multiply=0.01),
+        ZTuyaPowerOnConv("power_on_state", "select", enabled=False),
+        ZTuyaLEDModeConv("led", "select", enabled=False),
+        ZTuyaChildModeConv("child_mode", "switch", enabled=False),
+        ZTuyaPlugModeConv("mode", "select", enabled=False)
     ],
 }, {
     # tuya relay with neutral, 1 gang
@@ -929,7 +947,19 @@ DEVICES += [{
     "spec": [
         ZOnOffConv("channel_1", "switch", ep=1, bind=True),
         ZOnOffConv("channel_2", "switch", ep=2, bind=True),
-        ZTuyaPowerOn, ZTuyaMode,
+        ZTuyaPowerOn,
+        ZTuyaPlugModeConv("mode", "select", enabled=False),
+    ],
+}, {
+    "TS004F": ["Tuya", "Wireless Four Button", "RSH-Zigbee-SC04"],
+    "spec": [
+        ZTuyaButtonConfig("action", "sensor"),
+        ZTuyaButtonConv("button_1", ep=1, bind=True),
+        ZTuyaButtonConv("button_2", ep=2, bind=True),
+        ZTuyaButtonConv("button_3", ep=3, bind=True),
+        ZTuyaButtonConv("button_4", ep=4, bind=True),
+        ZBatteryConv("battery", "sensor", bind=True),
+        ZTuyaButtonModeConv("mode", "select", enabled=False),
     ],
 }, {
     # very simple relays
@@ -946,7 +976,7 @@ DEVICES += [{
 }, {
     "Lamp_01": ["Ksentry Electronics", "OnOff Controller", "KS-SM001"],
     "spec": [
-        ZOnOffConv("switch", "switch", ep=11, bind=True, report=True),
+        ZOnOffConv("switch", "switch", ep=11, bind=True, report="0s 1h 0"),
     ]
 }, {
     "WB01": ["Sonoff", "Button", "SNZB-01"],
@@ -967,9 +997,9 @@ DEVICES += [{
     "spec": [
         # temperature, humidity and battery binds by default
         # report config for battery_voltage also by default
-        ZTemperatureConv("temperature", "sensor", report=True),
-        ZHumidityConv("humidity", "sensor", report=True),
-        ZBatteryConv("battery", "sensor", report=True),
+        ZTemperatureConv("temperature", "sensor", report="10s 1h 100"),
+        ZHumidityConv("humidity", "sensor", report="10s 1h 100"),
+        ZBatteryConv("battery", "sensor", report="1h 12h 0"),
     ],
 }, {
     # wrong zigbee model, some devices have model TH01 (ewelink bug)
@@ -984,15 +1014,15 @@ DEVICES += [{
     "support": 4,  # @AlexxIT TODO: sensitivity, led
     "spec": [
         ZOccupancyConv(
-            "occupancy", "binary_sensor", ep=2, bind=True, report=True
+            "occupancy", "binary_sensor", ep=2, bind=True, report="0s 1h 0"
         ),
         ZIlluminanceConv(
-            "illuminance", "sensor", ep=2, bind=True, report=True
+            "illuminance", "sensor", ep=2, bind=True, report="10s 1h 5"
         ),
         ZTemperatureConv(
-            "temperature", "sensor", ep=2, bind=True, report=True
+            "temperature", "sensor", ep=2, bind=True, report="10s 1h 100"
         ),
-        ZBatteryConv("battery", "sensor", ep=2, bind=True, report=True),
+        ZBatteryConv("battery", "sensor", ep=2, bind=True, report="1h 12h 0"),
         ZOccupancyTimeoutConv(
             "occupancy_timeout", "number", ep=2, enabled=False
         ),
@@ -1025,6 +1055,7 @@ DEVICES += [{
     "TRADFRI bulb E27 W opal 1000lm": [
         "IKEA", "Bulb E27 1000 lm", "LED1623G12"
     ],
+    "TRADFRI bulb E27 WW 806lm": ["IKEA", "Bulb E27 806 lm", "LED1836G9"],
     "support": 3,  # @AlexxIT TODO: tests, effect?
     "spec": [
         ZOnOffConv("light", "light"),
@@ -1127,6 +1158,13 @@ DEVICES += [{
     "spec": [MiBeacon, BLEAction, BLESmoke, BLEBattery],
     "ttl": "15m",  # battery every 4:30 min
 }, {
+    2147: ["Xiaomi", "Water Leak Sensor", "SJWS01LM"],
+    "spec": [
+        MiBeacon, BLEWaterLeak, BLEBattery,
+        Converter("action", "sensor", enabled=False),
+    ],
+    "ttl": "725m"  # battery every 4 hour
+}, {
     # BLE devices can be supported witout spec. New spec will be added
     # "on the fly" when device sends them. But better to rewrite right spec for
     # each device
@@ -1139,7 +1177,6 @@ DEVICES += [{
     1433: ["Xiaomi", "Door Lock", "MJZNMS03LM"],
     1694: ["Aqara", "Door Lock N100 (Bluetooth)", "ZNMS16LM"],
     1695: ["Aqara", "Door Lock N200", "ZNMS17LM"],
-    2147: ["Xiaomi", "Water Leak Sensor", "SJWS01LM"],
     2444: ["Xiaomi", "Door Lock", "XMZNMST02YD"],
     2480: ["Xiaomi", "Safe Box", "BGX-5/X1-3001"],
     3051: ["Aqara", "Door Lock D100", "ZNMS20LM"],
@@ -1234,6 +1271,7 @@ DEVICES += [{
     2007: ["Unknown", "Mesh Switch Controller", "lemesh.switch.sw0a01"],
     3150: ["XinGuang", "Mesh Switch", "wainft.switch.sw0a01"],
     3169: ["Unknown", "Mesh Switch Controller", "lemesh.switch.sw0a02"],
+    4252: ["Unknown", "Mesh Switch", "dwdz.switch.sw0a01"],
     "spec": [
         Converter("switch", "switch", mi="2.p.1"),
     ],
@@ -1335,5 +1373,7 @@ DEVICES += [{
     ],
 }, {
     "default": "mesh",  # default Mesh device
-    "spec": [],
+    "spec": [
+        Converter("switch", "switch", mi="2.p.1", enabled=None),  # bool
+    ],
 }]

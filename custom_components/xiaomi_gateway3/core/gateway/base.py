@@ -3,6 +3,7 @@ import re
 from logging import Logger
 from typing import Callable, Dict, List, Optional
 
+from ..converters import Converter
 from ..device import XDevice
 from ..mini_miio import AsyncMiIO
 from ..mini_mqtt import MiniMQTT
@@ -113,6 +114,11 @@ class GatewayBase:
             _, domain = domain.rsplit(".", 1)
         self.setups[domain] = handler
 
+    def setup_entity(self, domain: str, device: XDevice, conv: Converter):
+        handler = self.setups.get(domain)
+        if handler:
+            handler(self, device, conv)
+
     def add_device(self, did: str, device: XDevice):
         if did not in self.devices:
             self.devices[did] = device
@@ -128,6 +134,10 @@ class GatewayBase:
         #     # don't setup if device already has setup entities
         #     self.debug_device(device, "Join to gateway", device.model)
         #     return
+
+        # don't setup device from second gateway
+        if len(device.gateways) > 1:
+            return
 
         device.setup_entitites(self, stats=self.stats_enable)
         self.debug_device(

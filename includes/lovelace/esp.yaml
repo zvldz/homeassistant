@@ -154,20 +154,6 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Shelly Firmware"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: custom:auto-entities
-        card:
-          type: entities
-        filter:
-          include:
-            - entity_id: "binary_sensor.*_firmware_update"
-              sort: entity_id
-
-      - type: custom:button-card
         name: "Switches"
         styles:
           card:
@@ -199,6 +185,21 @@ cards:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
                   sort: entity_id
+
+      - type: custom:button-card
+        name: "Shelly Firmware"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: "binary_sensor.*_firmware_update"
+              sort: entity_id
+
 
 #  - type: vertical-stack
 #    cards:

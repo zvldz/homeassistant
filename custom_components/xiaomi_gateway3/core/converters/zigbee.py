@@ -6,8 +6,8 @@ import zigpy.quirks
 from zigpy.const import SIG_ENDPOINTS
 from zigpy.device import Device
 
-from .base import Converter, MathConv
-from .const import HOUR, HOUR12
+from .base import Converter, parse_time
+from .const import *
 from .silabs import *
 
 if TYPE_CHECKING:
@@ -44,16 +44,6 @@ def generate_device(manufacturer: str, model: str) -> Optional[Device]:
 # Base (global) converters
 ################################################################################
 
-# default reporting settings
-REPORTING = {
-    "temperature:measured_value": [10, HOUR, 100],
-    "humidity:measured_value": [10, HOUR, 100],
-    "power:battery_percentage_remaining": [HOUR, HOUR12, 0],
-    "power:battery_voltage": [HOUR, HOUR12, 0],
-    "occupancy:occupancy": [0, HOUR, 0],
-    "illuminance:measured_value": [10, HOUR, 5]
-}
-
 
 @dataclass
 class ZConverter(Converter):
@@ -61,7 +51,7 @@ class ZConverter(Converter):
     ep: int = 1
     zattr = None
     bind: bool = None
-    report: Union[bool, list] = None
+    report: str = None
 
     def decode(self, device: 'XDevice', payload: dict, value: dict):
         if value["endpoint"] == self.ep and self.zattr in value:
@@ -79,10 +69,13 @@ class ZConverter(Converter):
             payload.setdefault("commands", []).extend(cmd)
 
         if self.report:
-            args = REPORTING.get(f"{self.zigbee}:{self.zattr}") \
-                if isinstance(self.report, bool) else self.report
+            mint, maxt, change = self.report.split(" ")
+            mint = int(parse_time(mint))
+            maxt = int(parse_time(maxt))
+            change = int(change)
             cmd = zdb_report(
-                device.nwk, self.ep, self.zigbee, self.attr, *args
+                device.nwk, self.ep, self.zigbee, self.zattr,
+                mint, maxt, change,
             )
             payload.setdefault("commands", []).extend(cmd)
 
@@ -93,6 +86,36 @@ class ZBoolConv(ZConverter):
     def decode(self, device: 'XDevice', payload: dict, value: dict):
         if value["endpoint"] == self.ep and self.zattr in value:
             payload[self.attr] = bool(value[self.zattr])
+
+    def encode(self, device: "XDevice", payload: dict, value: bool):
+        cmd = zcl_write(
+            device.nwk, self.ep, self.zigbee, self.zattr, int(value), type=0x10
+        )
+        payload.setdefault("commands", []).extend(cmd)
+
+
+class ZMapConv(ZConverter):
+    map = {}
+
+    def decode(self, device: 'XDevice', payload: dict, value: dict):
+        if self.zattr in value:
+            payload[self.attr] = self.map.get(value[self.zattr])
+
+    def encode(self, device: "XDevice", payload: dict, value: str):
+        v = next(k for k, v in self.map.items() if v == value)
+        cmd = zcl_write(
+            device.nwk, self.ep, self.zigbee, self.zattr, v, type=0x30
+        )
+        payload.setdefault("commands", []).extend(cmd)
+
+
+@dataclass
+class ZMathConv(ZConverter):
+    multiply: float = 1
+
+    def decode(self, device: 'XDevice', payload: dict, value: dict):
+        if value["endpoint"] == self.ep and self.zattr in value:
+            payload[self.attr] = value[self.zattr] * self.multiply
 
 
 class ZOnOffConv(ZBoolConv):
@@ -130,30 +153,33 @@ class ZColorTempConv(ZConverter):
         payload.setdefault("commands", []).extend(cmd)
 
 
-@dataclass
-class ZElectricalConv(MathConv):
+class ZElectricalConv(ZMathConv):
     zigbee = "electrical_measurement"
-    zattr: str = None
-
-    def decode(self, device: "XDevice", payload: dict, value: dict):
-        if self.zattr in value:
-            super().decode(device, payload, value[self.zattr])
 
     def read(self, device: "XDevice", payload: dict):
+        # we can read three attrs from one cluster with single call
         cmd = zcl_read(
-            device.nwk, 1, self.zigbee, "rms_voltage", "rms_current",
+            device.nwk, self.ep, self.zigbee, "rms_voltage", "rms_current",
             "active_power"
         )
         payload.setdefault("commands", []).extend(cmd)
 
 
-class ZIlluminanceConv(ZConverter):
-    zigbee = "illuminance"
-    zattr = "measured_value"
+class ZVoltageConv(ZElectricalConv):
+    zattr = "rms_voltage"
 
-    def decode(self, device: 'XDevice', payload: dict, value: dict):
-        if isinstance(value.get(self.zattr), int):
-            payload[self.attr] = value[self.zattr] / 100
+
+class ZCurrentConv(ZElectricalConv):
+    zattr = "rms_current"
+
+
+class ZPowerConv(ZElectricalConv):
+    zattr = "active_power"
+
+
+class ZEnergyConv(ZMathConv):
+    zigbee = "smartenergy_metering"
+    zattr = "current_summ_delivered"
 
 
 class ZOccupancyConv(ZBoolConv):
@@ -183,7 +209,7 @@ class ZOccupancyTimeoutConv(ZConverter):
 #             payload[self.attr] = round(value['present_value'], 2)
 
 
-class ZIASZoneConv(Converter):
+class ZIASZoneConv(ZConverter):
     zigbee = "ias_zone"
 
     def decode(self, device: "XDevice", payload: dict, value: dict):
@@ -191,32 +217,29 @@ class ZIASZoneConv(Converter):
         if isinstance(value, list) and len(value) == 4:
             payload[self.attr] = value[0] == 1
 
+    def read(self, device: "XDevice", payload: dict):
+        pass
 
-class ZTemperatureConv(ZConverter):
+
+@dataclass
+class ZIlluminanceConv(ZMathConv):
+    zigbee = "illuminance"
+    zattr = "measured_value"
+    multiply: float = 0.01
+
+
+@dataclass
+class ZTemperatureConv(ZMathConv):
     zigbee = "temperature"
     zattr = "measured_value"
-
-    def decode(self, device: 'XDevice', payload: dict, value: dict):
-        if isinstance(value.get(self.zattr), int):
-            payload[self.attr] = value[self.zattr] / 100
+    multiply: float = 0.01
 
 
-class ZHumidityConv(ZConverter):
+@dataclass
+class ZHumidityConv(ZMathConv):
     zigbee = "humidity"
     zattr = "measured_value"
-
-    def decode(self, device: 'XDevice', payload: dict, value: dict):
-        if isinstance(value.get(self.zattr), int):
-            payload[self.attr] = value[self.zattr] / 100
-
-
-class ZEnergyConv(MathConv):
-    zigbee = "smartenergy_metering"
-    zattr = "current_summ_delivered"
-
-    def decode(self, device: "XDevice", payload: dict, value: dict):
-        if self.zattr in value:
-            super().decode(device, payload, value[self.zattr])
+    multiply: float = 0.01
 
 
 class ZBatteryConv(ZConverter):
@@ -238,45 +261,84 @@ class ZBatteryConv(ZConverter):
 
 
 # useful for reporting description
-class ZBatteryVoltConv(ZBatteryConv):
-    zattr = "battery_voltage"
-
-    def decode(self, device: "XDevice", payload: dict, value: dict):
-        if isinstance(value.get("battery_voltage"), int):
-            payload[self.zattr] = value[self.zattr] * 100
+# class ZBatteryVoltConv(ZBatteryConv):
+#     zattr = "battery_voltage"
+#
+#     def decode(self, device: "XDevice", payload: dict, value: dict):
+#         if isinstance(value.get("battery_voltage"), int):
+#             payload[self.zattr] = value[self.zattr] * 100
 
 
 ################################################################################
 # Specific defices converters
 ################################################################################
 
+class ZTuyaChildModeConv(ZBoolConv):
+    zigbee = "on_off"
+    zattr = 0x8000
+
+
+class ZTuyaLEDModeConv(ZMapConv):
+    zigbee = "on_off"
+    zattr = 0x8001
+    map = {0: "off", 1: "off/on", 2: "on/off", 3: "on"}
+
+
 # Thanks to:
 # https://github.com/Koenkk/zigbee-herdsman/blob/master/src/zcl/definition/cluster.ts
 # moesStartUpOnOff: {ID: 0x8002, type: DataType.enum8},
-class ZTuyaPowerOnConv(ZConverter):
+class ZTuyaPowerOnConv(ZMapConv):
     zigbee = "on_off"
     zattr = 0x8002
     map = {0: "off", 1: "on", 2: "previous"}
 
-    def decode(self, device: 'XDevice', payload: dict, value: dict):
-        if self.zattr in value:
-            payload[self.attr] = self.map.get(value[self.zattr])
 
-    def encode(self, device: "XDevice", payload: dict, value: str):
-        v = next(k for k, v in self.map.items() if v == value)
-        cmd = zcl_write(
-            device.nwk, self.ep, self.zigbee, self.zattr, v, type=0x30
-        )
-        payload.setdefault("commands", []).extend(cmd)
+class ZTuyaButtonModeConv(ZMapConv):
+    zigbee = "on_off"
+    zattr = 0x8004
+    map = {0: "command", 1: "event"}
+
+    def config(self, device: "XDevice", payload: dict, gateway):
+        # set default mode
+        self.encode(device, payload, "event")
 
 
 # Thanks to:
 # https://github.com/Koenkk/zigbee-herdsman-converters/blob/910271ae8fccb19305752d3f67381b4765853018/converters/fromZigbee.js#L4537
 # https://github.com/Koenkk/zigbee-herdsman/blob/068bbe7636f588394f69f82bc25c8b68a4feada7/src/zcl/definition/cluster.ts#L4284
-class ZTuyaModeConv(ZTuyaPowerOnConv):
+class ZTuyaPlugModeConv(ZMapConv):
     zigbee = 0xE001
     zattr = 0xD030
     map = {0: "toggle", 1: "state", 2: "momentary"}
+
+
+class ZTuyaButtonConfig(ZConverter):
+    def config(self, device: "XDevice", payload: dict, gateway):
+        # some stupid but necessary magic from zigbee2mqtt
+        cmd = zcl_read(device.nwk, self.ep, "on_off", 0x0004, 0x000, 0x0001,
+                       0x0005, 0x0007, 0xfffe)
+        cmd += zcl_read(device.nwk, self.ep, 0xE001, 0xD011)
+        payload.setdefault("commands", []).extend(cmd)
+
+
+class ZTuyaButtonConv(ZConverter):
+    zigbee = "on_off"
+    zattr = "on_off"
+    map = {0: SINGLE, 1: DOUBLE, 2: HOLD}
+
+    def decode(self, device: 'XDevice', payload: dict, value: dict):
+        # TS004F sends click three times with same seq number
+        if device.extra.get("seq") == value["seq"] or \
+                value["endpoint"] != self.ep:
+            return
+
+        device.extra["seq"] = value["seq"]
+
+        try:
+            payload[self.attr] = value = self.map.get(value["value"][0])
+            payload["action"] = self.attr + "_" + value
+        except:
+            pass
 
 
 class ZAqaraCubeMain(Converter):
@@ -465,19 +527,9 @@ class ZAqaraOppleMode(ZConverter):
 
 ZSwitch = ZOnOffConv("switch", "switch")
 
-ZCurrent = ZElectricalConv(
-    "current", "sensor", zattr="rms_current", multiply=0.001
-)
-ZVoltage = ZElectricalConv("voltage", "sensor", zattr="rms_voltage")
-ZPower = ZElectricalConv("power", "sensor", zattr="active_power")
-
-ZVoltagePoll = ZElectricalConv(
-    "voltage", "sensor", zattr="rms_voltage", poll=True
-)
-
 ZLight = ZOnOffConv("light", "light")
 ZBrightness = ZBrightnessConv("brightness", parent="light")
 ZColorTemp = ZColorTempConv("color_temp", parent="light")
 
 ZTuyaPowerOn = ZTuyaPowerOnConv("power_on_state", "select", enabled=False)
-ZTuyaMode = ZTuyaModeConv("mode", "select", enabled=False)
+# ZTuyaMode = ZTuyaModeConv("mode", "select", enabled=False)

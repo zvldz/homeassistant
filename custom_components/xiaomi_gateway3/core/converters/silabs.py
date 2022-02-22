@@ -6,7 +6,8 @@ from zigpy.zcl import Cluster
 from zigpy.zcl.foundation import Command, ZCLHeader, Attribute, \
     ReadAttributeRecord, DATA_TYPES
 from zigpy.zdo import ZDO
-from zigpy.zdo.types import ZDOCmd, SizePrefixedSimpleDescriptor, NodeDescriptor
+from zigpy.zdo.types import ZDOCmd, SizePrefixedSimpleDescriptor, \
+    NodeDescriptor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +62,9 @@ def decode(data: dict):
                     "command": str(hdr.command_id),
                     "status": str(args[0]),
                 }
-            elif hdr.command_id in (ZDOCmd.Node_Desc_req, ZDOCmd.Active_EP_req):
+            elif hdr.command_id in (
+                    ZDOCmd.Node_Desc_req, ZDOCmd.Active_EP_req
+            ):
                 return {"command": str(hdr.command_id)}
             elif hdr.command_id == ZDOCmd.Simple_Desc_req:
                 return {
@@ -117,7 +120,10 @@ def decode(data: dict):
         except KeyError as e:
             return {"cluster_id": cluster_id, "error": f"Key error: {e}"}
 
-        payload = {"endpoint": int(data["sourceEndpoint"], 0)}
+        payload = {
+            "endpoint": int(data["sourceEndpoint"], 0),
+            "seq": hdr.tsn,
+        }
 
         if cluster.ep_attribute:
             payload["cluster"] = cluster.ep_attribute
@@ -143,6 +149,8 @@ def decode(data: dict):
                     elif isinstance(value, list) and \
                             not isinstance(value, EUI64):
                         payload[name] = [v.value for v in value]
+                    elif isinstance(value, int):
+                        payload[name] = int(value)
                     else:
                         payload[name] = value
 
@@ -161,6 +169,8 @@ def decode(data: dict):
                             payload[name] = "0x" + value.hex()
                         elif isinstance(value, list):
                             payload[name] = [v.value for v in value]
+                        elif isinstance(value, int):
+                            payload[name] = int(value)
                         else:
                             payload[name] = value
                     else:
@@ -198,8 +208,8 @@ def decode(data: dict):
                 payload["value"] = args
 
         elif hdr.frame_control.is_cluster:
-            if isinstance(args, bytes) and args:
-                args = "0x" + args.hex()
+            # if isinstance(args, bytes) and args:
+            #     args = "0x" + args.hex()
 
             payload["command_id"] = hdr.command_id
             if hdr.command_id < len(cluster.commands):
@@ -282,14 +292,20 @@ def zcl_color(nwk: str, ep: int, ct: int, tr: float) -> list:
 
 
 # zcl global read [cluster:2] [attributeId:2]
-def zcl_read(nwk: str, ep: int, cluster: str, *attrs) -> list:
+def zcl_read(nwk: str, ep: int, cluster: Union[str, int], *attrs) -> list:
     """Generate Silabs Z3 read attribute command. Support multiple attrs."""
-    # convert string to object
-    cluster = get_cluster(cluster)
-    cid = cluster.cluster_id
+    if isinstance(cluster, str):
+        cluster = get_cluster(cluster)
+        cid = cluster.cluster_id
 
-    # convert List[str] to List[int]
-    attrs = [get_attr(cluster.attributes, attr) for attr in attrs]
+        # convert List[str] to List[int]
+        attrs = [get_attr(cluster.attributes, attr) for attr in attrs]
+    else:
+        cid = cluster
+
+    assert isinstance(cid, int)
+    for attr in attrs:
+        assert isinstance(attr, int)
 
     if len(attrs) > 1:
         raw = "".join([int(a).to_bytes(2, "little").hex() for a in attrs])
@@ -321,13 +337,13 @@ def zcl_write(
 
     type_len = get_type_len(type)
     # data always string hex: {FFFF}
-    data = "{" + data.to_bytes(type_len, "little").hex() + "}"
+    data = data.to_bytes(type_len, "little").hex()
 
     pre = [
         {"commandcli": f"zcl mfg-code {mfg}"}
     ] if mfg is not None else []
     return pre + [
-        {"commandcli": f"zcl global write {cluster} {attr} {type} {data}"},
+        {"commandcli": f"zcl global write {cluster} {attr} {type} {{{data}}}"},
         {"commandcli": f"send {nwk} 1 {ep}"}
     ]
 
@@ -353,6 +369,9 @@ def zdo_unbind(nwk: str, ep: int, cluster: str, src: str, dst: str) -> list:
 
 
 # zcl global send-me-a-report [cluster:2] [attributeId:2] [dataType:1] [minReportTime:2] [maxReportTime:2] [reportableChange:-1]
+# minReportTime Minimum number of seconds between reports
+# maxReportTime Maximum number of seconds between reports
+# reportableChange Amount of change to trigger a report
 def zdb_report(
         nwk: str, ep: int, cluster: str, attr: str, mint: int, maxt: int,
         change: int, type: int = None
@@ -363,7 +382,8 @@ def zdb_report(
     if isinstance(attr, str):
         attr, type = get_attr_type(cluster.attributes, attr)
 
-    change = int(change).to_bytes(2, "little").hex()
+    type_len = get_type_len(type)
+    change = change.to_bytes(type_len, "little").hex()
     return [{
         "commandcli": f"zcl global send-me-a-report {cid} {attr} {type} {mint} {maxt} {{{change}}}"
     }, {

@@ -1,3 +1,4 @@
+import json
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -7,6 +8,13 @@ from .const import *
 
 if TYPE_CHECKING:
     from ..device import XDevice
+
+
+def parse_time(value: str) -> float:
+    """Conver string time to float time (seconds).
+    @type value: 15s or 30m or 24h or 1d
+    """
+    return float(value[:-1]) * TIME[value[-1]]
 
 
 ################################################################################
@@ -111,11 +119,12 @@ class MathConv(Converter):
 class BrightnessConv(Converter):
     max: float = 100.0
 
-    def decode(self, device: "XDevice", payload: dict, value: float):
+    def decode(self, device: "XDevice", payload: dict, value: int):
         payload[self.attr] = value / self.max * 255.0
 
     def encode(self, device: "XDevice", payload: dict, value: float):
-        super().encode(device, payload, value / 255.0 * self.max)
+        value = round(value / 255.0 * self.max)
+        super().encode(device, payload, int(value))
 
 
 @dataclass
@@ -199,10 +208,9 @@ class TiltAngleConv(Converter):
 
 
 class CloudLinkConv(Converter):
-    def decode(self, device: "XDevice", payload: dict, value: dict):
-        # zero means online
-        # {"offline_time":1634407495,"offline_reason":30,"offline_ip":123,"offline_port":80}
-        payload[self.attr] = value["offline_time"] == 0
+    def decode(self, device: "XDevice", payload: dict, value: str):
+        value = json.loads(value)
+        payload[self.attr] = bool(value["cloud_link"])
 
 
 class ClimateConv(Converter):
@@ -338,6 +346,16 @@ class OnlineConv(Converter):
         device.decode_ts = time.time() - dt
 
         payload["zigbee"] = datetime.now(timezone.utc) - timedelta(seconds=dt)
+
+
+class RemoveDIDConv(Converter):
+    def decode(self, device: "XDevice", payload: dict, value: Any):
+        # two formats:
+        # "res_name":"8.0.2082","value":{"did":"lumi.1234567890"}"
+        # "res_name":"8.0.2082","value":"lumi.1234567890"
+        if isinstance(value, dict):
+            value = value["did"]
+        super().decode(device, payload, value)
 
 
 ################################################################################

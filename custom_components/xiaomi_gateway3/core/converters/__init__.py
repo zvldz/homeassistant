@@ -1,8 +1,9 @@
 import logging
+import re
 from dataclasses import dataclass
 from typing import List, Optional
 
-from .base import Converter, LUMI_GLOBALS
+from .base import Converter, LUMI_GLOBALS, parse_time
 from .const import GATEWAY, ZIGBEE, BLE, MESH, MESH_GROUP_MODEL
 from .devices import DEVICES
 from .stats import STAT_GLOBALS
@@ -15,13 +16,6 @@ except ModuleNotFoundError:
     pass
 except:
     logging.getLogger(__name__).exception("Can't load external converters")
-
-TTL = {
-    "s": 1,
-    "m": 60,
-    "h": 3600,
-    "d": 86400
-}
 
 
 @dataclass
@@ -63,7 +57,7 @@ def get_device_info(model: str, type: str) -> Optional[XDeviceInfo]:
 
         ttl = desc.get("ttl")
         if isinstance(ttl, str):
-            ttl = float(ttl[:-1]) * TTL[ttl[-1]]
+            ttl = parse_time(ttl)
 
         return XDeviceInfo(
             manufacturer=brand,
@@ -76,13 +70,30 @@ def get_device_info(model: str, type: str) -> Optional[XDeviceInfo]:
     raise RuntimeError
 
 
-def get_zigbee_buttons(model: str) -> Optional[list]:
+RE_INFO_MODEL = re.compile(r"^(zigbee|ble|mesh)(?: ([^ ]+))?(?: \((.+?)\))?$")
+
+
+def get_buttons(info_model: str) -> Optional[List[str]]:
+    """Gets a list of buttons using the device info model."""
+    m = RE_INFO_MODEL.search(info_model)
+    if not m:
+        return None
+
+    market = m[2]
+    model = m[3]
+
+    # Yeelight Button S1
+    if market == "YLAI003":
+        return ["button"]
+
     for device in DEVICES:
-        if model not in device:
-            continue
-        buttons = [
-            conv.attr for conv in device["required"]
-            if conv.attr.startswith("button")
-        ]
-        return sorted(set(buttons))
+        if model in device or any(
+                info[2] == market for info in device.values()
+                if isinstance(info, list) and len(info) == 3
+        ):
+            return sorted(set([
+                conv.attr for conv in device["spec"]
+                if conv.attr.startswith("button")
+            ]))
+
     return None

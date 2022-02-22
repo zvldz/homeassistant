@@ -5,8 +5,12 @@ MESH = "mesh"
 
 MESH_GROUP_MODEL = 1054
 
-HOUR = 3600
-HOUR12 = HOUR * 12
+TIME = {
+    "s": 1,
+    "m": 60,
+    "h": 3600,
+    "d": 86400
+}
 
 UNKNOWN = "unknown"
 SINGLE = "single"
@@ -80,6 +84,7 @@ E1_COMMANDS = {
     "ota": "Zigbee OTA",
     "config": "Zigbee Config",
     "remove": "Zigbee Remove",
+    "parentscan": "Zigbee Table Update",
     "reboot": "Gateway Reboot",
     "ftp": "Gateway Enable FTP",
     "dump": "Gateway Dump Data",

@@ -213,7 +213,7 @@ class XDevice:
             if key in gateway.defaults:
                 update(kwargs, gateway.defaults[key])
 
-        if "decode_ts" in kwargs:
+        if "decode_ts" in kwargs and self.decode_ts == 0:
             self.decode_ts = kwargs["decode_ts"]
 
         if "model" in kwargs:
@@ -243,7 +243,7 @@ class XDevice:
             if conv.enabled is None and conv.attr not in restore_entities:
                 self.lazy_setup.add(conv.attr)
                 continue
-            gateway.setups[domain](gateway, self, conv)
+            gateway.setup_entity(domain, self, conv)
 
     def setup_converters(self, entities: dict = None):
         """If no entities - use only required converters. Otherwise search for
@@ -301,7 +301,8 @@ class XDevice:
         payload = {}
 
         for param in value:
-            if param.get("error_code", 0) != 0:
+            # Lumi spec has `error_code`, MIoT spec has `code`
+            if param.get("error_code", 0) != 0 or param.get("code", 0) != 0:
                 continue
 
             v = param["value"] if "value" in param else param["arguments"]
@@ -337,8 +338,6 @@ class XDevice:
         if MESH in self.entities:
             self.update(self.decode(MESH, value))
 
-        for item in value:
-            item["error_code"] = item.pop("code", 0)
         return self.decode_lumi(value)
 
     def decode_zigbee(self, value: dict) -> Optional[dict]:
@@ -396,13 +395,15 @@ class XDevice:
         for entity in self.entities.values():
             if entity.subscribed_attrs & attrs:
                 entity.async_set_state(value)
-                if entity.hass:
+                # noinspection PyProtectedMember
+                if entity._added:
                     entity.async_write_ha_state()
 
     def update_available(self):
         for entity in self.entities.values():
             entity.async_update_available()
-            if entity.hass:
+            # noinspection PyProtectedMember
+            if entity._added:
                 entity.async_write_ha_state()
 
 

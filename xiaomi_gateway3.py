@@ -1,8 +1,6 @@
 from custom_components.xiaomi_gateway3.core.converters.devices import *
 
 DEVICES = [{
-    # https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:motion-sensor:0000A014:lumi-agl04:1:0000C813
-    # for spec names Fibaro has good example: https://manuals.fibaro.com/motion-sensor/
     "lumi.motion.agl04": ["Aqara", "Precision Motion Sensor EU", "RTCGQ13LM"],
     # "support": 5,  # @zvldz
     "spec": [

@@ -261,7 +261,7 @@ cards:
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - data: unresponsive
-            name: Unresponsive
+            name: Unresp
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - data: reset_cnt

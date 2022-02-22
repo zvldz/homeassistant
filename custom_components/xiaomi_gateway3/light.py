@@ -17,7 +17,8 @@ CONF_DEFAULT_TRANSITION = 'default_transition'
 async def async_setup_entry(hass, config_entry, async_add_entities):
     def setup(gateway: XGateway, device: XDevice, conv: Converter):
         if conv.attr in device.entities:
-            entity = device.entities[conv.attr]
+            entity: XEntity = device.entities[conv.attr]
+            entity.gw = gateway
         elif device.type == ZIGBEE:
             entity = XiaomiZigbeeLight(gateway, device, conv)
         elif device.model == MESH_GROUP_MODEL:
@@ -83,9 +84,13 @@ class XiaomiZigbeeLight(XiaomiLight):
 
         if tr is not None:
             if kwargs:
+                # For the Aqara bulb, it is important that the brightness
+                # parameter comes before the color_temp parameter. Only this
+                # way transition will work. So we use `kwargs.pop` func to set
+                # the exact order of parameters.
                 for k in (ATTR_BRIGHTNESS, ATTR_COLOR_TEMP):
                     if k in kwargs:
-                        kwargs[k] = (kwargs[k], tr)
+                        kwargs[k] = (kwargs.pop(k), tr)
             else:
                 kwargs[ATTR_BRIGHTNESS] = (255, tr)
 

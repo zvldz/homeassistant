@@ -13,7 +13,24 @@ template:
     - name: "lumi_ota_list"
       state: "OK"
 
+input_boolean:
+  gw3_check_ota:
+    name: "Check for OTA on GW3"
+
 automation:
+  - alias: run_update_after_change_status_ota
+    trigger:
+      - platform: state
+        entity_id: input_boolean.gw3_check_ota
+        from: 'off'
+        to: 'on'
+    action:
+      - service: script.update_sensor_ota
+      - delay: '00:00:09'
+      - service: script.update_ota_status
+        data:
+          zigbee_devices: "{{ states | selectattr('entity_id', 'match', 'sensor.*_zigbee') | map(attribute='entity_id') | list }}"
+
   - alias: update_gw3_sensor_ota
     initial_state: true
 #   mode: parallel
@@ -23,6 +40,10 @@ automation:
         event: start
       - platform: time_pattern
         minutes: "/59"
+    condition:
+      - condition: state
+        entity_id: input_boolean.gw3_check_ota
+        state: 'on'
     action:
       - service: script.update_sensor_ota
       - delay: '00:00:09'
@@ -38,6 +59,9 @@ automation:
       - platform: event
         event_type: state_changed
     condition:
+      - condition: state
+        entity_id: input_boolean.gw3_check_ota
+        state: 'on'
       - condition: template
         value_template: "{{ (as_timestamp(now()) - as_timestamp(states('sensor.internal_ha_uptime'))) | int(0) > 10 }}"
 #     - condition: template

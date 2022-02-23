@@ -7,6 +7,14 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
+            entity: input_boolean.gw3_check_ota
+            icon: mdi:download
+            size: 15%
+            styles:
+              card:
+                - font-size: 14px
+
+          - type: custom:button-card
             name: "Reboot GW3 1"
             icon: "mdi:rotate-3d-variant"
             tap_action:
@@ -264,7 +272,7 @@ cards:
             name: Unresp
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - data: reset_cnt
+          - data: new_resets
             name: Resets
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'

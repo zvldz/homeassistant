@@ -111,12 +111,11 @@ CONF_TMAX_PROBES = 300.0
 CONF_HMIN = 0.0
 CONF_HMAX = 99.9
 
-# Beacon types
-
 
 # Sensors with deviating temperature range
 KETTLES = ('YM-K1501', 'YM-K1501EU', 'V-SK152')
-PROBES = ('iBBQ-2', 'iBBQ-4', 'H5183')
+PROBES = ('iBBQ-2', 'iBBQ-4', 'iBBQ-6', 'H5183')
+
 
 # Sensor entity description
 @dataclass
@@ -124,7 +123,9 @@ class BLEMonitorRequiredKeysMixin:
     """Mixin for required keys."""
 
     sensor_class: str
+    update_behavior: str
     unique_id: str
+
 
 @dataclass
 class BLEMonitorSensorEntityDescription(
@@ -144,6 +145,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="binary",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble binary",
         unique_id="bi_",
         device_class=None,
@@ -152,6 +154,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="remote single press",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble remote binary single press",
         unique_id="rb_single_press_",
         device_class=None,
@@ -160,6 +163,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="remote long press",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble remote binary long press",
         unique_id="rb_long_press_",
         device_class=None,
@@ -168,6 +172,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="switch",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble switch",
         unique_id="sw_",
         device_class=BinarySensorDeviceClass.POWER,
@@ -176,6 +181,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="opening",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble opening",
         unique_id="op_",
         device_class=BinarySensorDeviceClass.OPENING,
@@ -184,6 +190,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="light",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble light",
         unique_id="lt_",
         device_class=BinarySensorDeviceClass.LIGHT,
@@ -192,6 +199,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="moisture",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble moisture",
         unique_id="mo_",
         device_class=BinarySensorDeviceClass.MOISTURE,
@@ -200,6 +208,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="motion",
         sensor_class="MotionBinarySensor",
+        update_behavior="Instantly",
         name="ble motion",
         unique_id="mn_",
         device_class=BinarySensorDeviceClass.MOTION,
@@ -208,6 +217,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="weight removed",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble weight removed",
         icon="mdi:weight",
         unique_id="wr_",
@@ -217,6 +227,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="smoke detector",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble smoke detector",
         unique_id="sd_",
         device_class=BinarySensorDeviceClass.SMOKE,
@@ -225,6 +236,7 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
     BLEMonitorBinarySensorEntityDescription(
         key="fingerprint",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble fingerprint",
         icon="mdi:fingerprint",
         unique_id="fp_",
@@ -232,16 +244,45 @@ BINARY_SENSOR_TYPES: tuple[BLEMonitorBinarySensorEntityDescription, ...] = (
         force_update=True,
     ),
     BLEMonitorBinarySensorEntityDescription(
+        key="door",
+        sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
+        name="ble door",
+        unique_id="do_",
+        device_class=BinarySensorDeviceClass.DOOR,
+        force_update=False,
+    ),
+    BLEMonitorBinarySensorEntityDescription(
         key="lock",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble lock",
         unique_id="lock_",
         device_class=BinarySensorDeviceClass.LOCK,
         force_update=True,
     ),
     BLEMonitorBinarySensorEntityDescription(
+        key="antilock",
+        sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
+        name="ble antilock",
+        unique_id="antilock_",
+        device_class=BinarySensorDeviceClass.LOCK,
+        force_update=True,
+    ),
+    BLEMonitorBinarySensorEntityDescription(
+        key="childlock",
+        sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
+        name="ble childlock",
+        unique_id="childlock_",
+        device_class=BinarySensorDeviceClass.LOCK,
+        force_update=True,
+    ),
+    BLEMonitorBinarySensorEntityDescription(
         key="toothbrush",
         sensor_class="BaseBinarySensor",
+        update_behavior="Instantly",
         name="ble toothbrush",
         unique_id="tb_",
         icon="mdi:toothbrush-electric",
@@ -255,6 +296,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature",
         unique_id="t_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -264,6 +306,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="cypress temperature",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble cypress temperature",
         unique_id="t_cypress_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -273,6 +316,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 1",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 1",
         unique_id="t_probe_1_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -282,6 +326,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 2",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 2",
         unique_id="t_probe_2_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -291,6 +336,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 3",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 3",
         unique_id="t_probe_3_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -300,6 +346,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 4",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 4",
         unique_id="t_probe_4_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -309,6 +356,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 5",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 5",
         unique_id="t_probe_5_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -318,6 +366,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature probe 6",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature probe 6",
         unique_id="t_probe_6_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -327,6 +376,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="temperature outdoor",
         sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
         name="ble temperature outdoor",
         unique_id="t_outdoor_",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -334,10 +384,31 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
     ),
     BLEMonitorSensorEntityDescription(
-        key="temperature alarm",
+        key="temperature alarm probe 1",
         sensor_class="TemperatureSensor",
-        name="ble temperature alarm",
-        unique_id="t_alarm_",
+        update_behavior="Averaging",
+        name="ble temperature alarm probe 1",
+        unique_id="t_alarm_probe_1_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature alarm probe 2",
+        sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
+        name="ble temperature alarm probe 2",
+        unique_id="t_alarm_probe_2_",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="temperature calibrated",
+        sensor_class="TemperatureSensor",
+        update_behavior="Averaging",
+        name="ble temperature calibrated",
+        unique_id="t_calibrated_",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -345,6 +416,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="humidity",
         sensor_class="HumiditySensor",
+        update_behavior="Averaging",
         name="ble humidity",
         unique_id="h_",
         native_unit_of_measurement=PERCENTAGE,
@@ -354,6 +426,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="cypress humidity",
         sensor_class="HumiditySensor",
+        update_behavior="Averaging",
         name="ble cypress humidity",
         unique_id="h_cypress_",
         native_unit_of_measurement="RH%",
@@ -363,6 +436,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="humidity outdoor",
         sensor_class="HumiditySensor",
+        update_behavior="Averaging",
         name="ble humidity outdoor",
         unique_id="h_outdoor_",
         native_unit_of_measurement=PERCENTAGE,
@@ -372,6 +446,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="moisture",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble moisture",
         unique_id="m_",
         native_unit_of_measurement=PERCENTAGE,
@@ -381,6 +456,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="pressure",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble pressure",
         unique_id="p_",
         native_unit_of_measurement=PRESSURE_HPA,
@@ -390,6 +466,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="conductivity",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble conductivity",
         unique_id="c_",
         icon="mdi:lightning-bolt-circle",
@@ -400,6 +477,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="illuminance",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble illuminance",
         unique_id="l_",
         device_class=SensorDeviceClass.ILLUMINANCE,
@@ -409,6 +487,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="formaldehyde",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble formaldehyde",
         unique_id="f_",
         icon="mdi:chemical-weapon",
@@ -419,6 +498,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="dewpoint",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble dewpoint",
         unique_id="d_",
         icon="mdi:water",
@@ -429,6 +509,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="rssi",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble rssi",
         unique_id="rssi_",
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
@@ -439,6 +520,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="measured power",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble measured power",
         unique_id="measured_power_",
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
@@ -449,6 +531,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="battery",
         sensor_class="BatterySensor",
+        update_behavior="Averaging",
         name="ble battery",
         unique_id="batt_",
         native_unit_of_measurement=PERCENTAGE,
@@ -459,6 +542,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="voltage",
         sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
         name="ble voltage",
         unique_id="v_",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
@@ -467,8 +551,71 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     BLEMonitorSensorEntityDescription(
+        key="co2",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="CO2",
+        unique_id="co2_",
+        icon="mdi:molecule-co2",
+        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        device_class=SensorDeviceClass.CO2,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="pm2.5",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="PM2.5",
+        unique_id="pm25_",
+        icon="mdi:molecule",
+        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        device_class=SensorDeviceClass.PM25,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="pm10",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="PM10",
+        unique_id="pm10_",
+        icon="mdi:molecule",
+        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        device_class=SensorDeviceClass.PM10,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="gravity",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="ble gravity",
+        unique_id="gr_",
+        icon="mdi:transfer-down",
+        native_unit_of_measurement=None,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="tvoc",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="TVOC",
+        unique_id="ble_tvoc_",
+        icon="mdi:molecule",
+        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="aqi",
+        sensor_class="MeasuringSensor",
+        update_behavior="Averaging",
+        name="Air Quality Index",
+        unique_id="ble_iaq_",
+        icon="mdi:molecule",
+        native_unit_of_measurement=None,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
         key="mac",
         sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
         name="ble mac",
         unique_id="mac_",
         icon="mdi:alpha-m-circle-outline",
@@ -480,6 +627,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="uuid",
         sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
         name="ble uuid",
         unique_id="uuid_",
         icon="mdi:alpha-u-circle-outline",
@@ -491,6 +639,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="major",
         sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
         name="ble major",
         unique_id="major_",
         icon="mdi:counter",
@@ -502,6 +651,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="minor",
         sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
         name="ble minor",
         unique_id="minor_",
         icon="mdi:counter",
@@ -511,8 +661,31 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     BLEMonitorSensorEntityDescription(
+        key="count",
+        sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
+        name="ble count",
+        unique_id="cnt_",
+        icon="mdi:counter",
+        native_unit_of_measurement=None,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
+        key="air quality",
+        sensor_class="StateChangedSensor",
+        update_behavior="StateChange",
+        name="Air Quality",
+        unique_id="ble_aq_",
+        icon="mdi:molecule",
+        native_unit_of_measurement=None,
+        device_class=None,
+        state_class=None,
+    ),
+    BLEMonitorSensorEntityDescription(
         key="consumable",
         sensor_class="InstantUpdateSensor",
+        update_behavior="Instantly",
         name="ble consumable",
         unique_id="cn_",
         icon="mdi:recycle-variant",
@@ -523,6 +696,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="acceleration",
         sensor_class="AccelerationSensor",
+        update_behavior="Instantly",
         name="ble acceleration",
         unique_id="ac_",
         icon="mdi:axis-arrow",
@@ -533,6 +707,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="weight",
         sensor_class="WeightSensor",
+        update_behavior="Instantly",
         name="ble weight",
         unique_id="w_",
         icon="mdi:scale-bathroom",
@@ -541,8 +716,20 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
     ),
     BLEMonitorSensorEntityDescription(
+        key="stabilized weight",
+        sensor_class="WeightSensor",
+        update_behavior="Instantly",
+        name="ble stabilized weight",
+        unique_id="stab_w_",
+        icon="mdi:scale-bathroom",
+        native_unit_of_measurement=MASS_KILOGRAMS,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BLEMonitorSensorEntityDescription(
         key="non-stabilized weight",
         sensor_class="WeightSensor",
+        update_behavior="Instantly",
         name="ble non-stabilized weight",
         unique_id="nw_",
         icon="mdi:scale-bathroom",
@@ -553,6 +740,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="impedance",
         sensor_class="InstantUpdateSensor",
+        update_behavior="Instantly",
         name="ble impedance",
         unique_id="im_",
         icon="mdi:omega",
@@ -563,6 +751,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="energy",
         sensor_class="EnergySensor",
+        update_behavior="Instantly",
         name="ble energy",
         unique_id="e_",
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
@@ -572,6 +761,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="power",
         sensor_class="PowerSensor",
+        update_behavior="Instantly",
         name="ble power",
         unique_id="pow_",
         native_unit_of_measurement=POWER_KILO_WATT,
@@ -581,6 +771,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="magnetic field",
         sensor_class="InstantUpdateSensor",
+        update_behavior="Instantly",
         name="ble magnetic field",
         unique_id="mf_",
         icon="mdi:magnet",
@@ -591,6 +782,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="magnetic field direction",
         sensor_class="InstantUpdateSensor",
+        update_behavior="Instantly",
         name="ble magnetic field direction",
         unique_id="mfd_",
         icon="mdi:compass",
@@ -601,6 +793,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="button",
         sensor_class="ButtonSensor",
+        update_behavior="Instantly",
         name="ble button",
         unique_id="bu_",
         icon="mdi:gesture-tap-button",
@@ -611,6 +804,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="dimmer",
         sensor_class="DimmerSensor",
+        update_behavior="Instantly",
         name="ble dimmer",
         unique_id="di_",
         icon="mdi:rotate-right",
@@ -621,6 +815,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="one btn switch",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble one button switch",
         unique_id="switch_",
         icon="mdi:gesture-tap-button",
@@ -631,6 +826,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="two btn switch left",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble two button switch left",
         unique_id="left_switch_",
         icon="mdi:gesture-tap-button",
@@ -641,6 +837,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="two btn switch right",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble two button switch right",
         unique_id="right_switch_",
         icon="mdi:gesture-tap-button",
@@ -651,6 +848,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="three btn switch left",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble three button switch left",
         unique_id="left_switch_",
         icon="mdi:gesture-tap-button",
@@ -661,6 +859,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="three btn switch middle",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble three button switch middle",
         unique_id="middle_switch_",
         icon="mdi:gesture-tap-button",
@@ -671,6 +870,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="three btn switch right",
         sensor_class="SwitchSensor",
+        update_behavior="Instantly",
         name="ble three button switch right",
         unique_id="right_switch_",
         icon="mdi:gesture-tap-button",
@@ -681,6 +881,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="remote",
         sensor_class="BaseRemoteSensor",
+        update_behavior="Instantly",
         name="ble remote",
         unique_id="re_",
         icon="mdi:remote",
@@ -691,6 +892,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="fan remote",
         sensor_class="BaseRemoteSensor",
+        update_behavior="Instantly",
         name="ble fan remote",
         unique_id="fa_",
         icon="mdi:remote",
@@ -701,6 +903,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="ventilator fan remote",
         sensor_class="BaseRemoteSensor",
+        update_behavior="Instantly",
         name="ble ventilator fan remote",
         unique_id="fr_",
         icon="mdi:remote",
@@ -711,6 +914,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="bathroom heater remote",
         sensor_class="BaseRemoteSensor",
+        update_behavior="Instantly",
         name="ble bathroom heater remote",
         unique_id="bh_",
         icon="mdi:remote",
@@ -721,6 +925,7 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="volume dispensed port 1",
         sensor_class="VolumeDispensedSensor",
+        update_behavior="Instantly",
         name="ble volume dispensed port 1",
         unique_id="vd1_",
         icon="mdi:keg",
@@ -731,39 +936,13 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
     BLEMonitorSensorEntityDescription(
         key="volume dispensed port 2",
         sensor_class="VolumeDispensedSensor",
+        update_behavior="Instantly",
         name="ble volume dispensed port 2",
         unique_id="vd2_",
         icon="mdi:keg",
         native_unit_of_measurement=VOLUME_LITERS,
         device_class=None,
         state_class=SensorStateClass.MEASUREMENT,
-    ),
-    BLEMonitorSensorEntityDescription(
-        key="co2",
-        sensor_class="MeasuringSensor",
-        name="co2 sensor",
-        unique_id="co2_",
-        icon="mdi:molecule-co2",
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
-        device_class=SensorDeviceClass.CO2,
-    ),
-    BLEMonitorSensorEntityDescription(
-        key="pm2.5",
-        sensor_class="MeasuringSensor",
-        name="PM2.5 sensor",
-        unique_id="pm25_",
-        icon="mdi:molecule-co2",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-        device_class=SensorDeviceClass.PM25,
-    ),
-    BLEMonitorSensorEntityDescription(
-        key="pm10",
-        sensor_class="MeasuringSensor",
-        name="PM10 sensor",
-        unique_id="pm10_",
-        icon="mdi:molecule-co2",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-        device_class=SensorDeviceClass.PM10,
     ),
 )
 
@@ -793,8 +972,8 @@ MEASUREMENT_DICT = {
     'RTCGQ02LM'               : [["battery", "rssi"], ["button"], ["light", "motion"]],
     'MMC-T201-1'              : [["temperature", "battery", "rssi"], [], []],
     'M1S-T500'                : [["battery", "rssi"], [], ["toothbrush"]],
-    'ZNMS16LM'                : [["battery", "rssi"], [], ["lock", "fingerprint"]],
-    'ZNMS17LM'                : [["battery", "rssi"], [], ["lock", "fingerprint"]],
+    'ZNMS16LM'                : [["battery", "rssi"], [], ["lock", "door", "fingerprint"]],
+    'ZNMS17LM'                : [["battery", "rssi"], [], ["lock", "door", "fingerprint", "antilock", "childlock"]],
     'MJZNMSQ01YD'             : [["battery", "rssi"], [], ["lock", "fingerprint"]],
     'XMZNMST02YD'             : [["battery", "rssi"], [], ["lock", "fingerprint"]],
     'CGC1'                    : [["temperature", "humidity", "battery", "rssi"], [], []],
@@ -821,8 +1000,9 @@ MEASUREMENT_DICT = {
     'YLKG07YL/YLKG08YL'       : [["rssi"], ["dimmer"], []],
     'ATC'                     : [["temperature", "humidity", "battery", "voltage", "rssi"], [], ["switch", "opening"]],
     'Mi Scale V1'             : [["rssi"], ["weight", "non-stabilized weight"], ["weight removed"]],
-    'Mi Scale V2'             : [["rssi"], ["weight", "non-stabilized weight", "impedance"], ["weight removed"]],
+    'Mi Scale V2'             : [["rssi"], ["weight", "stabilized weight", "non-stabilized weight", "impedance"], ["weight removed"]],
     'TZC4'                    : [["rssi"], ["weight", "non-stabilized weight", "impedance"], []],
+    'QJ-J'                    : [["rssi"], ["weight", "non-stabilized weight", "impedance"], []],
     'Kegtron KT-100'          : [["rssi"], ["volume dispensed port 1"], []],
     'Kegtron KT-200'          : [["rssi"], ["volume dispensed port 1", "volume dispensed port 2"], []],
     'Smart hygrometer'        : [["temperature", "humidity", "battery", "voltage", "rssi"], [], []],
@@ -830,11 +1010,13 @@ MEASUREMENT_DICT = {
     'T201'                    : [["temperature", "humidity", "battery", "voltage", "rssi"], [], []],
     'H5072/H5075'             : [["temperature", "humidity", "battery", "rssi"], [], []],
     'H5101/H5102/H5177'       : [["temperature", "humidity", "battery", "rssi"], [], []],
-    'H5051'                   : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'H5051/H5071'             : [["temperature", "humidity", "battery", "rssi"], [], []],
     'H5074'                   : [["temperature", "humidity", "battery", "rssi"], [], []],
     'H5178'                   : [["temperature", "temperature outdoor", "humidity", "humidity outdoor", "battery", "rssi"], [], []],
     'H5179'                   : [["temperature", "humidity", "battery", "rssi"], [], []],
-    'H5183'                   : [["temperature probe 1", "temperature alarm", "rssi"], [], []],
+    'H5182'                   : [["temperature probe 1", "temperature alarm probe 1", "temperature probe 2", "temperature alarm probe 2", "rssi"], [], []],
+    'H5183'                   : [["temperature probe 1", "temperature alarm probe 1", "rssi"], [], []],
+    'H5185'                   : [["temperature probe 1", "temperature alarm probe 1", "temperature probe 2", "temperature alarm probe 2", "rssi"], [], []],
     'Ruuvitag'                : [["temperature", "humidity", "pressure", "battery", "voltage", "rssi"], ["acceleration"], ["motion"]],
     'iNode Energy Meter'      : [["battery", "voltage", "rssi"], ["energy", "power"], []],
     "iNode Care Sensor 1"     : [["temperature", "battery", "voltage", "rssi"], ["acceleration"], ["motion"]],
@@ -852,24 +1034,34 @@ MEASUREMENT_DICT = {
     'Blue Puck RHT'           : [["temperature", "humidity", "rssi"], [], []],
     'HTP.xw'                  : [["temperature", "humidity", "pressure", "rssi"], [], []],
     'HT.w'                    : [["temperature", "humidity", "pressure", "rssi"], [], []],
+    'MyCO2'                   : [["temperature", "humidity", "co2", "rssi"], [], []],
+    'SHT40 Gadget'            : [["temperature", "humidity", "rssi"], [], []],
+    'SHT41 Gadget'            : [["temperature", "humidity", "rssi"], [], []],
+    'SHT45 Gadget'            : [["temperature", "humidity", "rssi"], [], []],
     'Moat S2'                 : [["temperature", "humidity", "battery", "rssi"], [], []],
     'Tempo Disc THD'          : [["temperature", "humidity", "dewpoint", "battery", "rssi"], [], []],
     'Tempo Disc THPD'         : [["temperature", "humidity", "pressure", "battery", "rssi"], [], []],
     'b-parasite V1.0.0'       : [["temperature", "humidity", "moisture", "voltage", "rssi"], [], []],
     'b-parasite V1.1.0'       : [["temperature", "humidity", "moisture", "voltage", "rssi", "illuminance"], [], []],
     'SmartSeries 7000'        : [["rssi"], [], ["toothbrush"]],
+    'IO Series 7'             : [["rssi"], [], ["toothbrush"]],
     'iBBQ-1'                  : [["temperature probe 1", "rssi"], [], []],
     'iBBQ-2'                  : [["temperature probe 1", "temperature probe 2", "rssi"], [], []],
     'iBBQ-4'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "rssi"], [], []],
     'iBBQ-6'                  : [["temperature probe 1", "temperature probe 2", "temperature probe 3", "temperature probe 4", "temperature probe 5", "temperature probe 6", "rssi"], [], []],
     'IBS-TH'                  : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'IBS-TH2/P01B'            : [["temperature", "battery", "rssi"], [], []],
     'BEC07-5'                 : [["temperature", "humidity", "rssi"], [], []],
     'iBeacon'                 : [["rssi", "measured power", "cypress temperature", "cypress humidity"], ["uuid", "mac", "major", "minor"], []],  # mac can be dynamic
     'AltBeacon'               : [["rssi", "measured power"], ["uuid", "mac", "major", "minor"], []],  # mac can be dynamic
-    'MyCO2'                   : [["temperature", "humidity", "co2", "rssi"], [], []],
-    'HA BLE DIY'              : [["temperature", "rssi"], [], []],
+    'EClerk Eco'              : [["temperature", "humidity", "co2", "battery", "rssi"], [], []],
+    'Air Mentor Pro 2'        : [["temperature", "temperature calibrated", "humidity", "co2", "tvoc", "aqi", "air quality", "pm2.5", "pm10", "rssi"], [], []],
+    'Meter TH S1'             : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'Meter TH plus'           : [["temperature", "humidity", "battery", "rssi"], [], []],
+    'Laica Smart Scale'       : [["weight", "impedance", "rssi"], [], []],
+    "Acconeer XM122"          : [["temperature", "battery", "rssi"], [], ["motion"]],
+    'K6 Sensor Beacon'        : [["temperature", "humidity", "acceleration", "voltage", "battery", "rssi"], [], []],
 }
-
 
 # Sensor manufacturer dictionary
 MANUFACTURER_DICT = {
@@ -922,6 +1114,7 @@ MANUFACTURER_DICT = {
     'Mi Scale V1'             : 'Xiaomi',
     'Mi Scale V2'             : 'Xiaomi',
     'TZC4'                    : 'Xiaogui',
+    'QJ-J'                    : 'MaxxMee',
     'Kegtron KT-100'          : 'Kegtron',
     'Kegtron KT-200'          : 'Kegtron',
     'Smart hygrometer'        : 'Thermoplus',
@@ -929,11 +1122,12 @@ MANUFACTURER_DICT = {
     'T201'                    : 'Brifit',
     'H5072/H5075'             : 'Govee',
     'H5101/H5102/H5177'       : 'Govee',
-    'H5051'                   : 'Govee',
+    'H5051/H5071'             : 'Govee',
     'H5074'                   : 'Govee',
     'H5178'                   : 'Govee',
     'H5179'                   : 'Govee',
     'H5183'                   : 'Govee',
+    'H5185'                   : 'Govee',
     'Ruuvitag'                : 'Ruuvitag',
     'iNode Energy Meter'      : 'iNode',
     "iNode Care Sensor 1"     : 'iNode',
@@ -952,52 +1146,123 @@ MANUFACTURER_DICT = {
     'HTP.xw'                  : 'SensorPush',
     'HT.w'                    : 'SensorPush',
     'MyCO2'                   : 'Sensirion',
+    'SHT40 Gadget'            : 'Sensirion',
+    'SHT41 Gadget'            : 'Sensirion',
+    'SHT45 Gadget'            : 'Sensirion',
     'Moat S2'                 : 'Moat',
     'Tempo Disc THD'          : 'BlueMaestro',
     'Tempo Disc THPD'         : 'BlueMaestro',
     'b-parasite V1.0.0'       : 'rbaron',
     'b-parasite V1.1.0'       : 'rbaron',
     'SmartSeries 7000'        : 'Oral-B',
+    'IO Series 7'             : 'Oral-B',
     'iBBQ-1'                  : 'Inkbird',
     'iBBQ-2'                  : 'Inkbird',
     'iBBQ-4'                  : 'Inkbird',
     'iBBQ-6'                  : 'Inkbird',
     'IBS-TH'                  : 'Inkbird',
+    'IBS-TH2/P01B'            : 'Inkbird',
     'BEC07-5'                 : 'Jinou',
     'iBeacon'                 : 'Apple',
     'AltBeacon'               : 'Radius Networks',
-    'HA BLE DIY'              : 'Home Assistant DIY',
+    'EClerk Eco'              : 'Relsib',
+    'Air Mentor Pro 2'        : 'Air Mentor',
+    'Meter TH S1'             : 'Switchbot',
+    'Meter TH plus'           : 'Switchbot',
+    'Laica Smart Scale'       : 'Laica',
+    'Acconeer XM122'          : 'Acconeer',
+    'K6 Sensor Beacon'        : 'KKM',
 }
+
 
 # Renamed model dictionary
 RENAMED_MODEL_DICT = {
     'H5051/H5074': 'H5074',
+    'H5051': 'H5051/H5071',
     'IBS-TH2': 'IBS-TH',
+    'IBS-TH2 (T only)': 'IBS-TH2/P01B',
+    'IBS-TH2/P01R': 'IBS-TH2/P01B',
 }
+
+
+# Sensors that support automatic adding of sensors and binary sensors
+AUTO_MANUFACTURER_DICT = {
+    'HA BLE DIY'              : 'Home Assistant DIY',
+    'Tilt Red'                : 'Tilt',
+    'Tilt Green'              : 'Tilt',
+    'Tilt Black'              : 'Tilt',
+    'Tilt Purple'             : 'Tilt',
+    'Tilt Orange'             : 'Tilt',
+    'Tilt Blue'               : 'Tilt',
+    'Tilt Yellow'             : 'Tilt',
+    'Tilt Pink'               : 'Tilt',
+    'Tilt Green'              : 'Tilt',
+    'HHCCJCY10'               : 'HHCC',
+}
+
+
+# Binary Sensors that are automatically added if device is in AUTO_MANUFACTURER_DICT
+AUTO_BINARY_SENSOR_LIST = [
+    "binary",
+    "opening",
+    "switch",
+]
+
+
+# Sensors that are automatically added if device is in AUTO_MANUFACTURER_DICT
+AUTO_SENSOR_LIST = [
+    "battery",
+    "co2",
+    "conductivity",
+    "count",
+    "dewpoint",
+    "energy",
+    "gravity",
+    "humidity",
+    "illuminance",
+    "moisture",
+    "pm2.5",
+    "pm10",
+    "power",
+    "pressure",
+    "rssi",
+    "temperature",
+    "tvoc",
+    "voltage",
+    "weight",
+]
+
 
 # Selection list for report_uknown
 REPORT_UNKNOWN_LIST = [
     "Off",
+    "Acconeer",
+    "Air Mentor",
     "ATC",
     "BlueMaestro",
     "Brifit",
     "Govee",
     "HA BLE",
+    "HHCC",
     "Inkbird",
     "iNode",
     "iBeacon",
     "Jinou"
     "Kegtron",
+    "KKM",
     "Mi Scale",
     "Moat",
     "Oral-B",
     "Qingping",
+    "Relsib",
     "rbaron",
     "Ruuvitag",
     "Sensirion",
     "SensorPush",
+    "Switchbot",
     "Teltonika",
     "Thermoplus",
+    "Tilt",
     "Xiaogui",
     "Xiaomi",
     "Other",

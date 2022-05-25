@@ -4,10 +4,6 @@
 #    filename: /config/event_state.log
 #    timestamp: true
 
-sensor:
-  - platform: uptime
-    name: "internal_ha_uptime"
-
 template:
   - sensor:
     - name: "lumi_ota_list"
@@ -63,7 +59,7 @@ automation:
         entity_id: input_boolean.gw3_check_ota
         state: 'on'
       - condition: template
-        value_template: "{{ (as_timestamp(now()) - as_timestamp(states('sensor.internal_ha_uptime'))) | int(0) > 10 }}"
+        value_template: "{{ (as_timestamp(now()) - as_timestamp(states('sensor.ha_uptime'))) | int(0) > 10 }}"
 #     - condition: template
 #       value_template: "{{ (as_timestamp(now()) - as_timestamp(trigger.event.data.new_state.last_changed)) | int(0) > 10 }}"
       - condition: template

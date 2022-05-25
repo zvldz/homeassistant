@@ -107,7 +107,8 @@ sensor:
 
   - platform: command_line
     name: "Latest Tasmota"
-    command: "curl -s https://github.com/arendst/Tasmota/releases/latest | cut -d'\"' -f2 | rev | cut -d'/' -f1 | rev | cut -f2 -dv"
+    #command: "curl -s https://github.com/arendst/Tasmota/releases/latest | cut -d'\"' -f2 | rev | cut -d'/' -f1 | rev | cut -f2 -dv"
+    command: "curl -v -s https://github.com/arendst/Tasmota/releases/latest 2>&1 |grep location: | awk -F '/v' '{ print $2}'"
     scan_interval: 600
 
 

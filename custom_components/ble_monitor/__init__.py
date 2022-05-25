@@ -24,10 +24,13 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_registry import (
     async_entries_for_device,
 )
-import homeassistant.util.dt as dt_util
+from homeassistant.util import dt
 
 from .ble_parser import BleParser
 from .const import (
+    AUTO_BINARY_SENSOR_LIST,
+    AUTO_MANUFACTURER_DICT,
+    AUTO_SENSOR_LIST,
     AES128KEY24_REGEX,
     AES128KEY32_REGEX,
     CONF_ACTIVE_SCAN,
@@ -75,6 +78,7 @@ from .const import (
     DOMAIN,
     PLATFORMS,
     MAC_REGEX,
+    MANUFACTURER_DICT,
     MEASUREMENT_DICT,
     REPORT_UNKNOWN_LIST,
     SERVICE_CLEANUP_ENTRIES,
@@ -293,11 +297,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             del config["ids_from_name"]
 
         if not config[CONF_BT_INTERFACE]:
-            default_hci = list(BT_INTERFACES.keys())[
-                list(BT_INTERFACES.values()).index(DEFAULT_BT_INTERFACE)
-            ]
-            hci_list.append(int(default_hci))
-            bt_mac_list.append(str(DEFAULT_BT_INTERFACE))
+            if BT_INTERFACES:
+                default_hci = list(BT_INTERFACES.keys())[
+                    list(BT_INTERFACES.values()).index(DEFAULT_BT_INTERFACE)
+                ]
+                hci_list.append(int(default_hci))
+                bt_mac_list.append(str(DEFAULT_BT_INTERFACE))
+            else:
+                _LOGGER.debug("Bluetooth interface is disabled")
+                default_hci = None
+                hci_list = ["disable"]
+                bt_mac_list = ["disable"]
         elif "disable" in config[CONF_BT_INTERFACE]:
             _LOGGER.debug("Bluetooth interface is disabled")
             default_hci = None
@@ -370,11 +380,15 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                         )
     if not hci_list:
         # Fall back in case no hci interfaces are added
-        default_hci = list(BT_INTERFACES.keys())[
-            list(BT_INTERFACES.values()).index(DEFAULT_BT_INTERFACE)
-        ]
-        hci_list.append(int(default_hci))
-        bt_mac_list.append(str(DEFAULT_BT_INTERFACE))
+        if BT_INTERFACES:
+            default_hci = list(BT_INTERFACES.keys())[
+                list(BT_INTERFACES.values()).index(DEFAULT_BT_INTERFACE)
+            ]
+            hci_list.append(int(default_hci))
+            bt_mac_list.append(str(DEFAULT_BT_INTERFACE))
+        else:
+            hci_list = ["disable"]
+            bt_mac_list = ["disable"]
         _LOGGER.warning(
             "No configured Bluetooth interface was found, using default interface instead"
         )
@@ -567,7 +581,7 @@ class HCIdump(Thread):
         self.tracker_whitelist = []
         self.report_unknown = False
         self.report_unknown_whitelist = []
-        self.last_bt_reset = dt_util.now()
+        self.last_bt_reset = dt.now()
         if self.config[CONF_REPORT_UNKNOWN]:
             if self.config[CONF_REPORT_UNKNOWN] != "Off":
                 self.report_unknown = self.config[CONF_REPORT_UNKNOWN]
@@ -584,9 +598,9 @@ class HCIdump(Thread):
                 else:
                     continue
             if self.report_unknown_whitelist:
-                _LOGGER.info(  
+                _LOGGER.info(
                     "Attention! Option report_unknown is enabled for sensor with id(s): %s",
-                    self.report_unknown_whitelist,
+                    [unk_key.hex().upper() for unk_key in self.report_unknown_whitelist],
                 )
         # prepare device:key lists to speedup parser
         if self.config[CONF_DEVICES]:
@@ -649,10 +663,17 @@ class HCIdump(Thread):
         if sensor_msg:
             measurements = list(sensor_msg.keys())
             device_type = sensor_msg["type"]
-            sensor_list = (
-                MEASUREMENT_DICT[device_type][0] + MEASUREMENT_DICT[device_type][1]
-            )
-            binary_list = MEASUREMENT_DICT[device_type][2] + ["battery"]
+            if device_type in MANUFACTURER_DICT:
+                sensor_list = (
+                    MEASUREMENT_DICT[device_type][0] + MEASUREMENT_DICT[device_type][1]
+                )
+                binary_list = MEASUREMENT_DICT[device_type][2] + ["battery"]
+            elif device_type in AUTO_MANUFACTURER_DICT:
+                sensor_list = AUTO_SENSOR_LIST
+                binary_list = AUTO_BINARY_SENSOR_LIST + ["battery"]
+            else:
+                return
+
             measuring = any(x in measurements for x in sensor_list)
             binary = any(x in measurements for x in binary_list)
             if binary == measuring:
@@ -741,7 +762,7 @@ class HCIdump(Thread):
                     if (interface_is_ok[hci] is False) and (self.config[CONF_BT_AUTO_RESTART] is True):
                         interfaces_to_reset.append(hci)
                 if interfaces_to_reset:
-                    ts_now = dt_util.now()
+                    ts_now = dt.now()
                     if (ts_now - self.last_bt_reset).seconds > 60:
                         for iface in interfaces_to_reset:
                             _LOGGER.error(

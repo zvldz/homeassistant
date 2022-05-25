@@ -61,7 +61,7 @@ recorder:           !include includes/recorder.yaml
 logbook:            !include includes/logbook.yaml
 influxdb:           !include includes/influxdb.yaml
 logger:             !include includes/logger.yaml
-mqtt:               !include includes/mqtt.yaml
+#mqtt:               !include includes/mqtt.yaml
 device_tracker:     !include includes/device_tracker.yaml
 telegram_bot:       !include includes/telegram_bot.yaml
 notify:             !include includes/notify.yaml

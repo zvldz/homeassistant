@@ -32,7 +32,7 @@ class TelnetShell:
             raw = await self.exec(command, as_bytes=True, timeout=60)
             # b"cat: can't open ..."
             return base64.b64decode(raw) if as_base64 else raw
-        except:
+        except Exception:
             return None
 
     async def reboot(self):
@@ -41,6 +41,12 @@ class TelnetShell:
         await self.writer.drain()
         # have to wait or the magic won't happen
         await asyncio.sleep(1)
+
+    async def only_one(self) -> bool:
+        # run shell with dummy option, so we can check if second Hass connected
+        # shell will close automatically when disconnected from telnet
+        raw = await self.exec("(ps|grep -v grep|grep -q 'sh +o') || sh +o")
+        return "set -o errexit" in raw
 
     async def get_version(self) -> str:
         raise NotImplementedError

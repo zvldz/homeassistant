@@ -97,14 +97,6 @@ cards:
                 - font-size: 14px
 
           - type: custom:button-card
-            name: "Power HAS"
-            entity: switch.gosund_socket_2
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
             name: "Reboot HA1"
             icon: "mdi:autorenew"
             tap_action:
@@ -114,6 +106,24 @@ cards:
               service_data:
                 entity_id: script.reboot_ha1
             size: 20%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            name: "Power HAS"
+            entity: switch.gosund_socket_2
+            size: 15%
+            styles:
+              card:
+                - font-size: 14px
+
+          - type: custom:button-card
+            name: "Power HAF"
+            entity: switch.fazenda_socket
+            size: 15%
             styles:
               card:
                 - font-size: 14px
@@ -179,11 +189,13 @@ cards:
               service: watchman.report
               service_data:
                 send_notification: false
-            size: 20%
+            size: 5%
             styles:
               card:
                 - font-size: 14px
 
+      - type: horizontal-stack
+        cards:
           - type: custom:button-card
             name: "Purge DB to 0 d"
             icon: "mdi:database-refresh-outline"

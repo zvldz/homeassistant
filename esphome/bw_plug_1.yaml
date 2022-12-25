@@ -6,7 +6,8 @@ substitutions:
   voltage_div: '878'
 
 esphome:
-  name: ${device_name}
+  #name: ${device_name}
+  name: bw-plug-1
   platform: ESP8266
   board: esp8285
 
@@ -23,7 +24,6 @@ wifi:
 
 time:
   - platform: homeassistant
-    id: homeassistant_time
 
 logger:
 api:
@@ -74,7 +74,7 @@ sensor:
       unit_of_measurement: A
     voltage:
       name: ${device_name}_voltage
-      icon: mdi:flash-circle
+      icon: mdi:lightning-bolt-circle
       unit_of_measurement: V
     power:
       name: ${device_name}_power
@@ -114,7 +114,7 @@ switch:
     id: relay
     name: ${device_name}_relay
     icon: mdi:power-socket-eu
-    restore_mode: ALWAYS_ON
+    restore_mode: RESTORE_DEFAULT_OFF
     pin: GPIO14
     on_turn_on:
       - switch.turn_on: blue_led

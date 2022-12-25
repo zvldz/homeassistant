@@ -21,7 +21,6 @@ wifi:
 
 time:
   - platform: homeassistant
-    id: homeassistant_time
 
 api:
 ota:
@@ -92,7 +91,7 @@ sensor:
       unit_of_measurement: A
     voltage:
       name: ${device_name}_voltage
-      icon: mdi:flash-circle
+      icon: mdi:lightning-bolt-circle
       unit_of_measurement: V
     power:
       id: ${device_name}_power

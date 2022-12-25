@@ -32,9 +32,6 @@ switch.0x158d000211434a_switch:
 sensor.0x158d000211434a_action:
   friendly_name: "Kitchen Switch"
 
-sensor.0x158d000211434a_zigbee:
-  friendly_name: "Kitchen Switch"
-
 sensor.0x158d000211434a_power:
   friendly_name: "Kitchen Switch"
 
@@ -89,19 +86,19 @@ switch.0x158d0001f9aa37_switch:
   friendly_name: "Balcony 2"
   icon: "mdi:light-switch"
 
-sensor.0x158d0001f9aaae_action:
+sensor.0x158d0002113ace_action:
   friendly_name: "Hallway 1 Switch"
 
-sensor.0x158d0001f9aaae_zigbee:
+sensor.0x158d0002113ace_zigbee:
   friendly_name: "Hallway 1 Switch"
 
-sensor.0x158d0001f9aaae_power:
+sensor.0x158d0002113ace_power:
   friendly_name: "Hallway 1 Switch"
 
-sensor.0x158d0001f9aaae_energy:
+sensor.0x158d0002113ace_energy:
   friendly_name: "Hallway 1 Switch"
 
-switch.0x158d0001f9aaae_switch:
+switch.0x158d0002113ace_switch:
   friendly_name: "Hallway 1"
   icon: "mdi:light-switch"
 
@@ -142,7 +139,7 @@ switch.0x158d00022a8150_channel_1:
   icon: "mdi:light-switch"
 
 switch.0x158d00022a8150_channel_2:
-  friendly_name: "Hallway 3 Switch"
+  friendly_name: "Hallway 3"
   icon: "mdi:light-switch"
 
 sensor.0x158d00022a8150_power:
@@ -183,9 +180,6 @@ switch.bw_plug_2_relay:
 switch.bw_plug_2_relay_usb:
   friendly_name: "Socket 3 USB"
   icon: "mdi:power-socket-eu"
-
-switch.kitchen_lamp_mini:
-  friendly_name: "Kitchen Mini"
 
 sensor.0x158d00022360fe_action:
   friendly_name: "WC Switch"

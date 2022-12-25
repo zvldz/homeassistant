@@ -9,8 +9,17 @@ esphome:
 wifi:
   output_power: 20dB
   fast_connect: true
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
+  manual_ip:
+    static_ip: 192.168.1.46
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1
+    dns2: 1.1.1.1
+
+time:
+  - platform: homeassistant
 
 logger:
 api:
@@ -26,6 +35,7 @@ esp32_ble_tracker:
 
 dallas:
   - pin: GPIO13
+#  - pin: 13
 
 binary_sensor:
   - platform: status
@@ -40,13 +50,23 @@ sensor:
     name: ${device_name}_wifi_signal
     icon: mdi:wifi
 
-# - platform: template
-#   name: ${device_name}_free_heap
-#   icon: mdi:memory
-#   lambda: "return ESP.getFreeHeap();"
-#   update_interval: 20s
-#   unit_of_measurement: bytes
-#   accuracy_decimals: 0
+  - platform: xiaomi_lywsdcgq
+    mac_address: !secret kitchen_bt_mac
+    temperature:
+      name: kitchen_bt_temperature
+    humidity:
+      name: kitchen_bt_humidity
+    battery_level:
+      name: kitchen_bt_battery_level
+
+  - platform: xiaomi_lywsdcgq
+    mac_address: !secret living_room_bt_mac
+    temperature:
+      name: living_room_bt_temperature
+    humidity:
+      name: living_room_bt_humidity
+    battery_level:
+      name: living_room_bt_battery_level
 
   - platform: xiaomi_hhccjcy01
     mac_address: !secret miflora1
@@ -70,16 +90,16 @@ sensor:
     conductivity:
       name: mf2_soil
 
-  - platform: xiaomi_hhccjcy01
-    mac_address: !secret miflora3
-    temperature:
-      name: mf3_temperature
-    moisture:
-      name: mf3_moisture
-    illuminance:
-      name: mf3_illuminance
-    conductivity:
-      name: mf3_soil
+#  - platform: xiaomi_hhccjcy01
+#    mac_address: !secret miflora3
+#    temperature:
+#      name: mf3_temperature
+#    moisture:
+#      name: mf3_moisture
+#    illuminance:
+#      name: mf3_illuminance
+#    conductivity:
+#      name: mf3_soil
 
   - platform: dallas
     address: !secret dallas_2

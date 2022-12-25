@@ -4,6 +4,7 @@ homeassistant:
   longitude:  !secret home_longitude
   elevation:  !secret home_elevation
   time_zone:  !secret home_timezone
+  country:    !secret home_country
   customize:  !include_dir_merge_named includes/customizations
   packages:   !include_dir_named includes/packages
   unit_system: metric

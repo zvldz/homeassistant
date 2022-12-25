@@ -5,7 +5,6 @@ import asyncio
 from dataclasses import asdict, dataclass, field
 from datetime import timedelta
 import gzip
-import json
 import logging
 import math
 import os
@@ -29,10 +28,11 @@ from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_FINAL_WRITE, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.issue_registry import async_create_issue, IssueSeverity
 from homeassistant.loader import Integration
 from homeassistant.util import dt
 
-from .const import TV
+from .const import DOMAIN, TV, URL_BASE
 from .enums import (
     ConfigurationType,
     HacsCategory,
@@ -53,7 +53,8 @@ from .exceptions import (
 )
 from .repositories import RERPOSITORY_CLASSES
 from .utils.decode import decode_content
-from .utils.logger import get_hacs_logger
+from .utils.json import json_loads
+from .utils.logger import LOGGER
 from .utils.queue_manager import QueueManager
 from .utils.store import async_load_from_store, async_save_to_store
 
@@ -163,8 +164,8 @@ class HacsStatus:
 
     startup: bool = True
     new: bool = False
-    reloading_data: bool = False
-    upgrading_all: bool = False
+    active_frontend_endpoint_plugin: bool = False
+    active_frontend_endpoint_theme: bool = False
 
 
 @dataclass
@@ -188,8 +189,8 @@ class HacsRepositories:
 
     _default_repositories: set[str] = field(default_factory=set)
     _repositories: list[HacsRepository] = field(default_factory=list)
-    _repositories_by_full_name: dict[str, str] = field(default_factory=dict)
-    _repositories_by_id: dict[str, str] = field(default_factory=dict)
+    _repositories_by_full_name: dict[str, HacsRepository] = field(default_factory=dict)
+    _repositories_by_id: dict[str, HacsRepository] = field(default_factory=dict)
     _removed_repositories: list[RemovedRepository] = field(default_factory=list)
 
     @property
@@ -214,8 +215,15 @@ class HacsRepositories:
         if repo_id == "0":
             return
 
-        if self.is_registered(repository_id=repo_id):
-            return
+        if registered_repo := self._repositories_by_id.get(repo_id):
+            if registered_repo.data.full_name == repository.data.full_name:
+                return
+
+            self.unregister(registered_repo)
+
+            registered_repo.data.full_name = repository.data.full_name
+            registered_repo.data.new = False
+            repository = registered_repo
 
         if repository not in self._repositories:
             self._repositories.append(repository)
@@ -347,7 +355,7 @@ class HacsBase:
     githubapi: GitHubAPI | None = None
     hass: HomeAssistant | None = None
     integration: Integration | None = None
-    log: logging.Logger = get_hacs_logger()
+    log: logging.Logger = LOGGER
     queue: QueueManager | None = None
     recuring_tasks = []
     repositories: HacsRepositories = HacsRepositories()
@@ -473,7 +481,7 @@ class HacsBase:
         if response is None:
             return []
 
-        return json.loads(decode_content(response.data.content))
+        return json_loads(decode_content(response.data.content))
 
     async def async_github_api_method(
         self,
@@ -563,11 +571,6 @@ class HacsBase:
 
         if repository_id is not None:
             repository.data.id = repository_id
-
-        if str(repository.data.id) != "0" and (
-            exists := self.repositories.get_by_id(repository.data.id)
-        ):
-            self.repositories.unregister(exists)
 
         else:
             if self.hass is not None and ((check and repository.data.new) or self.status.new):
@@ -731,7 +734,6 @@ class HacsBase:
             entry=self.configuration.config_entry,
             platforms=platforms,
         )
-
         self.hass.config_entries.async_setup_platforms(self.configuration.config_entry, platforms)
 
     @callback
@@ -880,14 +882,30 @@ class HacsBase:
                 continue
             if repository.data.full_name in self.common.ignored_repositories:
                 continue
-            if repository.data.installed and removed.removal_type != "critical":
-                self.log.warning(
-                    "You have '%s' installed with HACS "
-                    "this repository has been removed from HACS, please consider removing it. "
-                    "Removal reason (%s)",
-                    repository.data.full_name,
-                    removed.reason,
-                )
+            if repository.data.installed:
+                if removed.removal_type != "critical":
+                    if self.configuration.experimental:
+                        async_create_issue(
+                            hass=self.hass,
+                            domain=DOMAIN,
+                            issue_id=f"removed_{repository.data.id}",
+                            is_fixable=False,
+                            issue_domain=DOMAIN,
+                            severity=IssueSeverity.WARNING,
+                            translation_key="removed",
+                            translation_placeholders={
+                                "name": repository.data.full_name,
+                                "reason": removed.reason,
+                                "repositry_id": repository.data.id,
+                            },
+                        )
+                    self.log.warning(
+                        "You have '%s' installed with HACS "
+                        "this repository has been removed from HACS, please consider removing it. "
+                        "Removal reason (%s)",
+                        repository.data.full_name,
+                        removed.reason,
+                    )
             else:
                 need_to_save = True
                 repository.remove()
@@ -903,7 +921,7 @@ class HacsBase:
 
         for repository in self.repositories.list_downloaded:
             if repository.data.category in self.common.categories:
-                self.queue.add(repository.update_repository())
+                self.queue.add(repository.update_repository(ignore_issues=True))
 
         self.log.debug("Recurring background task for downloaded repositories done")
 
@@ -968,3 +986,43 @@ class HacsBase:
         if was_installed:
             self.log.critical("Restarting Home Assistant")
             self.hass.async_create_task(self.hass.async_stop(100))
+
+    @callback
+    def async_setup_frontend_endpoint_plugin(self) -> None:
+        """Setup the http endpoints for plugins if its not already handled."""
+        if self.status.active_frontend_endpoint_plugin or not os.path.exists(
+            self.hass.config.path("www/community")
+        ):
+            return
+
+        self.log.info("Setting up plugin endpoint")
+        use_cache = self.core.lovelace_mode == "storage"
+        self.log.info(
+            "<HacsFrontend> %s mode, cache for /hacsfiles/: %s",
+            self.core.lovelace_mode,
+            use_cache,
+        )
+
+        self.hass.http.register_static_path(
+            URL_BASE,
+            self.hass.config.path("www/community"),
+            cache_headers=use_cache,
+        )
+
+        self.status.active_frontend_endpoint_plugin = True
+
+    @callback
+    def async_setup_frontend_endpoint_themes(self) -> None:
+        """Setup the http endpoints for themes if its not already handled."""
+        if (
+            self.configuration.experimental
+            or self.status.active_frontend_endpoint_theme
+            or not os.path.exists(self.hass.config.path("themes"))
+        ):
+            return
+
+        self.log.info("Setting up themes endpoint")
+        # Register themes
+        self.hass.http.register_static_path(f"{URL_BASE}/themes", self.hass.config.path("themes"))
+
+        self.status.active_frontend_endpoint_theme = True

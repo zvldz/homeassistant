@@ -1,5 +1,5 @@
 - alias: check camera1
-  initial_state: true
+  initial_state: false
   trigger:
     - platform: state
       entity_id: binary_sensor.camera1
@@ -18,6 +18,9 @@
     - condition: state
       entity_id: binary_sensor.camera1
       state: 'off'
+    - condition: state
+      entity_id: sensor.mustek_status_data
+      state: 'OL'
   action:
     - service: notify.telegram
       data:

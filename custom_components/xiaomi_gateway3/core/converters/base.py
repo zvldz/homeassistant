@@ -75,11 +75,13 @@ class BoolConv(Converter):
 
 
 @dataclass
-class ConstConv(Converter):
+class EventConv(Converter):
     value: Any = None
 
-    def decode(self, device: "XDevice", payload: dict, value: Any):
+    def decode(self, device: "XDevice", payload: dict, value: list):
         payload[self.attr] = self.value
+        if len(value) > 0:
+            payload.update(device.decode_lumi(value))
 
 
 @dataclass
@@ -282,6 +284,8 @@ class LockActionConv(Converter):
             payload["action"] = "error"
             payload["error"] = self.attr
             payload[self.attr] = value
+        elif self.attr in ("error", "method"):
+            payload[self.attr] = self.map.get(value)
 
 
 @dataclass

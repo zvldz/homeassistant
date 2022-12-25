@@ -89,53 +89,6 @@ script:
           entity_id: input_number.gas_counter
           value: "{{ states('sensor.ha2_gas_counter') }}"
 
-  # Author @Enzokot
-  auto_local_temperature_calibration_trv:
-    alias: "Automatic calibration of local temperature of TRV"
-    icon: mdi:hydraulic-oil-temperature
-    mode: parallel
-    fields:
-      namevalve:
-        description: 'FRIENDLY_NAME from z2m'
-        example: 'Bedroom TRV'
-      objectvalve:
-        description: "Climate domain object name"
-        example: 'climate.bedroom_trv'
-      objectvalvewindow:
-        description: "Object name of window sensor"
-        example: 'switch.bedroom_trv_window_detection'
-      objectsensortemperature:
-        description: "Object name of external temperature sensor"
-        example: 'sensor.bedroom_temperature'
-    sequence:
-      - variables:
-          calibration_local: >
-            {{ ((states(objectsensortemperature) | float(0)
-              - state_attr(objectvalve, 'local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
-              + states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') | float(0)
-            }}
-          calibration_local_condition: >
-            {{ ((states(objectsensortemperature) | float(0)
-              - states(objectvalve | replace('climate.', 'number.') + '_local_temperature') | float(0)) / 0.5) | round(0, 'common', 0) * 0.5
-            }}
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: >-
-              {{ calibration_local_condition != 0
-                and is_state(objectvalvewindow, 'off')
-                and states(objectsensortemperature) not in ['unavailable', 'unknown', '']
-                and state_attr(objectvalve, 'local_temperature')  not in ['unavailable', 'unknown', '']
-              }}
-          sequence:
-            - service: mqtt.publish
-              data:
-                topic: "zigbee2mqtt/{{- namevalve -}}/set/local_temperature_calibration"
-                payload: '{{ calibration_local }}'
-            - service: notify.climate_notify
-              data:
-                message: "calibration_log [{{ namevalve }}] ({{ states(objectsensortemperature) }}) - ({{ state_attr(objectvalve, 'local_temperature') }}) + ({{ states(objectvalve | replace('climate.', 'number.') + '_local_temperature_calibration') }})"
-
 automation:
   - alias: "Sync TRV with Boiler"
     initial_state: true
@@ -149,6 +102,8 @@ automation:
           - climate.living_room_trv
           - climate.master_bedroom_trv
           - climate.bedroom_trv
+      - service: switch.turn_on
+        entity_id: switch.sonoff_pump_relay
 
 # - alias: "Sync Pump with Boiler"
 #   initial_state: true
@@ -184,7 +139,7 @@ automation:
       - platform: time
         at:
           - '06:00:00'
-          - '16:30:00'
+          - '17:30:00'
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule
@@ -234,35 +189,6 @@ automation:
         data:
           entity_id: input_number.gas_counter
           value: "{{ (states.input_number.gas_counter.state | float(0) + 0.01 ) | round(2) }}"
-
-  - alias: auto_local_temperature_calibration_trv
-    initial_state: 'true'
-    trigger:
-      - platform: time_pattern
-        minutes: "/10"
-    condition:
-      - condition: state
-        entity_id: switch.boiler_shelly
-        state: 'on'
-    action:
-      - service: script.auto_local_temperature_calibration_trv
-        data:
-          namevalve: 'living_room_trv'
-          objectvalve: 'climate.living_room_trv'
-          objectvalvewindow: 'switch.living_room_trv_window_detection'
-          objectsensortemperature: 'sensor.0x158d0002bfe958_temperature'
-      - service: script.auto_local_temperature_calibration_trv
-        data:
-          namevalve: 'master_bedroom_trv'
-          objectvalve: 'climate.master_bedroom_trv'
-          objectvalvewindow: 'switch.master_bedroom_trv_window_detection'
-          objectsensortemperature: 'sensor.0x158d0002323856_temperature'
-      - service: script.auto_local_temperature_calibration_trv
-        data:
-          namevalve: 'bedroom_trv'
-          objectvalve: 'climate.bedroom_trv'
-          objectvalvewindow: 'switch.bedroom_trv_window_detection'
-          objectsensortemperature: 'sensor.0x158d0001ab2a27_temperature'
 
 utility_meter:
   gas_hourly:

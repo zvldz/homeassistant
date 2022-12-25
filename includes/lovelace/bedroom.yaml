@@ -91,7 +91,7 @@ cards:
                 name: false
               - entity: sensor.0x158d0001ab2a27_humidity
                 name: false
-          - entity: binary_sensor.0x00158d0002c08849_motion
+          - entity: binary_sensor.0x158d0002c08849_motion
             secondary_info: last-changed
 
   - type: vertical-stack

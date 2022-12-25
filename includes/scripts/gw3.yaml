@@ -3,14 +3,14 @@ reboot_gateway_1:
     - service: select.select_option
       data:
         entity_id: select.6490c178ac26_command
-        option: "Gateway Reboot"
+        option: "Gateway reboot"
 
 reboot_gateway_2:
   sequence:
     - service: select.select_option
       data:
         entity_id: select.6490c1783f01_command
-        option: "Gateway Reboot"
+        option: "Gateway reboot"
 
 dump_gateway_1:
   sequence:

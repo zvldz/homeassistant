@@ -1,12 +1,12 @@
 """Class for plugins in HACS."""
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 from ..enums import HacsCategory, HacsDispatchEvent
 from ..exceptions import HacsException
 from ..utils.decorator import concurrent
+from ..utils.json import json_loads
 from .base import HacsRepository
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class HacsPluginRepository(HacsRepository):
 
         if self.content.path.remote is None:
             raise HacsException(
-                f"Repository structure for {self.ref.replace('tags/','')} is not compliant"
+                f"{self.string} Repository structure for {self.ref.replace('tags/','')} is not compliant"
             )
 
         if self.content.path.remote == "release":
@@ -53,6 +53,10 @@ class HacsPluginRepository(HacsRepository):
                     self.logger.error("%s %s", self.string, error)
         return self.validate.success
 
+    async def async_post_installation(self):
+        """Run post installation steps."""
+        self.hacs.async_setup_frontend_endpoint_plugin()
+
     @concurrent(concurrenttasks=10, backoff_time=5)
     async def update_repository(self, ignore_issues=False, force=False):
         """Update."""
@@ -64,7 +68,7 @@ class HacsPluginRepository(HacsRepository):
 
         if self.content.path.remote is None:
             self.validate.errors.append(
-                f"Repository structure for {self.ref.replace('tags/','')} is not compliant"
+                f"{self.string} Repository structure for {self.ref.replace('tags/','')} is not compliant"
             )
 
         if self.content.path.remote == "release":
@@ -86,7 +90,7 @@ class HacsPluginRepository(HacsRepository):
         """Get package content."""
         try:
             package = await self.repository_object.get_contents("package.json", self.ref)
-            package = json.loads(package.content)
+            package = json_loads(package.content)
 
             if package:
                 self.data.authors = package["author"]
@@ -95,10 +99,6 @@ class HacsPluginRepository(HacsRepository):
 
     def update_filenames(self) -> None:
         """Get the filename to target."""
-        possible_locations = (
-            ("",) if self.repository_manifest.content_in_root else ("release", "dist", "")
-        )
-
         # Handler for plug requirement 3
         if self.repository_manifest.filename:
             valid_filenames = (self.repository_manifest.filename,)
@@ -110,25 +110,25 @@ class HacsPluginRepository(HacsRepository):
                 f"{self.data.name}-bundle.js",
             )
 
-        for location in possible_locations:
-            if location == "release":
-                if not self.releases.objects:
-                    continue
+        if not self.repository_manifest.content_in_root:
+            if self.releases.objects:
                 release = self.releases.objects[0]
-                if not release.assets:
-                    continue
-                asset = release.assets[0]
-                for filename in valid_filenames:
-                    if filename == asset.name:
-                        self.data.file_name = filename
-                        self.content.path.remote = "release"
-                        break
-
-            else:
-                for filename in valid_filenames:
-                    if f"{location+'/' if location else ''}{filename}" in [
-                        x.full_path for x in self.tree
+                if release.assets:
+                    if assetnames := [
+                        filename
+                        for filename in valid_filenames
+                        for asset in release.assets
+                        if filename == asset.name
                     ]:
-                        self.data.file_name = filename.split("/")[-1]
-                        self.content.path.remote = location
-                        break
+                        self.data.file_name = assetnames[0]
+                        self.content.path.remote = "release"
+                        return
+
+        for location in ("",) if self.repository_manifest.content_in_root else ("dist", ""):
+            for filename in valid_filenames:
+                if f"{location+'/' if location else ''}{filename}" in [
+                    x.full_path for x in self.tree
+                ]:
+                    self.data.file_name = filename.split("/")[-1]
+                    self.content.path.remote = location
+                    break

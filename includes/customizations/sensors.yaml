@@ -431,6 +431,9 @@ sensor.0x158d00032b7db7_zigbee:
 sensor.0x158d000393f29a_battery:
   friendly_name: "Gas Counter"
 
+sensor.0x158d000393f29a_zigbee:
+  friendly_name: "Gas Counter"
+
 sensor.0x158d0004466f8f_battery:
   friendly_name: "WC Motion"
 
@@ -447,27 +450,30 @@ sensor.0x158d0004466f8f_illuminance:
   friendly_name: "WC  Illum"
 
 binary_sensor.0x158d00044a26ba_motion:
-  friendly_name: "Bathroom Motion"
+  friendly_name: "Bathroom Motion 1"
 
 sensor.0x158d00044a26ba_battery:
-  friendly_name: "Bathroom Motion"
+  friendly_name: "Bathroom Motion 1"
 
 sensor.0x158d00044a26ba_zigbee:
-  friendly_name: "Bathroom Motion"
+  friendly_name: "Bathroom Motion 1"
 
 sensor.0x158d00044a26ba_illuminance:
-  friendly_name: "Bathroom Illum"
+  friendly_name: "Bathroom Illum 1"
 
-#sensor.0x158d00044a26ba_voltage:
-#  friendly_name: "Bathroom Motion"
+binary_sensor.0x54ef441000268428_motion:
+  friendly_name: "Bathroom Motion 2"
 
-binary_sensor.0x00158d0002c08849_motion:
+sensor.0x54ef441000268428_battery:
+  friendly_name: "Bathroom Motion 2"
+
+binary_sensor.0x158d0002c08849_motion:
   friendly_name: "Bedroom Motion"
 
-sensor.0x00158d0002c08849_battery:
+sensor.0x158d0002c08849_battery:
   friendly_name: "Bedroom Motion"
 
-sensor.0x00158d0002c08849_zigbee:
+sensor.0x158d0002c08849_zigbee:
   friendly_name: "Bedroom Motion"
 
 sensor.0x54ef4410000c1dec_illuminance:

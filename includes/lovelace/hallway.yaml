@@ -31,7 +31,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d0001f9aaae_switch
+            entity: switch.0x158d0002113ace_switch
             size: 20%
             styles:
               card:
@@ -172,10 +172,10 @@ cards:
           - entity: binary_sensor.0x158d00032b7db7_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00032b7db7_contact
+          - entity: binary_sensor.0x158d0002fd4381_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d0002fd4381_contact
+          - entity: binary_sensor.0x158d00024de627_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: binary_sensor.0x158d00023aa420_moisture

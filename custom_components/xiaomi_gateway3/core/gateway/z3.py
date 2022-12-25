@@ -26,8 +26,6 @@ class Z3Gateway(GatewayBase):
 
     async def z3_prepare_gateway(self, sh: shell.TelnetShell):
         assert self.ieee, "Z3Gateway depends on SilabsGateway"
-        self.debug("Init Zigbee parents")
-        sh.patch_zigbee_parents()
 
     async def z3_mqtt_connect(self):
         # delay first scan
@@ -59,7 +57,7 @@ class Z3Gateway(GatewayBase):
 
     async def z3_process_log(self, payload: str):
         if payload.startswith("CLI command executed"):
-            cmd = payload[22:-1]
+            cmd = payload[22:]
             if cmd == "debugprint all_on" or self.z3_buffer is None:
                 # reset all buffers
                 self.z3_buffer = {}

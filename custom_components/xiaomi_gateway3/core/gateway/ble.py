@@ -13,7 +13,7 @@ class BLEGateway(GatewayBase):
         self.dispatcher_connect(SIGNAL_PREPARE_GW, self.ble_prepare_gateway)
         self.dispatcher_connect(SIGNAL_MQTT_PUB, self.ble_mqtt_publish)
 
-    async def ble_read_devices(self, sh: shell.ShellGw3):
+    async def ble_read_devices(self, sh: shell.ShellMGW):
         try:
             # prevent read database two times
             db = await sh.read_db_bluetooth()
@@ -30,36 +30,17 @@ class BLEGateway(GatewayBase):
         except Exception:
             pass
 
-    async def ble_prepare_gateway(self, sh: shell.ShellGw3):
+    async def ble_prepare_gateway(self, sh: shell.ShellMGW):
         if self.available is None:
             await self.ble_read_devices(sh)
 
-        ok = await sh.check_bt()
-        if ok:
-            self.debug("Patch Bluetooth")
-            sh.patch_bluetooth_mqtt()
-        else:
-            self.error("Can't patch Bluetooth utility")
-
-        if not self.options.get('memory'):
-            return
-
-        if ok:
+        if self.options.get('memory') and sh.model == "mgw":
             self.debug("Init Bluetooth in memory storage")
             sh.patch_memory_bluetooth()
-        else:
-            self.debug("Disable Bluetooth")
-            sh.patch_disable_bluetooth()
 
     async def ble_mqtt_publish(self, msg: MQTTMessage):
-        if msg.topic == 'log/miio':
-            for data in miot.decode_miio_json(
-                    msg.payload, b'_async.ble_event'
-            ):
-                await self.ble_process_event(data["params"])
-
-        elif msg.topic == 'log/ble':
-            await self.ble_process_event_fix(msg.json)
+        if msg.topic == "miio/report" and b'"_async.ble_event"' in msg.payload:
+            await self.ble_process_event(msg.json["params"])
 
     async def ble_process_event(self, data: dict):
         # {'dev': {'did': 'blt.3.xxx', 'mac': 'AA:BB:CC:DD:EE:FF', 'pdid': 2038},
@@ -101,28 +82,6 @@ class BLEGateway(GatewayBase):
         payload = device.decode("mibeacon", payload)
         device.update(payload)
         self.debug_device(device, "recv", payload, "BLEE")
-
-    async def ble_process_event_fix(self, payload: dict):
-        # {'did':'blt.3.xxx','eid':4104,'edata':'0b','pdid':152,'seq':3}
-
-        device = next((
-            d for d in self.devices.values() if d.did == payload['did']
-        ), None)
-
-        if not device:
-            self.debug(f"Unregistered BLEF device {payload}")
-            return
-
-        if device.extra.get('seq') == payload['seq']:
-            return
-        device.extra['seq'] = payload['seq']
-
-        if BLE in device.entities:
-            device.update(device.decode(BLE, payload))
-
-        payload = device.decode("mibeacon", payload)
-        device.update(payload)
-        self.debug_device(device, "recv", payload, "BLEF")
 
 
 def reverse_mac(s: str):

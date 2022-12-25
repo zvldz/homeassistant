@@ -18,7 +18,7 @@
     - service: switch.turn_on
       entity_id:
         - switch.0x158d0002112b1e_switch
-        - switch.0x158d0001f9aaae_switch
+        - switch.0x158d0002113ace_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -56,11 +56,11 @@
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.0x158d0001f9aaae_switch
+    entity_id: switch.0x158d0002113ace_switch
     state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x158d0001f9aaae_switch
+      entity_id: switch.0x158d0002113ace_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -75,7 +75,7 @@
     to: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.0x158d0001f9aaae_switch
+      entity_id: switch.0x158d0002113ace_switch
     - service: timer.cancel
       entity_id: timer.hallway_light
 
@@ -83,7 +83,7 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x158d0001f9aaae_switch
+    entity_id: switch.0x158d0002113ace_switch
     from: 'off'
     to: 'on'
   condition:
@@ -102,7 +102,7 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x158d0001f9aaae_switch
+    entity_id: switch.0x158d0002113ace_switch
     from: 'on'
     to: 'off'
   action:
@@ -129,7 +129,7 @@
     service: switch.turn_off
     entity_id:
       - switch.0x158d0002112b1e_switch
-      - switch.0x158d0001f9aaae_switch
+      - switch.0x158d0002113ace_switch
 
 - alias: "Hallway button is pressed and held"
   initial_state: true

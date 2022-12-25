@@ -17,7 +17,7 @@ def parse_thermoplus(self, data, source_mac, rssi):
         device_id = data[2]
         if device_id == 0x10:
             device_type = "Lanyard/mini hygrometer"
-        elif device_id in [0x11, 0x15]:
+        elif device_id in [0x11, 0x15, 0x18]:
             device_type = "Smart hygrometer"
         else:
             device_type = None
@@ -28,7 +28,7 @@ def parse_thermoplus(self, data, source_mac, rssi):
 
         xvalue = data[12:18]
         (volt, temp, humi) = unpack("<HhH", xvalue)
-        batt = 2500
+
         if volt >= 3000:
             batt = 100
         elif volt >= 2600:

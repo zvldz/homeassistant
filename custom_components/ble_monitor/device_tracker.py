@@ -3,9 +3,7 @@ from datetime import timedelta
 import asyncio
 import logging
 
-from homeassistant.components.device_tracker.const import (
-    SOURCE_TYPE_BLUETOOTH_LE,
-)
+from homeassistant.components.device_tracker import SourceType
 
 from homeassistant.components.device_tracker.config_entry import ScannerEntity
 
@@ -114,7 +112,7 @@ class BLEupdaterTracker:
 
         # Set up device trackers of configured devices on startup when device tracker is available in device registry
         if self.config[CONF_DEVICES]:
-            dev_registry = await device_registry.async_get_registry(hass)
+            dev_registry = device_registry.async_get(hass)
             for device in self.config[CONF_DEVICES]:
                 key = dict_get_or(device)
                 if CONF_DEVICE_TRACK in device and device[CONF_DEVICE_TRACK]:
@@ -273,9 +271,9 @@ class BleScannerEntity(ScannerEntity, RestoreEntity):
         return self._unique_id
 
     @property
-    def source_type(self):
+    def source_type(self) -> SourceType:
         """Return the source type, eg gps or router, of the device."""
-        return SOURCE_TYPE_BLUETOOTH_LE
+        return SourceType.BLUETOOTH_LE
 
     @property
     def mac_address(self):

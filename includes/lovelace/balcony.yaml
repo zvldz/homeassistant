@@ -23,39 +23,27 @@ cards:
           - type: custom:button-card
             entity: switch.0x158d00022ab4bf_switch
             icon: "mdi:light-switch"
-            size: 25%
+            size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
             entity: switch.0x158d0001f9aa37_switch
             icon: "mdi:light-switch"
-            size: 25%
+            size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
             entity: switch.0x158d0002114338_switch
             icon: "mdi:light-switch"
-            size: 25%
+            size: 35%
             styles:
               card:
                 - font-size: 14px
-
-      - type: horizontal-stack
-        cards:
           - type: custom:button-card
             entity: switch.0x158d0002235125_switch
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            entity: switch.gosund_socket_1
-            name: "Socket"
-            icon: "mdi:power-socket-de"
-            size: 15%
+            size: 35%
             styles:
               card:
                 - font-size: 14px
@@ -94,18 +82,18 @@ cards:
           - temperature:sensor.mf2_temperature
           - conductivity:sensor.mf2_soil
 
-      - type: custom:miflora-card
-        title: 'Flower 3'
-        image: img/flower3.jpg
-        min_moisture: 15
-        max_moisture: 60
-        min_conductivity: 350
-        min_temperature: 12
-        entities:
-          - moisture:sensor.mf3_moisture
-          - intensity:sensor.mf3_illuminance
-          - temperature:sensor.mf3_temperature
-          - conductivity:sensor.mf3_soil
+#     - type: custom:miflora-card
+#       title: 'Flower 3'
+#       image: img/flower3.jpg
+#       min_moisture: 15
+#       max_moisture: 60
+#       min_conductivity: 350
+#       min_temperature: 12
+#       entities:
+#         - moisture:sensor.mf3_moisture
+#         - intensity:sensor.mf3_illuminance
+#         - temperature:sensor.mf3_temperature
+#         - conductivity:sensor.mf3_soil
 
   - type: vertical-stack
     cards:

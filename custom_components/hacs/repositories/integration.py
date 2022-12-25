@@ -1,16 +1,18 @@
 """Class for integrations in HACS."""
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING, Any
 
+from homeassistant.helpers.issue_registry import async_create_issue, IssueSeverity
 from homeassistant.loader import async_get_custom_components
 
+from ..const import DOMAIN
 from ..enums import HacsCategory, HacsDispatchEvent, HacsGitHubRepo, RepositoryFile
 from ..exceptions import AddonRepositoryException, HacsException
 from ..utils.decode import decode_content
 from ..utils.decorator import concurrent
 from ..utils.filters import get_first_directory_in_directory
+from ..utils.json import json_loads
 from .base import HacsRepository
 
 if TYPE_CHECKING:
@@ -36,13 +38,27 @@ class HacsIntegrationRepository(HacsRepository):
 
     async def async_post_installation(self):
         """Run post installation steps."""
+        self.pending_restart = True
         if self.data.config_flow:
             if self.data.full_name != HacsGitHubRepo.INTEGRATION:
                 await self.reload_custom_components()
             if self.data.first_install:
                 self.pending_restart = False
-                return
-        self.pending_restart = True
+
+        if self.pending_restart and self.hacs.configuration.experimental:
+            self.logger.debug("%s Creating restart_required issue", self.string)
+            async_create_issue(
+                hass=self.hacs.hass,
+                domain=DOMAIN,
+                issue_id=f"restart_required_{self.data.id}_{self.ref}",
+                is_fixable=True,
+                issue_domain=self.data.domain or DOMAIN,
+                severity=IssueSeverity.WARNING,
+                translation_key="restart_required",
+                translation_placeholders={
+                    "name": self.display_name,
+                },
+            )
 
     async def validate_repository(self):
         """Validate."""
@@ -62,7 +78,7 @@ class HacsIntegrationRepository(HacsRepository):
                 ):
                     raise AddonRepositoryException()
                 raise HacsException(
-                    f"Repository structure for {self.ref.replace('tags/','')} is not compliant"
+                    f"{self.string} Repository structure for {self.ref.replace('tags/','')} is not compliant"
                 )
             self.content.path.remote = f"custom_components/{name}"
 
@@ -70,9 +86,9 @@ class HacsIntegrationRepository(HacsRepository):
         if manifest := await self.async_get_integration_manifest():
             try:
                 self.integration_manifest = manifest
-                self.data.authors = manifest["codeowners"]
+                self.data.authors = manifest.get("codeowners", [])
                 self.data.domain = manifest["domain"]
-                self.data.manifest_name = manifest["name"]
+                self.data.manifest_name = manifest.get("name")
                 self.data.config_flow = manifest.get("config_flow", False)
 
             except KeyError as exception:
@@ -110,9 +126,9 @@ class HacsIntegrationRepository(HacsRepository):
         if manifest := await self.async_get_integration_manifest():
             try:
                 self.integration_manifest = manifest
-                self.data.authors = manifest["codeowners"]
+                self.data.authors = manifest.get("codeowners", [])
                 self.data.domain = manifest["domain"]
-                self.data.manifest_name = manifest["name"]
+                self.data.manifest_name = manifest.get("name")
                 self.data.config_flow = manifest.get("config_flow", False)
 
             except KeyError as exception:
@@ -163,4 +179,4 @@ class HacsIntegrationRepository(HacsRepository):
             **{"params": {"ref": ref or self.version_to_download()}},
         )
         if response:
-            return json.loads(decode_content(response.data.content))
+            return json_loads(decode_content(response.data.content))

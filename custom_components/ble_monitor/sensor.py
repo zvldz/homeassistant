@@ -13,13 +13,14 @@ from homeassistant.const import (
     CONF_MAC,
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
+    MASS_KILOGRAMS,
 )
 
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.util import dt
-from homeassistant.util.temperature import convert as convert_temp
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .helper import (
     identifier_normalize,
@@ -55,6 +56,8 @@ from .const import (
     MANUFACTURER_DICT,
     MEASUREMENT_DICT,
     PROBES,
+    RENAMED_FIRMWARE_DICT,
+    RENAMED_MANUFACTURER_DICT,
     RENAMED_MODEL_DICT,
     DOMAIN,
     SENSOR_TYPES,
@@ -186,16 +189,19 @@ class BLEupdater:
                     device_id = dev.id
                     device_model = dev.model
                     firmware = dev.sw_version
-                    # migrate to new model name if changed
-                    if dev.model in RENAMED_MODEL_DICT:
-                        device_model = RENAMED_MODEL_DICT[dev.model]
+                    manufacturer = dev.manufacturer
+                    # migrate to new model/firmware/manufacturer if changed
+                    device_model = RENAMED_MODEL_DICT.get(device_model, device_model)
+                    firmware = RENAMED_FIRMWARE_DICT.get(firmware, firmware)
+                    manufacturer = RENAMED_MANUFACTURER_DICT.get(manufacturer, manufacturer)
                     # get all entities for this device
                     entity_list = hass.helpers.entity_registry.async_entries_for_device(
                         registry=ent_registry, device_id=device_id, include_disabled_entities=False
                     )
                     # find the measurement key for each entity
                     for entity in entity_list:
-                        unique_id_prefix = (entity.unique_id).removesuffix(key)
+                        unique_id_prefix = (entity.unique_id).removesuffix(key).removesuffix(dev.name)
+
                         for sensor_type in SENSOR_TYPES:
                             if sensor_type.unique_id == unique_id_prefix:
                                 sensor_key = sensor_type.key
@@ -203,7 +209,7 @@ class BLEupdater:
 
                     if device_model and firmware and auto_sensors:
                         sensors = await async_add_sensor(
-                            key, device_model, firmware, auto_sensors, dev.manufacturer
+                            key, device_model, firmware, auto_sensors, manufacturer
                         )
                     else:
                         continue
@@ -234,11 +240,12 @@ class BLEupdater:
                 rssi[key].append(int(data["rssi"]))
                 batt_attr = None
                 device_model = data["type"]
-                # migrate to new model name if changed
-                if device_model in RENAMED_MODEL_DICT:
-                    device_model = RENAMED_MODEL_DICT[device_model]
                 firmware = data["firmware"]
                 manufacturer = data["manufacturer"] if "manufacturer" in data else None
+                # migrate to new model/firmware/manufacturer if changed
+                device_model = RENAMED_MODEL_DICT.get(device_model, device_model)
+                firmware = RENAMED_FIRMWARE_DICT.get(firmware, firmware)
+                manufacturer = RENAMED_MANUFACTURER_DICT.get(manufacturer, manufacturer)
                 auto_sensors = set()
                 if device_model in AUTO_MANUFACTURER_DICT:
                     for measurement in AUTO_SENSOR_LIST:
@@ -336,11 +343,9 @@ class BaseSensor(RestoreEntity, SensorEntity):
     # |  |--TemperatureSensor (Class)
     # |  |  |**temperature
     # |  |  |**temperature probe 1 till 6
-    # |  |  |**temperature outdoor
     # |  |  |**temperature alarm
     # |  |--HumiditySensor (Class)
     # |  |  |**humidity
-    # |  |  |**humidity outdoor
     # |  |**moisture
     # |  |**pressure
     # |  |**conductivity
@@ -359,6 +364,8 @@ class BaseSensor(RestoreEntity, SensorEntity):
     # |  |**Air Quality Index
     # |--InstantUpdateSensor (Class)
     # |  |**consumable
+    # |  |**Pulse
+    # |  |**Shake
     # |  |--StateChangedSensor (Class)
     # |  |  |**mac
     # |  |  |**uuid
@@ -422,6 +429,7 @@ class BaseSensor(RestoreEntity, SensorEntity):
 
         self._device_settings = self.get_device_settings()
         self._device_name = self._device_settings["name"]
+        self._rdecimals = self._device_settings["decimals"]
         self._device_type = devtype
         self._device_firmware = firmware
         self._device_manufacturer = manufacturer \
@@ -487,10 +495,10 @@ class BaseSensor(RestoreEntity, SensorEntity):
             if old_state.attributes["unit_of_measurement"] in [TEMP_CELSIUS, TEMP_FAHRENHEIT]:
                 # Convert old state temperature to a temperature in the device setting temperature unit
                 self._attr_native_unit_of_measurement = self._device_settings["temperature unit"]
-                self._state = convert_temp(
-                    float(old_state.state),
-                    old_state.attributes["unit_of_measurement"],
-                    self._device_settings["temperature unit"]
+                self._state = TemperatureConverter.convert(
+                    value=float(old_state.state),
+                    from_unit=old_state.attributes["unit_of_measurement"],
+                    to_unit=self._device_settings["temperature unit"],
                 )
             else:
                 self._attr_native_unit_of_measurement = old_state.attributes["unit_of_measurement"]
@@ -615,7 +623,6 @@ class MeasuringSensor(BaseSensor):
     def __init__(self, config, key, devtype, firmware, description, manufacturer=None):
         """Initialize the sensor."""
         super().__init__(config, key, devtype, firmware, description, manufacturer)
-        self._rdecimals = self._device_settings["decimals"]
         self._jagged = False
         self._use_median = self._device_settings["use median"]
         self._period_cnt = 0
@@ -712,7 +719,11 @@ class TemperatureSensor(MeasuringSensor):
                 if self._fkey in dict_get_or(device).upper():
                     if CONF_TEMPERATURE_UNIT in device:
                         if device[CONF_TEMPERATURE_UNIT] == TEMP_FAHRENHEIT:
-                            temp_fahrenheit = convert_temp(temp, TEMP_CELSIUS, TEMP_FAHRENHEIT)
+                            temp_fahrenheit = TemperatureConverter.convert(
+                                value=temp,
+                                from_unit=TEMP_CELSIUS,
+                                to_unit=TEMP_FAHRENHEIT
+                            )
                             return temp_fahrenheit
                     break
         return temp
@@ -893,7 +904,7 @@ class AccelerationSensor(InstantUpdateSensor):
         if self.enabled is False:
             self.pending_update = False
             return
-        self._state = data[self.entity_description.key]
+        self._state = round(data[self.entity_description.key], self._rdecimals)
         self._extra_state_attributes["sensor_type"] = data["type"]
         self._extra_state_attributes["last_packet_id"] = data["packet"]
         self._extra_state_attributes["firmware"] = data["firmware"]
@@ -939,7 +950,7 @@ class WeightSensor(InstantUpdateSensor):
         if "weight unit" in data:
             self._attr_native_unit_of_measurement = data["weight unit"]
         else:
-            self._attr_native_unit_of_measurement = None
+            self._attr_native_unit_of_measurement = MASS_KILOGRAMS
         if batt_attr is not None:
             self._extra_state_attributes[ATTR_BATTERY_LEVEL] = batt_attr
         self.pending_update = True

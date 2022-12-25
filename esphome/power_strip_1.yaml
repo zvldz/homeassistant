@@ -27,7 +27,6 @@ captive_portal:
 
 time:
   - platform: homeassistant
-    id: homeassistant_time
 
 binary_sensor:
   - platform: status

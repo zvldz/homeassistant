@@ -10,7 +10,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.mustek_status_data
+        entity_id: sensor.ups_status_data
         from: 'OL'
         to: 'OB'
     action:
@@ -23,7 +23,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.mustek_status_data
+        entity_id: sensor.ups_status_data
         from: 'OB'
         to: 'OL'
     action:

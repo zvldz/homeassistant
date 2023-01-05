@@ -19,7 +19,7 @@
       entity_id: binary_sensor.camera1
       state: 'off'
     - condition: state
-      entity_id: sensor.mustek_status_data
+      entity_id: sensor.ups_status_data
       state: 'OL'
   action:
     - service: notify.telegram

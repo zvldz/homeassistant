@@ -431,7 +431,7 @@ cards:
                 padding: 0
               filter:
                 include:
-                  - entity_id: "sensor.mustek_*"
+                  - entity_id: "sensor.ups_*"
                     sort: entity_id
 
       - type: custom:button-card

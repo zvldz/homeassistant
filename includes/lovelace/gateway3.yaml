@@ -80,7 +80,7 @@ cards:
               icon: "mdi:router-wireless-settings"
               tap_action:
                 action: navigate
-                navigation_path: "/config/devices/dashboard?historyBack=1&config_entry=31e9aa6e4085c39e9090b215dad90438"
+                navigation_path: "/config/devices/dashboard?historyBack=1&config_entry=aca0c840788ddda0596a8f835a65fd45"
               size: 15%
               styles:
                 card:

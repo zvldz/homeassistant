@@ -138,8 +138,8 @@ automation:
     trigger:
       - platform: time
         at:
-          - '06:00:00'
-          - '17:30:00'
+          - '05:30:00'
+          - '17:00:00'
     condition:
       - condition: state
         entity_id: input_boolean.gas_boiler_schedule

@@ -51,7 +51,6 @@ cards:
         show_header_toggle: false
         entities:
           - input_boolean.gas_boiler_schedule
-          - script.auto_local_temperature_calibration_trv
 
   - type: vertical-stack
     cards:
@@ -67,33 +66,14 @@ cards:
         icon: "mdi:air-conditioner"
         sensors:
           - entity: sensor.0x158d0002bfe958_temperature
-          - entity: sensor.living_room_bt_temperature
+#         - entity: sensor.living_room_bt_temperature
           - entity: sensor.0x158d0002bfe958_humidity
 
       - type: custom:simple-thermostat
-        entity: climate.living_room_trv
-        name: false
+        entity: climate.0x54ef44100060b86b_climate
+        name: "Livingroom TRV"
         sensors:
           - entity: sensor.0x158d0002bfe958_temperature
-          - entity: number.living_room_trv_local_temperature_calibration
-
-      - type: gauge
-        name: Positions
-        unit: '%'
-        entity: sensor.living_room_trv_position
-
-      - type: entities
-        entities:
-          - type: custom:auto-entities
-            card:
-              type: custom:fold-entity-row
-              head:
-                type: section
-                label: "Details"
-            filter:
-              include:
-                - entity_id: "*living_room_trv*"
-                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -112,29 +92,10 @@ cards:
           - entity: sensor.0x158d0002323856_humidity
 
       - type: custom:simple-thermostat
-        entity: climate.master_bedroom_trv
-        name: false
+        entity: climate.0x54ef44100060c290_climate
+        name: "Master Bedroom TRV"
         sensors:
           - entity: sensor.0x158d0002323856_temperature
-          - entity: number.master_bedroom_trv_local_temperature_calibration
-
-      - type: gauge
-        name: Positions
-        unit: '%'
-        entity: sensor.master_bedroom_trv_position
-
-      - type: entities
-        entities:
-          - type: custom:auto-entities
-            card:
-              type: custom:fold-entity-row
-              head:
-                type: section
-                label: "Details"
-            filter:
-              include:
-                - entity_id: "*master_bedroom_trv*"
-                  sort: entity_id
 
   - type: vertical-stack
     cards:
@@ -153,27 +114,8 @@ cards:
           - entity: sensor.0x158d0001ab2a27_humidity
 
       - type: custom:simple-thermostat
-        entity: climate.bedroom_trv
-        name: false
+        entity: climate.0x54ef44100060b73a_climate
+        name: "Bedroom TRV"
         sensors:
           - entity: sensor.0x158d0001ab2a27_temperature
-          - entity: number.bedroom_trv_local_temperature_calibration
-
-      - type: gauge
-        name: Positions
-        unit: '%'
-        entity: sensor.bedroom_trv_position
-
-      - type: entities
-        entities:
-          - type: custom:auto-entities
-            card:
-              type: custom:fold-entity-row
-              head:
-                type: section
-                label: "Details"
-            filter:
-              include:
-                - entity_id: "*\\.bedroom_trv*"
-                  sort: entity_id
 

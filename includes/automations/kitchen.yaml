@@ -7,10 +7,10 @@
       entity_id: binary_sensor.0x158d00022515fe_motion
       from: 'off'
       to: 'on'
-    - platform: state
-      entity_id: binary_sensor.582d3460a918_motion
-      from: 'off'
-      to: 'on'
+#   - platform: state
+#     entity_id: binary_sensor.582d3460a918_motion
+#     from: 'off'
+#     to: 'on'
   condition:
 #   - condition: numeric_state
 #     entity_id: sensor.0x158d00022515fe_illuminance
@@ -44,10 +44,10 @@
       event_type: xiaomi_aqara.motion
       event_data:
         entity_id: binary_sensor.0x158d00022515fe_motion
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.582d3460a918_motion
+#   - platform: event
+#     event_type: xiaomi_aqara.motion
+#     event_data:
+#       entity_id: binary_sensor.582d3460a918_motion
   condition:
     - condition: state
       entity_id: switch.0x158d000211434a_switch

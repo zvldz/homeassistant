@@ -65,7 +65,51 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Restart"
+        name: "Graphs"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "CPU temp"
+            entities:
+              - entity: sensor.cpu_temperature
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "CPU use"
+            hour24: true
+            entities:
+              - entity: sensor.processor_use
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "RAM"
+            entities:
+              - entity: sensor.memory_use_percent
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "SWAP"
+            hour24: true
+            entities:
+              - entity: sensor.swap_use_percent
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "HDD"
+            hour24: true
+            entities:
+              - entity: sensor.disk_use_percent
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Maintenance"
         styles:
           card:
             - background-color: "#203040"
@@ -127,56 +171,6 @@ cards:
             styles:
               card:
                 - font-size: 14px
-
-      - type: custom:button-card
-        name: "Graphs"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "CPU temp"
-            entities:
-              - entity: sensor.cpu_temperature
-            hour24: true
-            line_color: red
-          - type: custom:mini-graph-card
-            name: "CPU use"
-            hour24: true
-            entities:
-              - entity: sensor.processor_use
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "RAM"
-            entities:
-              - entity: sensor.memory_use_percent
-            hour24: true
-            line_color: red
-          - type: custom:mini-graph-card
-            name: "SWAP"
-            hour24: true
-            entities:
-              - entity: sensor.swap_use_percent
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "HDD"
-            hour24: true
-            entities:
-              - entity: sensor.disk_use_percent
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Maintenance"
-        styles:
-          card:
-            - background-color: "#203040"
 
       - type: horizontal-stack
         cards:
@@ -241,48 +235,48 @@ cards:
               card:
                 - font-size: 14px
 
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: custom:button-card
-          name: "Zigbee"
-          styles:
-            card:
-              - background-color: "#203040"
-
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: entities
-          entities:
-            - entity: sensor.zigbee2mqtt_bridge_state
-            - entity: sensor.zigbee2mqtt_version
-            - entity: sensor.zigbee_bridge_uptime
-            - entity: sensor.zigbee_coordinator_version
-            - entity: sensor.zigbee_bridge_fw
-            - entity: sensor.latest_tasmota
-
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: entities
-          entities:
-            - type: custom:fold-entity-row
-              head:
-                type: section
-                label: Exception
-              entities:
-                - type: attribute
-                  entity: sensor.zigbee_bridge_exception
-                  attribute: StatusSTK
-                  show_name: false
-                  name: ""
+#     - type: conditional
+#       conditions:
+#         - entity: sensor.instance_name
+#           state: "HA1"
+#       card:
+#         type: custom:button-card
+#         name: "Zigbee"
+#         styles:
+#           card:
+#             - background-color: "#203040"
+#
+#     - type: conditional
+#       conditions:
+#         - entity: sensor.instance_name
+#           state: "HA1"
+#       card:
+#         type: entities
+#         entities:
+#           - entity: sensor.zigbee2mqtt_bridge_state
+#           - entity: sensor.zigbee2mqtt_version
+#           - entity: sensor.zigbee_bridge_uptime
+#           - entity: sensor.zigbee_coordinator_version
+#           - entity: sensor.zigbee_bridge_fw
+#           - entity: sensor.latest_tasmota
+#
+#     - type: conditional
+#       conditions:
+#         - entity: sensor.instance_name
+#           state: "HA1"
+#       card:
+#         type: entities
+#         entities:
+#           - type: custom:fold-entity-row
+#             head:
+#               type: section
+#               label: Exception
+#             entities:
+#               - type: attribute
+#                 entity: sensor.zigbee_bridge_exception
+#                 attribute: StatusSTK
+#                 show_name: false
+#                 name: ""
 
       - type: custom:button-card
         name: "Gas"

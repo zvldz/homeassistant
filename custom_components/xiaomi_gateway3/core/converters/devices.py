@@ -131,7 +131,8 @@ DEVICES = [{
 }, {
     "lumi.gateway.aqcn02": ["Aqara", "Hub E1 CN", "ZHWG16LM"],
     "lumi.gateway.aqcn03": ["Aqara", "Hub E1 EU", "HE1-G01"],
-    "lumi.gateway.mcn001": ["Xiaomi", "Multimode Gateway 2", "DMWG03LM"],
+    "lumi.gateway.mcn001": ["Xiaomi", "Multimode Gateway 2 CN", "DMWG03LM"],
+    "lumi.gateway.mgl001": ["Xiaomi", "Multimode Gateway 2 EU", "ZNDMWG04LM"],
     "support": 3,  # @AlexxIT
     "spec": [
         MapConv("pair", mi="8.0.2109", map={60: True, 0: False}, parent="data"),
@@ -171,7 +172,7 @@ DEVICES += [{
     ],
 }, {
     "lumi.plug.mmeu01": ["Xiaomi", "Plug EU", "ZNCZ04LM"],
-    "spec": [Plug, Power, Voltage, Energy],
+    "spec": [Plug, Power, Voltage, Energy, ChipTemp],
 }, {
     "lumi.ctrl_86plug.aq1": ["Aqara", "Wall Outlet", "QBCZ11LM"],
     "lumi.ctrl_86plug": ["Aqara", "Wall Outlet", "QBCZ11LM"],
@@ -250,6 +251,13 @@ DEVICES += [{
         ZXiaomiColorTempConv("color_temp", mi="14.2.85", parent="light"),
         MapConv("power_on_state", "select", mi="8.0.2030", map=BULB_MEMORY,
                 enabled=False),
+    ],
+}, {
+    "lumi.light.acn003": ["Aqara", "L1-350 Ceiling Light", "ZNXDD01LM"],
+    "spec": [
+        BoolConv("light", "light", mi="2.p.1"),
+        ZXiaomiBrightnessConv("brightness", mi="2.p.2", parent="light"),
+        ZXiaomiColorTempConv("color_temp", mi="2.p.3", parent="light"),
     ],
 }, {
     # light with brightness
@@ -467,6 +475,25 @@ DEVICES += [{
             0: "low", 1: "medium", 2: "high", 3: "auto"
         }),
         ClimateTempConv("target_temp", mi="14.9.85"),
+    ],
+}, {
+    "lumi.airrtc.agl001": ["Aqara", "Thermostat E1", "SRTS-A01"],
+    "spec": [
+        BoolConv("climate", "climate", mi="4.21.85"),
+        # 0: Manual module 1: Smart schedule mode 2: Antifreeze mode 3: Installation mode
+        MapConv("mode", mi="14.51.85", parent="climate", map={0: "heat", 2: "auto"}),
+        MathConv("current_temp", mi="0.1.85", multiply=0.01, parent="climate"),
+        MathConv("target_temp", mi="1.8.85", multiply=0.01, parent="climate"),
+        MathConv("antifreeze_temp", "number", mi="1.10.85", multiply=0.01, min=5,
+                 max=15),
+        BoolConv("window_detection", "switch", mi="4.24.85", enabled=False),
+        BoolConv("valve_calibration", "switch", mi="4.22.85", enabled=False),
+        BoolConv("valve_notification", "switch", mi="4.25.85", enabled=False),
+        BoolConv("child_lock", "switch", mi="4.26.85", enabled=False),
+        MapConv("find_device", "switch", mi="8.0.2096", map={2: True, 1: False},
+                enabled=False),
+        Converter("battery", "sensor", mi="8.0.2001"),
+        ChipTemp,
     ],
 }, {
     "lumi.airrtc.vrfegl01": ["Xiaomi", "VRF Air Conditioning EU"],
@@ -864,6 +891,21 @@ DEVICES += [{
         Converter("battery_voltage", "sensor", mi="3.p.2", enabled=False),
         BoolConv("led", "switch", mi="5.p.1", enabled=False),  # uint8
     ]
+}, {
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/865
+    "lumi.sensor_gas.acn02": ["Aqara", "Gas Sensor", "JT-BZ-01AQ/A"],
+    "spec": [
+        MapConv("status", "sensor", mi="2.p.1", map={
+            0: "Normal Monitoring", 1: "Alarm", 2: "Fault", 3: "Warm Up",
+            4: "End Of Life"
+        }),
+        BoolConv("fault", "binary_sensor", mi="2.p.2"),
+        Converter("gas_density", "sensor", mi="2.p.3"),  # percentage
+        MapConv("sensitivity", "select", mi="5.p.1", map={
+            1: "LEL15", 2: "LEL10"
+        }, enabled=False),
+        Converter("remain_days", "sensor", mi="9.p.1"),
+    ],
 }]
 
 ########################################################################################
@@ -1122,7 +1164,7 @@ DEVICES += [{
         MiBeacon, BLETemperature, BLEMoisture, BLEConductivity, BLEIlluminance,
         Converter("battery", "sensor", enabled=None),  # no in new firmwares
     ],
-    "ttl": "1m",  # new data every 10 seconds
+    "ttl": "60m"  # TODO: check right value
 }, {
     349: ["Xiaomi", "Flower Pot", "HHCCPOT002"],
     "spec": [
@@ -1174,11 +1216,11 @@ DEVICES += [{
         MiBeacon, BLEMotion, BLELight, BLEIlluminance, BLEBattery,
         Converter("idle_time", "sensor", enabled=False),
     ],
-    "ttl": "34m",  # battery every 11 min
+    "ttl": "60m",  # battery every 11 min
 }, {
     1983: ["Yeelight", "Button S1", "YLAI003"],
     "spec": [MiBeacon, BLEAction, BLEBattery],
-    "ttl": "16m",  # battery every 5 min
+    "ttl": "60m",  # battery every 5 min
 }, {
     2443: ["Xiaomi", "Door/Window Sensor 2", "MCCGQ02HL"],
     "spec": [
@@ -1188,14 +1230,14 @@ DEVICES += [{
 }, {
     2455: ["Honeywell", "Smoke Alarm", "JTYJ-GD-03MI"],
     "spec": [MiBeacon, BLEAction, BLESmoke, BLEBattery],
-    "ttl": "15m",  # battery every 4:30 min
+    "ttl": "60m",  # battery every 4:30 min
 }, {
     2147: ["Xiaomi", "Water Leak Sensor", "SJWS01LM"],
     "spec": [
         MiBeacon, BLEWaterLeak, BLEBattery,
         Converter("action", "sensor", enabled=False),
     ],
-    "ttl": "725m"  # battery every 4 hour
+    "ttl": "60m"  # battery every 4? hour
 }, {
     # https://github.com/AlexxIT/XiaomiGateway3/issues/776
     3685: ["Xiaomi", "Face Recognition Smart Door Lock X", "XMZNMS06LM"],
@@ -1207,9 +1249,19 @@ DEVICES += [{
         Converter("lock", "binary_sensor"),
     ],
 }, {
+    6017: ["Xiaomi", "Face Recognition Smart Door Lock", "XMZNMS09LM"],
+    "spec": [
+        MiBeacon,
+        Converter("action", "sensor"),
+        Converter("battery", "sensor"),
+        Converter("doorbell", "sensor"),
+        Converter("contact", "binary_sensor"),
+        Converter("lock", "binary_sensor"),
+    ],
+}, {
     6473: ["Xiaomi", "Wireless Button (Double)", "XMWXKG01YL"],
     "spec": [MiBeacon, BLEAction, Button1, Button2, ButtonBoth, BLEBattery],
-    "ttl": "16m",  # battery every 5 min
+    "ttl": "60m",  # battery every 5 min
 }, {
     10987: ["Linptech", "Linptech Motion Sensor v2", "hs1bb"],
     "spec": [
@@ -1229,11 +1281,11 @@ DEVICES += [{
     "ttl": "6h"
 }, {
     # https://github.com/AlexxIT/XiaomiGateway3/issues/826
-    7184: ["Linptech", "Wireless Switch", "K11"],
+    7184: ["Linptech", "Wireless Button", "K11"],
     "spec": [MiBeacon, BLEAction, Button, BLEBattery],
     "ttl": "6h"  # battery every 6 hours
 }, {
-    9095: ["Xiaomi", "Xiaomi Wireless Switch Bluetooth Version", "XMWXKG01LM"],
+    9095: ["Xiaomi", "Wireless Button", "XMWXKG01LM"],
     "spec": [MiBeacon, BLEAction, Button, BLEBattery],
     "ttl": "6h"  # battery every 6 hours
 }, {
@@ -1656,7 +1708,7 @@ DEVICES += [{
         BoolConv("occupancy", "binary_sensor", mi="2.p.1"),
         MathConv("no_one_determine_time", "number", mi="2.p.2", min=0, max=10000),
         MathConv("has_someone_duration", "sensor", mi="2.p.3"),
-        MathConv("idle_time", "sensor", mi="2.p.4"),
+        MathConv("idle_time", "sensor", mi="2.p.4", multiply=60),
         MathConv("illuminance", "sensor", mi="2.p.5"),
         MathConv("distance", "sensor", mi="2.p.6"),
 

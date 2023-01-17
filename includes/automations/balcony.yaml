@@ -32,7 +32,7 @@
     - service: light.turn_on
       entity_id: light.balcony_strip
       data:
-        brightness_pct: 20
+        brightness_pct: 10
 
 - alias: "Turn off led strip on balcony"
   initial_state: true

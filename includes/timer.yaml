@@ -19,7 +19,7 @@ bedroom_light:
   duration: '00:05:00'
 
 bathroom_fan:
-  name: "Baroom fan timer"
+  name: "Bathroom fan timer"
   duration: '00:20:00'
 
 hallway_light:
@@ -29,3 +29,7 @@ hallway_light:
 hallway_light_sw3:
   name: "Hallway timer sw3"
   duration: '00:05:00'
+
+balcony_living_light:
+  name: "Balcony & Livinroom light"
+  duration: '00:03:00'

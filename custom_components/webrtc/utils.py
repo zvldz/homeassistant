@@ -2,11 +2,13 @@ import io
 import logging
 import os
 import platform
+import re
 import stat
 import subprocess
 import zipfile
 from threading import Thread
 from typing import Optional
+from urllib.parse import urljoin
 
 import jwt
 from aiohttp import web
@@ -22,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
-BINARY_VERSION = "v0.1-rc.7"
+BINARY_VERSION = "1.2.0"
 
 SYSTEM = {
     "Windows": {"AMD64": "go2rtc_win64.zip"},
@@ -41,6 +43,10 @@ SYSTEM = {
 
 DEFAULT_URL = "http://localhost:1984/"
 
+BINARY_NAME = re.compile(
+    r"^(go2rtc-\d\.\d\.\d+|go2rtc_v0\.1-rc\.[5-9]|rtsp2webrtc_v[1-5])(\.exe)?$"
+)
+
 
 def get_arch() -> Optional[str]:
     system = SYSTEM.get(platform.system())
@@ -57,7 +63,7 @@ def unzip(content: bytes) -> bytes:
 
 
 async def validate_binary(hass: HomeAssistant) -> Optional[str]:
-    filename = f"go2rtc_{BINARY_VERSION}"
+    filename = f"go2rtc-{BINARY_VERSION}"
     if platform.system() == "Windows":
         filename += ".exe"
 
@@ -67,17 +73,20 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
 
     # remove all old binaries
     for file in os.listdir(hass.config.config_dir):
-        if file.startswith(("go2rtc_v", "rtsp2webrtc_")):
+        if BINARY_NAME.match(file):
             _LOGGER.debug(f"Remove old binary: {file}")
             os.remove(hass.config.path(file))
 
     # download new binary
     url = (
         f"https://github.com/AlexxIT/go2rtc/releases/download/"
-        f"{BINARY_VERSION}/{get_arch()}"
+        f"v{BINARY_VERSION}/{get_arch()}"
     )
     _LOGGER.debug(f"Download new binary: {url}")
     r = await async_get_clientsession(hass).get(url)
+    if not r.ok:
+        return None
+
     raw = await r.read()
 
     # unzip binary for windows
@@ -196,13 +205,19 @@ def validate_signed_request(request: web.Request) -> bool:
         return False
 
 
-async def check_go2rtc(hass: HomeAssistant, url: str = DEFAULT_URL) -> bool:
+async def check_go2rtc(hass: HomeAssistant, url: str = DEFAULT_URL) -> Optional[str]:
     session = async_get_clientsession(hass)
     try:
-        r = await session.head(url, timeout=1)
-        return r.ok
+        r = await session.head(url, timeout=2, allow_redirects=False)
+        return url if r.status < 300 else None
     except Exception:
-        return False
+        return None
+
+
+def api_streams(hass: HomeAssistant) -> str:
+    entry = hass.data[DOMAIN]
+    go_url = "http://localhost:1984/" if isinstance(entry, Server) else entry
+    return urljoin(go_url, "api/streams")
 
 
 class Server(Thread):

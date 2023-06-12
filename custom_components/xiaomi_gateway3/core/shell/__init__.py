@@ -2,7 +2,8 @@ import asyncio
 import socket
 from typing import Union
 
-from .base import TelnetShell, ShellMultimode
+from . import base
+from .base import TelnetShell, ShellOpenMiio, ShellMultimode
 from .shell_e1 import ShellE1
 from .shell_mgw import ShellMGW
 from .shell_mgw2 import ShellMGW2
@@ -11,13 +12,14 @@ from .shell_mgw2 import ShellMGW2
 class Session:
     """Support automatic closing session in case of trouble. Example of usage:
 
-        try:
-            async with shell.Session(host) as session:
-                sh = await session.login()
-                return True
-        except Exception:
-            return False
+    try:
+        async with shell.Session(host) as session:
+            sh = await session.login()
+            return True
+    except Exception:
+        return False
     """
+
     reader: asyncio.StreamReader
     writer: asyncio.StreamWriter
 
@@ -57,32 +59,7 @@ class Session:
         return shell
 
 
-NTP_DELTA = 2208988800  # 1970-01-01 00:00:00
-NTP_QUERY = b'\x1b' + 47 * b'\0'
-
-
-def ntp_time(host: str) -> float:
-    """Return server send time"""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2)
-    try:
-        sock.sendto(NTP_QUERY, (host, 123))
-        raw = sock.recv(1024)
-
-        integ = int.from_bytes(raw[-8:-4], 'big')
-        fract = int.from_bytes(raw[-4:], 'big')
-        return integ + float(fract) / 2 ** 32 - NTP_DELTA
-    except Exception:
-        return 0
-    finally:
-        sock.close()
-
-
-def check_port(host: str, port: int):
-    """Check if gateway port open."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(2)
-    try:
-        return s.connect_ex((host, port)) == 0
-    finally:
-        s.close()
+def openmiio_setup(config: dict):
+    """Custom config for OPENMIIO_CMD, OPENMIIO_VER, OPENMIIO_MIPS..."""
+    for k, v in config.items():
+        setattr(base, "OPENMIIO_" + k.upper(), v)

@@ -81,8 +81,9 @@ rest_command:       !include includes/rest_command.yaml
 
 # custom integration
 python_script:
-watchman:           !include includes/watchman.yaml
 xiaomi_gateway3:    !include includes/gateway3.yaml
+watchman:           !include includes/watchman.yaml
+custom_filters:
 
 #sonoff:
 #  username: !secret sonoff_username

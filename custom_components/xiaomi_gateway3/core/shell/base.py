@@ -4,13 +4,21 @@ from asyncio import StreamReader, StreamWriter
 from dataclasses import dataclass
 from typing import Union
 
+import aiohttp
+
 from ..unqlite import SQLite
 
 ERROR = 0
 OK = 1
 DOWNLOAD = 2
 
-RUN_OPENMIIO = "/data/openmiio_agent miio mqtt cache z3 --zigbee.tcp=8888 > /var/log/openmiio.log 2>&1 &"
+# rewrite log every time to prevent memory overflow
+OPENMIIO_CMD = "/data/openmiio_agent miio mqtt cache central z3 --zigbee.tcp=8888 > /var/log/openmiio.log 2>&1 &"
+OPENMIIO_BASE = "https://github.com/AlexxIT/openmiio_agent/releases/download/v1.2.1/"
+OPENMIIO_MD5_MIPS = "6c3f4dca62647b9d19a81e1ccaa5ccc0"
+OPENMIIO_MD5_ARM = "bb0b33b8d71acbfb9668ae9a0600c2d8"
+OPENMIIO_URL_MIPS = OPENMIIO_BASE + "openmiio_agent_mips"
+OPENMIIO_URL_ARM = OPENMIIO_BASE + "openmiio_agent_arm"
 
 
 @dataclass
@@ -26,22 +34,32 @@ class TelnetShell:
         self.writer.close()
         await self.writer.wait_closed()
 
-    async def exec(self, command: str, as_bytes=False, timeout=10) \
-            -> Union[str, bytes]:
+    async def exec(self, command: str, as_bytes=False, timeout=10) -> Union[str, bytes]:
         """Run command and return it result."""
         self.writer.write(command.encode() + b"\n")
         coro = self.reader.readuntil(b"# ")
         raw = await asyncio.wait_for(coro, timeout=timeout)
         return raw[:-2] if as_bytes else raw[:-2].decode()
 
-    async def read_file(self, filename: str, as_base64=False):
-        command = f"cat {filename}|base64" if as_base64 else f"cat {filename}"
+    async def read_file(self, filename: str, as_base64=False, tail=None):
+        command = f"tail -c {tail} {filename}" if tail else f"cat {filename}"
+        if as_base64:
+            command += " | base64"
         try:
             raw = await self.exec(command, as_bytes=True, timeout=60)
             # b"cat: can't open ..."
             return base64.b64decode(raw) if as_base64 else raw
         except Exception:
             return None
+
+    async def write_file(self, filename: str, data: bytes):
+        # start new file
+        await self.exec(f"> {filename}")
+
+        size = 700  # total exec cmd should be lower than 1024 symbols
+        for i in range(0, len(data), size):
+            b = base64.b64encode(data[i : i + size]).decode()
+            await self.exec(f"echo -n {b} | base64 -d >> {filename}")
 
     async def reboot(self):
         # should not wait for response
@@ -65,16 +83,19 @@ class TelnetShell:
         because wget don't support HTTPS and curl removed in lastest fw. But
         it's not a problem because we check md5.
         """
-        filename = "/data/" + filename
-        cmd = f"[ -x {filename} ] && md5sum {filename}"
+        filepath = "/data/" + filename
+        cmd = f"[ -x {filepath} ] && md5sum {filepath}"
 
         if md5 in await self.exec(cmd):
             return OK
 
-        # download can take up to 3 minutes for Chinese users
-        await self.exec(
-            f"wget {url} -O {filename} && chmod +x {filename}", timeout=300
-        )
+        # if there is an old version of the file
+        await self.exec("killall " + filename)
+
+        raw = await download(url)
+        await self.write_file(filepath, raw)
+
+        await self.exec("chmod +x " + filepath)
 
         return DOWNLOAD if md5 in await self.exec(cmd) else ERROR
 
@@ -85,6 +106,9 @@ class TelnetShell:
         raise NotImplementedError
 
     async def get_token(self) -> str:
+        raise NotImplementedError
+
+    async def get_miio_info(self) -> str:
         raise NotImplementedError
 
     async def prevent_unpair(self):
@@ -99,28 +123,30 @@ class TelnetShell:
 
 # noinspection PyAbstractClass
 class ShellOpenMiio(TelnetShell):
-    async def check_openmiio_agent(self) -> int:
-        # different binaries for different arch
+    @property
+    def openmiio_md5(self) -> str:
         raise NotImplementedError
 
-    async def run_openmiio_agent(self) -> str:
-        ok = await self.check_openmiio_agent()
-        if ok == OK:
-            # run if not in ps
-            if "openmiio_agent" in await self.get_running_ps():
-                return "The latest version is already running"
+    @property
+    def openmiio_url(self) -> str:
+        raise NotImplementedError
 
-            await self.exec(RUN_OPENMIIO)
-            return "The latest version is launched"
+    async def check_openmiio(self) -> bool:
+        """Check binary exec flag and MD5."""
+        cmd = f"[ -x /data/openmiio_agent ] && md5sum /data/openmiio_agent"
+        return self.openmiio_md5 in await self.exec(cmd)
 
-        if ok == DOWNLOAD:
-            if "openmiio_agent" in await self.get_running_ps():
-                await self.exec(f"killall openmiio_agent")
+    async def download_openmiio(self):
+        """Kill previous binary, download new one, upload it to gw and set exec flag"""
+        await self.exec("killall openmiio_agent")
 
-            await self.exec(RUN_OPENMIIO)
-            return "The latest version is updated and launched"
+        raw = await download(self.openmiio_url)
+        await self.write_file("/data/openmiio_agent", raw)
 
-        return "ERROR: can't download latest version"
+        await self.exec("chmod +x /data/openmiio_agent")
+
+    async def run_openmiio(self):
+        await self.exec(OPENMIIO_CMD)
 
 
 # noinspection PyAbstractClass
@@ -144,3 +170,14 @@ class ShellMultimode(ShellOpenMiio):
     @property
     def mesh_device_table(self) -> str:
         raise NotImplementedError
+
+
+async def download(url_or_path: str) -> bytes:
+    if not url_or_path.startswith("http"):
+        with open(url_or_path, "rb") as f:
+            return f.read()
+
+    timeout = aiohttp.ClientTimeout(total=60)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url_or_path) as resp:
+            return await resp.read()

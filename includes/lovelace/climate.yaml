@@ -51,6 +51,7 @@ cards:
         show_header_toggle: false
         entities:
           - input_boolean.gas_boiler_schedule
+          - input_number.climate_control_temperature
 
   - type: vertical-stack
     cards:

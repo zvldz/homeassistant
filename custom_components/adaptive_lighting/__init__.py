@@ -35,6 +35,11 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
+async def reload_configuration_yaml(event: dict, hass: HomeAssistant):
+    """Reload configuration.yaml."""
+    await hass.services.async_call("homeassistant", "check_config", {})
+
+
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]):
     """Import integration from config."""
 
@@ -51,6 +56,10 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]):
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up the component."""
     data = hass.data.setdefault(DOMAIN, {})
+
+    # This will reload any changes the user made to any YAML configurations.
+    # Called during 'quick reload' or hass.reload_config_entry
+    hass.bus.async_listen("hass.config.entry_updated", reload_configuration_yaml)
 
     undo_listener = config_entry.add_update_listener(async_update_options)
     data[config_entry.entry_id] = {UNDO_UPDATE_LISTENER: undo_listener}

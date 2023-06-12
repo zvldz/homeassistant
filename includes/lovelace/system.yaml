@@ -384,30 +384,16 @@ cards:
               - entity: sensor.shellyem_c45bbe602cfc_channel_1_voltage
                 color: blue
 
-      - type: custom:button-card
-        name: "UPS"
-        styles:
-          card:
-            - background-color: "#203040"
-
       - type: conditional
         conditions:
           - entity: sensor.instance_name
-            state: "HA2"
+            state: "HA1"
         card:
-          type: entities
-          entities:
-            - type: custom:auto-entities
-              card:
-                type: custom:fold-entity-row
-                head:
-                  type: section
-                  label: "Details"
-                padding: 0
-              filter:
-                include:
-                  - entity_id: "sensor.raspberry_ups_*"
-                    sort: entity_id
+          type: custom:button-card
+          name: "UPS"
+          styles:
+            card:
+              - background-color: "#203040"
 
       - type: conditional
         conditions:

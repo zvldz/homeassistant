@@ -1,0 +1,6 @@
+climate_control_temperature:
+  name: "Climate control temperature"
+  icon: mdi:home-thermometer-outline
+  min: 15
+  max: 25
+  step: 0.5

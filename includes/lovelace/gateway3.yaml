@@ -14,62 +14,6 @@ cards:
               card:
                 - font-size: 14px
 
-#         - type: custom:button-card
-#           name: "Reboot GW3 1"
-#           icon: "mdi:rotate-3d-variant"
-#           tap_action:
-#             confirmation: true
-#             action: call-service
-#             service: script.turn_on
-#             service_data:
-#               entity_id: script.reboot_gateway_1
-#           size: 15%
-#           styles:
-#             card:
-#               - font-size: 14px
-
-#         - type: custom:button-card
-#           name: "Dump GW3 1"
-#           icon: "mdi:backup-restore"
-#           tap_action:
-#             confirmation: true
-#             action: call-service
-#             service: script.turn_on
-#             service_data:
-#               entity_id: script.dump_gateway_1
-#           size: 15%
-#           styles:
-#             card:
-#               - font-size: 14px
-
-#         - type: custom:button-card
-#           name: "Reboot GW3 2"
-#           icon: "mdi:rotate-3d-variant"
-#           tap_action:
-#             confirmation: true
-#             action: call-service
-#             service: script.turn_on
-#             service_data:
-#               entity_id: script.reboot_gateway_2
-#           size: 15%
-#           styles:
-#             card:
-#               - font-size: 14px
-
-#         - type: custom:button-card
-#           name: "Dump GW3 2"
-#           icon: "mdi:backup-restore"
-#           tap_action:
-#             confirmation: true
-#             action: call-service
-#             service: script.turn_on
-#             service_data:
-#               entity_id: script.dump_gateway_2
-#           size: 15%
-#           styles:
-#             card:
-#               - font-size: 14px
-
           - type: conditional
             conditions:
               - entity: sensor.instance_name
@@ -80,13 +24,29 @@ cards:
               icon: "mdi:router-wireless-settings"
               tap_action:
                 action: navigate
-                navigation_path: "/config/devices/dashboard?historyBack=1&config_entry=aca0c840788ddda0596a8f835a65fd45"
+                navigation_path: "/confir/devices/device/36ab45ab65f327466c08eb4b2a55e579"
               size: 15%
               styles:
                 card:
                   - font-size: 14px
-#
-#
+
+          - type: conditional
+            conditions:
+              - entity: sensor.instance_name
+                state: "HA2"
+            card:
+              type: custom:button-card
+              name: "Goto MGW2 1"
+              icon: "mdi:router-wireless-settings"
+              tap_action:
+                action: navigate
+                navigation_path: "/config/devices/device/f51c6eca9f92b556e2eed711d609671b"
+              size: 15%
+              styles:
+                card:
+                  - font-size: 14px
+
+
           - type: conditional
             conditions:
               - entity: sensor.instance_name
@@ -127,67 +87,67 @@ cards:
             - binary_sensor.*_gateway
         sort_by: friendly_name
         columns:
-          - data: friendly_name
-            name: Name
+          - name: Name
+            data: friendly_name
             modify: '(x+"").replace(/ Gateway$/,"")'
-          - data: device_fw_ver
-            name: FW
+          - name: FW
+            data: device_fw_ver
             align: center
             modify: x+''
-          - data: network_pan_id
-            name: PAN ID
+          - name: PAN ID
+            data: network_pan_id
             align: center
             modify: 'x == "" ? "-" : x+""'
-          - data: radio_tx_power
-            name: TX Power
+          - name: TX Power
+            data: radio_tx_power
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
-          - data: radio_channel
-            name: Channel
+          - name: Channel
+            data: radio_channel
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
-          - data: free_mem
-            name: Mem Free (KB)
+          - name: Mem Free (KB)
+            data: free_mem
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
-          - data: load_avg
-            name: Load Avg
+          - name: Load Avg
+            data: load_avg
             align: center
             modify: '(x+"").split("|").slice(0, 3).join(", ")'
-          - data: zigbee_tx
-            name: Z_TX
+          - name: Z_TX
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: zigbee_rx
-            name: Z_RX
+            modify: 'isNaN(parseInt(x.zigbee_tx, 10)) ? "0" : parseInt(x.zigbee_tx, 10)'
+          - name: Z_RX
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: zigbee_oe
-            name: Z_ERR
+            modify: 'isNaN(parseInt(x.zigbee_rx, 10)) ? "0" : parseInt(x.zigbee_rx, 10)'
+          - name: Z_ERR
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: bluetooth_tx
-            name: B_TX
+            modify: 'isNaN(parseInt(x.zigbee_oe, 10)) ? "0" : parseInt(x.zigbee_oe, 10)'
+          - name: B_TX
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: bluetooth_rx
-            name: B_RX
+            modify: 'isNaN(parseInt(x.bluetooth_tx, 10)) ? "0" : parseInt(x.bluetooth_tx, 10)'
+          - name: B_RX
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: bluetooth_oe
-            name: B_ERR
+            modify: 'isNaN(parseInt(x.bluetooth_rx, 10)) ? "0" : parseInt(x.bluetooth_rx, 10)'
+          - name: B_ERR
+            data: serial
             align: center
-            modify: 'isNaN(parseInt(x, 10)) ? "0" : parseInt(x, 10)'
-          - data: rssi
-            name: RSSI
+            modify: 'isNaN(parseInt(x.bluetooth_oe, 10)) ? "0" : parseInt(x.bluetooth_oe, 10)'
+          - name: RSSI
+            data: rssi
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : (100 + parseInt(x, 10)) * -1'
-          - data: uptime
-            name: Uptime
+          - name: Uptime
+            data: uptime
             align: center
             modify: x+''
-          - data: last_changed
-            name: Connected
+          - name: Connected
+            data: last_changed
             align: center
             modify: >
               var dt = new Date(x);
@@ -213,68 +173,68 @@ cards:
             - sensor.*_zigbee
         sort_by: friendly_name
         columns:
-          - data: friendly_name
-            name: Name
+          - name: Name
+            data: friendly_name
             modify: 'x.replace(/ Zigbee$/,"")'
-          - data: gateway_name
-            name: Gateway
+          - name: Gateway
+            data: gateway_name
             align: center
             modify: x+''
-          - data: ieee
-            name: IEEE
+          - name: IEEE
+            data: ieee
             align: center
             modify: (x+'').toLowerCase()
-#         - data: device_fw_ver
-#           name: FW
+#         - name: FW
+#           data: device_fw_ver
 #           align: center
 #           modify: x+''
-          - data: update_available
-            name: OTA
+          - name: OTA
+            data: update_available
             align: center
             prefix: '<style> cc { color: green; } </style>'
             modify: 'if (x == "true") { "<cc>" + x + "</cc>" } else { typeof x === "string" ? x : "-" }'
-          - data: nwk
-            name: NWK
+          - name: NWK
+            data: nwk
             align: center
             modify: (x+'').replace(/^0x/,"").toLowerCase()
-          - data: parent
-            name: Parent
+          - name: Parent
+            data: parent
             align: center
             modify: (x+'').replace(/^0x/,"").toLowerCase()
-          - data: type
-            name: Type
+          - name: Type
+            data: type
             align: center
             modify: (x+'').replace(/^-$/, "child device")
-          - data: msg_received
-            name: Received
+          - name: Received
+            data: msg_received
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - data: msg_missed
-            name: Missed
+          - name: Missed
+            data: msg_missed
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - data: unresponsive
-            name: Unresp
+          - name: Unresp
+            data: unresponsive
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - data: new_resets
-            name: Resets
+          - name: Resets
+            data: new_resets
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - data: linkquality
-            name: LQI
+          - name: LQI
+            data: linkquality
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
-          - data: rssi
-            name: RSSI
+          - name: RSSI
+            data: rssi
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
-          - data: last_msg
-            name: Last Msg
+          - name: Last Msg
+            data: last_msg
             align: center
             modify: x+''
-          - data: state
-            name: Last Seen
+          - name: Last Seen
+            data: state
             align: center
             modify: >
               var dt = new Date(0,0,0,0,0,0,(Date.now()-Date.parse(x)));
@@ -295,31 +255,31 @@ cards:
             - sensor.*_mesh
         sort_by: friendly_name
         columns:
-          - data: friendly_name
-            name: Name
+          - name: Name
+            data: friendly_name
             modify: 'x.replace(/ Ble$/,"")'
-          - data: gateway_name
-            name: Gateway
+          - name: Gateway
+            data: gateway_name
             align: center
             modify: x+''
-          - data: mac
-            name: MAC
+          - name: MAC
+            data: mac
             align: center
             modify: (x+'').replace(/(.{2}(?!$))/g,"$1:")
-          - data: available
-            name: Available
+          - name: Available
+            data: available
             align: center
             modify: x+''
-          - data: msg_received
-            name: Received
+          - name: Received
+            data: msg_received
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
-          - data: last_msg
-            name: Last Msg
+          - name: Last Msg
+            data: last_msg
             align: center
             modify: x+''
-          - data: state
-            name: Last Seen
+          - name: Last Seen
+            data: state
             align: center
             modify: >
               var dt = new Date(0,0,0,0,0,0,(Date.now()-Date.parse(x)));

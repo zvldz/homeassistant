@@ -14,23 +14,25 @@ gw3:
 - MeshGateway - init Mesh devices but depends on MIoTGateway for control them
 """
 import asyncio
-import json
 import logging
 import time
 
-from .base import SIGNAL_PREPARE_GW, SIGNAL_MQTT_CON, SIGNAL_MQTT_DIS, \
-    SIGNAL_MQTT_PUB, SIGNAL_TIMER
+from .base import (
+    SIGNAL_PREPARE_GW,
+    SIGNAL_MQTT_CON,
+    SIGNAL_MQTT_DIS,
+    SIGNAL_MQTT_PUB,
+    SIGNAL_TIMER,
+)
 from .gate_e1 import GateE1
 from .gate_mgw import GateMGW
 from .gate_mgw2 import GateMGW2
-from .. import shell
+from .. import shell, utils
 from ..converters import GATEWAY
 from ..mini_miio import AsyncMiIO
 from ..mini_mqtt import MiniMQTT, MQTTMessage
 
 _LOGGER = logging.getLogger(__name__)
-
-TELNET_CMD = r'{"method":"set_ip_info","params":{"ssid":"\"\"","pswd":"1; passwd -d $USER; riu_w 101e 53 3012 || echo enable > /sys/class/tty/tty/enable; telnetd"}}'
 
 
 class XGateway(GateMGW, GateE1, GateMGW2):
@@ -51,11 +53,7 @@ class XGateway(GateMGW, GateE1, GateMGW2):
         self.miio = AsyncMiIO(host, token)
         self.mqtt = MiniMQTT()
 
-        self.miio.debug = 'true' in self.debug_mode
-
-    @property
-    def telnet_cmd(self):
-        return self.options.get('telnet_cmd') or TELNET_CMD
+        self.miio.debug = "true" in self.debug_mode
 
     def start(self):
         self.main_task = asyncio.create_task(self.run_forever())
@@ -67,39 +65,50 @@ class XGateway(GateMGW, GateE1, GateMGW2):
         self.main_task.cancel()
 
         for device in self.devices.values():
-            if self in device.gateways:
-                device.gateways.remove(self)
+            if self not in device.gateways:
+                continue
 
-    async def check_port(self, port: int):
-        """Check if gateway port open."""
-        return await asyncio.get_event_loop().run_in_executor(
-            None, shell.check_port, self.host, port
-        )
+            # 1. Remove this XGateway from XDevice
+            device.gateways.remove(self)
+
+            # 2. Remove this XGateway from XEntity
+            for entity in device.entities.values():
+                if entity.gw == self:
+                    entity.gw = None
+
+            if len(device.gateways) == 0:
+                continue
+
+            # 3. Move this XDevice to another XGateway
+            gw = device.gateways[0]
+            device.setup_entitites(gw, gw.stats_enable)
 
     async def enable_telnet(self):
         """Enable telnet with miio protocol."""
-        raw = json.loads(self.telnet_cmd)
-        resp = await self.miio.send(raw['method'], raw.get('params'))
-        if not resp or resp.get('result') != ['ok']:
+        resp = await utils.enable_telnet(self.miio, self.options.get("key"))
+        if not resp or resp.get("result") != ["ok"]:
             self.debug(f"Can't enable telnet")
             return False
         return True
 
     async def run_forever(self):
+        """Main thread loop."""
         self.debug("Start main loop")
 
-        """Main thread loop."""
         while True:
             try:
                 # if not telnet - enable it
-                if not await self.check_port(23) and \
-                        not await self.enable_telnet():
+                if (
+                    not await utils.check_port(self.host, 23)
+                    and not await self.enable_telnet()
+                ):
                     await asyncio.sleep(30)
                     continue
 
                 # if not mqtt - enable it (handle Mi Home and ZHA mode)
-                if not await self.prepare_gateway() or \
-                        not await self.mqtt.connect(self.host):
+                if not await self.prepare_gateway() or not await self.mqtt.connect(
+                    self.host
+                ):
                     await asyncio.sleep(60)
                     continue
 
@@ -130,7 +139,7 @@ class XGateway(GateMGW, GateE1, GateMGW2):
     async def mqtt_connect(self):
         self.debug("MQTT connected")
 
-        await self.mqtt.subscribe('#')
+        await self.mqtt.subscribe("#")
 
         self.update_available(True)
 
@@ -149,22 +158,18 @@ class XGateway(GateMGW, GateE1, GateMGW2):
 
     async def mqtt_message(self, msg: MQTTMessage):
         # skip spam from broker/ping
-        if msg.topic == 'broker/ping':
+        if msg.topic == "broker/ping":
             return
 
-        if 'mqtt' in self.debug_mode:
+        if "mqtt" in self.debug_mode:
             self.debug_tag(f"{msg.topic} {msg.payload}", tag="MQTT")
 
         try:
-            if msg.topic == "miio/command_ack":
-                if ack := self.miio_ack.get(msg.json["id"]):
-                    ack.set_result(msg.json)
+            await self.mqtt_read(msg)
 
             await self.dispatcher_send(SIGNAL_MQTT_PUB, msg=msg)
         except Exception as e:
-            self.error(
-                f"Processing MQTT: {msg.topic} {msg.payload}", exc_info=e
-            )
+            self.error(f"ERROR processing MQTT: {msg.topic} {msg.payload}", exc_info=e)
 
     async def prepare_gateway(self) -> bool:
         """Launching the required utilities on the gw, if they are not already
@@ -206,6 +211,10 @@ class XGateway(GateMGW, GateE1, GateMGW2):
                     return await sh.tar_data()
                 elif command == "reboot":
                     await sh.reboot()
+                elif command == "openmiio_reload":
+                    await sh.exec("killall openmiio_agent")
+                    await asyncio.sleep(1)
+                    await self.openmiio_prepare_gateway(sh)
                 else:
                     await sh.exec(command)
                 return True
@@ -226,9 +235,10 @@ class XGateway(GateMGW, GateE1, GateMGW2):
             if self not in device.gateways or device.type == GATEWAY:
                 continue
 
-            if (device.poll_timeout and
-                    ts - device.decode_ts > device.poll_timeout and
-                    ts - device.encode_ts > device.poll_timeout
+            if (
+                device.poll_timeout
+                and ts - device.decode_ts > device.poll_timeout
+                and ts - device.encode_ts > device.poll_timeout
             ):
                 for attr, entity in device.entities.items():
                     if entity.added and hasattr(entity, "async_update"):
@@ -236,8 +246,10 @@ class XGateway(GateMGW, GateE1, GateMGW2):
                         asyncio.create_task(entity.update_state())
                         break
 
-            if (device.available and device.available_timeout and
-                    ts - device.decode_ts > device.available_timeout
+            if (
+                device.available
+                and device.available_timeout
+                and ts - device.decode_ts > device.available_timeout
             ):
                 self.debug_device(device, "set device offline")
                 device.available = False

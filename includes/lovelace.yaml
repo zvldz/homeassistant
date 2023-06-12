@@ -24,5 +24,5 @@ resources:
     type: module
   - url: /hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js
     type: module
-  - url: /hacsfiles/home-assistant-sun-card/home-assistant-sun-card.js
+  - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
     type: module

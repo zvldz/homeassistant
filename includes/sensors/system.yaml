@@ -19,8 +19,8 @@
   scan_interval: 120
   unit_of_measurement: "sec"
 
-- platform: uptime
-  name: "HA Online"
+#- platform: uptime
+#  name: "HA Online"
 
 - platform: rest
   resource: https://version.home-assistant.io/stable.json

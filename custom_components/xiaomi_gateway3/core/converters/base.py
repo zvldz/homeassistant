@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, TYPE_CHECKING
 
+from homeassistant.components.number.const import DEFAULT_STEP
+
 from .const import *
 
 if TYPE_CHECKING:
@@ -20,6 +22,7 @@ def parse_time(value: str) -> float:
 ###############################################################################
 # Base (global) converters
 ###############################################################################
+
 
 @dataclass
 class Converter:
@@ -76,7 +79,7 @@ class BoolConv(Converter):
 
 @dataclass
 class EventConv(Converter):
-    value: Any = None
+    value: any = None
 
     def decode(self, device: "XDevice", payload: dict, value: list):
         payload[self.attr] = self.value
@@ -102,6 +105,7 @@ class MathConv(Converter):
     min: float = -float("inf")
     multiply: float = 0
     round: int = None
+    step: float = DEFAULT_STEP
 
     def decode(self, device: "XDevice", payload: dict, value: float):
         if self.min <= value <= self.max:
@@ -116,6 +120,20 @@ class MathConv(Converter):
         if self.multiply:
             value /= self.multiply
         super().encode(device, payload, value)
+
+
+@dataclass
+class MaskConv(Converter):
+    mask: int = 0
+
+    def decode(self, device: "XDevice", payload: dict, value: int):
+        device.extra[self.attr] = value
+        payload[self.attr] = bool(value & self.mask)
+
+    def encode(self, device: "XDevice", payload: dict, value: bool):
+        new_value = device.extra.get(self.attr, 0)
+        new_value = new_value | self.mask if value else new_value & ~self.mask
+        super().encode(device, payload, new_value)
 
 
 @dataclass
@@ -163,9 +181,7 @@ class BatteryConv(Converter):
         elif value >= self.max:
             payload[self.attr] = 100
         else:
-            payload[self.attr] = int(
-                100.0 * (value - self.min) / (self.max - self.min)
-            )
+            payload[self.attr] = int(100.0 * (value - self.min) / (self.max - self.min))
 
 
 class ButtonConv(Converter):
@@ -193,6 +209,7 @@ class ButtonMIConv(ButtonConv):
 # Device converters
 ###############################################################################
 
+
 class VibrationConv(Converter):
     def decode(self, device: "XDevice", payload: dict, value: int):
         payload[self.attr] = value
@@ -219,9 +236,9 @@ class CloudLinkConv(Converter):
 
 class ResetsConv(Converter):
     def decode(self, device: "XDevice", payload: dict, value: int):
-        if 'resets0' not in device.extra:
-            device.extra['resets0'] = value
-        payload['new_resets'] = value - device.extra['resets0']
+        if "resets0" not in device.extra:
+            device.extra["resets0"] = value
+        payload["new_resets"] = value - device.extra["resets0"]
         super().decode(device, payload, value)
 
 
@@ -237,14 +254,14 @@ class ClimateConv(Converter):
     def encode(self, device: "XDevice", payload: dict, value: dict):
         if self.attr not in device.extra:
             return
-        b = bytearray(device.extra[self.attr].to_bytes(4, 'big'))
+        b = bytearray(device.extra[self.attr].to_bytes(4, "big"))
         if "hvac_mode" in value:
             b[0] = self.hvac[value["hvac_mode"]]
         if "fan_mode" in value:
             b[1] = self.fan[value["fan_mode"]]
         if "target_temp" in value:
             b[3] = int(value["target_temp"])
-        value = int.from_bytes(b, 'big')
+        value = int.from_bytes(b, "big")
         super().encode(device, payload, value)
 
 
@@ -256,9 +273,7 @@ class ClimateTempConv(Converter):
 # we need get pos with one property and set pos with another
 class CurtainPosConv(Converter):
     def encode(self, device: "XDevice", payload: dict, value: Any):
-        conv = next(
-            c for c in device.converters if c.attr == "target_position"
-        )
+        conv = next(c for c in device.converters if c.attr == "target_position")
         conv.encode(device, payload, value)
 
 
@@ -330,6 +345,62 @@ class GasSensitivityWriteConv(Converter):
         pass
 
 
+class AqaraTimePatternConv(Converter):
+    """
+    Encoding format:
+        Period: <START_HOUR>:<START_MINUTE> - <END_HOUR>:<END_MINUTE>
+        Encoded: AAAAAAAA BBBBBBBB CCCCCCCC DDDDDDDD
+            (Each character represents 1 bit)
+            AAAAAAAA = binary number of <END_MINUTE>
+            BBBBBBBB = binary number of <END_HOUR>
+            CCCCCCCC = binary number of <START_MIN>
+            DDDDDDDD = binary number of <START_HOUR>
+
+    Example:
+        Period: 23:59 - 10:44
+        Encoded: 00101100 00001010 00111011 00010111
+            00101100 = 44 <END_MINUTE>
+            00001010 = 10 <END_HOUR>
+            00111011 = 59 <START_MIN>
+            00010111 = 23 <START_HOUR>
+    """
+
+    pattern = "^[0-2][0-9]:[0-5][0-9]-[0-2][0-9]:[0-5][0-9]$"
+
+    def decode(self, device: "XDevice", payload: dict, v: int):
+        payload[self.attr] = (
+            f"{v & 0xFF:02d}:{(v >> 8) & 0xFF:02d}-"
+            f"{(v >> 16) & 0xFF:02d}:{(v >> 24) & 0xFF:02d}"
+        )
+
+    def encode(self, device: "XDevice", payload: dict, v: str):
+        v = int(v[:2]) | int(v[3:5]) << 8 | int(v[6:8]) << 16 | int(v[9:11]) << 24
+        super().encode(device, payload, v)
+
+
+class GiotTimePatternConv(Converter):
+    """
+    Period encoding:
+    8-digit number: HHMMhhmm
+        HH = start hour
+        MM = start minute
+        hh = end hour
+        mm = end minute
+    Example:
+        Period: 23:59 - 10:44
+        Encoded: 23591044
+    """
+
+    pattern = "^[0-2][0-9]:[0-5][0-9]-[0-2][0-9]:[0-5][0-9]$"
+
+    def decode(self, device: "XDevice", payload: dict, v: int):
+        payload[self.attr] = f"{v[:2]}:{v[2:4]}-{v[4:6]}:{v[6:]}"
+
+    def encode(self, device: "XDevice", payload: dict, v: str):
+        v = v.replace(":", "").replace("-", "")
+        super().encode(device, payload, v)
+
+
 class ParentConv(Converter):
     def decode(self, device: "XDevice", payload: dict, value: str):
         try:
@@ -338,6 +409,17 @@ class ParentConv(Converter):
             payload[self.attr] = device.nwk
         except Exception:
             payload[self.attr] = "-"
+
+
+@dataclass
+class BLEEvent(Converter):
+    map: dict = None
+
+    def decode(self, device: "XDevice", payload: dict, value: list):
+        try:
+            payload[self.attr] = self.map.get(value[0]["value"])
+        except:
+            pass
 
 
 class OTAConv(Converter):
@@ -387,9 +469,7 @@ class RemoveDIDConv(Converter):
 Temperature = MathConv(
     "temperature", "sensor", mi="0.1.85", multiply=0.01, min=-4000, max=12500
 )
-Humidity = MathConv(
-    "humidity", "sensor", mi="0.2.85", multiply=0.01, min=0, max=10000
-)
+Humidity = MathConv("humidity", "sensor", mi="0.2.85", multiply=0.01, min=0, max=10000)
 # Pressure = MathConv("pressure", "sensor", mi="0.3.85", multiply=0.01)
 
 # Motion = BoolConv("motion", "binary_sensor", mi="3.1.85")
@@ -400,9 +480,7 @@ Power = MathConv("power", "sensor", mi="0.12.85", round=2)
 Energy = MathConv("energy", "sensor", mi="0.13.85", multiply=0.001, round=2)
 Current = MathConv("current", "sensor", mi="0.14.85", multiply=0.001, round=2)
 
-ChipTemp = Converter(
-    "chip_temperature", "sensor", mi="8.0.2006", enabled=False
-)
+ChipTemp = Converter("chip_temperature", "sensor", mi="8.0.2006", enabled=False)
 
 # switches and relays
 Outlet = BoolConv("outlet", "switch", mi="4.1.85")
@@ -426,12 +504,9 @@ Button13 = ButtonConv("button_both_13", mi="13.6.85")
 Button23 = ButtonConv("button_both_23", mi="13.7.85")
 
 PowerOffMemory = MapConv(
-    "power_on_state", "switch", mi="8.0.2030", map=POWEROFF_MEMORY,
-    enabled=False
+    "power_on_state", "switch", mi="8.0.2030", map=POWEROFF_MEMORY, enabled=False
 )
-ChargeProtect = BoolConv(
-    "charge_protect", "switch", mi="8.0.2031", enabled=False
-)
+ChargeProtect = BoolConv("charge_protect", "switch", mi="8.0.2031", enabled=False)
 Led = BoolConv("led", "switch", mi="8.0.2032", enabled=False)
 
 Wireless = BoolConv("wireless", "switch", mi="4.10.85", enabled=False)
@@ -448,9 +523,7 @@ Wireless3 = BoolConv("wireless_3", "switch", mi="4.12.85", enabled=False)
 # converts voltage to percent and shows voltage in attributes
 # users can adds separate voltage sensor or original percent sensor
 Battery = BatteryConv("battery", "sensor", mi="8.0.2008")
-BatteryLow = BoolConv(
-    "battery_low", "binary_sensor", mi="8.0.9001", enabled=False
-)
+BatteryLow = BoolConv("battery_low", "binary_sensor", mi="8.0.9001", enabled=False)
 BatteryOrig = Converter("battery_original", mi="8.0.2001", enabled=False)
 
 # zigbee3 devices

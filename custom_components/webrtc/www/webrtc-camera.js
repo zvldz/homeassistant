@@ -1,5 +1,5 @@
 /** Chrome 63+, Safari 11.1+ */
-import {VideoRTC} from "./video-rtc.js";
+import {VideoRTC} from "./video-rtc.js?v3.0.1";
 
 class WebRTCCamera extends VideoRTC {
     /**
@@ -15,7 +15,9 @@ class WebRTCCamera extends VideoRTC {
         else if (config.webrtc === false) this.mode = 'mse';
 
         if (config.background) this.background = config.background;
-        if (config.intersection) this.visibilityThreshold = config.intersection;
+
+        if (config.intersection === 0) this.visibilityThreshold = 0;
+        else this.visibilityThreshold = config.intersection || 0.75;
 
         /**
          * @type {{
@@ -111,7 +113,7 @@ class WebRTCCamera extends VideoRTC {
                 case 'mse':
                 case 'mp4':
                 case 'mjpeg':
-                    this.setStatus(msg.type.toUpperCase());
+                    this.setStatus(msg.type.toUpperCase(), this.config.title || '');
                     break;
             }
         }
@@ -123,12 +125,13 @@ class WebRTCCamera extends VideoRTC {
         super.onpcvideo(ev);
 
         if (this.pcState !== WebSocket.CLOSED) {
-            this.setStatus('RTC');
+            this.setStatus('RTC', this.config.title || '');
         }
     }
 
     renderMain() {
-        this.innerHTML = `
+        const shadow = this.attachShadow({mode: 'open'});
+        shadow.innerHTML = `
         <style>
             ha-card {
                 width: 100%;
@@ -144,6 +147,7 @@ class WebRTCCamera extends VideoRTC {
             .player {
                 background-color: black;
                 height: 100%;
+                position: relative; /* important for Safari */
             }
             .header {
                 position: absolute;
@@ -167,6 +171,8 @@ class WebRTCCamera extends VideoRTC {
             </div>
         </ha-card>
         `;
+
+        this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
 
         this.querySelector(".player").appendChild(this.video);
 
@@ -320,6 +326,9 @@ class WebRTCCamera extends VideoRTC {
                 .space {
                     width: 100%;
                 }
+                .volume {
+                    display: none;
+                }
             </style>
         `);
         card.insertAdjacentHTML('beforeend', `
@@ -328,6 +337,7 @@ class WebRTCCamera extends VideoRTC {
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <span class="space"></span>
+                    <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
                 </div>
             </div>
@@ -335,17 +345,32 @@ class WebRTCCamera extends VideoRTC {
 
         const video = this.video;
 
+        if (this.requestFullscreen) {
+            this.exitFullscreen = () => document.exitFullscreen();
+            this.fullscreenElement = () => document.fullscreenElement;
+            this.fullscreenEvent = 'fullscreenchange';
+        } else if (this.webkitRequestFullscreen) {
+            this.requestFullscreen = () => this.webkitRequestFullscreen();
+            this.exitFullscreen = () => document.webkitExitFullscreen();
+            this.fullscreenElement = () => document.webkitFullscreenElement;
+            this.fullscreenEvent = 'webkitfullscreenchange';
+        } else {
+            this.querySelector('.fullscreen').style.display = 'none';
+        }
+
         const ui = this.querySelector('.ui');
         ui.addEventListener('click', ev => {
             const icon = ev.target.icon;
-            if (icon === 'mdi:volume-mute') {
+            if (icon === 'mdi:play') {
+                this.play();
+            } else if (icon === 'mdi:volume-mute') {
                 video.muted = false;
             } else if (icon === 'mdi:volume-high') {
                 video.muted = true;
             } else if (icon === 'mdi:fullscreen') {
-                this.requestFullscreen().then(); // Chrome 71
+                this.requestFullscreen(); // Chrome 71
             } else if (icon === 'mdi:fullscreen-exit') {
-                document.exitFullscreen().then();
+                this.exitFullscreen();
             }
         });
 
@@ -355,6 +380,14 @@ class WebRTCCamera extends VideoRTC {
         });
         video.addEventListener('playing', () => {
             spinner.style.display = 'none';
+        });
+
+        const play = this.querySelector('.play');
+        video.addEventListener('play', () => {
+            play.style.display = 'none';
+        });
+        video.addEventListener('pause', () => {
+            play.style.display = 'block';
         });
 
         const volume = this.querySelector('.volume');
@@ -367,8 +400,8 @@ class WebRTCCamera extends VideoRTC {
         });
 
         const fullscreen = this.querySelector('.fullscreen');
-        this.addEventListener('fullscreenchange', () => {
-            fullscreen.icon = document.fullscreenElement
+        this.addEventListener(this.fullscreenEvent, () => {
+            fullscreen.icon = this.fullscreenElement()
                 ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
         });
     }

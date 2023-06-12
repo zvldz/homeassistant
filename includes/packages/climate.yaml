@@ -133,7 +133,7 @@ automation:
 #     - service: switch.turn_off
 #       entity_id: switch.sonoff_pump_relay
 
-  - alias: "Set temperature to 20.5 on schedule"
+  - alias: "Set temperature to 'climate_control_temperature' on schedule"
     initial_state: true
     trigger:
       - platform: time
@@ -148,7 +148,7 @@ automation:
       - service: climate.set_temperature
         data:
           entity_id: climate.gas_boiler
-          temperature: 20.5
+          temperature: "{{ states('input_number.climate_control_temperature') | float(15) }}"
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay

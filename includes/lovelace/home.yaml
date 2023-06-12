@@ -118,7 +118,7 @@ cards:
                 format: time
               - attribute: elevation
 
-      - type: custom:sun-card
+      - type: custom:horizon-card
         darkMode: true
         timeFormat: 24h
         showAzimuth: true

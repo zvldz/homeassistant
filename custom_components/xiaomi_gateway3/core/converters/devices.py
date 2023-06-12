@@ -120,7 +120,6 @@ DEVICES = [{
         Converter("command", "select", parent="data"),
         Converter("data", "select"),
 
-        CloudLinkConv("cloud_link", "binary_sensor", mi="8.0.2155", enabled=False),
         BoolConv("led", "switch", mi="6.p.6", enabled=False),
 
         GatewayStats,
@@ -140,7 +139,7 @@ DEVICES = [{
         Converter("discovered_mac", mi="8.0.2110", parent="data"),
         Converter("pair_command", mi="8.0.2111", parent="data"),
         Converter("added_device", mi="8.0.2084", parent="data"),
-        Converter("remove_did", mi="8.0.2082", parent="data"),
+        RemoveDIDConv("remove_did", mi="8.0.2082", parent="data"),
 
         # also updated from child devices OTAConv
         Converter("ota_progress", parent="data"),
@@ -172,7 +171,10 @@ DEVICES += [{
     ],
 }, {
     "lumi.plug.mmeu01": ["Xiaomi", "Plug EU", "ZNCZ04LM"],
-    "spec": [Plug, Power, Voltage, Energy, ChipTemp],
+    "spec": [
+        Plug, Power, Voltage, Energy, ChipTemp,
+        BoolConv("plug_detection", "binary_sensor", mi="8.0.2044"),
+    ],
 }, {
     "lumi.ctrl_86plug.aq1": ["Aqara", "Wall Outlet", "QBCZ11LM"],
     "lumi.ctrl_86plug": ["Aqara", "Wall Outlet", "QBCZ11LM"],
@@ -479,6 +481,9 @@ DEVICES += [{
 }, {
     "lumi.airrtc.agl001": ["Aqara", "Thermostat E1", "SRTS-A01"],
     "spec": [
+        # https://home.miot-spec.com/spec/lumi.airrtc.agl001
+        # The following code is very different to the spec defined in home.miot-spec.com
+        # thus leave unmodified
         BoolConv("climate", "climate", mi="4.21.85"),
         # 0: Manual module 1: Smart schedule mode 2: Antifreeze mode 3: Installation mode
         MapConv("mode", mi="14.51.85", parent="climate", map={0: "heat", 2: "auto"}),
@@ -522,6 +527,14 @@ DEVICES += [{
         MapConv("battery_low", "binary_sensor", mi="3.p.1", map=BATTERY_LOW,
                 enabled=False),
     ],
+}, {
+    "lumi.flood.acn001": ["Aqara", "Water Leak Sensor E1", "SJCGQ13LM"],
+    "spec": [
+        Converter("moisture", "binary_sensor", mi="2.p.1"),  # bool
+        BatteryConv("battery", "sensor", mi="3.p.2"),  # voltage, mV
+        MapConv("battery_low", "binary_sensor", mi="3.p.1", map=BATTERY_LOW,
+                enabled=False)
+    ]
 }, {
     "lumi.sensor_ht.agl02": ["Aqara", "TH Sensor T1", "WSDCGQ12LM"],
     "spec": [
@@ -622,6 +635,10 @@ DEVICES += [{
     "spec": [
         Converter("switch", "switch", mi="2.p.1"),
         Converter("chip_temperature", "sensor", mi="2.p.6", enabled=False),
+        MapConv("power_on_state", "select", mi="4.p.1", map=POWEROFF_MEMORY,
+                enabled=False),
+        MapConv("mode", "select", mi="6.p.2", map={1: "toggle", 2: "momentary"},
+                enabled=False),
     ],
 }, {
     # https://www.aqara.com/en/single_switch_T1_with-neutral.html
@@ -634,6 +651,8 @@ DEVICES += [{
         MathConv("power", "sensor", mi="3.p.2", round=2),
         BoolConv("led", "switch", mi="4.p.1", enabled=False),  # uint8
         MapConv("power_on_state", "select", mi="5.p.1", map=POWEROFF_MEMORY,
+                enabled=False),
+        MapConv("mode", "select", mi="7.p.2", map={1: "toggle", 2: "momentary"},
                 enabled=False),
     ],
 }, {
@@ -716,6 +735,46 @@ DEVICES += [{
         BoolConv("wireless_1", "switch", mi="8.p.1", enabled=False),
         BoolConv("wireless_2", "switch", mi="9.p.1", enabled=False),
     ],
+}, {
+    # https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:switch:0000A003:lumi-acn040:1
+    "lumi.switch.acn040": ["Aqara", "Triple Wall Switch E1 (with N)", "ZNQBKG31LM"],
+    "spec": [
+        Converter("channel_1", "switch", mi="2.p.1"),
+        Converter("channel_2", "switch", mi="3.p.1"),
+        Converter("channel_3", "switch", mi="4.p.1"),
+
+        # Button press actions
+        Action,
+        ButtonMIConv("button_1", mi="9.e.1", value=1),  # single
+        ButtonMIConv("button_1", mi="9.e.2", value=2),  # double
+        ButtonMIConv("button_2", mi="10.e.1", value=1),  # single
+        ButtonMIConv("button_2", mi="10.e.2", value=2),  # double
+        ButtonMIConv("button_3", mi="11.e.1", value=1),  # single
+        ButtonMIConv("button_3", mi="11.e.2", value=2),  # double
+        ButtonMIConv("button_both_12", mi="12.e.1", value=4),
+        ButtonMIConv("button_both_13", mi="13.e.1", value=4),
+        ButtonMIConv("button_both_23", mi="14.e.1", value=4),
+
+        # Wireless switch
+        # Native false = Wireless, Native true = Relay
+        MapConv("wireless_1", "switch", mi="9.p.1", map={0: True, 1: False},
+                enabled=False),
+        MapConv("wireless_2", "switch", mi="10.p.1", map={0: True, 1: False},
+                enabled=False),
+        MapConv("wireless_3", "switch", mi="11.p.1", map={0: True, 1: False},
+                enabled=False),
+
+        # Others
+        MapConv("power_on_state", "select", mi="7.p.1", map=POWEROFF_MEMORY,
+                enabled=False),
+        MapConv("temperature_alarm", "sensor", mi="8.p.1",
+                map={0: "normal", 1: "protected", 2: "abnormal"}),
+
+        # LED control
+        BoolConv("led_inverted", "switch", mi="6.p.2", enabled=False),
+        BoolConv("led_dnd", "switch", mi="6.p.1", enabled=False),
+        AqaraTimePatternConv("led_dnd_time", "text", mi="6.p.3", enabled=False)
+    ]
 }, {
     # required switch firmware 0.0.0_0030
     # https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:switch:0000A003:lumi-b2naus01:1
@@ -906,6 +965,15 @@ DEVICES += [{
         }, enabled=False),
         Converter("remain_days", "sensor", mi="9.p.1"),
     ],
+}, {
+    "lumi.light.acn014": ["Aqara", "Bulb T1", "ZNLDP14LM"],
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        # BrightnessConv("brightness", mi="2.p.2", parent="light"),
+        # ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
+        ZXiaomiBrightnessConv("brightness", mi="2.p.2", parent="light"),
+        ZXiaomiColorTempConv("color_temp", mi="2.p.3", parent="light"),
+    ],
 }]
 
 ########################################################################################
@@ -1049,6 +1117,11 @@ DEVICES += [{
     "support": 5,  # @AlexxIT
     "spec": [ZSwitch]
 }, {
+    "ZBMINIL2": ["Sonoff", "Mini L2 (no N)", "ZBMINIL2"],
+    "spec": [
+        ZSwitch, ZPowerOn
+    ]
+}, {
     "Lamp_01": ["Ksentry Electronics", "OnOff Controller", "KS-SM001"],
     "spec": [
         ZOnOffConv("switch", "switch", ep=11, bind=True, report="0s 1h 0"),
@@ -1157,6 +1230,77 @@ DEVICES += [{
 # BLE
 ########################################################################################
 
+# Xiaomi BLE MiBeacon + MIoT spec
+DEVICES += [{
+    4611: ["Xiaomi", "TH Sensor", "XMWSDJ04MMC"],
+    "spec": [
+        MiBeacon, BLETemperature, BLEHumidity,
+        # https://github.com/AlexxIT/XiaomiGateway3/issues/929
+        MathConv("temperature", mi="3.p.1001", min=-30, max=100, round=1),
+        MathConv("humidity", mi="3.p.1008", min=0, max=100, round=1),
+        Converter("battery", mi="2.p.1003"),
+        Converter("battery", "sensor", enabled=None),  # no in new firmwares
+    ],
+}, {
+    6473: ["Xiaomi", "Double Button", "XMWXKG01YL"],
+    "spec": [
+        MiBeacon, BLEAction, Button1, Button2, ButtonBoth, BLEBattery,
+        Converter("battery", mi="2.p.1003"),
+        BLEEvent("action", mi="3.e.1012", map={
+            1: "button_1_single", 2: "button_2_single", 3: "button_both_single"
+        }),
+        BLEEvent("action", mi="3.e.1013", map={
+            1: "button_1_double", 2: "button_2_double"
+        }),
+        BLEEvent("action", mi="3.e.1014", map={
+            1: "button_1_hold", 2: "button_2_hold"
+        }),
+    ],
+    "ttl": "60m",  # battery every 5 min
+}, {
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/826
+    7184: ["Linptech", "Wireless Button", "K11"],
+    "spec": [
+        MiBeacon, BLEAction, Button, BLEBattery,
+        Converter("battery", mi="2.p.1003"),
+        BLEEvent("action", mi="3.e.1012", map={1: SINGLE, 8: HOLD, 15: DOUBLE}),
+    ],
+    "ttl": "6h"  # battery every 6 hours
+}, {
+    # lumi.remote.mcn001
+    9095: ["Xiaomi", "Wireless Button", "XMWXKG01LM"],
+    "spec": [
+        MiBeacon, BLEAction, Button, BLEBattery,
+        Converter("battery", mi="2.p.1003"),
+        ButtonMIConv("button", mi="3.e.1012", value=1),  # single
+        ButtonMIConv("button", mi="3.e.1013", value=2),  # double
+        ButtonMIConv("button", mi="3.e.1014", value=16),  # hold
+    ],
+    "ttl": "6h"  # battery every 6 hours
+}, {
+    # https://home.miot-spec.com/spec/miaomiaoce.sensor_ht.t8
+    9538: ["Xiaomi", "TH Clock Pro", "LYWSD02MMC"],
+    # https://home.miot-spec.com/spec/miaomiaoce.sensor_ht.t9
+    10290: ["Xiaomi", "TH Sensor 3", "MJWSD05MMC"],
+    "spec": [
+        MiBeacon, BLETemperature, BLEHumidity,
+        MathConv("temperature", mi="3.p.1001", min=-30, max=100, round=1),
+        MathConv("humidity", mi="3.p.1002", min=0, max=100, round=0),
+        Converter("battery", mi="2.p.1003"),
+        Converter("battery", "sensor", enabled=None),  # no in new firmwares
+    ]
+}, {
+    10987: ["Linptech", "Motion Sensor 2", "HS1BB"],
+    "spec": [
+        MiBeacon, BLEMotion, BLEIlluminance, BLEBattery,
+        Converter("idle_time", "sensor", enabled=False),
+        Converter("illuminance", mi="2.p.1005"),
+        EventConv("motion", mi="2.e.1008", value=True),
+        Converter("battery", mi="3.p.1003"),
+    ],
+}]
+
+# Xiaomi BLE MiBeacon only spec
 # https://custom-components.github.io/ble_monitor/by_brand
 DEVICES += [{
     152: ["Xiaomi", "Flower Care", "HHCCJCY01"],
@@ -1181,7 +1325,8 @@ DEVICES += [{
     1647: ["Xiaomi", "Qingping TH Lite", "CGDK2"],
     1747: ["Xiaomi", "ZenMeasure Clock", "MHO-C303"],
     2888: ["Xiaomi", "Qingping TH Sensor", "CGG1"],  # same model as 839?!
-    4611: ["Xiaomi", "TH Sensor", "XMWSDJ04MMC"],
+    # https://home.miot-spec.com/spec/miaomiaoce.sensor_ht.o2
+    5860: ["Xiaomi", "TH Clock", "LYWSD02MMC"],
     "spec": [
         MiBeacon, BLETemperature, BLEHumidity,
         Converter("battery", "sensor", enabled=None),  # no in new firmwares
@@ -1228,6 +1373,14 @@ DEVICES += [{
     ],
     "ttl": "3d",  # battery every 1 day
 }, {
+    6281: ["Linptech", "Door/Window Sensor", "MS1BB"],
+    "spec": [
+        MiBeacon, BLEContact, BLEBattery,
+        MapConv("contact", mi="2.p.1004", map={1: True, 2: False}),
+        Converter("battery", mi="3.p.1003"),
+    ],
+    "ttl": "60m",
+}, {
     2455: ["Honeywell", "Smoke Alarm", "JTYJ-GD-03MI"],
     "spec": [MiBeacon, BLEAction, BLESmoke, BLEBattery],
     "ttl": "60m",  # battery every 4:30 min
@@ -1251,23 +1404,42 @@ DEVICES += [{
 }, {
     6017: ["Xiaomi", "Face Recognition Smart Door Lock", "XMZNMS09LM"],
     "spec": [
-        MiBeacon,
-        Converter("action", "sensor"),
-        Converter("battery", "sensor"),
-        Converter("doorbell", "sensor"),
-        Converter("contact", "binary_sensor"),
-        Converter("lock", "binary_sensor"),
+        MiBeacon,  # backward support old firmwares
+
+        # sensor action
+        EventConv("action", "sensor", mi="2.e.1020"),
+        Converter("key_id", mi="2.p.1"),
+        Converter("method_id", mi="2.p.5"),
+        MapConv("method", mi="2.p.5", map={
+            1: "mobile", 2: "fingerprint", 3: "password", 4: "nfc", 5: "face", 8: "key",
+            9: "one_time_password", 10: "periodic_password", 12: "coerce", 15: "manual",
+            16: "auto"
+        }),
+        Converter("action_id", mi="2.p.3"),
+        MapConv("action", mi="2.p.3", map={
+            1: "lock", 2: "unlock", 3: "lock_outside", 4: "lock_inside",
+            5: "unlock_inside", 6: "enable_child_lock", 7: "disable_child_lock",
+            8: "enable_away", 9: "disable_away"
+        }),
+        MapConv("position", mi="2.p.6", map={
+            1: "indoor", 2: "outdoor", 3: "not tell indoor or outdoor"
+        }),
+        Converter("timestamp", mi="2.p.2"),  # lock timestamp
+
+        # doorbell
+        EventConv("action", mi="5.e.1006", value="doorbell"),
+        Converter("timestamp", mi="5.p.1"),  # doorbell timestamp
+
+        # doorbell sensor
+        Converter("doorbell", "sensor", mi="5.p.1"),
+        # contact binary_sensor
+        MapConv("contact", "binary_sensor", mi="2.p.3", map={1: False, 2: True}),
+        # lock binary_sensor
+        MapConv("lock", "binary_sensor", mi="2.p.3", map={1: False, 2: True}),
+        # battery sensor
+        Converter("battery", "sensor", mi="4.p.1003"),
     ],
-}, {
-    6473: ["Xiaomi", "Wireless Button (Double)", "XMWXKG01YL"],
-    "spec": [MiBeacon, BLEAction, Button1, Button2, ButtonBoth, BLEBattery],
-    "ttl": "60m",  # battery every 5 min
-}, {
-    10987: ["Linptech", "Linptech Motion Sensor v2", "hs1bb"],
-    "spec": [
-        MiBeacon, BLEMotion, BLEIlluminance, BLEBattery,
-        Converter("idle_time", "sensor", enabled=False),
-    ],
+    "ttl": "25h"
 }, {
     # https://github.com/AlexxIT/XiaomiGateway3/issues/657
     2444: ["Xiaomi", "Door Lock", "XMZNMST02YD"],
@@ -1280,14 +1452,72 @@ DEVICES += [{
     ],
     "ttl": "6h"
 }, {
-    # https://github.com/AlexxIT/XiaomiGateway3/issues/826
-    7184: ["Linptech", "Wireless Button", "K11"],
-    "spec": [MiBeacon, BLEAction, Button, BLEBattery],
-    "ttl": "6h"  # battery every 6 hours
+    3641: ["Xiaomi", "Door Lock 1S", "XMZNMS08LM"],
+    "spec": [
+        MiBeacon,
+        Converter("action", "sensor"),
+        Converter("battery", "sensor"),
+        Converter("doorbell", "sensor"),
+        Converter("contact", "binary_sensor"),
+    ],
+    "ttl": "3d"  # battery every 1? day
 }, {
-    9095: ["Xiaomi", "Wireless Button", "XMWXKG01LM"],
-    "spec": [MiBeacon, BLEAction, Button, BLEBattery],
-    "ttl": "6h"  # battery every 6 hours
+    # https://home.miot-spec.com/spec/oms.lock.dl01
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/973
+    10249: ["Xiaomi", "Door Lock E10", "XMZNMS01OD"],
+    "spec": [
+        MapConv("door", "sensor", mi="4.p.1021", map={
+            1: "locked", 2: "unlocked", 3: "timeout", 4: "ajar"
+        }),
+
+        EventConv("action", "sensor", mi="3.e.1020"),
+        Converter("key_id", mi="3.p.1"),
+        Converter("method_id", mi="3.p.2"),
+        MapConv("method", mi="3.p.2", map={
+            1: "mobile", 2: "fingerprint", 3: "password", 4: "nfc", 8: "key",
+            9: "one_time_password", 10: "periodic_password", 12: "coerce", 15: "manual"
+        }),
+        Converter("action_id", mi="3.p.3"),
+        MapConv("action", mi="3.p.3", map={
+            1: "lock", 2: "unlock", 3: "lock_outside", 4: "lock_inside",
+            5: "unlock_inside", 8: "enable_away", 9: "disable_away"
+        }),
+        MapConv("position", mi="3.p.4", map={1: "indoor", 2: "outdoor"}),
+
+        Converter("timestamp", mi="3.p.6"),  # lock timestamp
+
+        # doorbell
+        EventConv("action", mi="6.e.1006", value="doorbell"),
+        Converter("timestamp", mi="6.p.1"),  # doorbell timestamp
+
+        Converter("battery", "sensor", mi="5.p.1003"),
+    ],
+    "ttl": "25h"
+}, {
+    # https://home.miot-spec.com/spec/lcrmcr.safe.ms30b
+    1393: ["Xiaomi", "Smart Safe Cayo Anno 30Z", "lcrmcr.safe.ms30b"],
+    "spec": [
+        MiBeacon, BLEAction,
+
+        MapConv("method", mi="2.p.1", map={
+            0: "mobile", 2: "fingerprint", 4: "key",
+        }),
+        Converter("action_id", mi="2.p.2"),
+        MapConv("abnormal_condition", mi="2.p.3", map={
+            1: "wrong_fingerprint", 2: "lockpicking", 4: "timeout_not_locked",
+        }),
+        Converter("battery", "sensor"),
+    ],
+    "ttl": "25h"
+}, {
+    # https://home.miot-spec.com/spec/chuangmi.switch.meshb01
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/1063
+    10371: ["PTX", "Mesh Multifunction Wireless Switch", "090615.remote.mlsw0a"],
+    "spec": [
+        MiBeacon, BLEAction, Button,  # don't know is it BLE or Mesh
+        EventConv("action", mi="2.e.1", value="click"),
+        EventConv("action", mi="3.e.2", value="hold"),
+    ]
 }, {
     # BLE devices can be supported witout spec. New spec will be added
     # "on the fly" when device sends them. But better to rewrite right spec for
@@ -1298,10 +1528,12 @@ DEVICES += [{
     982: ["Xiaomi", "Qingping Door Sensor", "CGH1"],
     1034: ["Xiaomi", "Mosquito Repellent", "WX08ZM"],
     1161: ["Xiaomi", "Toothbrush T500", "MES601"],
-    2054: ["Xiaomi", "Toothbrush T700", "MES604"],
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/1001
+    1203: ["Dessmann ", "Q3", "dsm.lock.q3"],
     1433: ["Xiaomi", "Door Lock", "MJZNMS03LM"],
     1694: ["Aqara", "Door Lock N100 (Bluetooth)", "ZNMS16LM"],
     1695: ["Aqara", "Door Lock N200", "ZNMS17LM"],
+    2054: ["Xiaomi", "Toothbrush T700", "MES604"],
     2480: ["Xiaomi", "Safe Box", "BGX-5/X1-3001"],
     3051: ["Aqara", "Door Lock D100", "ZNMS20LM"],
     3343: ["Loock", "Door Lock Classic 2X Pro", "loock.lock.cc2xpro"],
@@ -1380,11 +1612,46 @@ DEVICES += [{
     2351: ["LeMesh", "Mesh Downlight", "lemesh.light.wy0c05"],
     2584: ["XinGuang", "Smart Light", "LIBMDA09X"],
     3164: ["LeMesh", "Mesh Light (RF ready)", "lemesh.light.wy0c07"],
+    7136: ["LeMesh", "Mesh Light v2", "lemesh.light.wy0c09"],
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light", mink=3000, maxk=6400),
+    ]
+}, {
+    # https://home.miot-spec.com/spec/lemesh.light.wy0c08
     3531: ["LeMesh", "Mesh Light", "lemesh.light.wy0c08"],
     "spec": [
         Converter("light", "light", mi="2.p.1"),
         BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
         ColorTempKelvin("color_temp", mi="2.p.3", parent="light", mink=3000, maxk=6400),
+        MapConv("mode", "select", mi="2.p.5", map={
+            0: "WY", 4: "day", 5: "night", 8: "TV", 9: "reading", 10: "computer",
+            11: "hospitality", 12: "entertainment", 13: "wakeup", 14: "dusk",
+            15: "sleep"
+        }),
+        MapConv("power_on_state", "select", mi="4.p.1", map={0: "default", 1: "on"}),
+        BoolConv("save_state", "switch", mi="4.p.2"),
+        MapConv("dimming", "select", mi="4.p.3", map={0: "Gradient", 1: "Immediately"}),
+        BoolConv("night_light", "switch", mi="4.p.5"),
+    ]
+}, {
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/971
+    # https://home.miot-spec.com/spec/yeelink.light.ml9
+    11667: ["Yeelight", "Mesh Downlight C1", "YCCBC1019/YCCBC1020"],  # flex
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light", mink=3000, maxk=6400),
+        Converter("flex_switch", "switch", mi="3.p.6", enabled=False),  # bool
+        MapConv("power_on_state", "select", mi="3.p.7", enabled=False, map={
+            0: "default", 1: "on"
+        }),
+        MapConv("mode", "select", mi="2.p.5", map={
+            0: "WY", 4: "day", 5: "night", 8: "TV", 9: "reading", 10: "computer",
+            11: "hospitality", 12: "entertainment", 13: "wakeup", 14: "dusk",
+            15: "sleep"
+        })
     ]
 }, {
     1945: ["Xiaomi", "Mesh Wall Switch", "DHKG01ZM"],
@@ -1434,6 +1701,7 @@ DEVICES += [{
     ],
 }, {
     # https://www.ixbt.com/live/chome/umnaya-rozetka-xiaomi-zncz01zm-s-energomonitoringom-i-bluetooth-mesh-integraciya-v-home-assistant.html
+    # https://home.miot-spec.com/spec/zimi.plug.zncz01
     3083: ["Xiaomi", "Electrical Outlet", "ZNCZ01ZM"],
     "spec": [
         Converter("outlet", "switch", mi="2.p.1"),
@@ -1441,7 +1709,7 @@ DEVICES += [{
         Converter("led", "switch", mi="4.p.1", enabled=False),
         Converter("power_protect", "switch", mi="7.p.1", enabled=False),
         MathConv("power_value", "number", mi="7.p.2", multiply=0.01,
-                 min=0, max=1638400, enabled=False),
+                 min=0, max=163840000, enabled=False),
     ],
 }, {
     2093: ["PTX", "Mesh Triple Wall Switch", "PTX-TK3/M"],
@@ -1571,7 +1839,7 @@ DEVICES += [{
             0: "auto", 1: "battery", 2: "usb"
         }, enabled=False)
     ],
-    "ttl": "1440m"
+    "ttl": "1440m"  # https://github.com/AlexxIT/XiaomiGateway3/issues/804
 }, {
     4737: ["Xiaomi", "Smart Charging Table Lamp", "MJTD04YL"],
     "spec": [
@@ -1628,6 +1896,8 @@ DEVICES += [{
     ],
 }, {
     3788: ["PTX", "Mesh Triple Wall Switch", "090615.switch.meshk3"],
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/993
+    11356: ["PTX", "Mesh Triple Wall Switch", "090615.switch.aksk3"],
     "spec": [
         Converter("channel_1", "switch", mi="2.p.1"),
         Converter("channel_2", "switch", mi="3.p.1"),
@@ -1710,11 +1980,12 @@ DEVICES += [{
         MathConv("has_someone_duration", "sensor", mi="2.p.3"),
         MathConv("idle_time", "sensor", mi="2.p.4", multiply=60),
         MathConv("illuminance", "sensor", mi="2.p.5"),
-        MathConv("distance", "sensor", mi="2.p.6"),
+        MathConv("distance", "sensor", mi="2.p.6", multiply=0.01),
 
         Converter("led", "switch", mi="3.p.1", enabled=True),
-        MathConv("detect_range", "number", mi="3.p.2", min=0, max=8),
+        MathConv("detect_range", "number", mi="3.p.2", min=0, max=8, step=0.1),
         Converter("pir", "switch", mi="3.p.3", enabled=True),
+        MathConv("enterin_confirm_time", "number", mi="3.p.5", min=0, max=60),
 
         MapConv("occupancy_status", "sensor", mi="2.p.1", map={
             0: "NoOne", 1: "EnterIn", 2: "SmallMove", 3: "MicroMove", 4: "Approaching",
@@ -1722,23 +1993,229 @@ DEVICES += [{
         }),
     ],
 }, {
-    10441: ["Linptech", "Linptech Presence Sensor", "hb01"],
+    10441: ["Linptech", "Presence Sensor ES1", "ES1ZB"],  # linp.sensor_occupy.hb01
     "spec": [
+        # occupancy sensors
         BoolConv("occupancy", "binary_sensor", mi="2.p.1"),
-        MathConv("no_one_determine_time", "number", mi="2.p.2", min=0, max=10000),
-        Converter("has_someone_duration", "sensor", mi="2.p.3"),
-        MathConv("idle_time", "sensor", mi="2.p.4", multiply=60),
+        MathConv("occupancy_duration", "sensor", mi="2.p.3", multiply=60),  # minutes
+        MathConv("occupancy_distance", "sensor", mi="3.p.3"),
+        MathConv("idle_time", "sensor", mi="2.p.4", multiply=60),  # minutes
+
+        # occupancy settings
+        MathConv("occupancy_timeout", "number", mi="2.p.2", min=0, max=10000),
+
+        MaskConv("distance_00_08", "switch", mi="3.p.2", mask=1),
+        MaskConv("distance_08_15", "switch", mi="3.p.2", mask=2),
+        MaskConv("distance_15_23", "switch", mi="3.p.2", mask=4),
+        MaskConv("distance_23_30", "switch", mi="3.p.2", mask=8),
+        MaskConv("distance_30_38", "switch", mi="3.p.2", mask=16),
+        MaskConv("distance_38_45", "switch", mi="3.p.2", mask=32),
+        MaskConv("distance_45_53", "switch", mi="3.p.2", mask=64),
+        MaskConv("distance_53_60", "switch", mi="3.p.2", mask=128),
+
+        # other sensors
         Converter("illuminance", "sensor", mi="2.p.5"),
 
-        MapConv("approach_aloof", "sensor", mi="3.p.1", map={
-            0: "Stop", 1: "Approach", 2: "Aloof"
-        }),
-        MathConv("shielding_distance", "number", mi="3.p.2", min=0, max=255),
-        MathConv("body_distance", "sensor", mi="3.p.3"),
+        # approach/away event
+        EventConv("approach_away", mi="3.e.1", value=True),
+        MapConv("action", "sensor", mi="3.p.1", map={0: "", 1: "approach", 2: "away"}),
         MathConv("approach_distance", "number", mi="3.p.4", min=1, max=5),
 
         Converter("led", "switch", mi="4.p.1"),
     ],
+}, {
+    # https://github.com/AlexxIT/XiaomiGateway3/issues/835
+    # https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:switch:0000A003:lemesh-sw1a02:1:0000C808
+    3001: ["LeMesh", "Switch Sensor", "lemesh.switch.sw1a02"],
+    "spec": [
+        Converter("switch", "switch", mi="2.p.1"),  # bool
+        BoolConv("led", "switch", mi="5.p.1", enabled=False),  # uint8
+    ],
+}, {
+    # https://home.miot-spec.com/s/10789
+    10789: ["Zxgs", "Mesh Two Color Scene Light", "zxgs.light.bdcl01"],
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light", mink=2700, maxk=6500),
+    ],
+}, {
+    6084: ["Leishi", "NVC Smart Light Source Module Switch", "wy0a09"],
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light"),
+    ],
+}, {
+    # https://home.miot-spec.com/s/giot.plug.v3shsm
+    10920: ["Unknown", "Mesh Smart Plug V3", "giot.plug.v3shsm"],
+    "spec": [
+        Converter("plug", "switch", mi="2.p.1"),
+        MapConv("power_on_state", "select", mi="2.p.3", map={
+            0: "off", 1: "on", 2: "previous"
+        }),
+
+        # Inching mode
+        BoolConv("inching_mode", "switch", mi="2.p.2"),
+        MapConv("inching_state", "select", mi="3.p.1", map={False: "off", True: "on"}),
+        MathConv("inching_time", "number", mi="3.p.2", multiply=0.5, min=1, max=7200,
+                 step=1, round=1),
+
+        # LED
+        MapConv("led", "select", mi="4.p.1", map={
+            0: "follow_switch", 1: "opposite_to_switch", 2: "off", 3: "on"
+        })
+    ]
+}, {
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/6514
+    6514: ["Unknown", "Mesh Single Wall Switch (with N)", "babai.switch.201m"],
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/7219
+    7219: ["Unknown", "Mesh Single Wall Switch (no N)", "babai.switch.201ml"],
+    "spec": [
+        Converter("channel", "switch", mi="2.p.1"),
+
+        # Either Default/Wireless or Default/Atom, depending on hardware
+        BoolConv("wireless", "switch", mi="2.p.2", enabled=False),
+    ]
+}, {
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/6528
+    6528: ["Unknown", "Mesh Double Wall Switch (with N)", "babai.switch.202m"],
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/7220
+    7220: ["Unknown", "Mesh Double Wall Switch (no N)", "babai.switch.202ml"],
+    "spec": [
+        Converter("channel_1", "switch", mi="2.p.1"),
+        Converter("channel_2", "switch", mi="3.p.1"),
+
+        # Either Default/Wireless or Default/Atom, depending on hard    ware
+        BoolConv("wireless_1", "switch", mi="2.p.2", enabled=False),
+        BoolConv("wireless_2", "switch", mi="3.p.2", enabled=False),
+    ]
+}, {
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/6529
+    6529: ["Unknown", "Mesh Triple Wall Switch (with N)", "babai.switch.203m"],
+    # A third party module widely used in small brand wall switches
+    # https://home.miot-spec.com/s/7221
+    7221: ["Unknown", "Mesh Triple Wall Switch (no N)", "babai.switch.203ml"],
+    "spec": [
+        Converter("channel_1", "switch", mi="2.p.1"),
+        Converter("channel_2", "switch", mi="3.p.1"),
+        Converter("channel_3", "switch", mi="4.p.1"),
+
+        # Either Default/Wireless or Default/Atom, depending on hardware
+        BoolConv("wireless_1", "switch", mi="2.p.2", enabled=False),
+        BoolConv("wireless_2", "switch", mi="3.p.2", enabled=False),
+        BoolConv("wireless_3", "switch", mi="4.p.2", enabled=False),
+    ]
+}, {
+    # https://home.miot-spec.com/s/5045
+    5045: ["Linptech", "Mesh Triple Wall Switch (no L)", "QE1SB-W3(MI)"],
+    "spec": [
+        Converter("channel_1", "switch", mi="2.p.1"),
+        Converter("channel_2", "switch", mi="3.p.1"),
+        Converter("channel_3", "switch", mi="4.p.1"),
+
+        BoolConv("wireless_1", "switch", mi="2.p.3"),
+        BoolConv("wireless_2", "switch", mi="3.p.3"),
+        BoolConv("wireless_3", "switch", mi="4.p.3"),
+
+        Converter("led", "switch", mi="5.p.1"),
+
+        Converter("compatible_mode", "switch", mi="7.p.4"),
+    ],
+}, {
+    # https://home.miot-spec.com/spec/chuangmi.switch.mesh
+    1350: ["Chuangmi", "Single Wall Switch K1-A (with N)", "chuangmi.switch.mesh"],
+    "spec": [
+        Converter("switch", "switch", mi="2.p.1"),
+        MapConv("led", "switch", mi="3.p.3", map={1: False, 2: True}),
+    ]
+}, {
+    # https://home.miot-spec.com/spec/chuangmi.switch.meshb01
+    1490: ["Chuangmi", "Double Wall Switch K1-B (with N)", "chuangmi.switch.meshb01"],
+    "spec": [
+        Converter("left_switch", "switch", mi="2.p.1"),
+        Converter("right_switch", "switch", mi="3.p.1"),
+        MapConv("led", "switch", mi="4.p.3", map={1: False, 2: True}),
+    ]
+}, {
+    7855: ["Unknown", "Mesh Single Wall Switch", "frfox.switch.bl01"],
+    "spec": [
+        Converter("switch", "switch", mi="2.p.1"),
+        MapConv("mode", "select", mi="2.p.2", map={
+            0: "off", 1: "wireless", 2: "flex", 3: "scene",
+        }),
+        Action,
+        ButtonMIConv("button", mi="3.e.1", value=1),
+    ]
+}, {
+    # https://home.miot-spec.com/spec/yeelink.curtain.crc1
+    10813: ["Yeelink", "Curtain Motor C1", "YCCBCI008"],
+    "spec": [
+        MapConv("motor", "cover", mi="2.p.1", map={0: "stop", 1: "open", 2: "close"}),
+        Converter("target_position", mi="2.p.2"),
+        CurtainPosConv("position", mi="2.p.3", parent="motor"),
+        Converter("motor_reverse", "switch", mi="2.p.4", enabled=False),
+        MapConv("mode", "select", mi="2.p.5", map={
+            0: "default", 1: "doublmode", 2: "leftmode", 3: "rightmode"
+        }, enabled=False),
+    ]
+}, {
+    # https://home.miot-spec.com/spec/giot.light.v5ssm
+    11724: ["GranwinIoT", "Mesh Light V5", "giot.light.v5ssm"],
+    "spec": [
+        Converter("light", "light", mi="2.p.1"),
+        BrightnessConv("brightness", mi="2.p.2", parent="light", max=100),
+        ColorTempKelvin("color_temp", mi="2.p.3", parent="light", mink=2700, maxk=6500),
+        MapConv("mode", "select", mi="2.p.4", map={
+            0: "Auto", 1: "Day", 2: "Night", 3: "Warmth", 4: "TV", 5: "Reading",
+            6: "Computer", 7: "Sleeping Aid", 8: "Wakeup Aid",
+        }),
+        Converter("flex_switch", "switch", mi="2.p.5"),
+
+        # Converter("ac_status", "sensor", mi="3.p.1"),
+
+        MapConv("power_on_state", "select", mi="3.p.2", map={0: "off", 1: "on"}),
+        MapConv("turn_on_state", "select", mi="3.p.3",
+                map={0: "previous", 1: "default"}),
+
+        MathConv("default_brightness", "number", mi="3.p.4", min=1, max=100),
+        MathConv("default_temp", "number", mi="3.p.5", min=2700, max=6500),
+
+        MathConv("sleep_aid_minutes", "number", mi="3.p.7", min=1, max=60),
+        Converter("sleep_aid_use_custom", "switch", mi="3.p.8"),
+        MathConv("sleep_aid_custom_init_brightness", "number", mi="3.p.9", min=1,
+                 max=100),
+        MathConv("sleep_aid_custom_init_temp", "number", mi="3.p.10", min=2700,
+                 max=6500),
+
+        MathConv("wakeup_minutes", "number", mi="3.p.11", min=1, max=60),
+        Converter("wakeup_use_custom", "switch", mi="3.p.12"),
+        MathConv("wakeup_custom_final_brightness", "number", mi="3.p.13", min=1,
+                 max=100),
+        MathConv("wakeup_custom_final_temp", "number", mi="3.p.14", min=2700, max=6500),
+
+        Converter("night_light", "switch", mi="3.p.15"),
+        MathConv("turn_on_transit_sec", "number", mi="3.p.17", multiply=0.001, min=100,
+                 max=30000, step=100, round=1),
+        MathConv("turn_off_transit_sec", "number", mi="3.p.18", multiply=0.001, min=100,
+                 max=30000, step=100, round=1),
+        MathConv("change_transit_sec", "number", mi="3.p.19", multiply=0.001, min=100,
+                 max=30000, step=100, round=1),
+
+        MathConv("min_brightness", "number", mi="3.p.23", multiply=0.1, min=1, max=500,
+                 step=1, round=1),
+
+        GiotTimePatternConv("night_light_time", "text", mi="3.p.16")
+
+        # Converter("fill_light_detection", "sensor", mi="3.p.20"),
+        # Converter("fill_light_switch", "switch", mi="3.p.21"),
+        # MathConv("min_bri_factory", "number", mi="3.p.16", min=1, max=500),
+    ]
 }, {
     "default": "mesh",  # default Mesh device
     "spec": [

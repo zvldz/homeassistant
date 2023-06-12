@@ -11,9 +11,9 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.ups_status_data
-#       from: 'OL'
-#       to: 'OB'
-        to: 'FSD OB DISCHRG'
+    condition:
+      - condition: template
+        value_template: "{{ 'OL' in trigger.from_state.state and 'OB' in trigger.to_state.state }}"
     action:
       - delay: '00:02:00'
       - service: notify.telegram
@@ -25,16 +25,9 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.ups_status_data
-        from: 'FSD OB DISCHRG'
-        to: 'FSD OL CHRG'
-      - platform: state
-        entity_id: sensor.ups_status_data
-        from: 'FSD OB DISCHRG LB'
-        to: 'FSD OL CHRG'
-      - platform: state
-        entity_id: sensor.ups_status_data
-        from: 'FSD ALARM OB DISCHRG LB'
-        to: 'FSD OL CHRG'
+    condition:
+      - condition: template
+        value_template: "{{ 'OB' in trigger.from_state.state and 'OL' in trigger.to_state.state }}"
     action:
       - delay: '00:03:00'
       - service: notify.telegram
@@ -44,112 +37,5 @@ automation:
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left
-
-# - alias: zigbee2mqtt_z2m_bridge_status
-#   initial_state: true
-#   trigger:
-#     - platform: state
-#       entity_id: sensor.zigbee2mqtt_bridge_state
-#   action:
-#     - service: notify.telegram
-#       data:
-#         message: >
-#           {%if is_state('sensor.zigbee2mqtt_bridge_state','online')%}{{"\U00002705"}} Z2M is online!
-#           {%else%}{{"\U0000274C"}} Attention! Z2M is offline!
-#           {%endif%}
-#
-# - alias: "Check zigbee bridge status"
-#   initial_state: true
-#   trigger:
-#     - platform: homeassistant
-#       event: start
-#     - platform: time_pattern
-#       minutes: "/10"
-#   action:
-#     - service: mqtt.publish
-#       data:
-#         topic: "cmnd/tasmota_AA4E10/time"
-#         payload_template: "{{ as_timestamp(now()) }}"
-#     - service: mqtt.publish
-#       data:
-#         topic: "cmnd/tasmota_AA4E10/status"
-#         payload: '0'
-
-mqtt:
-  sensor:
-#   - name: Zigbee2MQTT Bridge state
-#     state_topic: "zigbee2mqtt/bridge/state"
-#     value_template: "{{ value_json.state }}"
-#     icon: "mdi:router-wireless"
-#
-#   - name: Zigbee2MQTT Version
-#     state_topic: "zigbee2mqtt/bridge/config"
-#     value_template: "{{ value_json.version }}"
-#     icon: "mdi:zigbee"
-#
-#   - name: Zigbee Coordinator Version
-#     state_topic: "zigbee2mqtt/bridge/config"
-#     value_template: "{{ value_json.coordinator.meta.revision.split(' ')[0] }}"
-#     icon: "mdi:chip"
-#
-#   - name: Zigbee Bridge FW
-#     state_topic: "stat/tasmota_AA4E10/STATUS2"
-#     value_template: "{{ value_json['StatusFWR'].Version }}"
-#     icon: "mdi:chip"
-#
-#   - name: Zigbee Bridge Uptime
-#     device_class: timestamp
-#     state_topic: "stat/tasmota_AA4E10/STATUS11"
-#     value_template: "{{ (as_timestamp(now()) - (value_json['StatusSTS'].UptimeSec | int) ) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
-#
-#   - name: Zigbee Bridge Exception
-#     state_topic: "stat/tasmota_AA4E10/STATUS12"
-#     value_template: "{{ value_json['StatusSTK'].Exception }}"
-#     json_attributes_topic: "stat/tasmota_AA4E10/STATUS12"
-##    json_attributes_template: "{{ value_json | tojson }}"
-#     json_attributes_template: "{{ value_json | tojson if value_json else 'None' }}"
-#     icon: "mdi:bug"
-
-sensor:
-#  - platform: mqtt
-#    name: Zigbee2MQTT Bridge state
-#  - platform: mqtt
-#    name: Zigbee2MQTT Version
-#    state_topic: "zigbee2mqtt/bridge/config"
-#    value_template: "{{ value_json.version }}"
-#    icon: "mdi:zigbee"
-#
-#  - platform: mqtt
-#    name: Zigbee Coordinator Version
-#    state_topic: "zigbee2mqtt/bridge/config"
-#    value_template: "{{ value_json.coordinator.meta.revision.split(' ')[0] }}"
-#    icon: "mdi:chip"
-#
-#  - platform: mqtt
-#    name: Zigbee Bridge FW
-#    state_topic: "stat/tasmota_AA4E10/STATUS2"
-#    value_template: "{{ value_json['StatusFWR'].Version }}"
-#    icon: "mdi:chip"
-#
-#  - platform: mqtt
-#    name: Zigbee Bridge Uptime
-#    device_class: timestamp
-#    state_topic: "stat/tasmota_AA4E10/STATUS11"
-#    value_template: "{{ (as_timestamp(now()) - (value_json['StatusSTS'].UptimeSec | int) ) | timestamp_custom('%Y-%m-%d %H:%M:%S%z', true) }}"
-#
-#  - platform: mqtt
-#    name: Zigbee Bridge Exception
-#    state_topic: "stat/tasmota_AA4E10/STATUS12"
-#    value_template: "{{ value_json['StatusSTK'].Exception }}"
-#    json_attributes_topic: "stat/tasmota_AA4E10/STATUS12"
-##   json_attributes_template: "{{ value_json | tojson }}"
-#    json_attributes_template: "{{ value_json | tojson if value_json else 'None' }}"
-#    icon: "mdi:bug"
-
-# - platform: command_line
-#   name: "Latest Tasmota"
-#   #command: "curl -s https://github.com/arendst/Tasmota/releases/latest | cut -d'\"' -f2 | rev | cut -d'/' -f1 | rev | cut -f2 -dv"
-#   command: "curl -v -s https://github.com/arendst/Tasmota/releases/latest 2>&1 |grep location: | awk -F '/v' '{ print $2}'"
-#   scan_interval: 600
 
 

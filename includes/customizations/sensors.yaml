@@ -16,9 +16,6 @@ sensor.myip:
 sensor.ha_latest:
   icon: "mdi:package-down"
 
-sensor.latest_tasmota:
-  icon: "mdi:package-down"
-
 sensor.ha_beta:
   icon: "mdi:beta"
 
@@ -497,11 +494,3 @@ binary_sensor.boiler_shelly_firmware_update:
 binary_sensor.shellyem_c45bbe602cfc_firmware_update:
   friendly_name: "Shelly EM"
 
-number.living_room_trv_local_temperature_calibration:
-  friendly_name: "Calibration"
-
-number.master_bedroom_trv_local_temperature_calibration:
-  friendly_name: "Calibration"
-
-number.bedroom_trv_local_temperature_calibration:
-  friendly_name: "Calibration"

@@ -1,5 +1,9 @@
-DOMAIN = 'xiaomi_gateway3'
+DOMAIN = "xiaomi_gateway3"
 TITLE = "Xiaomi Gateway 3"
+
+PID_WIFI = 0
+PID_BLE = 6
+PID_WIFI_BLE = 8
 
 
 def source_hash() -> str:

@@ -7,18 +7,18 @@
     - platform: homeassistant
       event: start
     - platform: state
-      entity_id: switch.0x158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe_switch
       from: 'unavailable'
     - platform: state
-      entity_id: switch.0x158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe_switch
       to: 'off'
   condition:
     - condition: state
-      entity_id: switch.0x158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe_switch
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe_switch
 
 # Light
 - alias: "Toggle light in WC"
@@ -27,7 +27,7 @@
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id: sensor.0x158d00022360fe_action
+        entity_id: sensor.0x00158d00022360fe_action
         click_type: single
   action:
     - service: light.toggle
@@ -37,12 +37,12 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.0x158d00024de627_contact
+      entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'on'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x158d0004466f8f_motion
+        entity_id: binary_sensor.0x00158d0004466f8f_motion
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -67,12 +67,12 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.0x158d00024de627_contact
+      entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'off'
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x158d0004466f8f_motion
+        entity_id: binary_sensor.0x00158d0004466f8f_motion
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -98,7 +98,7 @@
       entity_id: group.wc_spots
       state: 'on'
     - condition: state
-      entity_id: binary_sensor.0x158d00024de627_contact
+      entity_id: binary_sensor.0x00158d00024de627_contact
       state: 'off'
   action:
     - service: light.turn_off
@@ -147,7 +147,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.0x158d00024de627_contact
+      entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'on'
       for: "00:01:00"
   action:

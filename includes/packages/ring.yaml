@@ -12,8 +12,8 @@ template:
         icon: "mdi:clock"
         state: "{{ as_timestamp(state_attr('sensor.front_door_last_motion', 'created_at'), default=0) | timestamp_custom('%H:%M %d-%m-%Y') }}"
 
-downloader:
-  download_dir: downloads
+#downloader:
+#  download_dir: downloads
 
 automation:
   - alias: "Ring DoorBell"

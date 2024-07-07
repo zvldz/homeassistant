@@ -65,7 +65,25 @@ cards:
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Graphs"
+        name: Traffic
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Traffic"
+            hour24: true
+            points_per_hour: 30
+            entities:
+              - entity: sensor.mikrotik_ether1_rx
+                name: RX
+              - entity: sensor.mikrotik_ether1_tx
+                name: TX
+
+      - type: custom:button-card
+        name: "System"
         styles:
           card:
             - background-color: "#203040"
@@ -175,18 +193,10 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Watchman"
-            icon: "mdi:file-find-outline"
-            tap_action:
-#             confirmation: true
-              action: call-service
-              service: watchman.report
-              service_data:
-                send_notification: false
+            name: "Mikrotik2 WLAN"
+#            icon: "mdi:file-find-outline"
+            entity: switch.mikrotik2_wlan1_port
             size: 5%
-            styles:
-              card:
-                - font-size: 14px
 
       - type: horizontal-stack
         cards:
@@ -288,7 +298,7 @@ cards:
         show_header_toggle: false
         entities:
           - input_number.gas_counter
-          - binary_sensor.0x158d000393f29a_contact
+          - binary_sensor.0x00158d000393f29a_contact
 
       - type: horizontal-stack
         cards:

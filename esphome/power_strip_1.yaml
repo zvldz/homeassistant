@@ -124,6 +124,7 @@ switch:
     name: ${device_name}_relay1
     icon: mdi:power-socket-eu
     id: ${device_name}_relay1
+    restore_mode: ALWAYS_ON
     #restore_mode: ALWAYS_OFF
 
   - platform: gpio

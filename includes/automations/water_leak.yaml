@@ -3,9 +3,9 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.0x158d000232989c_moisture
-      - binary_sensor.0x158d000233ddf2_moisture
-      - binary_sensor.0x158d00023aa420_moisture
+      - binary_sensor.0x00158d000232989c_moisture
+      - binary_sensor.0x00158d000233ddf2_moisture
+      - binary_sensor.0x00158d00023aa420_moisture
     to: 'on'
   action:
     - service: xiaomi_aqara.play_ringtone
@@ -22,9 +22,9 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.0x158d000232989c_moisture
-      - binary_sensor.0x158d000233ddf2_moisture
-      - binary_sensor.0x158d00023aa420_moisture
+      - binary_sensor.0x00158d000232989c_moisture
+      - binary_sensor.0x00158d000233ddf2_moisture
+      - binary_sensor.0x00158d00023aa420_moisture
     from: 'on'
     to: 'off'
   action:

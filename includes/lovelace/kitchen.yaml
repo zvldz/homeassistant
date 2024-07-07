@@ -23,12 +23,20 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d000211434a_switch
+            entity: switch.0x00158d000211434a_switch
             icon: mdi:light-switch
-            size: 10%
+            size: 20%
             styles:
               card:
                 - font-size: 14px
+          - type: custom:button-card
+            entity: switch.shelly1_kitchen_lamp
+            icon: mdi:light-switch
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+
 
   - type: vertical-stack
     cards:
@@ -44,7 +52,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002ca0395_temperature
+              - entity: sensor.0x00158d0002ca0395_temperature
               - entity: sensor.kitchen_bt_temperature
                 color: red
 
@@ -54,7 +62,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002ca0395_humidity
+              - entity: sensor.0x00158d0002ca0395_humidity
               - entity: sensor.kitchen_bt_humidity
                 color: red
 
@@ -68,22 +76,22 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.0x158d0002ca0395_temperature
+          - entity: sensor.0x00158d0002ca0395_temperature
             type: custom:multiple-entity-row
             name: Kitchen
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0002ca0395_pressure
+              - entity: sensor.0x00158d0002ca0395_pressure
                 name: false
-              - entity: sensor.0x158d0002ca0395_humidity
+              - entity: sensor.0x00158d0002ca0395_humidity
                 name: false
-          - entity: binary_sensor.0x158d000232989c_moisture
+          - entity: binary_sensor.0x00158d000232989c_moisture
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00022515fe_motion
+          - entity: binary_sensor.0x00158d00022515fe_motion
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: sensor.0x158d00022515fe_illuminance
+          - entity: sensor.0x00158d00022515fe_illuminance
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: binary_sensor.582d3460a918_motion

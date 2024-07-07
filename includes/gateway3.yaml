@@ -1,15 +1,29 @@
 attributes_template: |
+  {% if attr in ('zigbee', 'ble', 'mesh') %}
   {{{
-    "integration": "xiaomi_gateway3",
-    "device_name": device.info.name,
-    "device_fw_ver": device.fw_ver,
+    "integration": "gw3",
+    "device_name": device.human_name,
+    "device_fw_ver": device.firmware,
     "device_model": device.model,
-    "device_market_model": device.info.model,
-    "gateway_name": gateway.info.name,
+    "device_market_model": device.human_model,
+    "device_manufacturer": device.extra.market_brand,
+    "gateway_name": gateway.human_name
   }}}
-
-#gw3_command: "/data/gw3 -log=syslog,debug,btraw,btgap,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
-#gw3_command: "/data/gw3 -log=syslog,debug,miio,mqtt 2>&1 | mosquitto_pub -t gw3/stderr -s &"
+  {% elif attr == 'gateway' %}
+  {{{
+    "integration": "gw3",
+    "gate": gateway.human_name,
+    "gateway_model": gateway.human_model,
+    "gateway_fw_ver": gateway.firmware
+  }}}
+  {% elif attr == 'battery' %}
+  {{{
+    "integration": "gw3",
+    "name": device.human_name,
+    "gate": gateway.human_name,
+    "battery": "true"
+  }}}
+  {% endif %}
 
 logger:
   filename: xiaomi_gateway3.log       # default empty
@@ -19,5 +33,5 @@ logger:
   debug_mode: true,mqtt,zigbee        # global modes for all gateways, default empty
   level: debug                        # default
   mode: a                             # a - append to file, w - write new file, default
-  format: "%(asctime)s %(message)s"   # default
+  format: "%(asctime)s %(levelname)s [%(name)s] %(message)s"  # default
 

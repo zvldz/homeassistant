@@ -1,5 +1,6 @@
 /** Chrome 63+, Safari 11.1+ */
-import {VideoRTC} from "./video-rtc.js?v3.0.1";
+import {VideoRTC} from './video-rtc.js?v=1.8.0';
+import {DigitalPTZ} from './digital-ptz.js?v=3.3.0';
 
 class WebRTCCamera extends VideoRTC {
     /**
@@ -7,12 +8,7 @@ class WebRTCCamera extends VideoRTC {
      * @param {Object} config
      */
     setConfig(config) {
-        if (!config.url && !config.entity) throw new Error("Missing `url` or `entity`");
-
-        if (config.mode) this.mode = config.mode;
-        // backward compatibility
-        else if (config.mse === false) this.mode = 'webrtc';
-        else if (config.webrtc === false) this.mode = 'mse';
+        if (!config.url && !config.entity && !config.streams) throw new Error('Missing `url` or `entity` or `streams`');
 
         if (config.background) this.background = config.background;
 
@@ -21,18 +17,59 @@ class WebRTCCamera extends VideoRTC {
 
         /**
          * @type {{
-         *     url:string, entity:string, muted:boolean, poster:string, title:string,
-         *     intersection:number, ui:boolean, style:string,
-         *     ptz:{
-         *         opacity:number|string, service:string,
-         *         data_left, data_up, data_right, data_down,
-         *         data_zoom_in, data_zoom_out, data_home
+         *     url: string,
+         *     entity: string,
+         *     mode: string,
+         *     media: string,
+         *
+         *     streams: Array<{
+         *         name: string,
+         *         url: string,
+         *         entity: string,
+         *         mode: string,
+         *         media: string,
+         *     }>,
+         *
+         *     title: string,
+         *     poster: string,
+         *     poster_remote: boolean,
+         *     muted: boolean,
+         *     intersection: number,
+         *     ui: boolean,
+         *     style: string,
+         *     background: boolean,
+         *
+         *     server: string,
+         *
+         *     mse: boolean,
+         *     webrtc: boolean,
+         *
+         *     digital_ptz:{
+         *         mouse_drag_pan: boolean,
+         *         mouse_wheel_zoom: boolean,
+         *         mouse_double_click_zoom: boolean,
+         *         touch_pinch_zoom: boolean,
+         *         touch_drag_pan: boolean,
+         *         touch_tap_drag_zoom: boolean,
+         *         persist: boolean|string,
          *     },
-         *     shortcuts:Array<{name:string,icon:string}>,
-         *     mse:boolean, webrtc:boolean,
+         *     ptz:{
+         *         opacity: number|string,
+         *         service: string,
+         *         data_left, data_up, data_right, data_down, data_zoom_in, data_zoom_out, data_home
+         *     },
+         *     shortcuts:Array<{ name:string, icon:string }>,
          * }} config
          */
-        this.config = config;
+        this.config = Object.assign({
+            mode: config.mse === false ? 'webrtc' : config.webrtc === false ? 'mse' : this.mode,
+            media: this.media,
+            streams: [{url: config.url, entity: config.entity}],
+            poster_remote: config.poster && (config.poster.indexOf('://') > 0 || config.poster.charAt(0) === '/'),
+        }, config);
+
+        this.streamID = -1;
+        this.nextStream(false);
     }
 
     set hass(hass) {
@@ -50,23 +87,45 @@ class WebRTCCamera extends VideoRTC {
 
     /**
      * Called by the Hass to get defaul card config
-     * @returns {{url: string}}
+     * @return {{url: string}}
      */
     static getStubConfig() {
-        return {'url': ''}
+        return {'url': ''};
     }
 
     setStatus(mode, status) {
         const divMode = this.querySelector('.mode').innerText;
-        if (mode === 'error' && divMode !== 'loading1' && divMode !== 'loading2') return;
+        if (mode === 'error' && divMode !== 'Loading..' && divMode !== 'Loading...') return;
 
         this.querySelector('.mode').innerText = mode;
         this.querySelector('.status').innerText = status || '';
     }
 
+    /** @param reload {boolean} */
+    nextStream(reload) {
+        this.streamID = (this.streamID + 1) % this.config.streams.length;
+
+        const stream = this.config.streams[this.streamID];
+        this.config.url = stream.url;
+        this.config.entity = stream.entity;
+        this.mode = stream.mode || this.config.mode;
+        this.media = stream.media || this.config.media;
+
+        if (reload) {
+            this.ondisconnect();
+            setTimeout(() => this.onconnect(), 100); // wait ws.close event
+        }
+    }
+
+    /** @return {string} */
+    get streamName() {
+        return this.config.streams[this.streamID].name || `S${this.streamID}`;
+    }
+
     oninit() {
         super.oninit();
         this.renderMain();
+        this.renderDigitalPTZ();
         this.renderPTZ();
         this.renderCustomUI();
         this.renderShortcuts();
@@ -78,24 +137,36 @@ class WebRTCCamera extends VideoRTC {
         if (!this.isConnected || this.ws || this.pc) return false;
 
         const divMode = this.querySelector('.mode').innerText;
-        if (divMode === 'loading1') return;
+        if (divMode === 'Loading..') return;
 
-        this.setStatus('loading1');
+        this.setStatus('Loading..');
 
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
         }).then(data => {
-            this.wsURL = 'ws' + this.hass.hassUrl(data.path).substring(4);
-            if (this.config.url) {
-                this.wsURL += '&url=' + encodeURIComponent(this.config.url);
+            if (this.config.poster && !this.config.poster_remote) {
+                this.video.poster = this.hass.hassUrl(data.path) + '&poster=' + encodeURIComponent(this.config.poster);
             }
+
+            this.wsURL = 'ws' + this.hass.hassUrl(data.path).substring(4);
+
             if (this.config.entity) {
                 this.wsURL += '&entity=' + this.config.entity;
-            }
-            if (super.onconnect()) {
-                this.setStatus('loading2');
+            } else if (this.config.url) {
+                this.wsURL += '&url=' + encodeURIComponent(this.config.url);
             } else {
-                this.setStatus('error', "can't connect");
+                this.setStatus('IMG');
+                return;
+            }
+
+            if (this.config.server) {
+                this.wsURL += '&server=' + encodeURIComponent(this.config.server);
+            }
+
+            if (super.onconnect()) {
+                this.setStatus('Loading...');
+            } else {
+                this.setStatus('error', 'unable to connect');
             }
         }).catch(er => {
             this.setStatus('error', er);
@@ -111,12 +182,13 @@ class WebRTCCamera extends VideoRTC {
                     this.setStatus('error', msg.value);
                     break;
                 case 'mse':
+                case 'hls':
                 case 'mp4':
                 case 'mjpeg':
                     this.setStatus(msg.type.toUpperCase(), this.config.title || '');
                     break;
             }
-        }
+        };
 
         return result;
     }
@@ -149,6 +221,12 @@ class WebRTCCamera extends VideoRTC {
                 height: 100%;
                 position: relative; /* important for Safari */
             }
+            .player:active {
+                cursor: move; /* important for zoom-controller */
+            }
+            .player .ptz-transform {
+                height: 100%;
+            }
             .header {
                 position: absolute;
                 top: 6px;
@@ -160,11 +238,15 @@ class WebRTCCamera extends VideoRTC {
                 pointer-events: none;
             }
             .mode {
+                cursor: pointer;
                 opacity: 0.6;
+                pointer-events: auto;
             }
         </style>
         <ha-card class="card">
-            <div class="player"></div>
+            <div class="player">
+                <div class="ptz-transform"></div>
+            </div>
             <div class="header">
                 <div class="status"></div>
                 <div class="mode"></div>
@@ -173,19 +255,42 @@ class WebRTCCamera extends VideoRTC {
         `;
 
         this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
+        this.querySelector('.ptz-transform').appendChild(this.video);
 
-        this.querySelector(".player").appendChild(this.video);
+        const mode = this.querySelector('.mode');
+        mode.addEventListener('click', () => this.nextStream(true));
 
         if (this.config.muted) this.video.muted = true;
-        if (this.config.poster) this.video.poster = this.config.poster;
+        if (this.config.poster_remote) this.video.poster = this.config.poster;
+    }
+
+    renderDigitalPTZ() {
+        if (this.config.digital_ptz === false) return;
+        new DigitalPTZ(
+            this.querySelector('.player'),
+            this.querySelector('.player .ptz-transform'),
+            this.video,
+            Object.assign({}, this.config.digital_ptz, {persist_key: this.config.url})
+        );
     }
 
     renderPTZ() {
         if (!this.config.ptz || !this.config.ptz.service) return;
 
-        const hasMove = this.config.ptz.data_right;
-        const hasZoom = this.config.ptz.data_zoom_in;
-        const hasHome = this.config.ptz.data_home;
+        let hasMove = false;
+        let hasZoom = false;
+        let hasHome = false;
+        for (const prefix of ['', '_start', '_end', '_long']) {
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_right'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_left'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_up'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_down'];
+
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_in'];
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_out'];
+
+            hasHome = hasHome || this.config.ptz['data' + prefix + '_home'];
+        }
 
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
@@ -291,14 +396,42 @@ class WebRTCCamera extends VideoRTC {
             </div>
         `);
 
-        const ptz = this.querySelector('.ptz')
-        ptz.addEventListener('click', ev => {
-            const data = this.config.ptz['data_' + ev.target.className];
+        const handle = path => {
+            const data = this.config.ptz['data_' + path];
             if (!data) return;
-
             const [domain, service] = this.config.ptz.service.split('.', 2);
             this.hass.callService(domain, service, data);
-        });
+        };
+        const ptz = this.querySelector('.ptz');
+        for (const [start, end] of [['touchstart', 'touchend'], ['mousedown', 'mouseup']]) {
+            ptz.addEventListener(start, startEvt => {
+                const {className} = startEvt.target;
+                startEvt.preventDefault();
+                handle('start_' + className);
+                window.addEventListener(end, endEvt => {
+                    endEvt.preventDefault();
+                    handle('end_' + className);
+                    if (endEvt.timeStamp - startEvt.timeStamp > 400) {
+                        handle('long_' + className);
+                    } else {
+                        handle(className);
+                    }
+                }, {once: true});
+            });
+        }
+    }
+
+    saveScreenshot() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.video.videoWidth;
+        canvas.height = this.video.videoHeight;
+        canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
+
+        const ts = new Date().toISOString().substring(0, 19).replaceAll('-', '').replaceAll(':', '');
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/jpeg');
+        a.download = `snapshot_${ts}.jpeg`;
+        a.click();
     }
 
     renderCustomUI() {
@@ -329,6 +462,15 @@ class WebRTCCamera extends VideoRTC {
                 .volume {
                     display: none;
                 }
+                .stream {
+                    padding-top: 2px;
+                    margin-left: 2px;
+                    font-weight: 400;
+                    font-size: 20px;
+                    color: white;
+                    display: none;
+                    cursor: pointer;
+                }
             </style>
         `);
         card.insertAdjacentHTML('beforeend', `
@@ -336,6 +478,9 @@ class WebRTCCamera extends VideoRTC {
                 <ha-circular-progress class="spinner"></ha-circular-progress>
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
+                    <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
+                    <ha-icon class="pictureinpicture" icon="mdi:picture-in-picture-bottom-right"></ha-icon>
+                    <span class="stream">${this.streamName}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -345,17 +490,39 @@ class WebRTCCamera extends VideoRTC {
 
         const video = this.video;
 
+        const fullscreen = this.querySelector('.fullscreen');
         if (this.requestFullscreen) {
-            this.exitFullscreen = () => document.exitFullscreen();
-            this.fullscreenElement = () => document.fullscreenElement;
-            this.fullscreenEvent = 'fullscreenchange';
-        } else if (this.webkitRequestFullscreen) {
-            this.requestFullscreen = () => this.webkitRequestFullscreen();
-            this.exitFullscreen = () => document.webkitExitFullscreen();
-            this.fullscreenElement = () => document.webkitFullscreenElement;
-            this.fullscreenEvent = 'webkitfullscreenchange';
+            this.addEventListener('fullscreenchange', () => {
+                fullscreen.icon = document.fullscreenElement ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
+            });
+        } else if (video.webkitEnterFullscreen) {
+            this.requestFullscreen = () => new Promise((resolve, reject) => {
+                try {
+                    video.webkitEnterFullscreen();
+                } catch (e) {
+                    reject(e);
+                }
+            });
+            video.addEventListener('webkitendfullscreen', () => {
+                setTimeout(() => this.play(), 1000); // fix bug in iOS
+            });
         } else {
-            this.querySelector('.fullscreen').style.display = 'none';
+            fullscreen.style.display = 'none';
+        }
+
+        const pip = this.querySelector('.pictureinpicture');
+        if (video.requestPictureInPicture) {
+            video.addEventListener('enterpictureinpicture', () => {
+                pip.icon = 'mdi:rectangle';
+                this.background = true;
+            });
+            video.addEventListener('leavepictureinpicture', () => {
+                pip.icon = 'mdi:picture-in-picture-bottom-right';
+                this.background = this.config.background;
+                this.play();
+            });
+        } else {
+            pip.style.display = 'none';
         }
 
         const ui = this.querySelector('.ui');
@@ -368,9 +535,18 @@ class WebRTCCamera extends VideoRTC {
             } else if (icon === 'mdi:volume-high') {
                 video.muted = true;
             } else if (icon === 'mdi:fullscreen') {
-                this.requestFullscreen(); // Chrome 71
+                this.requestFullscreen().catch(console.warn);
             } else if (icon === 'mdi:fullscreen-exit') {
-                this.exitFullscreen();
+                document.exitFullscreen().catch(console.warn);
+            } else if (icon === 'mdi:floppy') {
+                this.saveScreenshot();
+            } else if (icon === 'mdi:picture-in-picture-bottom-right') {
+                video.requestPictureInPicture().catch(console.warn);
+            } else if (icon === 'mdi:rectangle') {
+                document.exitPictureInPicture().catch(console.warn);
+            } else if (ev.target.className === 'stream') {
+                this.nextStream(true);
+                ev.target.innerText = this.streamName;
             }
         });
 
@@ -393,17 +569,13 @@ class WebRTCCamera extends VideoRTC {
         const volume = this.querySelector('.volume');
         video.addEventListener('loadeddata', () => {
             volume.style.display = this.hasAudio ? 'block' : 'none';
-            // volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
         });
         video.addEventListener('volumechange', () => {
             volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
         });
 
-        const fullscreen = this.querySelector('.fullscreen');
-        this.addEventListener(this.fullscreenEvent, () => {
-            fullscreen.icon = this.fullscreenElement()
-                ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
-        });
+        const stream = this.querySelector('.stream');
+        stream.style.display = this.config.streams.length > 1 ? 'block' : 'none';
     }
 
     renderShortcuts() {
@@ -414,7 +586,7 @@ class WebRTCCamera extends VideoRTC {
 
         const icons = services.map((value, index) => `
             <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
-        `).join("");
+        `).join('');
 
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
@@ -433,8 +605,19 @@ class WebRTCCamera extends VideoRTC {
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
             const value = services[ev.target.dataset.index];
-            const [domain, name] = value.service.split('.');
-            this.hass.callService(domain, name, value.service_data || {});
+            if(value.more_info !== undefined) {
+                const event = new Event('hass-more-info', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                });
+                event.detail = { entityId: value.more_info };
+                ev.target.dispatchEvent(event);
+            }
+            if(value.service !== undefined) {
+                const [domain, name] = value.service.split('.');
+                this.hass.callService(domain, name, value.service_data || {});
+            }
         });
     }
 
@@ -449,7 +632,7 @@ class WebRTCCamera extends VideoRTC {
 
     get hasAudio() {
         return (
-            (this.video.srcObject && this.video.srcObject.getAudioTracks().length) ||
+            (this.video.srcObject && this.video.srcObject.getAudioTracks && this.video.srcObject.getAudioTracks().length) ||
             (this.video.mozHasAudio || this.video.webkitAudioDecodedByteCount) ||
             (this.video.audioTracks && this.video.audioTracks.length)
         );

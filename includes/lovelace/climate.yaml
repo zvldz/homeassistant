@@ -15,12 +15,12 @@ cards:
             entity: climate.gas_boiler
             name: false
             sensors:
-              - entity: sensor.0x158d000231f03e_temperature
-              - entity: sensor.0x158d0002bfe958_temperature
-              - entity: sensor.0x158d0002323856_temperature
-              - entity: sensor.0x158d0001ab2a27_temperature
-              - entity: sensor.0x158d0002ca0395_temperature
-              - entity: sensor.0x158d00027300cc_temperature
+              - entity: sensor.0x00158d000231f03e_temperature
+              - entity: sensor.0x00158d0002bfe958_temperature
+              - entity: sensor.0x00158d0002323856_temperature
+              - entity: sensor.0x00158d0001ab2a27_temperature
+              - entity: sensor.0x00158d0002ca0395_temperature
+              - entity: sensor.0x00158d00027300cc_temperature
               - entity: sensor.nodemcu_3_outdoor_temperature
             control:
               hvac:
@@ -65,16 +65,21 @@ cards:
         entity: climate.midea_ac_18691697686913
         name: "A/C Living Room"
         icon: "mdi:air-conditioner"
+        control:
+          hvac:
+            _name: Operation
+          preset:
+            _name: Preset mode
         sensors:
-          - entity: sensor.0x158d0002bfe958_temperature
+          - entity: sensor.0x00158d0002bfe958_temperature
 #         - entity: sensor.living_room_bt_temperature
-          - entity: sensor.0x158d0002bfe958_humidity
+          - entity: sensor.0x00158d0002bfe958_humidity
 
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060b86b_climate
         name: "Livingroom TRV"
         sensors:
-          - entity: sensor.0x158d0002bfe958_temperature
+          - entity: sensor.0x00158d0002bfe958_temperature
 
   - type: vertical-stack
     cards:
@@ -88,15 +93,20 @@ cards:
         entity: climate.midea_ac_18691697686914
         name: "A/C Master Bedroom"
         icon: "mdi:air-conditioner"
+        control:
+          hvac:
+            _name: Operation
+          preset:
+            _name: Preset mode
         sensors:
-          - entity: sensor.0x158d0002323856_temperature
-          - entity: sensor.0x158d0002323856_humidity
+          - entity: sensor.0x00158d0002323856_temperature
+          - entity: sensor.0x00158d0002323856_humidity
 
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060c290_climate
         name: "Master Bedroom TRV"
         sensors:
-          - entity: sensor.0x158d0002323856_temperature
+          - entity: sensor.0x00158d0002323856_temperature
 
   - type: vertical-stack
     cards:
@@ -110,13 +120,18 @@ cards:
         entity: climate.midea_ac_16492674435040
         name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
+        control:
+          hvac:
+            _name: Operation
+          preset:
+            _name: Preset mode
         sensors:
-          - entity: sensor.0x158d0001ab2a27_temperature
-          - entity: sensor.0x158d0001ab2a27_humidity
+          - entity: sensor.0x00158d0001ab2a27_temperature
+          - entity: sensor.0x00158d0001ab2a27_humidity
 
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060b73a_climate
         name: "Bedroom TRV"
         sensors:
-          - entity: sensor.0x158d0001ab2a27_temperature
+          - entity: sensor.0x00158d0001ab2a27_temperature
 

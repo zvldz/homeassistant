@@ -10,6 +10,7 @@ homeassistant:
   unit_system: metric
   allowlist_external_dirs:
     - '/config/downloads'
+    - '/config'
 
 config:
 api:
@@ -19,15 +20,10 @@ history:
 wake_on_lan:
 zeroconf:
 mobile_app:
-map:
 sun:
 ffmpeg:
 stream:
 energy:
-
-discovery:
-  ignore:
-    - homekit
 
 frontend:
   themes: !include_dir_merge_named themes
@@ -54,6 +50,7 @@ binary_sensor:      !include_dir_merge_list includes/binary_sensors
 template:           !include_dir_merge_list includes/template
 light:              !include_dir_merge_list includes/lights
 climate:            !include_dir_merge_list includes/climate
+command_line:       !include_dir_merge_list includes/command_line
 automation manual:  !include_dir_merge_list includes/automations
 automation ui:      !include automations.yaml
 script:             !include_dir_merge_named includes/scripts
@@ -62,7 +59,6 @@ recorder:           !include includes/recorder.yaml
 logbook:            !include includes/logbook.yaml
 influxdb:           !include includes/influxdb.yaml
 logger:             !include includes/logger.yaml
-#mqtt:               !include includes/mqtt.yaml
 device_tracker:     !include includes/device_tracker.yaml
 telegram_bot:       !include includes/telegram_bot.yaml
 notify:             !include includes/notify.yaml
@@ -72,7 +68,6 @@ input_boolean:      !include includes/input_boolean.yaml
 input_number:       !include includes/input_number.yaml
 input_select:       !include includes/input_select.yaml
 input_text:         !include includes/input_text.yaml
-panel_iframe:       !include includes/panel_iframe.yaml
 timer:              !include includes/timer.yaml
 counter:            !include includes/counter.yaml
 camera:             !include includes/camera.yaml
@@ -82,7 +77,6 @@ rest_command:       !include includes/rest_command.yaml
 # custom integration
 python_script:
 xiaomi_gateway3:    !include includes/gateway3.yaml
-watchman:           !include includes/watchman.yaml
 custom_filters:
 
 #sonoff:

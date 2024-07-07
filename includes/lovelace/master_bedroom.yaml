@@ -24,23 +24,11 @@ cards:
 
       - type: horizontal-stack
         cards:
-          - entity: sensor.0x158d0002323856_temperature
-            type: custom:multiple-entity-row
-            name: Master Bedroom
-            secondary_info: last-changed
-            entities:
-              - entity: sensor.0x158d0002323856_pressure
-                name: false
-              - entity: sensor.0x158d0002323856_humidity
-                name: false
-
-      - type: horizontal-stack
-        cards:
           - type: custom:mini-graph-card
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002323856_temperature
+              - entity: sensor.0x00158d0002323856_temperature
 
       - type: horizontal-stack
         cards:
@@ -48,5 +36,41 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002323856_humidity
+              - entity: sensor.0x00158d0002323856_humidity
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Sensors"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - entity: sensor.0x00158d0002323856_temperature
+            type: custom:multiple-entity-row
+            name: Master Bedroom
+            secondary_info: last-changed
+            entities:
+              - entity: sensor.0x00158d0002323856_pressure
+                name: false
+              - entity: sensor.0x00158d0002323856_humidity
+                name: false
+
+          - entity: sensor.cgllc_s1_6e48_temperature
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.cgllc_s1_6e48_environment
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.cgllc_s1_6e48_co2_density
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.cgllc_s1_6e48_pm25_density
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.cgllc_s1_6e48_tvoc_density
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
 

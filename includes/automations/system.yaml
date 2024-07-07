@@ -15,7 +15,7 @@
       event_type: entity_registry_updated
   condition:
     - |
-        {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg', 'm2007j20cg']  -%}
+        {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg', 'm2007j20cg', 'media_player', 'select.']  -%}
         {% set result = namespace(bool=True) -%}
         {% if trigger.event.data.action == 'update' -%}
           {% for pattern in patterns -%}
@@ -88,13 +88,13 @@
         message: |
           <pre>
           {{ "\U0001F305" }} Good morning!
-          Hallway:     {{ states('sensor.0x158d000231f03e_temperature') }}°C
-          Kitchen:     {{ states('sensor.0x158d0002ca0395_temperature') }}°C
-          Living Room: {{ states('sensor.0x158d0002bfe958_temperature') }}°C
-          Bedroom1:    {{ states('sensor.0x158d0002323856_temperature') }}°C
-          Bedroom2:    {{ states('sensor.0x158d0001ab2a27_temperature') }}°C
-          Bathroom:    {{ states('sensor.0x158d000273011f_temperature') }}°C
-          Balcony:     {{ states('sensor.0x158d00027300cc_temperature') }}°C
+          Hallway:     {{ states('sensor.0x00158d000231f03e_temperature') }}°C
+          Kitchen:     {{ states('sensor.0x00158d0002ca0395_temperature') }}°C
+          Living Room: {{ states('sensor.0x00158d0002bfe958_temperature') }}°C
+          Bedroom1:    {{ states('sensor.0x00158d0002323856_temperature') }}°C
+          Bedroom2:    {{ states('sensor.0x00158d0001ab2a27_temperature') }}°C
+          Bathroom:    {{ states('sensor.0x00158d000273011f_temperature') }}°C
+          Balcony:     {{ states('sensor.0x00158d00027300cc_temperature') }}°C
           Outdoor:     {{ states('sensor.nodemcu_3_outdoor_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
           Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}

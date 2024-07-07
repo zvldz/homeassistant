@@ -64,7 +64,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.0x158d0001ab2a27_temperature
+              - entity: sensor.0x00158d0001ab2a27_temperature
 
       - type: horizontal-stack
         cards:
@@ -72,7 +72,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.0x158d0001ab2a27_humidity
+              - entity: sensor.0x00158d0001ab2a27_humidity
 
       - type: custom:button-card
         name: "Sensors"
@@ -82,16 +82,16 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.0x158d0001ab2a27_temperature
+          - entity: sensor.0x00158d0001ab2a27_temperature
             type: custom:multiple-entity-row
             name: Bedroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0001ab2a27_pressure
+              - entity: sensor.0x00158d0001ab2a27_pressure
                 name: false
-              - entity: sensor.0x158d0001ab2a27_humidity
+              - entity: sensor.0x00158d0001ab2a27_humidity
                 name: false
-          - entity: binary_sensor.0x158d0002c08849_motion
+          - entity: binary_sensor.0x00158d0002c08849_motion
             secondary_info: last-changed
 
   - type: vertical-stack
@@ -112,6 +112,6 @@ cards:
             - background-color: "#203040"
 
       - type: 'custom:webrtc-camera'
-        entity: camera.rcamera1
+        entity: camera.rcamera1_profile000_mainstream
 
 

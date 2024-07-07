@@ -26,3 +26,5 @@ resources:
     type: module
   - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
     type: module
+  - url: /hacsfiles/power-flow-card-plus/power-flow-card-plus.js
+    type: module

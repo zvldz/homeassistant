@@ -79,7 +79,7 @@ sensor:
     icon: mdi:wifi
 
   - platform: cse7766
-    update_interval: 10s
+    #update_interval: 10s
     current:
       name: ${device_name}_current
       icon: mdi:current-ac

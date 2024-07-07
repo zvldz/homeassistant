@@ -11,74 +11,74 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.0x158d000231f03e_temperature
+          - entity: sensor.0x00158d000231f03e_temperature
             type: custom:multiple-entity-row
             name: Hallway
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d000231f03e_pressure
+              - entity: sensor.0x00158d000231f03e_pressure
                 name: false
-              - entity: sensor.0x158d000231f03e_humidity
+              - entity: sensor.0x00158d000231f03e_humidity
                 name: false
 
-          - entity: sensor.0x158d0002ca0395_temperature
+          - entity: sensor.0x00158d0002ca0395_temperature
             type: custom:multiple-entity-row
             name: Kitchen
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0002ca0395_pressure
+              - entity: sensor.0x00158d0002ca0395_pressure
                 name: false
-              - entity: sensor.0x158d0002ca0395_humidity
+              - entity: sensor.0x00158d0002ca0395_humidity
                 name: false
 
-          - entity: sensor.0x158d0002bfe958_temperature
+          - entity: sensor.0x00158d0002bfe958_temperature
             type: custom:multiple-entity-row
             name: Living Room
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0002bfe958_pressure
+              - entity: sensor.0x00158d0002bfe958_pressure
                 name: false
-              - entity: sensor.0x158d0002bfe958_humidity
+              - entity: sensor.0x00158d0002bfe958_humidity
                 name: false
 
-          - entity: sensor.0x158d0002323856_temperature
+          - entity: sensor.0x00158d0002323856_temperature
             type: custom:multiple-entity-row
             name: Master Bedroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0002323856_pressure
+              - entity: sensor.0x00158d0002323856_pressure
                 name: false
-              - entity: sensor.0x158d0002323856_humidity
+              - entity: sensor.0x00158d0002323856_humidity
                 name: false
 
-          - entity: sensor.0x158d0001ab2a27_temperature
+          - entity: sensor.0x00158d0001ab2a27_temperature
             type: custom:multiple-entity-row
             name: Bedroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0001ab2a27_pressure
+              - entity: sensor.0x00158d0001ab2a27_pressure
                 name: false
-              - entity: sensor.0x158d0001ab2a27_humidity
+              - entity: sensor.0x00158d0001ab2a27_humidity
                 name: false
 
-          - entity: sensor.0x158d000273011f_temperature
+          - entity: sensor.0x00158d000273011f_temperature
             type: custom:multiple-entity-row
             name: Bathroom
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d000273011f_pressure
+              - entity: sensor.0x00158d000273011f_pressure
                 name: false
-              - entity: sensor.0x158d000273011f_humidity
+              - entity: sensor.0x00158d000273011f_humidity
                 name: false
 
-          - entity: sensor.0x158d00027300cc_temperature
+          - entity: sensor.0x00158d00027300cc_temperature
             type: custom:multiple-entity-row
             name: Balcony
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d00027300cc_pressure
+              - entity: sensor.0x00158d00027300cc_pressure
                 name: false
-              - entity: sensor.0x158d00027300cc_humidity
+              - entity: sensor.0x00158d00027300cc_humidity
                 name: false
 
           - entity: sensor.nodemcu_3_outdoor_temperature

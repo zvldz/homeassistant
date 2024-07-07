@@ -3,12 +3,14 @@ import logging
 import time
 import uuid
 from pathlib import Path
+from typing import Union
 from urllib.parse import urlencode, urljoin
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
+from homeassistant.components.camera import async_get_image
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
@@ -44,31 +46,40 @@ DASH_CAST_SCHEMA = vol.Schema(
         vol.Exclusive("url", "url"): cv.string,
         vol.Exclusive("entity", "url"): cv.entity_id,
         vol.Optional("extra"): dict,
+        vol.Optional("force", default=False): bool,
+        vol.Optional("hass_url"): str,
     },
     required=True,
 )
 
 LINKS = {}  # 2 3 4
 
+# DDoS protection against requests to HLS proxy
+# streams are additionally protected by a random playlist identifier
+HLS_COOKIE = "webrtc-hls-session"
+HLS_SESSION = str(uuid.uuid4())
+
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
-    for name in ("video-rtc.js", "webrtc-camera.js"):
-        utils.register_static_path(hass.http.app, "/webrtc/" + name, path / name)
+    for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
+        hass.http.register_static_path("/webrtc/" + name, str(path / name))
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
     # 3. Serve html page
-    path = Path(__file__).parent / "www/embed.html"
-    utils.register_static_path(hass.http.app, "/webrtc/embed", path)
+    hass.http.register_static_path("/webrtc/embed", str(path / "embed.html"))
 
     # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)
 
-    # 5. Register webrtc.create_link and webrtc.dash_cast services:
+    # 5. Serve HLS proxy
+    hass.http.register_view(HLSView)
+
+    # 6. Register webrtc.create_link and webrtc.dash_cast services:
 
     async def create_link(call: ServiceCallType):
         link_id = call.data["link_id"]
@@ -83,20 +94,25 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     async def dash_cast(call: ServiceCallType):
         link_id = uuid.uuid4().hex
         LINKS[link_id] = {
-            "url": call.data.get("url"),
-            "entity": call.data.get("entity"),
+            "url": call.data.get("url"),  # camera URL (rtsp...)
+            "entity": call.data.get("entity"),  # camera entity id
             "limit": 1,  # 1 attempt
             "ts": time.time() + 30,  # for 30 seconds
         }
 
+        hass_url = call.data.get("hass_url") or get_url(hass)
         query = call.data.get("extra", {})
         query["url"] = link_id
+        cast_url = hass_url + "/webrtc/embed?" + urlencode(query)
+
+        _LOGGER.debug(f"dash_cast: {cast_url}")
 
         await hass.async_add_executor_job(
             utils.dash_cast,
             hass,
             call.data[ATTR_ENTITY_ID],
-            f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
+            cast_url,
+            call.data.get("force", False),
         )
 
     hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
@@ -138,35 +154,69 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
     return True
 
 
-async def ws_connect(hass: HomeAssistantType, params) -> str:
-    entry = hass.data[DOMAIN]
-    if isinstance(entry, Server):
-        assert entry.available, "WebRTC server not available"
-        go_url = "http://localhost:1984/"
-    else:
-        go_url = entry
+async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
+    # 1. Server URL from card param
+    server: str = params.get("server")
+    # 2. Server URL from integration settings
+    if not server:
+        server: Union[str, Server] = hass.data[DOMAIN]
+    # 3. Server is manual binary
+    if isinstance(server, Server):
+        assert server.available, "WebRTC server not available"
+        server = "http://localhost:1984/"
 
-    if entity := params.get("entity"):
-        src = await utils.get_stream_source(hass, entity)
-        assert src, f"Can't get URL for {entity}"
-
-        # adds stream to go2rtc using entity_id as name (RTSPtoWebRTC API)
-        session = async_get_clientsession(hass)
-        r = await session.patch(
-            urljoin(go_url, "api/streams"),
-            params={"name": entity, "src": src},
-            timeout=3,
-        )
-        if r.ok:
-            src = entity
-
+    if name := params.get("entity"):
+        src = await utils.get_stream_source(hass, name)
+        assert src, f"Can't get URL for {name}"
+        query = {"src": src, "name": name}
     elif src := params.get("url"):
         if "{{" in src or "{%" in src:
             src = Template(src, hass).async_render()
+        query = {"src": src}
     else:
         raise Exception("Missing url or entity")
 
-    return urljoin("ws" + go_url[4:], "api/ws") + "?" + urlencode({"src": src})
+    return urljoin("ws" + server[4:], "api/ws") + "?" + urlencode(query)
+
+
+def _get_image_from_entity_id(hass: HomeAssistantType, entity_id: str):
+    """Get camera component from entity_id."""
+    if (component := hass.data.get("image")) is None:
+        raise Exception("Image integration not set up")
+
+    if (image := component.get_entity(entity_id)) is None:
+        raise Exception("Image not found")
+
+    return image
+
+
+async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
+    poster: str = params["poster"]
+
+    if "{{" in poster or "{%" in poster:
+        # support Jinja2 tempaltes inside poster
+        poster = Template(poster, hass).async_render()
+
+    if poster.startswith("camera."):
+        # support entity_id as poster
+        image = await async_get_image(hass, poster)
+        return web.Response(body=image.content, content_type=image.content_type)
+
+    if poster.startswith("image."):
+        # support entity_id as poster
+        image_entity = _get_image_from_entity_id(hass, poster)
+        image = await image_entity.async_image()
+        _LOGGER.debug(f"webrtc image_entity: {image_entity} - {len(image)}")
+        return web.Response(body=image, content_type="image/jpeg")
+
+    # support poster from go2rtc stream name
+    entry = hass.data[DOMAIN]
+    url = "http://localhost:1984/" if isinstance(entry, Server) else entry
+    url = urljoin(url, "api/frame.jpeg") + "?" + urlencode({"src": poster})
+
+    async with async_get_clientsession(hass).get(url) as r:
+        body = await r.read()
+        return web.Response(body=body, content_type=r.content_type)
 
 
 class WebSocketView(HomeAssistantView):
@@ -200,17 +250,32 @@ class WebSocketView(HomeAssistantView):
             # you shall not pass
             raise HTTPUnauthorized()
 
+        hass = request.app["hass"]
+
+        if "poster" in params:
+            return await ws_poster(hass, params)
+
         ws_server = web.WebSocketResponse(autoclose=False, autoping=False)
+        ws_server.set_cookie(HLS_COOKIE, HLS_SESSION)
         await ws_server.prepare(request)
 
         try:
-            hass = request.app["hass"]
             url = await ws_connect(hass, params)
+
+            remote = request.headers.get("X-Forwarded-For")
+            remote = remote + ", " + request.remote if remote else request.remote
+
+            # https://www.nginx.com/resources/wiki/start/topics/examples/forwarded/
             async with async_get_clientsession(hass).ws_connect(
                 url,
                 autoclose=False,
                 autoping=False,
-                headers={"User-Agent": request.headers.get("User-Agent")},
+                headers={
+                    "User-Agent": request.headers.get("User-Agent"),
+                    "X-Forwarded-For": remote,
+                    "X-Forwarded-Host": request.host,
+                    "X-Forwarded-Proto": request.scheme,
+                },
             ) as ws_client:
                 # Proxy requests
                 await asyncio.wait(
@@ -225,3 +290,28 @@ class WebSocketView(HomeAssistantView):
             await ws_server.send_json({"type": "error", "value": str(e)})
 
         return ws_server
+
+
+class HLSView(HomeAssistantView):
+    url = "/api/webrtc/hls/{filename}"
+    name = "api:webrtc:hls"
+    requires_auth = False
+
+    async def get(self, request: web.Request, filename: str):
+        if request.cookies.get(HLS_COOKIE) != HLS_SESSION:
+            raise HTTPUnauthorized()
+
+        if filename not in ("playlist.m3u8", "init.mp4", "segment.m4s", "segment.ts"):
+            raise HTTPNotFound()
+
+        hass: HomeAssistantType = request.app["hass"]
+        entry = hass.data[DOMAIN]
+        url = "http://localhost:1984/" if isinstance(entry, Server) else entry
+        url = urljoin(url, "api/hls/" + filename) + "?" + request.query_string
+
+        async with async_get_clientsession(hass).get(url) as r:
+            if not r.ok:
+                raise HTTPNotFound()
+
+            body = await r.read()
+            return web.Response(body=body, content_type=r.content_type)

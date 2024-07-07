@@ -37,5 +37,96 @@ automation:
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+      - delay: '00:08:00'
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
 
+  - alias: 'Notify when working PowerStation'
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.shellyem_c45bbe602cfc_channel_1_power
+        below: 1
+    action:
+      - service: light.turn_on
+        entity_id: light.gateway_light_7811dcb245b2
+        data:
+            brightness: 255
+            rgb_color: [255, 135, 12]
+      - delay: '00:02:00'
+      - service: notify.telegram
+        data:
+          message: "\U00002620 {{ states('sensor.time_date') }} | Mains voltage is missinig | ip: {{ states('sensor.myip') }}"
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+      - service: light.turn_on
+        entity_id: light.gateway_light_7811dcb245b2
+        data:
+            brightness: 255
+            rgb_color: [255, 135, 12]
+      - delay: '00:02:00'
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+      - service: light.turn_on
+        entity_id: light.gateway_light_7811dcb245b2
+        data:
+            brightness: 255
+            rgb_color: [255, 135, 12]
+
+  - alias: 'Notify when Mains voltage restored'
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.shellyem_c45bbe602cfc_channel_1_power
+        above: 10
+    action:
+      - delay: '00:02:00'
+      - service: notify.telegram
+        data:
+          message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored | ip: {{ states('sensor.myip') }}"
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+          - light.gateway_light_7811dcb245b2
+      - delay: '00:02:00'
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+          - light.gateway_light_7811dcb245b2
+      - delay: '00:02:00'
+      - service: light.turn_off
+        entity_id:
+          - group.living_room_spot_left
+          - group.living_room_spot_right
+          - group.wc_spots
+          - light.kitchen_lamp
+          - light.balcony_strip
+          - light.gateway_light_7811dcb245b2
 

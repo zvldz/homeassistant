@@ -4,19 +4,19 @@
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id: sensor.0x158d000183dd12_action
+        entity_id: sensor.0x00158d000183dd12_action
         click_type: single
     - platform: event
       event_type: xiaomi_aqara.click
       event_data:
-        entity_id: sensor.0x158d000183d2d5_action
+        entity_id: sensor.0x00158d000183d2d5_action
         click_type: single
   action:
     service: switch.toggle
     entity_id:
-      - switch.0x158d00022ab4bf_switch
-      - switch.0x158d0001f9aa37_switch
-      - switch.0x158d0002114338_switch
+      - switch.0x00158d00022ab4bf_switch
+      - switch.0x00158d0001f9aa37_switch
+      - switch.0x00158d0002114338_switch
 
 - alias: "Turn on led strip on balcony"
   initial_state: true

@@ -56,14 +56,14 @@ cards:
 
       - type: horizontal-stack
         cards:
-          - entity: sensor.0x158d0002bfe958_temperature
+          - entity: sensor.0x00158d0002bfe958_temperature
             type: custom:multiple-entity-row
             name: Living Room
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d0002bfe958_pressure
+              - entity: sensor.0x00158d0002bfe958_pressure
                 name: false
-              - entity: sensor.0x158d0002bfe958_humidity
+              - entity: sensor.0x00158d0002bfe958_humidity
                 name: false
 
       - type: horizontal-stack
@@ -72,7 +72,7 @@ cards:
             name: "Temperature"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002bfe958_temperature
+              - entity: sensor.0x00158d0002bfe958_temperature
               - entity: sensor.living_room_bt_temperature
                 color: red
 
@@ -82,7 +82,7 @@ cards:
             name: "Humidity"
             hour24: true
             entities:
-              - entity: sensor.0x158d0002bfe958_humidity
+              - entity: sensor.0x00158d0002bfe958_humidity
               - entity: sensor.living_room_bt_humidity
                 color: red
 

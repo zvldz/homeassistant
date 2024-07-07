@@ -12,8 +12,8 @@ logs:
 # midea: debug
 # custom_components.sonoff: debug
 # climate: debug
-# xiaomi_gateway: debug
   custom_components.tcp_mod.sensor: debug
   custom_components.rest_mod.switch: debug
   custom_components.rest_mod.sensor: debug
-  homeassistant.components.discovery: debug
+# homeassistant.components.discovery: debug
+# custom_components.mikrotik_router: debug

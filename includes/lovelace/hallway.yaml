@@ -31,19 +31,19 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d0002113ace_switch
+            entity: switch.0x00158d0002113ace_switch
             size: 20%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d0002112b1e_switch
+            entity: switch.0x00158d0002112b1e_switch
             size: 20%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d00022a8150_channel_2
+            entity: switch.0x00158d00022a8150_channel_2
             size: 20%
             styles:
               card:
@@ -52,7 +52,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d00022360fe_switch
+            entity: switch.0x00158d00022360fe_switch
             icon: "mdi:light-switch"
             size: 14%
             styles:
@@ -80,7 +80,7 @@ cards:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d00022a8150_channel_1
+            entity: switch.0x00158d00022a8150_channel_1
             size: 20%
             styles:
               card:
@@ -108,8 +108,8 @@ cards:
             hour24: true
             points_per_hour: 2
             entities:
-              - entity: sensor.0x158d000231f03e_temperature
-              - entity: sensor.0x158d000273011f_temperature
+              - entity: sensor.0x00158d000231f03e_temperature
+              - entity: sensor.0x00158d000273011f_temperature
                 color: red
 
       - type: horizontal-stack
@@ -119,8 +119,8 @@ cards:
             hour24: true
             points_per_hour: 2
             entities:
-              - entity: sensor.0x158d000231f03e_humidity
-              - entity: sensor.0x158d000273011f_humidity
+              - entity: sensor.0x00158d000231f03e_humidity
+              - entity: sensor.0x00158d000273011f_humidity
                 color: red
 
       - type: custom:button-card
@@ -153,44 +153,44 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.0x158d000231f03e_temperature
+          - entity: sensor.0x00158d000231f03e_temperature
             type: custom:multiple-entity-row
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d000231f03e_pressure
+              - entity: sensor.0x00158d000231f03e_pressure
                 name: false
-              - entity: sensor.0x158d000231f03e_humidity
+              - entity: sensor.0x00158d000231f03e_humidity
                 name: false
-          - entity: sensor.0x158d000273011f_temperature
+          - entity: sensor.0x00158d000273011f_temperature
             type: custom:multiple-entity-row
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d000273011f_pressure
+              - entity: sensor.0x00158d000273011f_pressure
                 name: false
-              - entity: sensor.0x158d000273011f_humidity
+              - entity: sensor.0x00158d000273011f_humidity
                 name: false
-          - entity: binary_sensor.0x158d00032b7db7_contact
+          - entity: binary_sensor.0x00158d00032b7db7_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d0002fd4381_contact
+          - entity: binary_sensor.0x00158d0002fd4381_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00024de627_contact
+          - entity: binary_sensor.0x00158d00024de627_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00023aa420_moisture
+          - entity: binary_sensor.0x00158d00023aa420_moisture
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00023aa420_moisture
+          - entity: binary_sensor.0x00158d00023aa420_moisture
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: sensor.illumination_7811dcb245b2
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d0004466f8f_motion
+          - entity: binary_sensor.0x00158d0004466f8f_motion
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x158d00044a26ba_motion
+          - entity: binary_sensor.0x00158d00044a26ba_motion
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: binary_sensor.0x54ef441000268428_motion

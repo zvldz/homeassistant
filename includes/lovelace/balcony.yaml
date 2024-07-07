@@ -21,28 +21,28 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x158d00022ab4bf_switch
+            entity: switch.0x00158d00022ab4bf_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d0001f9aa37_switch
+            entity: switch.0x00158d0001f9aa37_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d0002114338_switch
+            entity: switch.0x00158d0002114338_switch
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x158d0002235125_switch
+            entity: switch.0x00158d0002235125_switch
             size: 35%
             styles:
               card:
@@ -108,7 +108,7 @@ cards:
           - type: custom:mini-graph-card
             name: 'Temperature'
             entities:
-              - entity: sensor.0x158d00027300cc_temperature
+              - entity: sensor.0x00158d00027300cc_temperature
               - entity: sensor.nodemcu_3_outdoor_temperature
                 color: red
 
@@ -117,7 +117,7 @@ cards:
           - type: custom:mini-graph-card
             name: 'Humidity'
             entities:
-              - entity: sensor.0x158d00027300cc_humidity
+              - entity: sensor.0x00158d00027300cc_humidity
 
       - type: custom:button-card
         name: "Sensors"
@@ -127,16 +127,16 @@ cards:
 
       - type: entities
         entities:
-          - entity: sensor.0x158d00027300cc_temperature
+          - entity: sensor.0x00158d00027300cc_temperature
             type: custom:multiple-entity-row
             name: Balcony
             secondary_info: last-changed
             entities:
-              - entity: sensor.0x158d00027300cc_pressure
+              - entity: sensor.0x00158d00027300cc_pressure
                 name: false
-              - entity: sensor.0x158d00027300cc_humidity
+              - entity: sensor.0x00158d00027300cc_humidity
                 name: false
-          - entity: binary_sensor.0x158d0002537042_contact
+          - entity: binary_sensor.0x00158d0002537042_contact
             secondary_info: last-changed
           - entity: sensor.0x54ef4410000c1dec_illuminance
             secondary_info: last-changed

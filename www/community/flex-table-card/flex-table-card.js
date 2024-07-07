@@ -1,7 +1,7 @@
 "use strict";
 
 // VERSION info
-var VERSION = "0.7.1";
+var VERSION = "0.7.7";
 
 // typical [[1,2,3], [6,7,8]] to [[1, 6], [2, 7], [3, 8]] converter
 var transpose = m => m[0].map((x, i) => m.map(x => x[i]));
@@ -19,9 +19,9 @@ var compare = function(a, b) {
 			var b1 = b.split('.').reduce(function(ipInt, octet) { return (ipInt<<8) + parseInt(octet, 10)}, 0) >>> 0;
         return (a1 - b1);
 	}   else if (isNaN(a))
-        return a.toString().localeCompare(b);
+        return a.toString().localeCompare(b, navigator.language);
     else if (isNaN(b))
-        return -1 * b.toString().localeCompare(a);
+        return -1 * b.toString().localeCompare(a, navigator.language);
 	else
         return parseFloat(a) - parseFloat(b);
 }
@@ -55,7 +55,7 @@ class CellFormatters {
         this.failed = false;
     }
     number(data) {
-        return parseFloat(data) || null;
+        return parseFloat(data);
     }
     full_datetime(data) {
         return Date.parse(data);
@@ -73,7 +73,24 @@ class CellFormatters {
         const minr = Math.floor(minutes);
         return (!isNaN(hours) && !isNaN(minr)) ? hours + " hours " + minr + " minutes" : null;
     }
-    
+    duration(data) {
+        let h = (data > 3600) ? Math.floor(data / 3600).toString() + ':' : '';
+        let m = (data > 60) ? Math.floor((data % 3600) / 60).toString().padStart(2, 0) + ':' : '';
+        let s = (data > 0) ? Math.floor((data % 3600) % 60).toString() : '';
+        if (m) s = s.padStart(2, 0);
+        return h + m + s;
+    }
+    duration_h(data) {
+        let d = (data > 86400) ? Math.floor(data / 86400).toString() + 'd ' : '';
+        let h = (data > 3600) ? Math.floor((data % 86400) / 3600) : ''
+        h = (d) ? h.toString().padStart(2,0) + ':' : ((h) ? h.toString() + ':' : '');
+
+        let m = (data > 60) ? Math.floor((data % 3600) / 60).toString().padStart(2, 0) + ':' : '';
+        let s = (data > 0) ? Math.floor((data % 3600) % 60).toString() : '';
+        if (m) s = s.padStart(2, 0);
+        return d + h + m + s;
+    }
+
 
 }
 
@@ -81,15 +98,18 @@ class CellFormatters {
 /** flex-table data representation and keeper */
 class DataTable {
     constructor(cfg) {
-        this.cols = cfg.columns;
         this.cfg = cfg;
+        this.sort_by = cfg.sort_by;
 
-        this.col_ids = this.cols.map(col => col.prop || col.attr || col.attr_as_list);
+        // Provide default column name option if not supplied
+        this.cols = cfg.columns.map((col, idx) => {
+            return { name: col.name || `Col${idx}`, ...col }
+            });
 
         this.headers = this.cols.filter(col => !col.hidden).map(
             (col, idx) => new Object({
-                // if no 'col.name' use 'col_ids[idx]' only if there is no col.icon set!
-                name: col.name || ((!col.icon) ? this.col_ids[idx] : ""),
+                id: "Col" + idx,
+                name: col.name,
                 icon: col.icon || null
             }));
 
@@ -109,10 +129,10 @@ class DataTable {
     }
 
     get_rows() {
-        // sorting is allowed asc/desc for one column
-        if (this.cfg.sort_by) {
-            let sort_cols = listify(this.cfg.sort_by);
-            
+        // sorting is allowed asc/desc for multiple columns
+        if (this.sort_by) {
+            let sort_cols = listify(this.sort_by);
+
             let sort_conf = sort_cols.map((sort_col) => {
                 let out = { dir: 1, col: sort_col, idx: null };
                 if (["-", "+"].includes(sort_col.slice(-1))) {
@@ -123,7 +143,7 @@ class DataTable {
                 // DEPRECATION CHANGES ALSO TO BE DONE HERE:
                 // determine col-by-idx to be sorted with...
                 out.idx = this.cols.findIndex((col) =>
-                    ["id", "attr", "prop", "attr_as_list", "data"].some(attr =>
+                    ["id", "attr", "prop", "attr_as_list", "data", "name"].some(attr =>
                         attr in col && out.col == col[attr]));
                 return out;
             });
@@ -156,6 +176,15 @@ class DataTable {
 
         return this.rows;
     }
+
+    updateSortBy(idx) {
+        let new_sort = this.headers[idx].name;
+        if (this.sort_by && new_sort === this.sort_by.slice(0, -1)) {
+            this.sort_by = new_sort + (this.sort_by.slice(-1) === "-" ? "+" : "-");
+        } else {
+            this.sort_by = new_sort + "+";
+        }
+    }
 }
 
 /** just for the deprecation warning (spam avoidance) */
@@ -187,7 +216,7 @@ class DataRow {
     }
 
 
-    get_raw_data(col_cfgs) {
+    get_raw_data(col_cfgs, config, hass) {
         this.raw_data = col_cfgs.map((col) => {
 
             /* collect pairs of 'column_type' and 'column_key' */
@@ -251,20 +280,52 @@ class DataRow {
                     } else if (col_key === "_state" && "state" in this.entity.attributes) {
                         // '_state' denotes 'attributes.state'
                         raw_content.push(this.entity.attributes.state);
+                    } else if (col_key === "_name" && "name" in this.entity.attributes) {
+                        // '_name' denotes 'attributes.name'
+                        raw_content.push(this.entity.attributes.name);
                     } else if (col_key === "icon") {
                         // 'icon' will show the entity's default icon
                         let _icon = this.entity.attributes.icon;
                         raw_content.push(`<ha-icon id="icon" icon="${_icon}"></ha-icon>`);
+                    } else if (col_key === "state" && config.auto_format && !col.no_auto_format) {
+                        // format entity state
+                        raw_content.push(hass.formatEntityState(this.entity));
                     } else if (col_key in this.entity) {
-                        // easy direct member of entity
+                        // easy direct member of entity, unformatted
                         raw_content.push(this.entity[col_key]);
                     } else if (col_key in this.entity.attributes) {
                         // finally fall back to '.attributes' member
-                        raw_content.push(this.entity.attributes[col_key]);
+                        if (config.auto_format && !col.no_auto_format) {
+                            raw_content.push(hass.formatEntityAttributeValue(this.entity, col_key));
+                        }
+                        else {
+                            raw_content.push(this.entity.attributes[col_key]);
+                        }
                     } else {
                         // no matching data found, complain:
                         //raw_content.push("[[ no match ]]");
-                        raw_content.push(null);
+
+                        let pos = col_key.indexOf('.');
+                        if (pos < 0)
+                        {
+                            raw_content.push(null);
+                        }
+                        else
+                        {
+                            // if the col_key field contains a dotted object (eg: day.monday)
+                            //  then traverse each object to ensure that it exists
+                            //  until the final object value is found.
+                            // if at any point in the traversal, the object is not found
+                            //  then null will be used as the value.
+                            let objs = col_key.split('.');
+                            let value = this.entity.attributes;
+                            if (value) {
+                                for (let idx = 0; value && idx < objs.length; idx++) {
+                                    value = (objs[idx] in value) ? value[objs[idx]] : null;
+                                }
+                            }
+                            raw_content.push(value);
+                        }
                     }
 
                     // @todo: not really nice to clean `raw_content` up here, why
@@ -327,13 +388,7 @@ class DataRow {
                 raw_content = raw_content.map((obj) => String(obj)).join(delim);
             else
                 raw_content = raw_content[0];
-
-            let fmt = new CellFormatters();
-            if (col.fmt) {
-                raw_content = fmt[col.fmt](raw_content);
-                if (fmt.failed)
-                    raw_content = null;
-            }
+            
             return ([null, undefined].every(x => raw_content !== x)) ? raw_content : new Array();
         });
         return null;
@@ -345,6 +400,14 @@ class DataRow {
         this.data = this.raw_data.map((raw, idx) => {
             let x = raw;
             let cfg = col_cfgs[idx];
+						
+						let fmt = new CellFormatters();
+            if (cfg.fmt) {
+                x = fmt[cfg.fmt](x);
+                if (fmt.failed)
+                   x = null;
+            }
+
             let content = (cfg.modify) ? eval(cfg.modify) : x;
 
             // check for undefined/null values and omit if strict set
@@ -376,6 +439,10 @@ class FlexTableCard extends HTMLElement {
         this.card_height = 1;
         this.tbl = null;
     }
+
+    // Used to detect changes requiring a table refresh.
+    #old_last_updated = "";
+    #old_rowcount = 0;
 
     _getRegEx(pats, invert=false) {
         // compile and convert wildcardish-regex to real RegExp
@@ -417,6 +484,21 @@ class FlexTableCard extends HTMLElement {
 
     setConfig(config) {
         // get & keep card-config and hass-interface
+        if (!config.entities) {
+            throw new Error('Please provide the "entities" option as a list.');
+        }
+
+        if (!config.columns) {
+            throw new Error('Please provide the "columns" option as a list.');
+        }
+
+        if (config.service) {
+            const service_config = config.service.split('.');
+            if (service_config.length != 2) {
+                throw new Error('Please specify service in "domain.service" format.');
+            }
+        }
+
         const root = this.shadowRoot;
         if (root.lastChild)
             root.removeChild(root.lastChild);
@@ -443,6 +525,12 @@ class FlexTableCard extends HTMLElement {
             "th.center":                "text-align: center; ",
             "tr td.right":              "text-align: right; ",
             "th.right":                 "text-align: right; ",
+            ".headerSortDown::after, .headerSortUp::after":
+                                        "content: ''; position: relative; left: 2px; border: 6px solid transparent; ",
+            ".headerSortDown::after":   "top: 12px; border-top-color: var(--primary-text-color); ",
+            ".headerSortUp::after":     "bottom: 12px; border-bottom-color: var(--primary-text-color); ",
+            ".headerSortDown, .headerSortUp":
+                                        "text-decoration: underline; ",
             "tbody tr:nth-child(odd)":  "background-color: var(--table-row-background-color); ",
             "tbody tr:nth-child(even)": "background-color: var(--table-row-alternative-background-color); ",
             "th ha-icon":               "height: 1em; vertical-align: top; "
@@ -468,7 +556,7 @@ class FlexTableCard extends HTMLElement {
 
         // temporary for generated header html stuff
         let my_headers = this.tbl.headers.map((obj, idx) => new Object({
-            th_html_begin: `<th class="${cfg.columns[idx].align || 'left'}">`,
+            th_html_begin: `<th class="${cfg.columns[idx].align || 'left'}" id="${obj.id}">`,
             th_html_end: `${obj.name}</th>`,
             icon_html: ((obj.icon) ? `<ha-icon id='icon' icon='${obj.icon}'></ha-icon>` : "")
         }));
@@ -491,20 +579,45 @@ class FlexTableCard extends HTMLElement {
         card.appendChild(content);
         // append card to _root_ node...
         root.appendChild(card);
+
+        // add sorting click handler to header elements, if allowed
+        if (!config.disable_header_sort) {
+
+            this.tbl.headers.map((obj, idx) => {
+                root.getElementById(obj.id).onclick = (click) => {
+                    // remove previous sort by
+                    this.tbl.headers.map((obj, idx) => {
+                        root.getElementById(obj.id).classList.remove("headerSortDown");
+                        root.getElementById(obj.id).classList.remove("headerSortUp");
+                    });
+                    this.tbl.updateSortBy(idx);
+                    if (this.tbl.sort_by.indexOf("+") != -1) {
+                        root.getElementById(obj.id).classList.add("headerSortUp");
+                    } else {
+                        root.getElementById(obj.id).classList.add("headerSortDown");
+                    }
+                    this._updateContent(
+                        root.getElementById("flextbl"),
+                        this.tbl.get_rows()
+                    );
+                };
+            });
+        }
+
         this._config = cfg;
     }
 
     _updateContent(element, rows) {
         // callback for updating the cell-contents
-        element.innerHTML = rows.map((row) =>
-            `<tr id="entity_row_${row.entity.entity_id}">${row.data.map(
+        element.innerHTML = rows.map((row, index) =>
+            `<tr id="entity_row_${row.entity.entity_id}_${index}">${row.data.map(
                 (cell) => ((!cell.hide) ?
                     `<td class="${cell.css}">${cell.pre}${cell.content}${cell.suf}</td>` : "")
             ).join("")}</tr>`).join("");
 
         // if configured, set clickable row to show entity popup-dialog
-        rows.forEach(row => {
-            const elem = this.shadowRoot.getElementById(`entity_row_${row.entity.entity_id}`);
+        rows.forEach((row, index) => {
+            const elem = this.shadowRoot.getElementById(`entity_row_${row.entity.entity_id}_${index}`);
             // bind click()-handler to row (if configured)
             elem.onclick = (this.tbl.cfg.clickable) ? (function(clk_ev) {
                 // create and fire 'details-view' signal
@@ -524,11 +637,65 @@ class FlexTableCard extends HTMLElement {
         // get "data sources / origins" i.e, entities
         let entities = this._getEntities(hass, config.entities, config.entities.include, config.entities.exclude);
 
+        // Check for changes requiring a table refresh.
+        // Return if no changes detected.
+        let rowcount = entities.length;
+        if (rowcount == this.#old_rowcount) {
+            let last_updated_arr = entities.map(a => a.last_updated);
+            let max = last_updated_arr.sort().slice(-1)[0];
+            if (max == this.#old_last_updated) return;
+            this.#old_last_updated = max;
+        }
+        this.#old_rowcount = rowcount;
+
+        if (config.service) {
+            // Use service to populate
+            const service_config = config.service.split('.');
+            let domain = service_config[0];
+            let service = service_config[1];
+            let service_data = config.service_data;
+
+            let entity_list = entities.map((entity) =>
+                entity.entity_id
+            );
+
+            hass.callWS({
+                "type": "call_service",
+                "domain": domain,
+                "service": service,
+                "service_data": service_data,
+                "target": { "entity_id": entity_list },
+                "return_response": true,
+            }).then(return_response => {
+                const entities = new Array();
+                Object.keys(return_response.response).forEach((entity_id, idx) => {
+                    let resp_obj = {};
+                    if (entity_list.length > 0) {
+                        // Return payload(s) below entity key(s).
+                        const entity_key = (Object.keys(return_response.response))[idx];
+                        resp_obj = { "entity_id": entity_id, "attributes": return_response.response[entity_key] };
+                    }
+                    else {
+                        // Return entire response payload.
+                        resp_obj = { "entity_id": entity_id, "attributes": return_response.response };
+                    }
+                    entities.push(resp_obj);
+                })
+                this._fill_card(entities, config, root, hass);
+            });
+        }
+        else {
+            // Use entities to populate
+            this._fill_card(entities, config, root, hass);
+        }
+    }
+
+    _fill_card(entities, config, root, hass) {
         // `raw_rows` to be filled with data here, due to 'attr_as_list' it is possible to have
         // multiple data `raw_rows` acquired into one cell(.raw_data), so re-iterate all rows
         // to---if applicable---spawn new DataRow objects for these accordingly
         let raw_rows = entities.map(e => new DataRow(e, config.strict));
-        raw_rows.forEach(e => e.get_raw_data(config.columns))
+        raw_rows.forEach(e => e.get_raw_data(config.columns, config, hass))
 
         // now add() the raw_data rows to the DataTable
         this.tbl.clear_rows();
@@ -557,3 +724,12 @@ class FlexTableCard extends HTMLElement {
 
 customElements.define('flex-table-card', FlexTableCard);
 
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "flex-table-card",
+    name: "Flex Table Card",
+    description: "The Flex Table card gives you the ability to visualize tabular data." // optional
+});
+
+console.info(`%c FLEX-TABLE-CARD %c Version ${VERSION} `, "font-weight: bold; color: #000; background: #aeb", "font-weight: bold; color: #000; background: #ddd");

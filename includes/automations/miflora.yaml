@@ -6,7 +6,7 @@
         - sensor.mf1_moisture
         - sensor.mf2_moisture
 #       - sensor.mf3_moisture
-      below: 25
+      below: 20
   action:
     - service: notify.telegram
       data:

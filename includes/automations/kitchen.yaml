@@ -4,7 +4,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.0x158d00022515fe_motion
+      entity_id: binary_sensor.0x00158d00022515fe_motion
       from: 'off'
       to: 'on'
 #   - platform: state
@@ -13,20 +13,20 @@
 #     to: 'on'
   condition:
 #   - condition: numeric_state
-#     entity_id: sensor.0x158d00022515fe_illuminance
+#     entity_id: sensor.0x00158d00022515fe_illuminance
 #     below: 10
     - condition: state
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
 
 - alias: "Turn on Kitchen timer"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
       to: 'on'
     - platform: state
       entity_id: light.kitchen_lamp
@@ -43,14 +43,14 @@
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x158d00022515fe_motion
+        entity_id: binary_sensor.0x00158d00022515fe_motion
 #   - platform: event
 #     event_type: xiaomi_aqara.motion
 #     event_data:
 #       entity_id: binary_sensor.582d3460a918_motion
   condition:
     - condition: state
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
       state: 'on'
   action:
     - service: timer.cancel
@@ -71,7 +71,7 @@
       state: 'on'
   action:
     - service: switch.turn_off
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
     - service: light.turn_off
       entity_id: light.kitchen_lamp
 
@@ -79,7 +79,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
       to: 'off'
   condition:
     - condition: state
@@ -97,7 +97,7 @@
       to: 'off'
   condition:
     - condition: state
-      entity_id: switch.0x158d000211434a_switch
+      entity_id: switch.0x00158d000211434a_switch
       state: 'off'
   action:
     - service: timer.cancel
@@ -113,7 +113,7 @@
     condition: or
     conditions:
       - condition: state
-        entity_id: switch.0x158d000211434a_switch
+        entity_id: switch.0x00158d000211434a_switch
         state: 'on'
       - condition: state
         entity_id: light.kitchen_lamp
@@ -122,3 +122,32 @@
     - service: timer.start
       entity_id: timer.kitchen_light
 
+# Reboot lamp if offline
+- alias: kitchen_lamp_offline
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: "unavailable"
+      for: "00:02:00"
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: "unavailable"
+      for: "00:05:00"
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: "unavailable"
+      for: "00:10:00"
+    - platform: state
+      entity_id: light.kitchen_lamp
+      to: "unavailable"
+      for: "00:15:00"
+  action:
+    - service: notify.telegram
+      data:
+        message: "Lamp in kitchen is offline, reboot it"
+    - service: switch.turn_off
+      entity_id: switch.shelly1_kitchen_lamp
+    - delay: '00:00:02'
+    - service: switch.turn_on
+      entity_id: switch.shelly1_kitchen_lamp

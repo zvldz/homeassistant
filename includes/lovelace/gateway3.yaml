@@ -24,7 +24,7 @@ cards:
               icon: "mdi:router-wireless-settings"
               tap_action:
                 action: navigate
-                navigation_path: "/confir/devices/device/36ab45ab65f327466c08eb4b2a55e579"
+                navigation_path: "/config/devices/device/36ab45ab65f327466c08eb4b2a55e579"
               size: 15%
               styles:
                 card:
@@ -181,30 +181,26 @@ cards:
             align: center
             modify: x+''
           - name: IEEE
-            data: ieee
+            data: device.extra.ieee
             align: center
             modify: (x+'').toLowerCase()
-#         - name: FW
-#           data: device_fw_ver
-#           align: center
-#           modify: x+''
+          - name: FW
+            data: device_fw_ver
+            align: center
+            modify: x+''
           - name: OTA
             data: update_available
             align: center
             prefix: '<style> cc { color: green; } </style>'
             modify: 'if (x == "true") { "<cc>" + x + "</cc>" } else { typeof x === "string" ? x : "-" }'
           - name: NWK
-            data: nwk
+            data: device.extra.nwk
             align: center
             modify: (x+'').replace(/^0x/,"").toLowerCase()
           - name: Parent
-            data: parent
+            data: device.extra.nwk_parent
             align: center
             modify: (x+'').replace(/^0x/,"").toLowerCase()
-          - name: Type
-            data: type
-            align: center
-            modify: (x+'').replace(/^-$/, "child device")
           - name: Received
             data: msg_received
             align: center
@@ -213,26 +209,18 @@ cards:
             data: msg_missed
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
-          - name: Unresp
-            data: unresponsive
-            align: center
-            modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - name: Resets
-            data: new_resets
+            data: device.params.resets
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - name: LQI
-            data: linkquality
+            data: device.extra.lqi
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
           - name: RSSI
-            data: rssi
+            data: device.extra.rssi
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "" : parseInt(x, 10)'
-          - name: Last Msg
-            data: last_msg
-            align: center
-            modify: x+''
           - name: Last Seen
             data: state
             align: center
@@ -263,21 +251,25 @@ cards:
             align: center
             modify: x+''
           - name: MAC
-            data: mac
+            data: device.extra.mac
             align: center
             modify: (x+'').replace(/(.{2}(?!$))/g,"$1:")
-          - name: Available
-            data: available
+          - name: FW
+            data: device_fw_ver
             align: center
             modify: x+''
+          - name: Available
+            data: device.available
+            align: center
+            modify: 'x === true ? "✓" : "✗"'
           - name: Received
             data: msg_received
             align: center
             modify: 'isNaN(parseInt(x, 10)) ? "-" : parseInt(x, 10)'
-          - name: Last Msg
-            data: last_msg
+          - name: Missed
+            data: msg_missed
             align: center
-            modify: x+''
+            modify: 'isNaN(parseInt(x, 10)) ? 0 : parseInt(x, 10)'
           - name: Last Seen
             data: state
             align: center

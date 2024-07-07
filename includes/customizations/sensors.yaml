@@ -40,146 +40,146 @@ sensor.ha_fazenda_uptime:
 sensor.ha_off_uptime:
   friendly_name: HA Office Uptime
 
-binary_sensor.0x158d00022515fe_motion:
+binary_sensor.0x00158d00022515fe_motion:
   friendly_name: "Kitchen Motion"
   occupancy_timeout: 5
 
-sensor.0x158d00022515fe_battery:
+sensor.0x00158d00022515fe_battery:
   friendly_name: "Kitchen Motion"
 
-sensor.0x158d00022515fe_illuminance:
+sensor.0x00158d00022515fe_illuminance:
   friendly_name: "Kitchen Illum"
 
-sensor.0x158d00022515fe_zigbee:
+sensor.0x00158d00022515fe_zigbee:
   friendly_name: "Kitchen Motion"
 
-sensor.0x158d0002e22617_action:
+sensor.0x00158d0002e22617_action:
   friendly_name: "Hallway Button"
 
-sensor.0x158d0002e22617_zigbee:
+sensor.0x00158d0002e22617_zigbee:
   friendly_name: "Hallway Button"
 
-sensor.0x158d0002e22617_battery:
+sensor.0x00158d0002e22617_battery:
   friendly_name: "Hallway Button"
 
-#sensor.0x158d0002e22617_voltage:
+#sensor.0x00158d0002e22617_voltage:
 #  friendly_name: "Hallway Button"
 
-sensor.0x158d0001a66df0_battery:
+sensor.0x00158d0001a66df0_battery:
   friendly_name: "Master Bedroom Button"
 
-sensor.0x158d0001a66df0_action:
+sensor.0x00158d0001a66df0_action:
   friendly_name: "Master Bedroom Button"
 
-#sensor.0x158d0001a66df0_voltage:
+#sensor.0x00158d0001a66df0_voltage:
 #  friendly_name: "Master Bedroom Button"
 
-sensor.0x158d0001a66df0_zigbee:
+sensor.0x00158d0001a66df0_zigbee:
   friendly_name: "Master Bedroom Button"
 
-binary_sensor.0x158d000232989c_moisture:
+binary_sensor.0x00158d000232989c_moisture:
   friendly_name: "Kitchen Leak"
 
-sensor.0x158d000232989c_battery:
+sensor.0x00158d000232989c_battery:
   friendly_name: "Kitchen Leak"
 
-sensor.0x158d000232989c_zigbee:
+sensor.0x00158d000232989c_zigbee:
   friendly_name: "Kitchen Leak"
 
-sensor.0x158d0002ca0395_pressure:
+sensor.0x00158d0002ca0395_pressure:
   friendly_name: "Kitchen"
 
-sensor.0x158d0002ca0395_temperature:
+sensor.0x00158d0002ca0395_temperature:
   friendly_name: "Kitchen"
 
-sensor.0x158d0002ca0395_humidity:
+sensor.0x00158d0002ca0395_humidity:
   friendly_name: "Kitchen"
 
-sensor.0x158d0002ca0395_battery:
+sensor.0x00158d0002ca0395_battery:
   friendly_name: "Kitchen Thermometer"
 
-sensor.0x158d0002ca0395_zigbee:
+sensor.0x00158d0002ca0395_zigbee:
   friendly_name: "Kitchen Thermometer"
 
-sensor.0x158d0002bfe958_pressure:
+sensor.0x00158d0002bfe958_pressure:
   friendly_name: "Living Room"
 
-sensor.0x158d0002bfe958_temperature:
+sensor.0x00158d0002bfe958_temperature:
   friendly_name: "Living Room"
 
-sensor.0x158d0002bfe958_humidity:
+sensor.0x00158d0002bfe958_humidity:
   friendly_name: "Living Room"
 
-sensor.0x158d0002bfe958_battery:
+sensor.0x00158d0002bfe958_battery:
   friendly_name: "Living Room Thermometer"
 
-sensor.0x158d0002bfe958_zigbee:
+sensor.0x00158d0002bfe958_zigbee:
   friendly_name: "Living Room Thermometer"
 
-sensor.0x158d0001ab2a27_battery:
+sensor.0x00158d0001ab2a27_battery:
   friendly_name: "Bedroom Thermometer"
 
-sensor.0x158d0001ab2a27_temperature:
+sensor.0x00158d0001ab2a27_temperature:
   friendly_name: "Bedroom"
 
-sensor.0x158d0001ab2a27_humidity:
+sensor.0x00158d0001ab2a27_humidity:
   friendly_name: "Bedroom"
 
-sensor.0x158d0001ab2a27_pressure:
+sensor.0x00158d0001ab2a27_pressure:
   friendly_name: "Bedroom"
 
-sensor.0x158d0001ab2a27_zigbee:
+sensor.0x00158d0001ab2a27_zigbee:
   friendly_name: "Bedroom Thermometer"
 
-#sensor.0x158d0001ab2a27_voltage:
+#sensor.0x00158d0001ab2a27_voltage:
 #  friendly_name: "Bedroom Thermometer"
 
-sensor.0x158d000231f03e_battery:
+sensor.0x00158d000231f03e_battery:
   friendly_name: "Hallway Thermometer"
 
-sensor.0x158d000231f03e_zigbee:
+sensor.0x00158d000231f03e_zigbee:
   friendly_name: "Hallway Thermometer"
 
-sensor.0x158d000231f03e_temperature:
+sensor.0x00158d000231f03e_temperature:
   friendly_name: "Hallway"
 
-sensor.0x158d000231f03e_humidity:
+sensor.0x00158d000231f03e_humidity:
   friendly_name: "Hallway"
 
-sensor.0x158d000231f03e_pressure:
+sensor.0x00158d000231f03e_pressure:
   friendly_name: "Hallway"
 
-sensor.0x158d0002323856_battery:
+sensor.0x00158d0002323856_battery:
   friendly_name: "Master Bedroom Thermometer"
 
-sensor.0x158d0002323856_temperature:
+sensor.0x00158d0002323856_temperature:
   friendly_name: "Master Bedroom"
 
-sensor.0x158d0002323856_humidity:
+sensor.0x00158d0002323856_humidity:
   friendly_name: "Master Bedroom"
 
-sensor.0x158d0002323856_pressure:
+sensor.0x00158d0002323856_pressure:
   friendly_name: "Master Bedroom"
 
-#sensor.0x158d0002323856_voltage:
+#sensor.0x00158d0002323856_voltage:
 #  friendly_name: "Master Bedroom Thermometer"
 
-sensor.0x158d0002323856_zigbee:
+sensor.0x00158d0002323856_zigbee:
   friendly_name: "Master Bedroom Thermometer"
 
-sensor.0x158d00027300cc_temperature:
+sensor.0x00158d00027300cc_temperature:
   friendly_name: "Balcony"
 
-sensor.0x158d00027300cc_humidity:
+sensor.0x00158d00027300cc_humidity:
   friendly_name: "Balcony"
 
-sensor.0x158d00027300cc_pressure:
+sensor.0x00158d00027300cc_pressure:
   friendly_name: "Balcony"
 
-sensor.0x158d00027300cc_battery:
+sensor.0x00158d00027300cc_battery:
   friendly_name: "Balcony Thermometer"
 
-sensor.0x158d00027300cc_zigbee:
+sensor.0x00158d00027300cc_zigbee:
   friendly_name: "Balcony Thermometer"
 
 sensor.nodemcu_3_outdoor_temperature:
@@ -200,22 +200,22 @@ sensor.fazenda_outdoor_temperature:
 #sensor.fazenda_outdoor_pressure:
 #  friendly_name: "Fazenda Outdoor DS"
 
-#sensor.0x158d000273011f_voltage:
+#sensor.0x00158d000273011f_voltage:
 #  friendly_name: "Bathroom Thermometer"
 
-sensor.0x158d000273011f_zigbee:
+sensor.0x00158d000273011f_zigbee:
   friendly_name: "Bathroom Thermometer"
 
-sensor.0x158d000273011f_battery:
+sensor.0x00158d000273011f_battery:
   friendly_name: "Bathroom Thermometer"
 
-sensor.0x158d000273011f_temperature:
+sensor.0x00158d000273011f_temperature:
   friendly_name: "Bathroom"
 
-sensor.0x158d000273011f_humidity:
+sensor.0x00158d000273011f_humidity:
   friendly_name: "Bathroom"
 
-sensor.0x158d000273011f_pressure:
+sensor.0x00158d000273011f_pressure:
   friendly_name: "Bathroom"
 
 sensor.living_room_bt_battery_level:
@@ -284,33 +284,33 @@ binary_sensor.bedroom_lamp_nightlight:
 #binary_sensor.sonoff_rf_br_1_gate2:
 #  friendly_name: "RF Gate 2"
 
-sensor.0x158d0002afc3c7_action:
+sensor.0x00158d0002afc3c7_action:
   friendly_name: "Living Room Switch"
 
-sensor.0x158d0002afc3c7_battery:
+sensor.0x00158d0002afc3c7_battery:
   friendly_name: "Living Room Switch"
 
-sensor.0x158d0002afc3c7_zigbee:
+sensor.0x00158d0002afc3c7_zigbee:
   friendly_name: "Living Room Switch"
 
-sensor.0x158d000183d2d5_action:
+sensor.0x00158d000183d2d5_action:
   friendly_name: "Balcony General 1"
   device_class: switch
 
-sensor.0x158d000183d2d5_battery:
+sensor.0x00158d000183d2d5_battery:
   friendly_name: "Balcony General 1"
 
-sensor.0x158d000183d2d5_zigbee:
+sensor.0x00158d000183d2d5_zigbee:
   friendly_name: "Balcony General 1"
 
-sensor.0x158d000183dd12_action:
+sensor.0x00158d000183dd12_action:
   friendly_name: "Balcony General 2"
   device_class: switch
 
-sensor.0x158d000183dd12_battery:
+sensor.0x00158d000183dd12_battery:
   friendly_name: "Balcony General 2"
 
-sensor.0x158d000183dd12_zigbee:
+sensor.0x00158d000183dd12_zigbee:
   friendly_name: "Balcony General 2"
 
 sensor.bw_plug_1_current:
@@ -355,107 +355,107 @@ sensor.sonoff_pump_current:
 sensor.sonoff_pump_daily_energy:
   friendly_name: "Pump DE"
 
-binary_sensor.0x158d000393f29a_contact:
+binary_sensor.0x00158d000393f29a_contact:
   friendly_name: "Gas Counter Sensor"
   icon: "mdi:fire"
 
-binary_sensor.0x158d000233ddf2_moisture:
+binary_sensor.0x00158d000233ddf2_moisture:
   friendly_name: "Bathroom Leak"
 
-sensor.0x158d000233ddf2_battery:
+sensor.0x00158d000233ddf2_battery:
   friendly_name: "Bathroom Leak"
 
-#sensor.0x158d000233ddf2_voltage:
+#sensor.0x00158d000233ddf2_voltage:
 #  friendly_name: "Bathroom Leak"
 
-sensor.0x158d000233ddf2_zigbee:
+sensor.0x00158d000233ddf2_zigbee:
   friendly_name: "Bathroom Leak"
 
-binary_sensor.0x158d00023aa420_moisture:
+binary_sensor.0x00158d00023aa420_moisture:
   friendly_name: "WC Leak"
 
-sensor.0x158d00023aa420_battery:
+sensor.0x00158d00023aa420_battery:
   friendly_name: "WC Leak"
 
-sensor.0x158d00023aa420_zigbee:
+sensor.0x00158d00023aa420_zigbee:
   friendly_name: "WC Leak"
 
-#sensor.0x158d00023aa420_voltage:
+#sensor.0x00158d00023aa420_voltage:
 #  friendly_name: "WC Leak"
 
-binary_sensor.0x158d00024de627_contact:
+binary_sensor.0x00158d00024de627_contact:
   friendly_name: "WC Door"
 
-sensor.0x158d00024de627_battery:
+sensor.0x00158d00024de627_battery:
   friendly_name: "WC Door"
 
-sensor.0x158d00024de627_zigbee:
+sensor.0x00158d00024de627_zigbee:
   friendly_name: "WC Door"
 
-#sensor.0x158d00024de627_voltage:
+#sensor.0x00158d00024de627_voltage:
 #  friendly_name: "WC Door"
 
-sensor.0x158d0002537042_battery:
+sensor.0x00158d0002537042_battery:
   friendly_name: "Storeroom Door"
 
-binary_sensor.0x158d0002537042_contact:
+binary_sensor.0x00158d0002537042_contact:
   friendly_name: "Storeroom Door"
 
-sensor.0x158d0002537042_zigbee:
+sensor.0x00158d0002537042_zigbee:
   friendly_name: "Storeroom Door"
 
-sensor.0x158d0002fd4381_battery:
+sensor.0x00158d0002fd4381_battery:
   friendly_name: "Bathroom Door"
 
-binary_sensor.0x158d0002fd4381_contact:
+binary_sensor.0x00158d0002fd4381_contact:
   friendly_name: "Bathroom Door"
 
-sensor.0x158d0002fd4381_zigbee:
+sensor.0x00158d0002fd4381_zigbee:
   friendly_name: "Bathroom Door"
 
-#sensor.0x158d0002fd4381_voltage:
+#sensor.0x00158d0002fd4381_voltage:
 #  friendly_name: "Bathroom Door"
 
-sensor.0x158d00032b7db7_battery:
+sensor.0x00158d00032b7db7_battery:
   friendly_name: "Entrance Door"
 
-binary_sensor.0x158d00032b7db7_contact:
+binary_sensor.0x00158d00032b7db7_contact:
   friendly_name: "Entrance Door"
 
-sensor.0x158d00032b7db7_zigbee:
+sensor.0x00158d00032b7db7_zigbee:
   friendly_name: "Entrance Door"
 
-sensor.0x158d000393f29a_battery:
+sensor.0x00158d000393f29a_battery:
   friendly_name: "Gas Counter"
 
-sensor.0x158d000393f29a_zigbee:
+sensor.0x00158d000393f29a_zigbee:
   friendly_name: "Gas Counter"
 
-sensor.0x158d0004466f8f_battery:
+sensor.0x00158d0004466f8f_battery:
   friendly_name: "WC Motion"
 
-binary_sensor.0x158d0004466f8f_motion:
+binary_sensor.0x00158d0004466f8f_motion:
   friendly_name: "WC Motion"
 
-sensor.0x158d0004466f8f_zigbee:
+sensor.0x00158d0004466f8f_zigbee:
   friendly_name: "WC Motion"
 
-#sensor.0x158d0004466f8f_voltage:
+#sensor.0x00158d0004466f8f_voltage:
 #  friendly_name: "WC Motion"
 
-sensor.0x158d0004466f8f_illuminance:
+sensor.0x00158d0004466f8f_illuminance:
   friendly_name: "WC  Illum"
 
-binary_sensor.0x158d00044a26ba_motion:
+binary_sensor.0x00158d00044a26ba_motion:
   friendly_name: "Bathroom Motion 1"
 
-sensor.0x158d00044a26ba_battery:
+sensor.0x00158d00044a26ba_battery:
   friendly_name: "Bathroom Motion 1"
 
-sensor.0x158d00044a26ba_zigbee:
+sensor.0x00158d00044a26ba_zigbee:
   friendly_name: "Bathroom Motion 1"
 
-sensor.0x158d00044a26ba_illuminance:
+sensor.0x00158d00044a26ba_illuminance:
   friendly_name: "Bathroom Illum 1"
 
 binary_sensor.0x54ef441000268428_motion:
@@ -464,13 +464,13 @@ binary_sensor.0x54ef441000268428_motion:
 sensor.0x54ef441000268428_battery:
   friendly_name: "Bathroom Motion 2"
 
-binary_sensor.0x158d0002c08849_motion:
+binary_sensor.0x00158d0002c08849_motion:
   friendly_name: "Bedroom Motion"
 
-sensor.0x158d0002c08849_battery:
+sensor.0x00158d0002c08849_battery:
   friendly_name: "Bedroom Motion"
 
-sensor.0x158d0002c08849_zigbee:
+sensor.0x00158d0002c08849_zigbee:
   friendly_name: "Bedroom Motion"
 
 sensor.0x54ef4410000c1dec_illuminance:

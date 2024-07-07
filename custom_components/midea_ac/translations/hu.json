@@ -1,0 +1,122 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Válassza ki, hogyan szeretne eszközt hozzáadni:",
+        "menu_options": {
+          "discover": "Eszköz felderítéssel",
+          "manual": "Kézi beállítással"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Hoszt"
+        },
+        "description": "Hagyja üresen a hosztot az eszköz(ök) hálózaton való felfedezéséhez."
+      },
+      "manual": {
+        "description": "Adja meg az eszköz adatait",
+        "data": {
+          "id": "ID",
+          "host": "Hoszt",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Kulcs"
+        },
+        "data_description": {
+          "token": "Token a V3 eszközökhöz",
+          "k1": "Kulcs a V3 eszközökhöz"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Az eszköz már be lett állítva.",
+      "cannot_connect": "Nem hozható létre kapcsolat.",
+      "no_devices_found": "Nem található támogatott eszköz a hálózaton."
+    },
+    "error": {
+      "cannot_connect": "Ezekkel a beállításokkal nem hozható létre kapcsolat.",
+      "device_not_found": "Az eszköz nem található a hálózaton.",
+      "unsupported_device": "Nem támogatott eszköz."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Hangjelzés be",
+          "temp_step": "Hőfokbeállítás lépésköze",
+          "use_fan_only_workaround": "Fan-only mode hiba megkerülése",
+          "show_all_presets": "Az összes profil mutatása",
+          "additional_operation_modes": "További üzemmódok",
+          "max_connection_lifetime": "Kapcsolódás maximális ideje"
+        },
+        "data_description": {
+          "temp_step": "A hőfok beállításakor használt lépésköz nagysága",
+          "additional_operation_modes": "További üzemmódok létrehozása",
+          "max_connection_lifetime": "A maximális idő, amíg a kapcsolódás él, másodpercben (30mp minimum)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Követés beállítása",
+      "description": "A követés funkció bekapcsolása.",
+      "fields": {
+        "enabled": {
+          "name": "Bekapcsolva",
+          "description": "A követés (hőfok a távirányító hőmérséklete alapján) funkció bekapcsolása."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Halk",
+              "low": "Alacsony",
+              "medium": "Közepes",
+              "high": "Magas",
+              "auto": "Auto",
+              "custom": "Egyéni"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Ki",
+              "vertical": "Függőleges",
+              "horizontal": "Vízszintes",
+              "both": "Összes irány"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "horizontal_swing_angle": {
+        "state": {
+          "off": "Ki",
+          "pos_1": "Bal",
+          "pos_2": "Bal-közép",
+          "pos_3": "Közép",
+          "pos_4": "Jobb-közép",
+          "pos_5": "Jobb"
+        }
+      },
+      "vertical_swing_angle": {
+        "state": {
+          "off": "Ki",
+          "pos_1": "Felső",
+          "pos_2": "Felső-közép",
+          "pos_3": "Közép",
+          "pos_4": "Alsó-közép",
+          "pos_5": "Alsó"
+        }
+      }
+    }
+  }
+}

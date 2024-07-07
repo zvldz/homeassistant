@@ -11,7 +11,7 @@ group:
       - automation.gas_counter
       - automation.system_entity_change
       - automation.system_database_purge
-      - automation.telegram_msg_info
+#     - automation.telegram_msg_info
       - automation.update_gw3_sensor_ota
       - automation.update_gw3_zigbee_ota_fw
 #     - automation.system_start
@@ -26,6 +26,29 @@ group:
       - sensor.ha1_auto_fan
       - sensor.ha1_vacuum_schedule
       - sensor.ha1_vacuum_notification
+
+template:
+  - sensor:
+      - name: zigbee_bridge_uptime
+        state: "{{ now() }}"
+
+      - name: zigbee2mqtt_bridge_state
+        state: "OK"
+
+      - name: zigbee2mqtt_version
+        state: "123"
+
+      - name: zigbee_coordinator_version
+        state: "321"
+
+      - name: zigbee_bridge_fw
+        state: "123.321"
+
+      - name: latest_tasmota
+        state: "0.0"
+
+      - name: zigbee_bridge_exception
+        state: ""
 
 sensor:
   - platform: rest
@@ -70,8 +93,8 @@ sensor:
       authorization: !secret ha1_token
     value_template: "{{ value_json.attributes.temperature }}"
 
-  - platform: rups
-    name: raspberry_ups
+# - platform: rups
+#   name: raspberry_ups
 
 rest_command:
   ha1_set_input_boolean:

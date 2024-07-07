@@ -1,8 +1,8 @@
-notify:
-  - platform: file
-    name: climate_notify
-    filename: /config/climate.log
-    timestamp: true
+#notify:
+#  - platform: file
+#    name: climate_notify
+#    filename: /config/climate.log
+#    timestamp: true
 
 input_boolean:
   gas_boiler_schedule:
@@ -21,7 +21,7 @@ climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
     heater: switch.boiler_shelly
-    target_sensor: sensor.0x158d0002bfe958_temperature
+    target_sensor: sensor.0x00158d0002bfe958_temperature
     ac_mode: false
     min_temp: 15
     max_temp: 25
@@ -30,16 +30,6 @@ climate:
     hot_tolerance: 0.3
     min_cycle_duration:
       minutes: 5
-
-  - platform: midea_ac
-    host: !secret midea_ip_1
-    id: !secret midea_id_1
-  - platform: midea_ac
-    host: !secret midea_ip_2
-    id: !secret midea_id_2
-  - platform: midea_ac
-    host: !secret midea_ip_3
-    id: !secret midea_id_3
 
 sensor:
   - platform: rest
@@ -105,33 +95,38 @@ automation:
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
 
-# - alias: "Sync Pump with Boiler"
-#   initial_state: true
-#   trigger:
-#     - platform: state
-#       entity_id: switch.boiler_shelly
-#   action:
-#     - service: >
-#         {% if trigger.to_state.state == 'on' %}
-#           switch.turn_on
-#         {% elif trigger.to_state.state == 'off' %}
-#           switch.turn_off
-#         {% endif %}
-#       entity_id: switch.sonoff_pump_relay
+#  - alias: "Sync Pump with Boiler"
+#    initial_state: true
+#    trigger:
+#      - platform: state
+#        entity_id: switch.boiler_shelly
+#    action:
+#      - service: >
+#          {% if trigger.to_state.state == 'on' %}
+#            switch.turn_on
+#          {% elif trigger.to_state.state == 'off' %}
+#            switch.turn_off
+#          {% endif %}
+#        entity_id: switch.sonoff_pump_relay
 
-# - alias: "Turn off heating if kitchen temp above 23"
-#   initial_state: true
-#   trigger:
-#     - platform: numeric_state
-#       entity_id: sensor.0x158d0002ca0395_temperature
-#       above: 23
-#   condition:
-#     - condition: state
-#       entity_id: switch.sonoff_pump_relay
-#       state: 'on'
-#   action:
+  - alias: "Turn off heating if kitchen temp above 23"
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.0x00158d0002ca0395_temperature
+        above: 23
+    condition:
+      - condition: state
+        entity_id: switch.sonoff_pump_relay
+        state: 'on'
+    action:
 #     - service: switch.turn_off
 #       entity_id: switch.sonoff_pump_relay
+      - service: climate.set_temperature
+        data:
+          entity_id: climate.gas_boiler
+          temperature: 20
+          hvac_mode: heat
 
   - alias: "Set temperature to 'climate_control_temperature' on schedule"
     initial_state: true
@@ -152,10 +147,10 @@ automation:
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
-#     - service: persistent_notification.create
-#       data:
-#         title: "Thermostat"
-#         message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
+      - service: persistent_notification.create
+        data:
+          title: "Thermostat"
+          message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true
@@ -179,7 +174,7 @@ automation:
     initial_state: true
     trigger:
       platform: state
-      entity_id: binary_sensor.0x158d000393f29a_contact
+      entity_id: binary_sensor.0x00158d000393f29a_contact
       from: 'on'
       to: 'off'
       for:

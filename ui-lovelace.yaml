@@ -13,5 +13,5 @@ views:
   - !include includes/lovelace/ring.yaml
   - !include includes/lovelace/gateway3.yaml
   - !include includes/lovelace/esp.yaml
+  - !include includes/lovelace/energy.yaml
   - !include includes/lovelace/automation.yaml
-

@@ -105,7 +105,7 @@ sensor:
         - below: 3.0
           then:
             - light.turn_off: led
-    update_interval: 10s
+    #update_interval: 10s
 
   - platform: total_daily_energy
     name: ${device_name}_daily_energy

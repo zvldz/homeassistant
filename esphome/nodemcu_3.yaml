@@ -7,7 +7,7 @@ esphome:
   board: nodemcu-32s
 
 wifi:
-  output_power: 20dB
+  output_power: 18dB
   fast_connect: true
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3

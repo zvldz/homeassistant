@@ -1,9 +1,19 @@
 {
-        "domain": "midea_ac",
-        "name": "Midea Smart Aircon",
-        "version": "0.2.3",
-        "documentation": "",
-        "requirements": ["msmart==0.2.3", "pycryptodome", "pycryptodomex", "click"],
-        "dependencies": [],
-        "codeowners": ["@mac-zhou"]
+  "domain": "midea_ac",
+  "name": "Midea Smart AC",
+  "codeowners": [
+    "@mill1000"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/mill1000/midea-ac-py",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/mill1000/midea-ac-py/issues",
+  "loggers": [
+    "msmart"
+  ],
+  "requirements": [
+    "msmart-ng>=2024.5.4"
+  ],
+  "version": "2024.5.5"
 }

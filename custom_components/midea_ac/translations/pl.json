@@ -81,6 +81,7 @@
               "low": "Niski",
               "medium": "Średni",
               "high": "Wysoki",
+              "max": "Maksymalny",
               "auto": "Automatyczny",
               "custom": "Ręcznie"
             }
@@ -96,8 +97,27 @@
         }
       }
     },
+    "binary_sensor": {
+      "filter_alert": {
+        "name": "Alert brudnych filtrów"
+      },
+      "self_clean": {
+        "name": "Samooczyszczanie"
+      }
+    },
+    "button": {
+      "self_clean": {
+        "name": "Rozpocznij samooczyszczanie"
+      }
+    },
+    "number": {
+      "fan_speed": {
+        "name": "Prędkość wentylatora"
+      }
+    },
     "select": {
       "horizontal_swing_angle": {
+        "name": "Zakres ruchu w poziomie",
         "state": {
           "off": "Wyłączony",
           "pos_1": "Lewo",
@@ -108,6 +128,7 @@
         }
       },
       "vertical_swing_angle": {
+        "name": "Zakres ruchu w pionie",
         "state": {
           "off": "Wyłączony",
           "pos_1": "Góra",
@@ -116,6 +137,34 @@
           "pos_4": "Dół-Środek",
           "pos_5": "Dół"
         }
+      }
+    },
+    "sensor": {
+      "current_energy_usage": {
+        "name": "Aktualne zużycie"
+      },
+      "indoor_humidity": {
+        "name": "Wilgotność w pomieszczeniu"
+      },
+      "indoor_temperature": {
+        "name": "Temperatura wewnętrzna"
+      },
+      "outdoor_temperature": {
+        "name": "Temperatura zewnętrzna"
+      },
+      "real_time_power_usage": {
+        "name": "Moc"
+      },
+      "total_energy_usage": {
+        "name": "Zużycie"
+      }
+    },
+    "switch": {
+      "display": {
+        "name": "Wyświetlacz"
+      },
+      "purifier": {
+        "name": "Oczyszczanie powietrza"
       }
     }
   }

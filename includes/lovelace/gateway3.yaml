@@ -200,7 +200,7 @@ cards:
           - name: Parent
             data: device.extra.nwk_parent
             align: center
-            modify: (x+'').replace(/^0x/,"").toLowerCase()
+            modify: 'x == "0x0000" ? "-" : (x+"").replace(/^0x/,"").toLowerCase()'
           - name: Received
             data: msg_received
             align: center

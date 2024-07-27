@@ -60,8 +60,8 @@ automation:
       - service: light.turn_on
         entity_id: light.gateway_light_7811dcb245b2
         data:
-            brightness: 255
-            rgb_color: [255, 135, 12]
+            brightness: 127
+            rgb_color: [255, 0, 0]
       - delay: '00:02:00'
       - service: notify.telegram
         data:
@@ -76,8 +76,8 @@ automation:
       - service: light.turn_on
         entity_id: light.gateway_light_7811dcb245b2
         data:
-            brightness: 255
-            rgb_color: [255, 135, 12]
+            brightness: 127
+            rgb_color: [255, 0, 0]
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
@@ -90,7 +90,7 @@ automation:
         entity_id: light.gateway_light_7811dcb245b2
         data:
             brightness: 255
-            rgb_color: [255, 135, 12]
+            rgb_color: [255, 0, 0]
 
   - alias: 'Notify when Mains voltage restored'
     initial_state: true
@@ -111,6 +111,9 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
+          - climate.midea_ac_18691697686913
+          - climate.midea_ac_18691697686914
+          - climate.midea_ac_16492674435040
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
@@ -120,6 +123,9 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
+          - climate.midea_ac_18691697686913
+          - climate.midea_ac_18691697686914
+          - climate.midea_ac_16492674435040
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
@@ -129,4 +135,7 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
+          - climate.midea_ac_18691697686913
+          - climate.midea_ac_18691697686914
+          - climate.midea_ac_16492674435040
 

@@ -81,6 +81,7 @@
               "low": "Low",
               "medium": "Medium",
               "high": "High",
+              "max": "Max",
               "auto": "Auto",
               "custom": "Custom"
             }
@@ -96,8 +97,27 @@
         }
       }
     },
+    "binary_sensor": {
+      "filter_alert": {
+        "name": "Filter alert"
+      },
+      "self_clean": {
+        "name": "Self clean"
+      }
+    },
+    "button": {
+      "self_clean": {
+        "name": "Start self clean"
+      }
+    },
+    "number": {
+      "fan_speed": {
+        "name": "Fan speed"
+      }
+    },
     "select": {
       "horizontal_swing_angle": {
+        "name": "Horizontal swing angle",
         "state": {
           "off": "Off",
           "pos_1": "Left",
@@ -108,6 +128,7 @@
         }
       },
       "vertical_swing_angle": {
+        "name": "Vertical swing angle",
         "state": {
           "off": "Off",
           "pos_1": "Top",
@@ -116,6 +137,34 @@
           "pos_4": "Bottom-center",
           "pos_5": "Bottom"
         }
+      }
+    },
+    "sensor": {
+      "current_energy_usage": {
+        "name": "Current energy"
+      },
+      "indoor_humidity": {
+        "name": "Indoor humidity"
+      },
+      "indoor_temperature": {
+        "name": "Indoor temperature"
+      },
+      "outdoor_temperature": {
+        "name": "Outdoor temperature"
+      },
+      "real_time_power_usage": {
+        "name": "Power"
+      },
+      "total_energy_usage": {
+        "name": "Total energy"
+      }
+    },
+    "switch": {
+      "display": {
+        "name": "Display"
+      },
+      "purifier": {
+        "name": "Purifier"
       }
     }
   }

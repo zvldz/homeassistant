@@ -1,20 +1,52 @@
 title: Energy
 icon: mdi:home-lightning-bolt
 cards:
-  - type: custom:power-flow-card-plus
-    clickable_entities: true
-    entities:
-      grid:
-        entity: sensor.shellyem_c45bbe602cfc_channel_1_power
-        display_state: one_way
-        color_circle: true
-      battery:
-        entity:
-          consumption: sensor.delta_2_max_ac_out_power
-          production: sensor.delta_2_max_total_in_power
-        state_of_charge: sensor.delta_2_max_main_battery_level
-        display_state: two_way
-        color_circle: true
-      home:
-        color_icon: true
-        watt_threshold: 10000
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Visual scheme of energy"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: custom:power-flow-card-plus
+        clickable_entities: true
+        entities:
+          grid:
+            entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+            display_state: one_way
+            color_circle: true
+          battery:
+            entity:
+              consumption: sensor.delta_2_max_ac_out_power
+              production: sensor.delta_2_max_total_in_power
+            secondary_info:
+              entity: sensor.delta_2_max_discharge_remaining_time
+              display_zero: true
+            state_of_charge: sensor.delta_2_max_main_battery_level
+            display_state: one_way
+            color_circle: true
+          home:
+            color_icon: true
+            watt_threshold: 10000
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Additional information"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - sensor.delta_2_max_battery_level
+          - sensor.delta_2_max_total_in_power
+          - sensor.delta_2_max_total_out_power
+          - sensor.delta_2_max_battery_temperature
+          - sensor.delta_2_max_inv_out_temperature
+          - sensor.delta_2_max_charge_remaining_time
+          - sensor.delta_2_max_discharge_remaining_time
+
+

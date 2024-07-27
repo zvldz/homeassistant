@@ -36,6 +36,8 @@ async def async_setup_entry(
 class MideaFanSpeedNumber(MideaCoordinatorEntity, NumberEntity):
     """Fan speed number for Midea AC."""
 
+    _attr_translation_key = "fan_speed"
+
     def __init__(self, coordinator: MideaDeviceUpdateCoordinator) -> None:
         MideaCoordinatorEntity.__init__(self, coordinator)
 
@@ -54,11 +56,6 @@ class MideaFanSpeedNumber(MideaCoordinatorEntity, NumberEntity):
         return True
 
     @property
-    def name(self) -> str:
-        """Return the name of this entity."""
-        return "Fan speed"
-
-    @property
     def unique_id(self) -> str:
         """Return the unique ID of this entity."""
         return f"{self._device.id}-fan_speed"
@@ -66,7 +63,7 @@ class MideaFanSpeedNumber(MideaCoordinatorEntity, NumberEntity):
     @property
     def available(self) -> bool:
         """Check device availability."""
-        return self._device.online and self._device.power_state
+        return super().available and self._device.power_state
 
     @property
     def native_unit_of_measurement(self) -> str:

@@ -4,48 +4,50 @@ from __future__ import annotations
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN
+from homeassistant.const import (CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN,
+                                 Platform)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from msmart import __version__ as MSMART_VERISON
 from msmart.device import AirConditioner as AC
 from msmart.lan import AuthenticationError
 
-from . import helpers
 from .const import CONF_KEY, CONF_MAX_CONNECTION_LIFETIME, DOMAIN
 from .coordinator import MideaDeviceUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 _PLATFORMS = [
-    "binary_sensor",
-    "climate",
-    "number",
-    "select",
-    "sensor",
-    "switch"
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.CLIMATE,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH
 ]
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Setup Midea Smart AC device from a config entry."""
 
-    _LOGGER.info("Starting midea-ac-py. Using msmart-ng version %s.",
-                 MSMART_VERISON)
-
     # Ensure the global data dict exists
     hass.data.setdefault(DOMAIN, {})
 
-    # Construct the device
     id = config_entry.data[CONF_ID]
     host = config_entry.data[CONF_HOST]
     port = config_entry.data[CONF_PORT]
+
+    _LOGGER.info("Starting midea-ac-py for device ID %s (%s:%d). Using msmart-ng version %s.",
+                 id, host, port, MSMART_VERISON)
+
+    # Construct the device
     device = AC(ip=host, port=port, device_id=int(id))
 
     # Configure the connection lifetime
     lifetime = config_entry.options.get(CONF_MAX_CONNECTION_LIFETIME)
-    if lifetime is not None and helpers.method_exists(device, "set_max_connection_lifetime"):
+    if lifetime is not None and hasattr(device, "set_max_connection_lifetime"):
         _LOGGER.info(
-            "Setting maximum connection lifetime to %s seconds.", lifetime)
+            "Setting maximum connection lifetime to %s seconds for device ID %s.", lifetime, device.id)
         device.set_max_connection_lifetime(lifetime)
 
     # Configure token and k1 as needed
@@ -59,9 +61,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
                 "Failed to authenticate with device.") from e
 
     # Query device capabilities
-    if helpers.method_exists(device, "get_capabilities"):
-        _LOGGER.info("Querying device capabilities.")
-        await device.get_capabilities()
+    _LOGGER.info("Querying capabilities for device ID %s.", device.id)
+    await device.get_capabilities()
 
     # Create device coordinator and fetch data
     coordinator = MideaDeviceUpdateCoordinator(hass, device)
@@ -71,9 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
 
     # Forward setup to all platforms
-    for platform in _PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(config_entry, platform))
+    await hass.config_entries.async_forward_entry_setups(config_entry, _PLATFORMS)
 
     # Reload entry when its updated
     config_entry.async_on_unload(

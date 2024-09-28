@@ -1,11 +1,15 @@
 # Sonoff Pow R2
 substitutions:
   device_name: sonoff_pump
+  update_interval: 60s
 
 esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp01_1m
+
+ota:
+  platform: esphome
 
 wifi:
   output_power: 20dB
@@ -23,7 +27,6 @@ time:
   - platform: homeassistant
 
 api:
-ota:
 captive_portal:
 
 logger:
@@ -89,15 +92,21 @@ sensor:
       name: ${device_name}_current
       icon: mdi:current-ac
       unit_of_measurement: A
+      filters:
+        - throttle_average: ${update_interval}
     voltage:
       name: ${device_name}_voltage
       icon: mdi:lightning-bolt-circle
       unit_of_measurement: V
+      filters:
+        - throttle_average: ${update_interval}
     power:
       id: ${device_name}_power
       name: ${device_name}_power
       icon: mdi:flash-outline
       unit_of_measurement: W
+      filters:
+        - throttle_average: ${update_interval}
       on_value_range:
         - above: 4.0
           then:

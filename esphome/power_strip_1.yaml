@@ -7,6 +7,9 @@ esphome:
   board: esp8285
   esp8266_restore_from_flash: true
 
+ota:
+  platform: esphome
+
 wifi:
   output_power: 17dB
   ssid: !secret wifi_ssid_3
@@ -22,7 +25,6 @@ logger:
   level: DEBUG
 
 api:
-ota:
 captive_portal:
 
 time:

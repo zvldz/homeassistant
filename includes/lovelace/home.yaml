@@ -146,6 +146,6 @@ cards:
       - type: glance
         show_header_toggle: false
         entities:
-          - device_tracker.xiaomi_x12
+          - device_tracker.poco_f6
           - device_tracker.poco_x3_pro
 

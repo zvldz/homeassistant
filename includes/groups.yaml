@@ -21,6 +21,6 @@ wc_spots:
 persons:
   name: "Persons"
   entities:
-    - device_tracker.xiaomi_x12
+    - device_tracker.poco_f6
     - device_tracker.poco_x3_pro
 

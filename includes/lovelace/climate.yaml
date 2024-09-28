@@ -78,6 +78,9 @@ cards:
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060b86b_climate
         name: "Livingroom TRV"
+        control:
+          hvac:
+            _name: Operation
         sensors:
           - entity: sensor.0x00158d0002bfe958_temperature
 
@@ -105,6 +108,9 @@ cards:
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060c290_climate
         name: "Master Bedroom TRV"
+        control:
+          hvac:
+            _name: Operation
         sensors:
           - entity: sensor.0x00158d0002323856_temperature
 
@@ -132,6 +138,9 @@ cards:
       - type: custom:simple-thermostat
         entity: climate.0x54ef44100060b73a_climate
         name: "Bedroom TRV"
+        control:
+          hvac:
+            _name: Operation
         sensors:
           - entity: sensor.0x00158d0001ab2a27_temperature
 

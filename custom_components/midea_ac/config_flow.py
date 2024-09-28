@@ -14,17 +14,21 @@ from msmart.device import AirConditioner as AC
 from msmart.discover import Discover
 from msmart.lan import AuthenticationError
 
-from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP, CONF_KEY,
+from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP,
+                    CONF_FAN_SPEED_STEP, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME, CONF_SHOW_ALL_PRESETS,
-                    CONF_TEMP_STEP, CONF_USE_FAN_ONLY_WORKAROUND, DOMAIN)
+                    CONF_TEMP_STEP, CONF_USE_ALTERNATE_ENERGY_FORMAT,
+                    CONF_USE_FAN_ONLY_WORKAROUND, DOMAIN)
 
 _DEFAULT_OPTIONS = {
     CONF_BEEP: True,
     CONF_TEMP_STEP: 1.0,
+    CONF_FAN_SPEED_STEP: 1,
     CONF_USE_FAN_ONLY_WORKAROUND: False,
     CONF_SHOW_ALL_PRESETS: False,
     CONF_ADDITIONAL_OPERATION_MODES: None,
     CONF_MAX_CONNECTION_LIFETIME: None,
+    CONF_USE_ALTERNATE_ENERGY_FORMAT: False,
 }
 
 
@@ -230,6 +234,8 @@ class MideaOptionsFlow(OptionsFlow):
                          default=options.get(CONF_BEEP, True)): cv.boolean,
             vol.Optional(CONF_TEMP_STEP,
                          default=options.get(CONF_TEMP_STEP, 1.0)): vol.All(vol.Coerce(float), vol.Range(min=0.5, max=5)),
+            vol.Optional(CONF_FAN_SPEED_STEP,
+                         default=options.get(CONF_FAN_SPEED_STEP, 1)): vol.All(vol.Coerce(float), vol.Range(min=1, max=20)),
             vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND,
                          default=options.get(CONF_USE_FAN_ONLY_WORKAROUND, False)): cv.boolean,
             vol.Optional(CONF_SHOW_ALL_PRESETS,
@@ -238,6 +244,8 @@ class MideaOptionsFlow(OptionsFlow):
                          description={"suggested_value": options.get(CONF_ADDITIONAL_OPERATION_MODES, None)}): cv.string,
             vol.Optional(CONF_MAX_CONNECTION_LIFETIME,
                          description={"suggested_value": options.get(CONF_MAX_CONNECTION_LIFETIME, None)}): vol.All(vol.Coerce(int), vol.Range(min=30)),
+            vol.Optional(CONF_USE_ALTERNATE_ENERGY_FORMAT,
+                         default=options.get(CONF_USE_ALTERNATE_ENERGY_FORMAT, False)): cv.boolean,
         })
 
         return self.async_show_form(step_id="init", data_schema=data_schema)

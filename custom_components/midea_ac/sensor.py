@@ -31,6 +31,7 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = [
+        # Temperature sensors
         MideaSensor(coordinator,
                     "indoor_temperature",
                     SensorDeviceClass.TEMPERATURE,
@@ -41,35 +42,33 @@ async def async_setup_entry(
                     SensorDeviceClass.TEMPERATURE,
                     UnitOfTemperature.CELSIUS,
                     "outdoor_temperature"),
+
+        # Energy sensors
+        MideaEnergySensor(coordinator,
+                          "total_energy_usage",
+                          SensorDeviceClass.ENERGY,
+                          UnitOfEnergy.KILO_WATT_HOUR,
+                          "total_energy_usage",
+                          state_class=SensorStateClass.TOTAL),
+        MideaEnergySensor(coordinator,
+                          "current_energy_usage",
+                          SensorDeviceClass.ENERGY,
+                          UnitOfEnergy.KILO_WATT_HOUR,
+                          "current_energy_usage",
+                          state_class=SensorStateClass.TOTAL_INCREASING),
+        MideaEnergySensor(coordinator,
+                          "real_time_power_usage",
+                          SensorDeviceClass.POWER,
+                          UnitOfPower.WATT,
+                          "real_time_power_usage")
     ]
 
-    if getattr(coordinator.device, "supports_humidity", False):
+    if coordinator.device.supports_humidity:
         entities.append(MideaSensor(coordinator,
                                     "indoor_humidity",
                                     SensorDeviceClass.HUMIDITY,
                                     PERCENTAGE,
                                     "indoor_humidity"))
-
-    if hasattr(coordinator.device, "enable_energy_usage_requests"):
-        entities.append(MideaEnergySensor(coordinator,
-                                          "total_energy_usage",
-                                          SensorDeviceClass.ENERGY,
-                                          UnitOfEnergy.KILO_WATT_HOUR,
-                                          "total_energy_usage",
-                                          state_class=SensorStateClass.TOTAL))
-
-        entities.append(MideaEnergySensor(coordinator,
-                                          "current_energy_usage",
-                                          SensorDeviceClass.ENERGY,
-                                          UnitOfEnergy.KILO_WATT_HOUR,
-                                          "current_energy_usage",
-                                          state_class=SensorStateClass.TOTAL_INCREASING))
-
-        entities.append(MideaEnergySensor(coordinator,
-                                          "real_time_power_usage",
-                                          SensorDeviceClass.POWER,
-                                          UnitOfPower.WATT,
-                                          "real_time_power_usage"))
 
     add_entities(entities)
 
@@ -150,8 +149,16 @@ class MideaEnergySensor(MideaSensor):
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""
+        # Call super method to ensure lifecycle is properly handled
+        await super().async_added_to_hass()
+
+        # Register energy sensor with coordinator
         self.coordinator.register_energy_sensor()
 
     async def async_will_remove_from_hass(self) -> None:
         """Run when entity will be removed from hass."""
+        # Call super method to ensure lifecycle is properly handled
+        await super().async_will_remove_from_hass()
+
+        # Unregister energy sensor with coordinator
         self.coordinator.unregister_energy_sensor()

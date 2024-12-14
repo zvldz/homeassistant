@@ -39,6 +39,7 @@ uart:
   tx_pin: GPIO01
   rx_pin: GPIO03
   baud_rate: 4800
+  parity: EVEN
 
 text_sensor:
   - platform: version
@@ -81,7 +82,6 @@ sensor:
     icon: mdi:wifi
 
   - platform: cse7766
-    #update_interval: 10s
     current:
       name: ${device_name}_current
       icon: mdi:current-ac
@@ -97,6 +97,7 @@ sensor:
       filters:
         - multiply: 1.92
         - throttle_average: ${update_interval}
+        - delta: 0.5
     power:
       id: power
       name: ${device_name}_power

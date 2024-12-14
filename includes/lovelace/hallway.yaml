@@ -178,7 +178,7 @@ cards:
           - entity: binary_sensor.0x00158d00024de627_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x00158d00023aa420_moisture
+          - entity: binary_sensor.0x00158d000233ddf2_moisture
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: binary_sensor.0x00158d00023aa420_moisture

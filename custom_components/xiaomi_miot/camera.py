@@ -18,8 +18,6 @@ from homeassistant.components.camera import (
     DOMAIN as ENTITY_DOMAIN,
     Camera,
     CameraEntityFeature,  # v2022.5
-    STATE_RECORDING,
-    STATE_STREAMING,
 )
 from homeassistant.components.ffmpeg import async_get_image, DATA_FFMPEG
 from homeassistant.helpers.event import async_track_point_in_utc_time
@@ -30,6 +28,7 @@ from . import (
     DOMAIN,
     CONF_MODEL,
     XIAOMI_CONFIG_SCHEMA as PLATFORM_SCHEMA,  # noqa: F401
+    HassEntry,
     MiotToggleEntity,
     BaseSubEntity,
     MiotCloud,
@@ -37,6 +36,7 @@ from . import (
     async_setup_config_entry,
     bind_services_to_entries,
 )
+from .core.const import CameraState
 from .core.miot_spec import (
     MiotSpec,
     MiotService,
@@ -50,6 +50,7 @@ SERVICE_TO_METHOD = {}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    HassEntry.init(hass, config_entry).new_adder(ENTITY_DOMAIN, async_add_entities)
     await async_setup_config_entry(hass, config_entry, async_setup_platform, async_add_entities, ENTITY_DOMAIN)
 
 
@@ -93,6 +94,7 @@ class BaseCameraEntity(Camera):
 
     def __init__(self, hass: HomeAssistant):
         super().__init__()
+        self._supported_features = CameraEntityFeature(0)
         self.access_tokens = collections.deque(self.access_tokens, 12 * 2)
         self._manager = hass.data.get(DATA_FFMPEG)
         # http://ffmpeg.org/ffmpeg-all.html
@@ -181,7 +183,7 @@ class MiotCameraEntity(MiotToggleEntity, BaseCameraEntity):
             self._supported_features |= CameraEntityFeature.ON_OFF
         if miot_service:
             self._prop_motion_tracking = miot_service.bool_property('motion_detection', 'motion_tracking')
-            self._is_doorbell = miot_service.name in ['video_doorbell'] or '.lock.' in self._model
+            self._is_doorbell = miot_service.name in ['video_doorbell'] or '.lock.' in self.model
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()
@@ -221,9 +223,9 @@ class MiotCameraEntity(MiotToggleEntity, BaseCameraEntity):
     @property
     def state(self):  # noqa
         if self.is_recording:
-            return STATE_RECORDING
+            return CameraState.RECORDING
         if self.is_streaming:
-            return STATE_STREAMING
+            return CameraState.STREAMING
         return STATE_IDLE
 
     async def async_update(self):
@@ -279,7 +281,7 @@ class MiotCameraEntity(MiotToggleEntity, BaseCameraEntity):
             api = mic.get_api_by_host('business.smartcamera.api.io.mi.com', 'common/app/get/eventlist')
             rqd = {
                 'did': self.miot_did,
-                'model': self._model,
+                'model': self.model,
                 'doorBell': self._is_doorbell,
                 'eventType': 'Default',
                 'needMerge': True,
@@ -575,9 +577,9 @@ class MotionCameraEntity(BaseSubEntity, BaseCameraEntity):
     @property
     def state(self):
         if self.is_recording:
-            return STATE_RECORDING
+            return CameraState.RECORDING
         if self.is_streaming:
-            return STATE_STREAMING
+            return CameraState.STREAMING
         return STATE_IDLE
 
     def update(self, data=None):

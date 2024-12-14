@@ -16,6 +16,7 @@ from . import (
     DOMAIN,
     CONF_MODEL,
     XIAOMI_CONFIG_SCHEMA as PLATFORM_SCHEMA,  # noqa: F401
+    HassEntry,
     MiotToggleEntity,
     async_setup_config_entry,
     bind_services_to_entries,
@@ -24,7 +25,6 @@ from .core.miot_spec import (
     MiotSpec,
     MiotService,
 )
-from .fan import MiotModesSubEntity
 
 _LOGGER = logging.getLogger(__name__)
 DATA_KEY = f'{ENTITY_DOMAIN}.{DOMAIN}'
@@ -34,6 +34,7 @@ SERVICE_TO_METHOD = {}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    HassEntry.init(hass, config_entry).new_adder(ENTITY_DOMAIN, async_add_entities)
     await async_setup_config_entry(hass, config_entry, async_setup_platform, async_add_entities, ENTITY_DOMAIN)
 
 
@@ -98,28 +99,12 @@ class MiotHumidifierEntity(MiotToggleEntity, HumidifierEntity):
                 num = round(num * fac)
             self._attr_target_humidity = num
 
-        if self._prop_water_level and self._prop_water_level.writeable:
-            self._update_sub_entities(
-                [self._prop_water_level.name],
-                domain='number_select',
-            )
-        add_fans = self._add_entities.get('fan')
-        for p in self._mode_props:
-            pnm = p.full_name
-            if self._prop_mode and pnm == self._prop_mode.full_name:
-                continue
-            if pnm in self._subs:
-                self._subs[pnm].update_from_parent()
-            elif add_fans:
-                self._subs[pnm] = MiotModesSubEntity(self, p)
-                add_fans([self._subs[pnm]], update_before_add=True)
-
     @property
     def device_class(self):
         if cls := self.get_device_class(HumidifierDeviceClass):
             return cls
-        typ = f'{self._model} {self._miot_service.spec.type}'
-        if HumidifierDeviceClass.DEHUMIDIFIER.value in typ or '.derh.' in typ:
+        typ = f'{self.model} {self._miot_service.spec.type}'
+        if 'dehumidifier' in typ or '.derh.' in typ:
             return HumidifierDeviceClass.DEHUMIDIFIER
         return HumidifierDeviceClass.HUMIDIFIER
 

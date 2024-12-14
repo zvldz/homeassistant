@@ -29,6 +29,23 @@ cards:
           home:
             color_icon: true
             watt_threshold: 10000
+          individual:
+            - entity: sensor.sonoff_1002261f55_power
+              name: AC Living Room
+              icon: mdi:air-conditioner
+              display_zero: true
+              color_icon: true
+            - entity: sensor.sonoff_1002262095_power
+              name: AC Bedroom 1
+              icon: mdi:air-conditioner
+              display_zero: true
+              color_icon: true
+            - entity: sensor.sonoff_1002262715_power
+              name: AC Bedroom 2
+              icon: mdi:air-conditioner
+              display_zero: true
+              color_icon: true
+
 
   - type: vertical-stack
     cards:

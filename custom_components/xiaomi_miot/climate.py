@@ -30,6 +30,7 @@ from . import (
     DOMAIN,
     CONF_MODEL,
     XIAOMI_CONFIG_SCHEMA as PLATFORM_SCHEMA,  # noqa: F401
+    HassEntry,
     MiotEntity,
     MiotToggleEntity,
     async_setup_config_entry,
@@ -55,6 +56,7 @@ SERVICE_TO_METHOD = {}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    HassEntry.init(hass, config_entry).new_adder(ENTITY_DOMAIN, async_add_entities)
     await async_setup_config_entry(hass, config_entry, async_setup_platform, async_add_entities, ENTITY_DOMAIN)
 
 
@@ -157,6 +159,10 @@ class MiotClimateEntity(MiotToggleEntity, BaseClimateEntity):
             if not self._prop_fan_level:
                 self._prop_fan_level = miot_service.get_property('heat_level', 'water_level')
 
+        if hasattr(ClimateEntityFeature, 'TURN_ON'): # v2024.2
+            self._supported_features |= ClimateEntityFeature.TURN_ON
+        if hasattr(ClimateEntityFeature, 'TURN_OFF'):
+            self._supported_features |= ClimateEntityFeature.TURN_OFF
         if self._prop_target_temp:
             self._supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self._prop_target_humi:
@@ -206,11 +212,11 @@ class MiotClimateEntity(MiotToggleEntity, BaseClimateEntity):
                 fst = fst or v
                 val = v.get('value')
                 if val not in mvs:
-                    des = self._prop_mode.get_translation(v.get('description'))
+                    des = self._prop_mode.get_translation(v.get('description'), viid=val)
                     self._preset_modes[val] = des
             if self._prop_mode.value_range:
                 for val in self._prop_mode.list_descriptions():
-                    des = self._prop_mode.get_translation(val)
+                    des = self._prop_mode.get_translation(val, viid=val)
                     self._preset_modes[val] = des
             if fst and len(self._hvac_modes) <= 1:
                 self._hvac_modes[HVACMode.AUTO] = {
@@ -248,18 +254,6 @@ class MiotClimateEntity(MiotToggleEntity, BaseClimateEntity):
                     add_fans([self._subs[des]], update_before_add=True)
 
             add_switches = self._add_entities.get('switch')
-            for p in self._miot_service.properties.values():
-                if not (p.format == 'bool' and p.readable and p.writeable):
-                    continue
-                if p.name in self._power_modes:
-                    continue
-                if self._prop_power and self._prop_power.name == p.name:
-                    continue
-                self._update_sub_entities(p, None, 'switch')
-
-            if self._miot_service.name in ['ptc_bath_heater']:
-                self._update_sub_entities(None, ['light', 'light_bath_heater'], domain='light')
-
             if self._miot_service.get_action('start_wash'):
                 pnm = 'action_wash'
                 prop = self._miot_service.get_property('status')

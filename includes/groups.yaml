@@ -21,6 +21,6 @@ wc_spots:
 persons:
   name: "Persons"
   entities:
-    - device_tracker.poco_f6
-    - device_tracker.poco_x3_pro
+    - device_tracker.a4_55_90_e3_c7_4e
+    - device_tracker.poco_f6_pro
 

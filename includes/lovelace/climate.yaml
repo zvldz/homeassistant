@@ -52,6 +52,8 @@ cards:
         entities:
           - input_boolean.gas_boiler_schedule
           - input_number.climate_control_temperature
+          - script.turn_on_all_ac
+          - script.turn_off_all_ac
 
   - type: vertical-stack
     cards:
@@ -60,6 +62,15 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
+      - type: custom:button-card
+        entity: switch.sonoff_1002261f55
+        name: " "
+        icon: mdi:air-conditioner
+        size: 10%
+        styles:
+          card:
+            - font-size: 14px
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_18691697686913
@@ -92,6 +103,15 @@ cards:
           card:
             - background-color: "#203040"
 
+      - type: custom:button-card
+        entity: switch.sonoff_1002262095
+        name: " "
+        icon: mdi:air-conditioner
+        size: 10%
+        styles:
+          card:
+            - font-size: 14px
+
       - type: custom:simple-thermostat
         entity: climate.midea_ac_18691697686914
         name: "A/C Master Bedroom"
@@ -121,6 +141,15 @@ cards:
         styles:
           card:
             - background-color: "#203040"
+
+      - type: custom:button-card
+        entity: switch.sonoff_1002262715
+        name: " "
+        icon: mdi:air-conditioner
+        size: 10%
+        styles:
+          card:
+            - font-size: 14px
 
       - type: custom:simple-thermostat
         entity: climate.midea_ac_16492674435040

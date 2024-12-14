@@ -13,6 +13,7 @@ from . import (
     DOMAIN,
     CONF_MODEL,
     XIAOMI_CONFIG_SCHEMA as PLATFORM_SCHEMA,  # noqa: F401
+    HassEntry,
     MiotToggleEntity,
     MiirToggleEntity,
     MiotPropertySubEntity,
@@ -39,6 +40,7 @@ OFF_SPEED_VALUES = [SPEED_OFF, None]
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    HassEntry.init(hass, config_entry).new_adder(ENTITY_DOMAIN, async_add_entities)
     await async_setup_config_entry(hass, config_entry, async_setup_platform, async_add_entities, ENTITY_DOMAIN)
 
 
@@ -311,6 +313,11 @@ class MiotFanEntity(MiotToggleEntity, FanEntity):
 class MiirFanEntity(MiirToggleEntity, FanEntity):
     def __init__(self, config: dict, miot_service: MiotService):
         super().__init__(miot_service, config=config, logger=_LOGGER)
+
+        if self._act_turn_on and hasattr(FanEntityFeature, 'TURN_ON'): # v2024.8
+            self._supported_features |= FanEntityFeature.TURN_ON
+        if self._act_turn_off and hasattr(FanEntityFeature, 'TURN_OFF'):
+            self._supported_features |= FanEntityFeature.TURN_OFF
 
         self._attr_percentage = 50
         self._act_speed_up = miot_service.get_action('fan_speed_up')
@@ -604,37 +611,6 @@ class MiotModesSubEntity(MiotPropertySubEntity, FanSubEntity):
         if self._miot_property.value_list:
             return len(self._miot_property.value_list)
         return 0
-
-
-class MiotCookerSubEntity(MiotModesSubEntity):
-    def __init__(self, parent, miot_property: MiotProperty, prop_status: MiotProperty, option=None):
-        super().__init__(parent, miot_property, option)
-        if not miot_property.readable:
-            self._attr = prop_status.full_name
-        self._prop_status = prop_status
-        self._option['keys'] = [prop_status.full_name, *(self._option.get('keys') or [])]
-        self._values_on = self._option.get('values_on') or []
-        self._values_off = self._option.get('values_off') or []
-
-    @property
-    def is_on(self):
-        return self._parent.is_on
-
-    def set_preset_mode(self, preset_mode: str):
-        if not self._miot_property.writeable:
-            ret = False
-            act = self._miot_service.get_action('start_cook')
-            val = self._miot_property.list_first(preset_mode)
-            if act and val is not None:
-                ret = self.call_parent('miot_action', self._miot_service.iid, act.iid, [val])
-                sta = self._values_on[0] if self._values_on else None
-                if ret and sta is not None:
-                    self.update_attrs({
-                        self._prop_status.full_name: sta,
-                        self._attr: val,
-                    })
-            return ret
-        return super().set_preset_mode(preset_mode)
 
 
 class MiotWasherSubEntity(MiotModesSubEntity):

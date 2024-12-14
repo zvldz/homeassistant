@@ -7,6 +7,8 @@ logs:
   custom_components.aqara_gateway.core.gateway: debug
 # homeassistant.components.yeelight: debug
 # homeassistant.components.yeelight.light: debug
+# homeassistant.components.mikrotik: debug
+  homeassistant.components.ring
 # yeelight: debug
 # yeelight.light: debug
 # midea: debug

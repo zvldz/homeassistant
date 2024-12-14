@@ -20,8 +20,9 @@ automation:
     initial_state: true
     trigger:
       platform: state
-      entity_id: binary_sensor.front_door_ding
-      to: 'on'
+      entity_id: event.front_door_ding
+#      entity_id: binary_sensor.front_door_ding
+#      to: 'on'
     action:
       - service: notify.telegram
         data:

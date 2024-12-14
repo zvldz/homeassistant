@@ -48,6 +48,7 @@ sensor:
 
 script:
   turn_on_all_ac:
+    alias: Turn On All AC
     sequence:
       - service: climate.turn_on
         entity_id:
@@ -56,6 +57,7 @@ script:
           - climate.midea_ac_16492674435040
 
   turn_off_all_ac:
+    alias: Turn OFF All AC
     sequence:
       - service: climate.turn_off
         entity_id:
@@ -115,6 +117,7 @@ automation:
       - platform: numeric_state
         entity_id: sensor.0x00158d0002ca0395_temperature
         above: 23
+        below: 26
     condition:
       - condition: state
         entity_id: switch.sonoff_pump_relay
@@ -147,10 +150,10 @@ automation:
           hvac_mode: heat
       - service: switch.turn_on
         entity_id: switch.sonoff_pump_relay
-      - service: persistent_notification.create
-        data:
-          title: "Thermostat"
-          message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
+#      - service: persistent_notification.create
+#        data:
+#          title: "Thermostat"
+#          message: "Set temperature to 20.5 on schedule (state input: {{ states('input_boolean.gas_boiler_schedule') }})"
 
   - alias: "Set temperature to 17 on schedule"
     initial_state: true

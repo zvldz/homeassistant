@@ -830,8 +830,8 @@ SENSOR_TYPES: tuple[BLEMonitorSensorEntityDescription, ...] = (
         name="ble conductivity",
         unique_id="c_",
         icon="mdi:lightning-bolt-circle",
-        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS,
-        device_class=None,
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        device_class=SensorDeviceClass.CONDUCTIVITY,
         suggested_display_precision=0,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -2103,7 +2103,6 @@ MANUFACTURER_DICT = {
     'BEC07-5'                 : 'Jinou',
     'iBeacon'                 : 'Apple',
     'AltBeacon'               : 'Radius Networks',
-    'EClerk Eco'              : 'Relsib',
     'Air Mentor Pro 2'        : 'Air Mentor',
     'Air Mentor 2S'           : 'Air Mentor',
     'bluSensor Mini'          : 'Almendo',
@@ -2112,7 +2111,7 @@ MANUFACTURER_DICT = {
     'Laica Smart Scale'       : 'Laica',
     'K6 Sensor Beacon'        : 'KKM',
     'SmartDry cloth dryer'    : 'SmartDry',
-    'Senssun Smart Scale'       : 'Senssun',
+    'Senssun Smart Scale'     : 'Senssun',
 }
 
 
@@ -2166,6 +2165,7 @@ AUTO_MANUFACTURER_DICT = {
     'CGP23W'                  : 'Qingping',
     'EClerk Eco'              : 'Relsib',
     'WT51'                    : 'Relsib',
+    'WH52'                    : 'Relsib',
     'Blue Puck T'             : 'Teltonika',
     'Blue Coin T'             : 'Teltonika',
     'Blue Puck RHT'           : 'Teltonika',

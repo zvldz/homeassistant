@@ -86,7 +86,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 class BinarySensorEntity(XEntity, BaseEntity, RestoreEntity):
     def set_state(self, data: dict):
-        val = data.get(self.attr)
+        val = self.conv.value_from_dict(data)
         if val is None:
             return
         if self.custom_reverse:
@@ -153,7 +153,7 @@ class MiotBinarySensorEntity(MiotToggleEntity, BaseEntity):
     def is_on(self):
         ret = self._state
         if self._prop_state:
-            val = self._prop_state.from_dict(self._state_attrs)
+            val = self._prop_state.from_device(self.device)
             if val is None:
                 pass
             elif self._prop_state.name in ['no_motion_duration', 'nobody_time']:

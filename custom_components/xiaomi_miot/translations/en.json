@@ -110,6 +110,7 @@
                     "state_class": "state_class",
                     "state_property": "state_property",
                     "switch_properties": "switch_properties",
+                    "target_position_properties": "target_position_properties",
                     "television_name": "television_name",
                     "text_actions": "text_actions",
                     "turn_on_hvac": "turn_on_hvac",
@@ -205,6 +206,8 @@
             "info": {"name": "Info"}
         },
         "sensor": {
+            "clean_area": {"name": "Clean Area"},
+            "clean_time": {"name": "Clean Time"},
             "power_cost_today": {"name": "Energy Today"},
             "power_cost_month": {"name": "Energy Month"},
             "power_cost_today_2": {"name": "Energy Today"},

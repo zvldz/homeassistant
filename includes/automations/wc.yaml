@@ -7,28 +7,26 @@
     - platform: homeassistant
       event: start
     - platform: state
-      entity_id: switch.0x00158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe
       from: 'unavailable'
     - platform: state
-      entity_id: switch.0x00158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe
       to: 'off'
   condition:
     - condition: state
-      entity_id: switch.0x00158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x00158d00022360fe_switch
+      entity_id: switch.0x00158d00022360fe
 
 # Light
 - alias: "Toggle light in WC"
   initial_state: true
   trigger:
-    - platform: event
-      event_type: xiaomi_aqara.click
-      event_data:
-        entity_id: sensor.0x00158d00022360fe_action
-        click_type: single
+    - platform: state
+      entity_id: sensor.0x00158d00022360fe_action
+      to: 'single'
   action:
     - service: light.toggle
       entity_id: group.wc_spots
@@ -42,7 +40,7 @@
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x00158d0004466f8f_motion
+        entity_id: binary_sensor.0x00158d0004466f8f_occupancy
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -72,7 +70,7 @@
     - platform: event
       event_type: xiaomi_aqara.motion
       event_data:
-        entity_id: binary_sensor.0x00158d0004466f8f_motion
+        entity_id: binary_sensor.0x00158d0004466f8f_occupancy
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -119,7 +117,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
       to: 'off'
     - platform: event
       event_type: timer.finished
@@ -127,7 +125,7 @@
         entity_id: timer.wc_fan
   action:
     - service: switch.turn_off
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
     - service: timer.cancel
       entity_id: timer.wc_fan
 
@@ -135,7 +133,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
       to: 'on'
   action:
     - service: timer.cancel
@@ -152,7 +150,7 @@
       for: "00:01:00"
   action:
     - service: switch.turn_on
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
 
 - alias: "Turn on WC fan on schedule"
   initial_state: true
@@ -168,7 +166,7 @@
       state: 'on'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
     - service: timer.cancel
       entity_id: timer.wc_fan
     - service: timer.start
@@ -197,7 +195,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.0x54ef4410001f5dd8_switch
+      entity_id: switch.0x54ef4410001f5dd8
       state: 'on'
   action:
     - service: timer.start

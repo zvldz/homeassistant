@@ -86,40 +86,35 @@ class LightEntity(XEntity, BaseEntity, RestoreEntity):
         self._brightness_for_on = self.custom_config_number('brightness_for_on')
         self._brightness_for_off = self.custom_config_number('brightness_for_off')
         self._attr_color_mode = ColorMode.ONOFF
+
         modes = set()
+        for attr in self.conv.attrs:
+            prop = self._miot_service.spec.get_property(attr) if self._miot_service else None
+            if not prop:
+                continue
+            if prop.in_list(['brightness']):
+                self._attr_names[ATTR_BRIGHTNESS] = attr
+                self._attr_color_mode = ColorMode.BRIGHTNESS
+            elif prop.in_list(['color_temperature', 'color_temp']):
+                self._attr_color_mode = ColorMode.COLOR_TEMP
+                modes.add(ColorMode.COLOR_TEMP)
+                if prop.unit in ['kelvin']:
+                    self._attr_min_color_temp_kelvin = prop.range_min()
+                    self._attr_max_color_temp_kelvin = prop.range_max()
+                    self._attr_names[ATTR_COLOR_TEMP_KELVIN] = attr
+                else:
+                    self._attr_min_mireds = prop.range_min()
+                    self._attr_max_mireds = prop.range_max()
+                    self._attr_names[ATTR_COLOR_TEMP] = attr
+            elif prop.in_list(['color']):
+                self._attr_names[ATTR_RGB_COLOR] = attr
+                modes.add(ColorMode.RGB)
+            elif prop.in_list(['mode']):
+                self._attr_names[ATTR_EFFECT] = attr
+                self._attr_effect_list = prop.list_descriptions()
+                self._attr_supported_features |= LightEntityFeature.EFFECT
 
-        for conv in self.device.converters:
-            if not self._miot_service:
-                break
-            prop = getattr(conv, 'prop', None)
-            if isinstance(prop, MiotProperty):
-                if conv.attr == ATTR_BRIGHTNESS or prop.in_list(['brightness']):
-                    self.listen_attrs.add(conv.attr)
-                    self._attr_names[ATTR_BRIGHTNESS] = conv.attr
-                    self._attr_color_mode = ColorMode.BRIGHTNESS
-                elif conv.attr == ATTR_COLOR_TEMP or prop.in_list(['color_temperature', 'color_temp']):
-                    self.listen_attrs.add(conv.attr)
-                    self._attr_color_mode = ColorMode.COLOR_TEMP
-                    modes.add(ColorMode.COLOR_TEMP)
-                    if prop.unit in ['kelvin']:
-                        self._attr_min_color_temp_kelvin = prop.range_min()
-                        self._attr_max_color_temp_kelvin = prop.range_max()
-                        self._attr_names[ATTR_COLOR_TEMP_KELVIN] = conv.attr
-                    else:
-                        self._attr_min_mireds = prop.range_min()
-                        self._attr_max_mireds = prop.range_max()
-                        self._attr_names[ATTR_COLOR_TEMP] = conv.attr
-                elif conv.attr == ATTR_RGB_COLOR or prop.in_list(['color']):
-                    self.listen_attrs.add(conv.attr)
-                    self._attr_names[ATTR_RGB_COLOR] = conv.attr
-                    modes.add(ColorMode.RGB)
-                elif conv.attr == ATTR_EFFECT or prop.in_list(['mode']):
-                    self.listen_attrs.add(conv.attr)
-                    self._attr_names[ATTR_EFFECT] = conv.attr
-                    self._attr_effect_list = prop.list_descriptions()
-                    self._attr_supported_features |= LightEntityFeature.EFFECT
-
-            self._attr_supported_color_modes = modes if modes else {self._attr_color_mode}
+        self._attr_supported_color_modes = modes if modes else {self._attr_color_mode}
 
     def get_state(self) -> dict:
         return {
@@ -130,32 +125,31 @@ class LightEntity(XEntity, BaseEntity, RestoreEntity):
 
     def set_state(self, data: dict):
         val = data.get(self.attr)
-        if val != None:
-            val = bool(val)
-        self._attr_is_on = val
+        if val is not None:
+            self._attr_is_on = bool(val)
 
-        if (val := data.get(self._attr_names.get(ATTR_BRIGHTNESS))) != None:
+        if (val := data.get(self._attr_names.get(ATTR_BRIGHTNESS))) is not None:
             self._attr_brightness = val
-            if self._brightness_for_on != None:
+            if self._brightness_for_on is not None:
                 self._attr_is_on = val >= self._brightness_for_on
-        if (val := data.get(self._attr_names.get(ATTR_COLOR_TEMP_KELVIN))) != None:
+        if (val := data.get(self._attr_names.get(ATTR_COLOR_TEMP_KELVIN))) is not None:
             if val != self._attr_color_temp_kelvin:
                 self._attr_color_temp_kelvin = val
                 self._attr_color_mode = ColorMode.COLOR_TEMP
-        elif (val := data.get(self._attr_names.get(ATTR_COLOR_TEMP))) != None:
+        elif (val := data.get(self._attr_names.get(ATTR_COLOR_TEMP))) is not None:
             if val != self._attr_color_temp:
                 self._attr_color_temp = val
                 self._attr_color_mode = ColorMode.COLOR_TEMP
-        if (val := data.get(self._attr_names.get(ATTR_RGB_COLOR))) != None:
+        if (val := data.get(self._attr_names.get(ATTR_RGB_COLOR))) is not None:
             if val != self._attr_rgb_color:
                 self._attr_rgb_color = val
                 self._attr_color_mode = ColorMode.RGB
-        if (val := data.get(self._attr_names.get(ATTR_EFFECT))) != None:
+        if (val := data.get(self._attr_names.get(ATTR_EFFECT))) is not None:
             self._attr_effect = val
 
     async def async_turn_on(self, **kwargs):
         dat = {self.attr: True}
-        if self._brightness_for_on != None:
+        if self._brightness_for_on is not None:
             dat[self.attr] = self._brightness_for_on
         for k, v in kwargs.items():
             if attr := self._attr_names.get(k):
@@ -164,7 +158,7 @@ class LightEntity(XEntity, BaseEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         dat = {self.attr: False}
-        if self._brightness_for_off != None:
+        if self._brightness_for_off is not None:
             dat[self.attr] = self._brightness_for_off
         await self.device.async_write(dat)
 
@@ -248,7 +242,7 @@ class MiotLightEntity(MiotToggleEntity, BaseEntity):
     @property
     def is_on(self):
         if self._prop_brightness:
-            val = self._prop_brightness.from_dict(self._state_attrs)
+            val = self._prop_brightness.from_device(self.device)
             bri = self._vars.get('brightness_for_on')
             if bri is not None:
                 return val >= bri
@@ -343,7 +337,7 @@ class MiotLightEntity(MiotToggleEntity, BaseEntity):
         """Return the brightness of this light between 0..255."""
         val = None
         if self._prop_brightness:
-            val = self._prop_brightness.from_dict(self._state_attrs)
+            val = self._prop_brightness.from_device(self.device)
         if val is None:
             return None
         rmx = 100
@@ -363,7 +357,7 @@ class MiotLightEntity(MiotToggleEntity, BaseEntity):
     def rgb_color(self):
         """Return the rgb color value [int, int, int]."""
         if self._prop_color:
-            num = int(self._prop_color.from_dict(self._state_attrs) or 0)
+            num = int(self._prop_color.from_device(self.device) or 0)
             return int_to_rgb(num)
         return None
 
@@ -371,7 +365,7 @@ class MiotLightEntity(MiotToggleEntity, BaseEntity):
     def color_temp(self):
         if not self._prop_color_temp:
             return None
-        num = self._prop_color_temp.from_dict(self._state_attrs) or 3000
+        num = self._prop_color_temp.from_device(self.device) or 3000
         if self._vars.get('color_temp_reverse'):
             num = self._vars.get('color_temp_sum') - num
         return self.translate_mired(num)
@@ -410,7 +404,7 @@ class MiotLightEntity(MiotToggleEntity, BaseEntity):
     @property
     def effect(self):
         if self._prop_mode:
-            val = self._prop_mode.from_dict(self._state_attrs)
+            val = self._prop_mode.from_device(self.device)
             if val is not None:
                 return self._prop_mode.list_description(val)
         return None

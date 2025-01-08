@@ -11,6 +11,7 @@ import micloud
 import requests
 from datetime import datetime
 from functools import partial
+from typing import Optional
 from urllib import parse
 
 from homeassistant.const import (
@@ -38,6 +39,8 @@ UA = "Android-7.1.1-1.0.0-ONEPLUS A3010-136-%s APP/xiaomi.smarthome APPV/62830"
 
 
 class MiotCloud(micloud.MiCloud):
+    async_session: Optional[aiohttp.ClientSession] = None
+
     def __init__(self, hass, username, password, country=None, sid=None):
         try:
             super().__init__(username, password)
@@ -54,7 +57,6 @@ class MiotCloud(micloud.MiCloud):
         self.useragent = UA % self.client_id
         self.http_timeout = int(hass.data[DOMAIN].get('config', {}).get('http_timeout') or 10)
         self.login_times = 0
-        self.async_session = None
         self.attrs = {}
 
     @property
@@ -460,6 +462,8 @@ class MiotCloud(micloud.MiCloud):
         return False
 
     async def async_login(self, captcha=None):
+        if self.login_times > 8:
+            await self.async_stored_auth(self.user_id, remove=True)
         if self.login_times > 10:
             raise MiCloudException(
                 'Too many failures when login to Xiaomi, '
@@ -553,7 +557,10 @@ class MiotCloud(micloud.MiCloud):
                 if ntf[:4] != 'http':
                     ntf = f'{ACCOUNT_BASE}{ntf}'
                 self.attrs['notificationUrl'] = ntf
-            _LOGGER.error('Xiaomi serviceLoginAuth2: %s', [url, params, post, headers, cookies])
+            _LOGGER.error(
+                'Xiaomi serviceLoginAuth2: %s',
+                [url, self.login_times, {**post, 'hash': '*'}, headers, cookies, response.text],
+            )
             raise MiCloudAccessDenied(f'Login to xiaomi error: {response.text}')
         self.user_id = str(auth.get('userId', ''))
         self.cuser_id = auth.get('cUserId')
@@ -643,21 +650,29 @@ class MiotCloud(micloud.MiCloud):
         return mic
 
     async def async_change_sid(self, sid: str, login=None):
-        config = {**self.to_config(), 'sid': sid}
+        config = {
+            **self.to_config(),
+            'sid': sid,
+            'service_token': None,
+            'ssecurity': None,
+        }
         mic = await self.from_token(self.hass, config, login)
         return mic
 
-    async def async_stored_auth(self, uid=None, save=False):
+    async def async_stored_auth(self, uid=None, save=False, remove=False):
         if uid is None:
             uid = self.user_id or self.username
         fnm = f'xiaomi_miot/auth-{uid}-{self.default_server}.json'
         if self.sid != 'xiaomiio':
-            fnm = f'xiaomi_miot/auth-{uid}-{self.default_server}-{self.sid}.json'
+            fnm = fnm.replace('.json', f'-{self.sid}.json')
         store = Store(self.hass, 1, fnm)
+        if remove:
+            await store.async_remove()
         try:
             old = await store.async_load() or {}
         except ValueError:
-            await store.async_remove()
+            if not remove:
+                await store.async_remove()
             old = {}
         if save:
             cfg = self.to_config()
@@ -675,7 +690,8 @@ class MiotCloud(micloud.MiCloud):
             raise MiCloudException('Cannot execute request. service token or userId missing. Make sure to login.')
 
         if kwargs.get('async'):
-            if not (session := self.async_session):
+            session = self.async_session
+            if not session or session.closed:
                 session = async_create_clientsession(
                     self.hass,
                     headers=self.api_headers(),

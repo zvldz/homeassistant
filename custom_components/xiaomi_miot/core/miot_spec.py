@@ -750,6 +750,10 @@ class MiotProperty(MiotSpecInstance):
     def from_dict(self, dat: dict, default=None):
         return dat.get(self.full_name, default)
 
+    def from_device(self, device, default=None):
+        props = getattr(device, 'props', {}) if device else {}
+        return self.from_dict(props, default)
+
     def description_to_dict(self, dat: dict):
         if not self.value_list:
             return None
@@ -884,6 +888,15 @@ class MiotProperty(MiotSpecInstance):
             'uint8', 'uint16', 'uint32', 'uint64',
         ]:
             return True
+        if self.format in ['string']:
+            return False
+        if self.value_list:
+            return True
+        return False
+
+    def use_desc(self, domain=None):
+        if domain not in ['sensor', 'select']:
+            return False
         if self.value_list:
             return True
         return False

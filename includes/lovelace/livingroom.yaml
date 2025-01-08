@@ -34,7 +34,8 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d0002677c89_plug
+            entity: switch.0x00158d0002677c89
+            icon: "mdi:power-socket-au"
             size: 15%
             styles:
               card:
@@ -73,7 +74,9 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x00158d0002bfe958_temperature
+                name: Living Room
               - entity: sensor.living_room_bt_temperature
+                name: Living Room BT
                 color: red
 
       - type: horizontal-stack
@@ -83,6 +86,8 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x00158d0002bfe958_humidity
+                name: Living Room
               - entity: sensor.living_room_bt_humidity
+                name: Living Room BT
                 color: red
 

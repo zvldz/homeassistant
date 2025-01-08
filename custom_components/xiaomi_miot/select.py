@@ -53,12 +53,15 @@ class SelectEntity(XEntity, BaseEntity, RestoreEntity):
             self._attr_options.insert(0, '')
         if lst := getattr(self.conv, 'options', None):
             self._attr_options = lst
+        self._attr_available = True
 
     def get_state(self) -> dict:
         return {self.attr: self._attr_current_option}
 
     def set_state(self, data: dict):
-        val = data.get(self.attr)
+        val = self.conv.value_from_dict(data)
+        if val is None:
+            return
         self._attr_current_option = val
 
     async def async_select_option(self, option: str):
@@ -93,7 +96,7 @@ class MiotSelectSubEntity(BaseEntity, MiotPropertySubEntity):
         super().update(data)
         if not self._available:
             return
-        val = self._miot_property.from_dict(self._state_attrs)
+        val = self._miot_property.from_device(self.device)
         if val is None:
             self._attr_current_option = None
         else:

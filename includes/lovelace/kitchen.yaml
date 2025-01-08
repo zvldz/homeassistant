@@ -23,7 +23,8 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d000211434a_switch
+            entity: switch.0x00158d000211434a
+            name: Kitchen
             icon: mdi:light-switch
             size: 20%
             styles:
@@ -53,7 +54,9 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x00158d0002ca0395_temperature
+                name: Kitchen
               - entity: sensor.kitchen_bt_temperature
+                name: Kitchen BT
                 color: red
 
       - type: horizontal-stack
@@ -63,7 +66,9 @@ cards:
             hour24: true
             entities:
               - entity: sensor.0x00158d0002ca0395_humidity
+                name: Kitchen
               - entity: sensor.kitchen_bt_humidity
+                name: Kitchen BT
                 color: red
 
   - type: vertical-stack
@@ -85,10 +90,10 @@ cards:
                 name: false
               - entity: sensor.0x00158d0002ca0395_humidity
                 name: false
-          - entity: binary_sensor.0x00158d000232989c_moisture
+          - entity: binary_sensor.0x00158d000233ddf2_water_leak
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x00158d00022515fe_motion
+          - entity: binary_sensor.0x00158d00022515fe_occupancy
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: sensor.0x00158d00022515fe_illuminance

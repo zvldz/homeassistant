@@ -133,7 +133,7 @@ class SensorEntity(XEntity, BaseEntity, RestoreEntity):
         return {self.attr: self._attr_native_value}
 
     def set_state(self, data: dict):
-        value = data.get(self.attr)
+        value = self.conv.value_from_dict(data)
         prop = self._miot_property
         if prop and prop.value_range:
             if not prop.range_valid(value):
@@ -148,7 +148,7 @@ class SensorEntity(XEntity, BaseEntity, RestoreEntity):
                 value = None
             if self.device_class == SensorDeviceClass.TIMESTAMP:
                 value = datetime_with_tzinfo(value)
-        self._attr_native_value = value
+            self._attr_native_value = value
 
     @cached_property
     def custom_value_ratio(self):
@@ -238,14 +238,14 @@ class MiotSensorEntity(MiotEntity, BaseEntity):
         key = f'{prop.full_name}_desc'
         if key in self._state_attrs:
             return f'{self._state_attrs[key]}'.lower()
-        val = prop.from_dict(self._state_attrs)
+        val = prop.from_device(self.device)
         if not prop.range_valid(val):
             val = None
         return val
 
     def before_select_modes(self, prop, option, **kwargs):
         if prop := self._miot_service.get_property('on'):
-            ion = prop.from_dict(self._state_attrs)
+            ion = prop.from_device(self.device)
             if not ion:
                 return self.set_property(prop, True)
         return False
@@ -269,7 +269,7 @@ class MiotCookerEntity(MiotSensorEntity):
 
     @property
     def is_on(self):
-        val = self._prop_state.from_dict(self._state_attrs)
+        val = self._prop_state.from_device(self.device)
         return val not in [*self._values_off, None]
 
     def turn_on(self, **kwargs):

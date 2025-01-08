@@ -1,0 +1,15 @@
+"*.0x00158d00022515fe*":
+  friendly_name: Kitchen Motion
+
+"*.0x00158d0002c08849*":
+  friendly_name: Bedroom Motion
+
+"*.0x00158d0004466f8f*":
+  friendly_name: WC Motion
+
+"*.0x00158d00044a26ba*":
+  friendly_name: Bathroom Motion 1
+
+"*.0x54ef441000268428*":
+  friendly_name: Bathroom Motion 2
+

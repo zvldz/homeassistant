@@ -21,28 +21,33 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d00022ab4bf_switch
+            entity: switch.0x00158d00022ab4bf
+            name: Balcony 1
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x00158d0001f9aa37_switch
+            entity: switch.0x00158d0001f9aa37
+            name: Balcony 2
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x00158d0002114338_switch
+            entity: switch.0x00158d0002114338
+            name: Balcony 3
             icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
                 - font-size: 14px
           - type: custom:button-card
-            entity: switch.0x00158d0002235125_switch
+            entity: switch.0x00158d0002235125
+            name: Storeroom
+            icon: "mdi:light-switch"
             size: 35%
             styles:
               card:
@@ -109,6 +114,7 @@ cards:
             name: 'Temperature'
             entities:
               - entity: sensor.0x00158d00027300cc_temperature
+                name: Balcony
               - entity: sensor.nodemcu_3_outdoor_temperature
                 color: red
 

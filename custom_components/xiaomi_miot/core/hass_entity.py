@@ -66,7 +66,7 @@ class XEntity(BasicEntity):
         self.device = device
         self.hass = device.hass
         self.conv = conv
-        self.attr = conv.attr
+        self.attr = conv.full_name
         self.log = device.log
 
         if isinstance(conv, MiotPropConv):
@@ -95,10 +95,11 @@ class XEntity(BasicEntity):
             self._miot_property = conv.prop
 
         else:
-            self.entity_id = device.spec.generate_entity_id(self, self.attr, conv.domain)
-            # self._attr_name = self.attr.replace('_', '').title()
-            self._attr_translation_key = self.attr
+            self.entity_id = device.spec.generate_entity_id(self, conv.attr, conv.domain)
+            # self._attr_name = conv.attr.replace('_', '').title()
+            self._attr_translation_key = conv.attr
             if isinstance(conv, InfoConv):
+                self.attr = conv.attr
                 self._attr_available = True
 
         self.listen_attrs = {self.attr} | set(conv.attrs)
@@ -159,22 +160,24 @@ class XEntity(BasicEntity):
 
     def on_device_update(self, data: dict, only_info=False):
         state_change = False
-        self._attr_available = self.device.available
+        available = self.device.available
 
-        if isinstance(self.conv, InfoConv):
-            self._attr_available = True
+        if not only_info:
+            pass
+        elif isinstance(self.conv, InfoConv):
+            self._attr_available = available = True
             self._attr_icon = data.get('icon', self._attr_icon)
-            self._attr_extra_state_attributes.update(data)
-        elif only_info:
+            self._attr_extra_state_attributes = data
+        else:
             return
 
         if keys := self.listen_attrs & data.keys():
+            self._attr_available = available
             self.set_state(data)
             state_change = True
             for key in keys:
-                if key == self.attr:
-                    continue
-                self._attr_extra_state_attributes[key] = data.get(key)
+                if conv := self.device.find_converter(key):
+                    self._attr_extra_state_attributes[conv.attr] = self.device.props.get(conv.attr)
 
         if state_change and self.added:
             self._async_write_ha_state()
@@ -220,7 +223,7 @@ class XEntity(BasicEntity):
                 keys.append(f'{mod}:{prop.full_name}')
                 keys.append(f'{mod}:{prop.name}')
             if self.attr and not (prop or action):
-                keys.append(f'{mod}:{self.attr}')
+                keys.append(f'{mod}:{self.conv.attr}')
         return keys
 
 

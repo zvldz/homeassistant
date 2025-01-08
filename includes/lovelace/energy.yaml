@@ -66,4 +66,173 @@ cards:
           - sensor.delta_2_max_charge_remaining_time
           - sensor.delta_2_max_discharge_remaining_time
 
+      - type: custom:button-card
+        name: "Gas"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - input_number.gas_counter
+          - binary_sensor.0x00158d000393f29a_contact
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            name: "Sync with HA1"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha1
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha1
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+          - type: custom:button-card
+            name: "Sync with HA2"
+            icon: "mdi:autorenew"
+            entity: script.sync_gas_counter_with_ha2
+            tap_action:
+#             confirmation: true
+              action: call-service
+              service: script.turn_on
+              service_data:
+                entity_id: script.sync_gas_counter_with_ha2
+            size: 18%
+            styles:
+              card:
+                - font-size: 14px
+
+      - type: entities
+        entities:
+          - type: custom:fold-entity-row
+            head:
+              type: section
+              label: Details Graphs
+            entities:
+              - type: custom:mini-graph-card
+                hour24: true
+                points_per_hour: 1
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_hourly
+
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_monthly
+
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_yearly
+
+
+  - type: vertical-stack
+    cards:
+      - type: custom:button-card
+        name: "Power"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Power"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+
+      - type: custom:button-card
+        name: "Voltage"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Voltage"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.sonoff_pump_voltage
+#             - entity: sensor.bw_plug_1_voltage
+#               color: red
+              - entity: sensor.shellyem_c45bbe602cfc_channel_1_voltage
+                color: blue
+
+      - type: conditional
+        conditions:
+          - entity: sensor.instance_name
+            state: "HA1"
+        card:
+          type: custom:button-card
+          name: "UPS"
+          styles:
+            card:
+              - background-color: "#203040"
+
+      - type: conditional
+        conditions:
+          - entity: sensor.instance_name
+            state: "HA1"
+        card:
+          type: entities
+          entities:
+            - type: custom:auto-entities
+              card:
+                type: custom:fold-entity-row
+                head:
+                  type: section
+                  label: "Details"
+                padding: 0
+              filter:
+                include:
+                  - entity_id: "sensor.ups_*"
+                    sort: entity_id
+
+      - type: custom:button-card
+        name: "Battery Level"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: entities
+        entities:
+          - type: custom:auto-entities
+            card:
+              type: custom:fold-entity-row
+              head:
+                type: section
+                label: "Details"
+              padding: 0
+            filter:
+              include:
+                - entity_id: "*battery*"
+                  sort: name
+                  options:
+                    secondary_info: last-changed
+                - attributes:
+                    battery:  '< 100'
+                  options:
+                    secondary_info: last-changed
+#              - attributes:
+#                   battery_level: '< 100'
+              exclude:
+                - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
+                - entity_id: "*pressure*"
+                - entity_id: "*m2007j20cg*"
+
 

@@ -1,0 +1,168 @@
+sensor.date:
+  friendly_name: "Date"
+
+sensor.time:
+  friendly_name: "Time"
+
+sun.sun:
+  friendly_name: "Sun"
+
+sensor.start_time:
+  unit_of_measurement: sec
+
+sensor.myip:
+  icon: "mdi:ip"
+
+sensor.ha_latest:
+  icon: "mdi:package-down"
+
+sensor.ha_beta:
+  icon: "mdi:beta"
+
+sensor.ha_init:
+  icon: "mdi:home-assistant"
+
+sensor.last_boot:
+  friendly_name: "Host Uptime"
+
+sensor.ha1_uptime:
+  friendly_name: HA1 Uptime
+
+sensor.ha2_uptime:
+  friendly_name: HA2 Uptime
+
+sensor.has_uptime:
+  friendly_name: HAS Uptime
+
+sensor.ha_fazenda_uptime:
+  friendly_name: HA Fazenda Uptime
+
+sensor.ha_off_uptime:
+  friendly_name: HA Office Uptime
+
+sensor.nodemcu_3_outdoor_temperature:
+  friendly_name: "Outdoor DS"
+
+sensor.fazenda_outdoor_temperature:
+  friendly_name: "Fazenda Outdoor DS"
+
+sensor.living_room_bt_battery_level:
+  friendly_name: "Living Room (BT)"
+
+sensor.living_room_bt_temperature:
+  friendly_name: "Living Room (BT)"
+
+sensor.living_room_bt_humidity:
+  friendly_name: "Living Room (BT)"
+
+sensor.kitchen_bt_battery_level:
+  friendly_name: "Kitchen (BT)"
+
+sensor.kitchen_bt_temperature:
+  friendly_name: "Kitchen (BT)"
+
+sensor.kitchen_bt_humidity:
+  friendly_name: "Kitchen (BT)"
+
+sensor.illumination_7811dcb245b2:
+  friendly_name: "Hallway Illum"
+
+sensor.front_door_battery:
+  friendly_name: "Ring Battery Level"
+
+sensor.front_door_volume:
+  friendly_name: "Ring Volume"
+
+binary_sensor.front_door_ding:
+  friendly_name: "Doorbell Sensor"
+
+binary_sensor.front_door_motion:
+  friendly_name: "Doorbell Motion Sensor"
+
+sensor.hallway_volume:
+  friendly_name: "Chime Volume"
+
+binary_sensor.kitchen_lamp_nightlight:
+  friendly_name: "Nightlight"
+
+binary_sensor.living_room_lamp_nightlight:
+  friendly_name: "Nightlight"
+
+binary_sensor.master_bedroom_lamp_nightlight:
+  friendly_name: "Nightlight"
+
+binary_sensor.bedroom_lamp_nightlight:
+  friendly_name: "Bedroom Nightlight"
+
+#binary_sensor.sonoff_br_button_1:
+#  friendly_name: "BR Button 1"
+
+#binary_sensor.sonoff_br_button_2:
+#  friendly_name: "BR Button 2"
+
+#binary_sensor.sonoff_rf_br_1_sb_rf:
+#  friendly_name: "RF Sonoff"
+
+#binary_sensor.sonoff_rf_br_1_key4:
+#  friendly_name: "RF Key 4"
+
+#binary_sensor.sonoff_rf_br_1_gate1:
+#  friendly_name: "RF Gate 1"
+
+#binary_sensor.sonoff_rf_br_1_gate2:
+#  friendly_name: "RF Gate 2"
+
+sensor.bw_plug_1_current:
+  friendly_name: "Socket 2 Amperage"
+
+sensor.bw_plug_1_voltage:
+  friendly_name: "Socket 2 Voltage"
+
+sensor.bw_plug_1_power:
+  friendly_name: "Socket 2 Power"
+
+sensor.bw_plug_1_daily_energy:
+  friendly_name: "Socket 2 DE"
+
+sensor.bw_plug_2_current:
+  friendly_name: "Socket 3 Amperage"
+
+sensor.bw_plug_2_voltage:
+  friendly_name: "Socket 3 Voltage"
+
+sensor.bw_plug_2_power:
+  friendly_name: "Socket 3 Power"
+
+sensor.bw_plug_2_daily_energy:
+  friendly_name: "Socket 3 DE"
+
+binary_sensor.sonoff_pump_status:
+  friendly_name: "Pump"
+
+sensor.sonoff_pump_uptime:
+  friendly_name: "Pump Uptime"
+
+sensor.sonoff_pump_voltage:
+  friendly_name: "Pump Voltage"
+
+sensor.sonoff_pump_power:
+  friendly_name: "Pump Power"
+
+sensor.sonoff_pump_current:
+  friendly_name: "Pump Amperage"
+
+sensor.sonoff_pump_daily_energy:
+  friendly_name: "Pump DE"
+
+sensor.shellyem_c45bbe602cfc_channel_1_voltage:
+  friendly_name: "ShellyEM"
+
+sensor.shellyem_c45bbe602cfc_channel_1_power:
+  friendly_name: "Apartment Power"
+
+binary_sensor.boiler_shelly_firmware_update:
+  friendly_name: "Shelly Boiler"
+
+binary_sensor.shellyem_c45bbe602cfc_firmware_update:
+  friendly_name: "Shelly EM"
+

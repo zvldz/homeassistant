@@ -1,11 +1,9 @@
 - alias: "Livingroom switch left"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_1_single
+      to: 'button_1_single'
   action:
     service: light.toggle
     entity_id:
@@ -14,11 +12,9 @@
 - alias: "Livingroom switch right"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_2_single
+      to: 'button_2_single'
   action:
     service: light.toggle
     entity_id:
@@ -27,11 +23,9 @@
 - alias: "Livingroom switch left long"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_1_hold
+      to: 'button_1_hold'
   action:
     service: light.turn_off
     entity_id:
@@ -40,11 +34,9 @@
 - alias: "Livingroom switch right long"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_2_hold
+      to: 'button_2_hold'
   action:
     service: light.turn_off
     entity_id:
@@ -53,11 +45,9 @@
 - alias: "Livingroom switch both"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_both_single
+      to: 'button_both_single'
   action:
     service: light.toggle
     entity_id:
@@ -67,11 +57,9 @@
 - alias: "Livingroom switch both long"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      click_type: button_both_hold
+      to: 'button_both_hold'
   action:
     service: light.turn_off
     entity_id:

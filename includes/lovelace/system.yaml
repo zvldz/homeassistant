@@ -62,70 +62,25 @@ cards:
                   options:
                     secondary_info: last-changed
 
+
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: Traffic
+        name: "Zigbee2MQTT"
         styles:
           card:
             - background-color: "#203040"
 
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "Traffic"
-            hour24: true
-            points_per_hour: 30
-            entities:
-              - entity: sensor.mikrotik_ether1_rx
-                name: RX
-              - entity: sensor.mikrotik_ether1_tx
-                name: TX
+      - type: entities
+        entities:
+          - entity: switch.zigbee2mqtt_bridge_permit_join
+            name: Zigbee2MQTT Join
+          - entity: sensor.zigbee2mqtt_bridge_state
+            name: Zigbee2MQTT
+          - entity: sensor.zigbee2mqtt_bridge_version
+            name: Zigbee2MQTT Version
+          - entity: sensor.zigbee_coordinator_version
 
-      - type: custom:button-card
-        name: "System"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "CPU temp"
-            entities:
-              - entity: sensor.cpu_temperature
-            hour24: true
-            line_color: red
-          - type: custom:mini-graph-card
-            name: "CPU use"
-            hour24: true
-            entities:
-              - entity: sensor.processor_use
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "RAM"
-            entities:
-              - entity: sensor.memory_use_percent
-            hour24: true
-            line_color: red
-          - type: custom:mini-graph-card
-            name: "SWAP"
-            hour24: true
-            entities:
-              - entity: sensor.swap_use_percent
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:mini-graph-card
-            name: "HDD"
-            hour24: true
-            entities:
-              - entity: sensor.disk_use_percent
-
-  - type: vertical-stack
-    cards:
       - type: custom:button-card
         name: "Maintenance"
         styles:
@@ -288,80 +243,10 @@ cards:
 #                 show_name: false
 #                 name: ""
 
-      - type: custom:button-card
-        name: "Gas"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        show_header_toggle: false
-        entities:
-          - input_number.gas_counter
-          - binary_sensor.0x00158d000393f29a_contact
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: "Sync with HA1"
-            icon: "mdi:autorenew"
-            entity: script.sync_gas_counter_with_ha1
-            tap_action:
-#             confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.sync_gas_counter_with_ha1
-            size: 18%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Sync with HA2"
-            icon: "mdi:autorenew"
-            entity: script.sync_gas_counter_with_ha2
-            tap_action:
-#             confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.sync_gas_counter_with_ha2
-            size: 18%
-            styles:
-              card:
-                - font-size: 14px
-
-      - type: entities
-        entities:
-          - type: custom:fold-entity-row
-            head:
-              type: section
-              label: Details Graphs
-            entities:
-              - type: custom:mini-graph-card
-                hour24: true
-                points_per_hour: 1
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_hourly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_monthly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_yearly
-
   - type: vertical-stack
     cards:
       - type: custom:button-card
-        name: "Power"
+        name: Traffic
         styles:
           card:
             - background-color: "#203040"
@@ -369,14 +254,17 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Power"
+            name: "Traffic"
             hour24: true
-            points_per_hour: 1
+            points_per_hour: 30
             entities:
-              - entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+              - entity: sensor.mikrotik_ether1_rx
+                name: RX
+              - entity: sensor.mikrotik_ether1_tx
+                name: TX
 
       - type: custom:button-card
-        name: "Voltage"
+        name: "System"
         styles:
           card:
             - background-color: "#203040"
@@ -384,75 +272,36 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:mini-graph-card
-            name: "Voltage"
-            hour24: true
-            points_per_hour: 1
+            name: "CPU temp"
             entities:
-              - entity: sensor.sonoff_pump_voltage
-#             - entity: sensor.bw_plug_1_voltage
-#               color: red
-              - entity: sensor.shellyem_c45bbe602cfc_channel_1_voltage
-                color: blue
+              - entity: sensor.cpu_temperature
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "CPU use"
+            hour24: true
+            entities:
+              - entity: sensor.processor_use
 
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: custom:button-card
-          name: "UPS"
-          styles:
-            card:
-              - background-color: "#203040"
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "RAM"
+            entities:
+              - entity: sensor.memory_use_percent
+            hour24: true
+            line_color: red
+          - type: custom:mini-graph-card
+            name: "SWAP"
+            hour24: true
+            entities:
+              - entity: sensor.swap_use_percent
 
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: entities
-          entities:
-            - type: custom:auto-entities
-              card:
-                type: custom:fold-entity-row
-                head:
-                  type: section
-                  label: "Details"
-                padding: 0
-              filter:
-                include:
-                  - entity_id: "sensor.ups_*"
-                    sort: entity_id
-
-      - type: custom:button-card
-        name: "Battery Level"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        entities:
-          - type: custom:auto-entities
-            card:
-              type: custom:fold-entity-row
-              head:
-                type: section
-                label: "Details"
-              padding: 0
-            filter:
-              include:
-                - entity_id: "*battery*"
-                  sort: name
-                  options:
-                    secondary_info: last-changed
-                - attributes:
-                    battery:  '< 100'
-                  options:
-                    secondary_info: last-changed
-#              - attributes:
-#                   battery_level: '< 100'
-              exclude:
-                - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
-                - entity_id: "*pressure*"
-                - entity_id: "*m2007j20cg*"
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "HDD"
+            hour24: true
+            entities:
+              - entity: sensor.disk_use_percent
 

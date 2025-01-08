@@ -1,13 +1,14 @@
 homeassistant:
-  name:       !secret home_name
-  latitude:   !secret home_latitude
-  longitude:  !secret home_longitude
-  elevation:  !secret home_elevation
-  time_zone:  !secret home_timezone
-  country:    !secret home_country
-  customize:  !include_dir_merge_named includes/customizations
-  packages:   !include_dir_named includes/packages
-  unit_system: metric
+  name:           !secret home_name
+  latitude:       !secret home_latitude
+  longitude:      !secret home_longitude
+  elevation:      !secret home_elevation
+  time_zone:      !secret home_timezone
+  country:        !secret home_country
+  customize:      !include_dir_merge_named includes/customize
+  customize_glob: !include_dir_merge_named includes/customize_glob
+  packages:       !include_dir_named includes/packages
+  unit_system:    metric
   allowlist_external_dirs:
     - '/config/downloads'
     - '/config'

@@ -1,0 +1,33 @@
+"*.0x00158d000211434a*":
+  friendly_name: Kitchen Switch
+
+"*.0x00158d0001f9aa37*":
+  friendly_name: Balcony 2 Switch
+
+"*.0x00158d0002112b1e*":
+  friendly_name: Hallway 2 Switch
+
+"*.0x00158d0002113ace*":
+  friendly_name: Hallway 1 Switch
+
+"*.0x00158d00022a8150*":
+  friendly_name: Hallway 3 Switch
+
+"*.0x00158d0002114338*":
+  friendly_name: Balcony 3 Switch
+
+"*.0x00158d0002235125*":
+  friendly_name: Storeroom Switch
+
+"*.0x00158d00022360fe*":
+  friendly_name: WC Switch
+
+"*.0x00158d00022ab4bf*":
+  friendly_name: Balcony 1 Switch
+
+"*.0x54ef4410001f5dd8*":
+  friendly_name: WC Fan Switch
+
+"*.0x54ef4410001ad4c2*":
+  friendly_name: Bathroom Fan/Mirror Switch
+

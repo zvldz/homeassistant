@@ -420,9 +420,10 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             'switch_properties': cv.string,
             'number_properties': cv.string,
             'select_properties': cv.string,
+            'button_properties': cv.string,
+            'target_position_properties': cv.string,
             'sensor_attributes': cv.string,
             'binary_sensor_attributes': cv.string,
-            'button_properties': cv.string,
             'button_actions': cv.string,
             'select_actions': cv.string,
             'text_actions': cv.string,
@@ -585,7 +586,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
 
 class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
     def __init__(self, config_entry: config_entries.ConfigEntry):
-        if HA_VERSION >= '2024.12':
+        if HA_VERSION < '2024.12':
             self.config_entry = config_entry
 
     @property
@@ -674,6 +675,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             schema.update({
                 vol.Required('captcha', default=''): str,
             })
+        if user_input.get('trans_options') == None:
+            user_input['trans_options'] = False
         schema.update({
             vol.Required(CONF_USERNAME, default=user_input.get(CONF_USERNAME, vol.UNDEFINED)): str,
             vol.Required(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD, vol.UNDEFINED)): str,
@@ -715,9 +718,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             cfg.update({
                 CONF_CONN_MODE: prev_input.get(CONF_CONN_MODE),
                 'filter_models': self.filter_models,
-                'trans_options': prev_input.get('trans_options'),
-                'disable_message': prev_input.get('disable_message'),
-                'disable_scene_history': prev_input.get('disable_scene_history'),
+                'trans_options': prev_input.get('trans_options', False),
+                'disable_message': prev_input.get('disable_message', False),
+                'disable_scene_history': prev_input.get('disable_scene_history', False),
                 **user_input,
             })
             if self.filter_models:

@@ -73,10 +73,10 @@ class SwitchEntity(XEntity, BaseEntity, RestoreEntity):
         return {self.attr: self._attr_is_on}
 
     def set_state(self, data: dict):
-        val = data.get(self.attr)
-        if val is not None:
-            val = bool(val)
-        self._attr_is_on = val
+        val = self.conv.value_from_dict(data)
+        if val is None:
+            return
+        self._attr_is_on = bool(val)
 
     async def async_turn_on(self):
         await self.device.async_write({self.attr: True})
@@ -235,7 +235,7 @@ class MiotPwznRelaySwitchEntity(MiotToggleEntity, BaseEntity):
     def update_all(self):
         if not self._available:
             return
-        sta = int(self._prop_status.from_dict(self._state_attrs) or 0)
+        sta = int(self._prop_status.from_device(self.device) or 0)
         self._state = (sta & self.all_status) and True
         add_switches = self._add_entities.get(ENTITY_DOMAIN)
         for idx in range(0, 32):
@@ -285,7 +285,7 @@ class MiotPwznRelaySwitchEntity(MiotToggleEntity, BaseEntity):
         ret = self.call_action(act) if act else False
         if ret:
             self._vars['delay_update'] = 5
-            sta = int(self._prop_status.from_dict(self._state_attrs) or 0)
+            sta = int(self._prop_status.from_device(self.device) or 0)
             self.update_attrs({
                 self._prop_status.full_name: sta & ~ self.all_status,
             }, update_parent=False)

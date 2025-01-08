@@ -36,11 +36,9 @@
 - alias: "Bedroom1 button is pressed single"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0001a66df0_action
-      click_type: single
+      to: 'single'
   action:
     - service: light.turn_off
       entity_id:
@@ -52,16 +50,14 @@
         - light.master_bedroom_lamp
     - service: switch.turn_off
       entity_id:
-        - switch.0x00158d000211434a_switch
+        - switch.0x00158d000211434a
 
 - alias: "Bedroom1 button is pressed double"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0001a66df0_action
-      click_type: double
+      to: 'double'
   action:
     - service: light.turn_on
       entity_id:
@@ -70,4 +66,4 @@
         - light.master_bedroom_lamp
     - service: switch.turn_on
       entity_id:
-        - switch.0x00158d000211434a_switch
+        - switch.0x00158d000211434a

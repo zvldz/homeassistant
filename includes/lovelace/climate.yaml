@@ -16,11 +16,17 @@ cards:
             name: false
             sensors:
               - entity: sensor.0x00158d000231f03e_temperature
+                name: Hallway
               - entity: sensor.0x00158d0002bfe958_temperature
+                name: Living Room
               - entity: sensor.0x00158d0002323856_temperature
+                name: Master Bedroom
               - entity: sensor.0x00158d0001ab2a27_temperature
+                name: Bedroom
               - entity: sensor.0x00158d0002ca0395_temperature
+                name: Kitchen
               - entity: sensor.0x00158d00027300cc_temperature
+                name: Balcony
               - entity: sensor.nodemcu_3_outdoor_temperature
             control:
               hvac:
@@ -83,17 +89,19 @@ cards:
             _name: Preset mode
         sensors:
           - entity: sensor.0x00158d0002bfe958_temperature
-#         - entity: sensor.living_room_bt_temperature
+            name: Temperature
           - entity: sensor.0x00158d0002bfe958_humidity
+            name: Humidity
 
       - type: custom:simple-thermostat
-        entity: climate.0x54ef44100060b86b_climate
+        entity: climate.0x54ef44100060b86b
         name: "Livingroom TRV"
         control:
           hvac:
             _name: Operation
         sensors:
           - entity: sensor.0x00158d0002bfe958_temperature
+            name: Temperature
 
   - type: vertical-stack
     cards:
@@ -123,16 +131,35 @@ cards:
             _name: Preset mode
         sensors:
           - entity: sensor.0x00158d0002323856_temperature
+            name: Temperature
           - entity: sensor.0x00158d0002323856_humidity
+            name: Humidity
 
       - type: custom:simple-thermostat
-        entity: climate.0x54ef44100060c290_climate
+        entity: climate.0x54ef44100060c290
         name: "Master Bedroom TRV"
         control:
           hvac:
             _name: Operation
         sensors:
           - entity: sensor.0x00158d0002323856_temperature
+            name: Temperature
+
+      - type: custom:mini-humidifier
+        model: 'zhimi.humidifier.ca4'
+        entity: humidifier.zhimi_ca4_3dd7_humidifier
+        name: Humidifier
+        indicators:
+          depth:
+            icon: 'mdi:tray-full'
+            unit: '%'
+            round: 0
+            order: 0
+            max_value: 125
+            volume: 4
+            type: 'percent'
+            source:
+              attribute: humidifier.water_level
 
   - type: vertical-stack
     cards:
@@ -162,14 +189,17 @@ cards:
             _name: Preset mode
         sensors:
           - entity: sensor.0x00158d0001ab2a27_temperature
+            name: Temperature
           - entity: sensor.0x00158d0001ab2a27_humidity
+            name: Humidity
 
       - type: custom:simple-thermostat
-        entity: climate.0x54ef44100060b73a_climate
+        entity: climate.0x54ef44100060b73a
         name: "Bedroom TRV"
         control:
           hvac:
             _name: Operation
         sensors:
           - entity: sensor.0x00158d0001ab2a27_temperature
+            name: Temperature
 

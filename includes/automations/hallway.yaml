@@ -7,7 +7,7 @@
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.0x00158d0002112b1e_switch
+    entity_id: switch.0x00158d0002112b1e
     state: 'off'
     for:
       minutes: 2
@@ -17,8 +17,8 @@
         message: "\U0001F6AA The front door opened"
     - service: switch.turn_on
       entity_id:
-        - switch.0x00158d0002112b1e_switch
-        - switch.0x00158d0002113ace_switch
+        - switch.0x00158d0002112b1e
+        - switch.0x00158d0002113ace
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -51,16 +51,16 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x00158d0002112b1e_switch
+    entity_id: switch.0x00158d0002112b1e
     from: 'off'
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.0x00158d0002113ace_switch
+    entity_id: switch.0x00158d0002113ace
     state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x00158d0002113ace_switch
+      entity_id: switch.0x00158d0002113ace
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -70,12 +70,12 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x00158d0002112b1e_switch
+    entity_id: switch.0x00158d0002112b1e
     from: 'on'
     to: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.0x00158d0002113ace_switch
+      entity_id: switch.0x00158d0002113ace
     - service: timer.cancel
       entity_id: timer.hallway_light
 
@@ -83,16 +83,16 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x00158d0002113ace_switch
+    entity_id: switch.0x00158d0002113ace
     from: 'off'
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.0x00158d0002112b1e_switch
+    entity_id: switch.0x00158d0002112b1e
     state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x00158d0002112b1e_switch
+      entity_id: switch.0x00158d0002112b1e
     - service: timer.cancel
       entity_id: timer.hallway_light
     - service: timer.start
@@ -102,12 +102,12 @@
   initial_state: true
   trigger:
     platform: state
-    entity_id: switch.0x00158d0002113ace_switch
+    entity_id: switch.0x00158d0002113ace
     from: 'on'
     to: 'off'
   action:
     - service: switch.turn_off
-      entity_id: switch.0x00158d0002112b1e_switch
+      entity_id: switch.0x00158d0002112b1e
     - service: timer.cancel
       entity_id: timer.hallway_light
 
@@ -128,25 +128,23 @@
   action:
     service: switch.turn_off
     entity_id:
-      - switch.0x00158d0002112b1e_switch
-      - switch.0x00158d0002113ace_switch
+      - switch.0x00158d0002112b1e
+      - switch.0x00158d0002113ace
 
 - alias: "Hallway button is pressed and held"
   initial_state: true
   trigger:
-    platform: event
-    event_type: xiaomi_aqara.click
-    event_data:
+    - platform: state
       entity_id: sensor.0x00158d0002e22617_action
-      click_type: hold
+      to: 'hold'
   action:
     - service: input_boolean.toggle
       entity_id: input_boolean.auto_turn_off_lights
     - service: homeassistant.toggle
-      entity_id: switch.0x00158d0002112b1e_switch
+      entity_id: switch.0x00158d0002112b1e
     - delay: '00:00:03'
     - service: homeassistant.toggle
-      entity_id: switch.0x00158d0002112b1e_switch
+      entity_id: switch.0x00158d0002112b1e
 
 # Start HA
 - alias: "Start Hallway timer if not starting"
@@ -156,13 +154,13 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.0x00158d0002112b1e_switch
+      entity_id: switch.0x00158d0002112b1e
       state: 'on'
   action:
     - service: timer.start
       entity_id: timer.hallway_light
 
-- alias: "Start Hallway sw3 timer"
+- alias: "Start Hallway sw3 timer 1"
   initial_state: true
   trigger:
     - platform: homeassistant
@@ -175,7 +173,7 @@
     - service: timer.start
       entity_id: timer.hallway_light_sw3
 
-- alias: "Start Hallway sw3 timer"
+- alias: "Start Hallway sw3 timer 2"
   initial_state: true
   trigger:
     - platform: state

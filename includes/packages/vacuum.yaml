@@ -167,11 +167,9 @@ automation:
   - alias: "Hallway Button Click Single"
     initial_state: true
     trigger:
-      platform: event
-      event_type: xiaomi_aqara.click
-      event_data:
+      - platform: state
         entity_id: sensor.0x00158d0002e22617_action
-        click_type: single
+        to: 'single'
     action:
       - service: script.turn_on
         entity_id: script.vacuum_entryway
@@ -179,11 +177,9 @@ automation:
   - alias: "Hallway Button Click Double"
     initial_state: true
     trigger:
-      platform: event
-      event_type: xiaomi_aqara.click
-      event_data:
+      - platform: state
         entity_id: sensor.0x00158d0002e22617_action
-        click_type: double
+        to: 'double'
     action:
       - service: script.turn_on
         entity_id: script.vacuum_hallway

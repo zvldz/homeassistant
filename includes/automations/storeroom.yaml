@@ -6,11 +6,11 @@
     to: 'on'
   condition:
     condition: state
-    entity_id: switch.0x00158d0002235125_switch
+    entity_id: switch.0x00158d0002235125
     state: 'off'
   action:
     service: switch.turn_on
-    entity_id: switch.0x00158d0002235125_switch
+    entity_id: switch.0x00158d0002235125
 
 - alias: "Door closed in storeroom"
   initial_state: true
@@ -20,9 +20,9 @@
     to: 'off'
   condition:
     condition: state
-    entity_id: switch.0x00158d0002235125_switch
+    entity_id: switch.0x00158d0002235125
     state: 'on'
   action:
     service: switch.turn_off
-    entity_id: switch.0x00158d0002235125_switch
+    entity_id: switch.0x00158d0002235125
 

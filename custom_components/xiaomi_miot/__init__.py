@@ -558,9 +558,8 @@ async def async_setup_config_entry(hass, config_entry, async_setup_platform, asy
 
 async def _handle_device_registry_event(hass: hass_core.HomeAssistant):
     async def updated(event: hass_core.Event):
-        if event.data['action'] != 'update':
-            return
-        registry: dr.DeviceRegistry = hass.data['device_registry']
+        action = event.data['action']
+        registry = dr.async_get(hass)
         device_id = event.data.get('device_id')
         if device_id not in registry.devices:
             return
@@ -570,9 +569,28 @@ async def _handle_device_registry_event(hass: hass_core.HomeAssistant):
         identifier = next(iter(device.identifiers))
         if identifier[0] != DOMAIN:
             return
-        if device.name_by_user in ['delete', 'remove', '删除']:
+        miot_device = None
+        for entry_id in device.config_entries:
+            entry = HassEntry.ALL.get(entry_id)
+            if not entry:
+                continue
+            for d in entry.devices.values():
+                if d.identifiers == device.identifiers:
+                    miot_device = d
+                    break
+        if action == 'update' and device.name_by_user in ['delete', 'remove', '删除']:
             # remove from Hass
+            if miot_device:
+                await miot_device.async_unload()
             registry.async_remove_device(device.id)
+            return
+        if not miot_device:
+            return
+        miot_device.log.info('Device registry updated: %s', [action, identifier, device.disabled])
+        if device.disabled and miot_device.coordinators:
+            await miot_device.async_unload()
+        if not device.disabled and not miot_device.coordinators:
+            await miot_device.init_coordinators()
     hass.bus.async_listen(dr.EVENT_DEVICE_REGISTRY_UPDATED, updated)
 
 
@@ -585,7 +603,7 @@ async def async_remove_config_entry_device(hass: hass_core.HomeAssistant, config
         mac = identifier[1].split('-')[0]
         if mac:
             cloud_device = await entry.get_cloud_device(mac=mac.upper())
-    data = entry.entry.data
+    data = {**entry.entry.data}
     for typ in (['did'] if cloud_device else []):
         filter_typ = data.get(f'filter_{typ}')
         filter_val = cloud_device.get(typ)
@@ -782,7 +800,7 @@ class MiioEntity(BaseEntity):
 
     @property
     def device_name(self):
-        return self._config.get(CONF_NAME) or self._name
+        return self.device.name
 
     @property
     def device_host(self):
@@ -984,8 +1002,6 @@ class MiotEntity(MiioEntity):
             mls = f'{self.model}..'.split('.')
             mac = re.sub(r'[\W_]+', '', self.unique_mac)
             self.entity_id = f'{DOMAIN}.{mls[0]}_{mls[2]}_{mac[-4:]}_{mls[1]}'
-        if self.model in MIOT_LOCAL_MODELS:
-            self._vars['track_miot_error'] = True
         self._success_code = 0
         self.logger.info('%s: Initializing miot device with mapping: %s', self.name_model, self._miot_mapping)
 
@@ -1087,42 +1103,29 @@ class MiotEntity(MiioEntity):
             return super().send_miio_command(method, params, **kwargs)
         self.logger.error('%s: None local device for send miio command %s(%s)', self.name_model, method, params)
 
+    async def async_update_from_device(self):
+        self._available = self.device.available
+        if self.is_main_entity:
+            attrs = self.device.props
+            attrs['state_updater'] = self.device.data.get('updater')
+            await self.async_update_for_main_entity()
+        else:
+            attrs = {
+                k: v
+                for k, v in self.device.props.items()
+                if k in self._miot_mapping
+            }
+        self._state_attrs = attrs
+        await self.async_update_attrs(attrs, update_subs=True)
+        return attrs
+
     async def async_update(self):
         if self._vars.get('delay_update'):
             await asyncio.sleep(self._vars.get('delay_update'))
             self._vars.pop('delay_update', 0)
-        attrs = {}
-        result = self.device.miot_results
-        if not result:
-            return
-        self._available = self.device.available
-
-        if not result.is_valid:
-            if result.errors and is_offline_exception(result.errors):
-                """ Migrated to device """
-            elif result.updater == 'local' and self._vars.pop('track_miot_error', None):
-                await async_analytics_track_event(
-                    self.hass, 'miot', 'error', self.model,
-                    firmware=self.device.info.firmware_version,
-                    results=result._results or result.errors,
-                )
-            return False
-
-        if self.is_main_entity:
-            attrs.update(self.device.props)
-            attrs['state_updater'] = result.updater
-            await self.async_update_for_main_entity()
-        else:
-            result = await self.device.update_miot_status(
-                use_local=self.custom_config_bool('miot_local'),
-                use_cloud=self.custom_config_bool('miot_cloud'),
-                auto_cloud=self.custom_config_bool('auto_cloud'),
-                check_lan=self.custom_config_bool('check_lan'),
-                max_properties=self.custom_config_integer('chunk_properties'),
-            )
-            attrs.update(result.to_attributes(self._state_attrs, self._miot_mapping))
-        await self.async_update_attrs(attrs, update_subs=True)
-        self.logger.debug('%s: Got new state: %s', self.name_model, attrs)
+        await self.device.update_main_status()
+        attrs = await self.async_update_from_device()
+        self.logger.debug('%s: Got new state: %s', self.name, attrs)
 
     async def async_update_for_main_entity(self):
         if self._miot_service:
@@ -1469,7 +1472,7 @@ class BaseSubEntity(BaseEntity):
 
     @property
     def parent_attributes(self):
-        return self._parent.state_attrs or {}
+        return self.device.props or {}
 
     @property
     def extra_state_attributes(self):
@@ -1621,7 +1624,7 @@ class MiotPropertySubEntity(BaseSubEntity):
             prop = self._miot_service.get_property(p) or self._miot_service.spec.get_property(p)
             if not prop:
                 continue
-            val = prop.from_dict(self.parent_attributes)
+            val = prop.from_device(self.device)
             if not prop.range_valid(val):
                 val = None
             self._extra_attrs[prop.name] = val

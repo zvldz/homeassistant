@@ -1,0 +1,26 @@
+automation:
+  - alias: zigbee2mqtt_z2m_bridge_status
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.zigbee2mqtt_bridge_state
+    action:
+      - service: notify.telegram
+        data:
+          message: >
+            {%if is_state('sensor.zigbee2mqtt_bridge_state','online')%}{{"\U00002705"}} Z2M is online!
+            {%else%}{{"\U0000274C"}} Attention! Z2M is offline!
+            {%endif%}
+
+mqtt:
+  sensor:
+    - name: Zigbee2MQTT Bridge state
+      state_topic: "zigbee2mqtt2/bridge/state"
+      icon: "mdi:router-wireless"
+      value_template: "{{ value_json.state }}"
+
+    - name: Zigbee Coordinator Version
+      state_topic: "zigbee2mqtt2/bridge/config"
+      icon: "mdi:chip"
+      value_template: "{{ value_json.coordinator.meta.revision }}"
+

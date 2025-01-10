@@ -6,14 +6,14 @@
     - platform: state
       entity_id: binary_sensor.0x00158d0002fd4381_contact
       to: 'on'
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x00158d00044a26ba_occupancy
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x54ef441000268428_occupancy
+    - platform: state
+      entity_id: binary_sensor.0x00158d00044a26ba_occupancy
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x54ef441000268428_occupancy
+      from: 'off'
+      to: 'on'
   condition:
     - condition: state
       entity_id: switch.0x00158d00022a8150_left
@@ -40,14 +40,14 @@
     - platform: state
       entity_id: binary_sensor.0x00158d0002fd4381_contact
       to: 'off'
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x00158d00044a26ba_occupancy
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x54ef441000268428_occupancy
+    - platform: state
+      entity_id: binary_sensor.0x00158d00044a26ba_occupancy
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x54ef441000268428_occupancy
+      from: 'off'
+      to: 'on'
   condition:
     - condition: state
       entity_id: switch.0x00158d00022a8150_left

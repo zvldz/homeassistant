@@ -37,10 +37,10 @@
     - platform: state
       entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'on'
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+    - platform: state
+      entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+      from: 'off'
+      to: 'on'
   condition:
     - condition: state
       entity_id: group.wc_spots
@@ -67,10 +67,10 @@
     - platform: state
       entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'off'
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+    - platform: state
+      entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+      from: 'off'
+      to: 'on'
   condition:
     - condition: state
       entity_id: group.wc_spots

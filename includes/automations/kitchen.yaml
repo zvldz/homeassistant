@@ -40,14 +40,10 @@
 - alias: "Reset Kitchen timer"
   initial_state: true
   trigger:
-    - platform: event
-      event_type: xiaomi_aqara.motion
-      event_data:
-        entity_id: binary_sensor.0x00158d00022515fe_occupancy
-#   - platform: event
-#     event_type: xiaomi_aqara.motion
-#     event_data:
-#       entity_id: binary_sensor.582d3460a918_motion
+    - platform: state
+      entity_id: binary_sensor.0x00158d00022515fe_occupancy
+      from: 'off'
+      to: 'on'
   condition:
     - condition: state
       entity_id: switch.0x00158d000211434a

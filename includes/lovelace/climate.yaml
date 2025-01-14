@@ -112,7 +112,7 @@ cards:
             - background-color: "#203040"
 
       - type: custom:button-card
-        entity: switch.sonoff_1002262095
+        entity: switch.sonoff_1002262e74
         name: " "
         icon: mdi:air-conditioner
         size: 10%

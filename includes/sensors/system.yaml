@@ -23,14 +23,14 @@
 #  name: "HA Online"
 
 - platform: rest
-  resource: https://version.home-assistant.io/stable.json
   name: "HA Latest"
+  resource: https://version.home-assistant.io/stable.json
   value_template: "{{ value_json.homeassistant.default }}"
   scan_interval: 1800
 
 - platform: rest
-  resource: https://version.home-assistant.io/beta.json
   name: "HA Beta"
+  resource: https://version.home-assistant.io/beta.json
   value_template: "{{ value_json.homeassistant.default }}"
   scan_interval: 1800
 
@@ -49,8 +49,8 @@
     {% endif %}
 
 - platform: rest
-  resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
   name: ha2_uptime
+  resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
   device_class: timestamp
   force_update: true
   headers:
@@ -63,8 +63,8 @@
     {% endif %}
 
 - platform: rest
-  resource_template: "{{ states('input_text.has_url') }}api/states/sensor.ha_uptime"
   name: has_uptime
+  resource_template: "{{ states('input_text.has_url') }}api/states/sensor.ha_uptime"
   device_class: timestamp
   force_update: true
   headers:
@@ -77,8 +77,8 @@
     {% endif %}
 
 - platform: rest
-  resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
   name: ha_fazenda_uptime
+  resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
   device_class: timestamp
   force_update: true
   headers:
@@ -91,8 +91,8 @@
     {% endif %}
 
 - platform: rest
-  resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
   name: ha_off_uptime
+  resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
   device_class: timestamp
   force_update: true
   headers:

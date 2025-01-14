@@ -79,6 +79,10 @@ cards:
             name: Zigbee2MQTT
           - entity: sensor.zigbee2mqtt_bridge_version
             name: Zigbee2MQTT Version
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.z2m_latest
+                name: false
           - entity: sensor.zigbee_coordinator_version
 
       - type: custom:button-card
@@ -199,49 +203,6 @@ cards:
             styles:
               card:
                 - font-size: 14px
-
-#     - type: conditional
-#       conditions:
-#         - entity: sensor.instance_name
-#           state: "HA1"
-#       card:
-#         type: custom:button-card
-#         name: "Zigbee"
-#         styles:
-#           card:
-#             - background-color: "#203040"
-#
-#     - type: conditional
-#       conditions:
-#         - entity: sensor.instance_name
-#           state: "HA1"
-#       card:
-#         type: entities
-#         entities:
-#           - entity: sensor.zigbee2mqtt_bridge_state
-#           - entity: sensor.zigbee2mqtt_version
-#           - entity: sensor.zigbee_bridge_uptime
-#           - entity: sensor.zigbee_coordinator_version
-#           - entity: sensor.zigbee_bridge_fw
-#           - entity: sensor.latest_tasmota
-#
-#     - type: conditional
-#       conditions:
-#         - entity: sensor.instance_name
-#           state: "HA1"
-#       card:
-#         type: entities
-#         entities:
-#           - type: custom:fold-entity-row
-#             head:
-#               type: section
-#               label: Exception
-#             entities:
-#               - type: attribute
-#                 entity: sensor.zigbee_bridge_exception
-#                 attribute: StatusSTK
-#                 show_name: false
-#                 name: ""
 
   - type: vertical-stack
     cards:

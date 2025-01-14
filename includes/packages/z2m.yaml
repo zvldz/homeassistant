@@ -24,3 +24,9 @@ mqtt:
       icon: "mdi:chip"
       value_template: "{{ value_json.coordinator.meta.revision }}"
 
+sensor:
+  - platform: rest
+    name: "Z2M Latest"
+    resource: https://api.github.com/repos/Koenkk/zigbee2mqtt/releases/latest
+    value_template: "{{ value_json.tag_name }}"
+    scan_interval: 1800

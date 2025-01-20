@@ -532,6 +532,10 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 self.support_capsman = False
                 self._wifimodule = "wifi"
 
+            elif (self.major_fw_version == 7 and self.minor_fw_version >= 13) or self.major_fw_version > 7:
+                self.support_capsman = False
+                self._wifimodule = "wifi"
+
             else:
                 self.support_capsman = True
                 self.support_wireless = bool(self.minor_fw_version < 13)
@@ -1376,7 +1380,9 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
     # ---------------------------
     def get_system_routerboard(self) -> None:
         """Get routerboard data from Mikrotik"""
-        if self.ds["resource"]["board-name"] in ("x86", "CHR"):
+        if self.ds["resource"]["board-name"].startswith("x86") or self.ds["resource"][
+            "board-name"
+        ].startswith("CHR"):
             self.ds["routerboard"]["routerboard"] = False
             self.ds["routerboard"]["model"] = self.ds["resource"]["board-name"]
             self.ds["routerboard"]["serial-number"] = "N/A"
@@ -1423,11 +1429,12 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                     {"name": "cpu-temperature", "default": 0},
                     {"name": "power-consumption", "default": 0},
                     {"name": "board-temperature1", "default": 0},
+                    {"name": "phy-temperature", "default": 0},
                     {"name": "fan1-speed", "default": 0},
                     {"name": "fan2-speed", "default": 0},
                 ],
             )
-        elif 0 < self.major_fw_version >= 7:
+        elif (0 < self.major_fw_version >= 7 and self.minor_fw_version < 17):
             self.ds["health7"] = parse_api(
                 data=self.ds["health7"],
                 source=self.api.query("/system/health"),
@@ -1574,7 +1581,7 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
             try:
                 full_version = self.ds["fw-update"].get("installed-version")
                 split_end = min(len(full_version),4)
-                version = re.sub("[^0-9\.]", "", full_version[0:split_end])
+                version = re.sub("[^0-9\\.]", "", full_version[0:split_end])
                 self.major_fw_version = int(version.split(".")[0])
                 self.minor_fw_version = int(version.split(".")[1])
                 _LOGGER.debug(
@@ -1983,7 +1990,6 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
 
         if self.major_fw_version > 7 or (self.major_fw_version == 7 and self.minor_fw_version >= 13):
             registration_path = "/interface/wifi/registration-table"
-            _LOGGER.debug(f"version >= 7.13")
 
         else:
             registration_path= "/caps-man/registration-table"

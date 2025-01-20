@@ -35,7 +35,7 @@ cards:
               icon: mdi:air-conditioner
               display_zero: true
               color_icon: true
-            - entity: sensor.sonoff_1002262095_power
+            - entity: sensor.sonoff_1002262e74_power
               name: AC Bedroom 1
               icon: mdi:air-conditioner
               display_zero: true

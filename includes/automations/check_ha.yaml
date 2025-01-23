@@ -20,10 +20,10 @@
       entity_id: sensor.ha_fazenda_uptime
       to: "unavailable"
       for: "00:02:00"
-    - platform: state
-      entity_id: sensor.ha_off_uptime
-      to: "unavailable"
-      for: "00:02:00"
+#    - platform: state
+#      entity_id: sensor.ha_off_uptime
+#      to: "unavailable"
+#      for: "00:02:00"
   action:
     - service: notify.telegram
       data:
@@ -47,9 +47,9 @@
     - platform: state
       entity_id: sensor.ha_fazenda_uptime
       from: "unavailable"
-    - platform: state
-      entity_id: sensor.ha_off_uptime
-      from: "unavailable"
+#    - platform: state
+#      entity_id: sensor.ha_off_uptime
+#      from: "unavailable"
   action:
     - service: notify.telegram
       data:

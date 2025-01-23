@@ -12,9 +12,6 @@
     for:
       minutes: 2
   action:
-    - service: notify.telegram
-      data:
-        message: "\U0001F6AA The front door opened"
     - service: switch.turn_on
       entity_id:
         - switch.0x00158d0002112b1e
@@ -23,6 +20,17 @@
       entity_id: timer.hallway_light
     - service: timer.start
       entity_id: timer.hallway_light
+
+- alias: "Front door opened"
+  initial_state: true
+  trigger:
+    platform: state
+    entity_id: binary_sensor.0x00158d00032b7db7_contact
+    to: 'on'
+  action:
+    - service: notify.telegram
+      data:
+        message: "\U0001F6AA The front door opened"
 
 - alias: "Door opened more than"
   initial_state: true
@@ -167,7 +175,7 @@
       event: start
   condition:
     - condition: state
-      entity_id: switch.0x00158d00022a8150_channel_2
+      entity_id: switch.0x00158d00022a8150_right
       state: 'on'
   action:
     - service: timer.start
@@ -177,7 +185,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x00158d00022a8150_channel_2
+      entity_id: switch.0x00158d00022a8150_right
       from: 'off'
       to: 'on'
   action:
@@ -188,7 +196,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: switch.0x00158d00022a8150_channel_2
+      entity_id: switch.0x00158d00022a8150_right
       to: 'off'
   action:
     - service: timer.cancel
@@ -206,11 +214,11 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
-      entity_id: switch.0x00158d00022a8150_channel_2
+      entity_id: switch.0x00158d00022a8150_right
       state: 'on'
   action:
     service: switch.turn_off
     entity_id:
-      - switch.0x00158d00022a8150_channel_2
+      - switch.0x00158d00022a8150_right
 
 

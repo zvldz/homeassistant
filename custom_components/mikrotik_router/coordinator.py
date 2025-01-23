@@ -1435,14 +1435,18 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 ],
             )
         elif (0 < self.major_fw_version >= 7 and self.minor_fw_version < 17):
-            self.ds["health7"] = parse_api(
-                data=self.ds["health7"],
-                source=self.api.query("/system/health"),
-                key="name",
-                vals=[
-                    {"name": "value", "default": "unknown"},
-                ],
-            )
+            try:
+                self.ds["health7"] = parse_api(
+                    data=self.ds["health7"],
+                    source=self.api.query("/system/health"),
+                    key="name",
+                    vals=[
+                        {"name": "value", "default": "unknown"},
+                    ],
+                )
+            except Exception:
+                self.ds["health7"] = [ ]
+                pass
             for uid, vals in self.ds["health7"].items():
                 self.ds["health"][uid] = vals["value"]
 

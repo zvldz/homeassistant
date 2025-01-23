@@ -90,17 +90,17 @@
       {{ "unavailable" }}
     {% endif %}
 
-- platform: rest
-  name: ha_off_uptime
-  resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
-  device_class: timestamp
-  force_update: true
-  headers:
-    authorization: !secret ha_off_token
-  value_template: >
-    {% if value_json is defined %}
-      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-    {% else %}
-      {{ "unavailable" }}
-    {% endif %}
+#- platform: rest
+#  name: ha_off_uptime
+#  resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
+#  device_class: timestamp
+#  force_update: true
+#  headers:
+#    authorization: !secret ha_off_token
+#  value_template: >
+#    {% if value_json is defined %}
+#      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
+#    {% else %}
+#      {{ "unavailable" }}
+#    {% endif %}
 

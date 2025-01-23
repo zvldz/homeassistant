@@ -22,8 +22,8 @@ cards:
             format: total
           - entity: sensor.ha_fazenda_uptime
             format: total
-          - entity: sensor.ha_off_uptime
-            format: total
+#          - entity: sensor.ha_off_uptime
+#            format: total
           - entity: sensor.start_time
             type: custom:multiple-entity-row
             entities:

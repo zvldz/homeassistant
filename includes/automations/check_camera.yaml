@@ -10,7 +10,7 @@
         message: "\U00002620 camera1 is not working"
 
 - alias: "check camera1 on start"
-  initial_state: true
+  initial_state: false
   trigger:
     - platform: homeassistant
       event: start

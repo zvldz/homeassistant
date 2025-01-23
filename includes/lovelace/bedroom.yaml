@@ -96,14 +96,14 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Camera1"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: 'custom:webrtc-camera'
-        entity: camera.camera1
+#      - type: custom:button-card
+#        name: "Camera1"
+#        styles:
+#          card:
+#            - background-color: "#203040"
+#
+#      - type: 'custom:webrtc-camera'
+#        entity: camera.camera1
 
       - type: custom:button-card
         name: "rCamera1"

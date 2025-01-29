@@ -113,5 +113,6 @@ cards:
 
       - type: 'custom:webrtc-camera'
         entity: camera.rcamera1_profile000_mainstream
+        #entity: rtsp://admin:sw121212@192.168.1.43/h264Preview_01_main
 
 

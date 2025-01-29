@@ -78,12 +78,7 @@ rest_command:       !include includes/rest_command.yaml
 # custom integration
 python_script:
 xiaomi_gateway3:    !include includes/gateway3.yaml
-custom_filters:
+go2rtc:
 
-#sonoff:
-#  username: !secret sonoff_username
-#  password: !secret sonoff_password
-#  mode: local
-#  reload: always
-
+#custom_filters:
 

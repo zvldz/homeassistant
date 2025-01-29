@@ -90,7 +90,7 @@ cards:
                 name: false
               - entity: sensor.0x00158d0002ca0395_humidity
                 name: false
-          - entity: binary_sensor.0x00158d000233ddf2_water_leak
+          - entity: binary_sensor.0x00158d000232989c_water_leak
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: binary_sensor.0x00158d00022515fe_occupancy

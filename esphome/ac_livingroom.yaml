@@ -1,0 +1,190 @@
+# These substitutions allow the end user to override certain values
+substitutions:
+  name: ac-living-room
+  friendly_name: "AC Living Room"
+
+  # Additional substitutions could be added here to make it really easy for the user to override defaults.
+  # I am adding a some for example purposes.
+  visual_min_temperature: "17 °C"
+  visual_max_temperature: "30 °C"
+  visual_temperature_step: "0.5 °C"
+
+
+esphome:
+  name: "${name}"
+  # Friendly names are used where appropriate in Home Assistant
+  friendly_name: "${friendly_name}"
+
+  # This will allow for (future) project identification,
+  # configuration and updates.
+  project:
+    name: SMLIGHT.SLWF-01Pro
+    version: "2.1"
+
+  platform: ESP8266
+  board: esp12e
+
+wifi:
+  output_power: 17dB
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
+  #use_address: 192.168.1.53
+  manual_ip:
+    static_ip: 192.168.1.53
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1
+    dns2: 1.1.1.1
+
+captive_portal:
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  services:
+    - service: follow_me
+      variables:
+        temperature: float
+      then:
+        midea_ac.follow_me:
+          temperature: !lambda "return temperature;"
+          beeper: false
+
+ota:
+  - platform: esphome
+
+time:
+  - platform: homeassistant
+
+uart:
+  tx_pin: 12
+  rx_pin: 14
+  baud_rate: 9600
+
+button:
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
+# "Display toggle" button
+  - platform: template
+    name: Display Toggle
+    id: midea_display_toggle
+    icon: mdi:theme-light-dark
+    on_press:
+      midea_ac.display_toggle:
+# "Swing step" button
+  - platform: template
+    name: Swing Step
+    id: midea_swing_step
+    icon: mdi:tailwind
+    on_press:
+      midea_ac.swing_step:
+
+climate:
+  - platform: midea
+    #name: ${friendly_name}                            # The value of "friendly_name" will be used here
+    name: Climate
+    id: midea_climate
+    period: 1s                                        # Optional
+    timeout: 2s                                       # Optional
+    num_attempts: 3                                   # Optional
+    autoconf: false                                   # Autoconfigure most options.
+    beeper: true                                      # Beep on commands.
+    visual:                                           # Optional. Example of visual settings override.
+      min_temperature: "${visual_min_temperature}"    # min: 17
+      max_temperature: "${visual_max_temperature}"    # max: 30
+      temperature_step: "${visual_temperature_step}"  # min: 0.5
+    supported_modes:                                  # All capabilities in this section detected by autoconf.
+      - FAN_ONLY                                      # This capability is always used.
+      - HEAT_COOL
+      - COOL
+      - HEAT
+      - DRY
+    custom_fan_modes:
+      - SILENT
+      - TURBO
+    supported_presets:          # All capabilities in this section detected by autoconf.
+      - ECO
+      - BOOST
+      - SLEEP                   # This capability is always used.
+    custom_presets:             # All capabilities in this section detected by autoconf.
+      - FREEZE_PROTECTION
+    supported_swing_modes:
+      - VERTICAL                # This capability is always used.
+      - HORIZONTAL
+      - BOTH
+    outdoor_temperature:        # Optional. Outdoor temperature sensor (may display incorrect values after long inactivity).
+      name: Outdoor Temperature
+    power_usage:                # Optional. Power usage sensor (only for devices that support this feature).
+      name: Power
+    humidity_setpoint:          # Optional. Indoor humidity sensor (only for devices that support this feature).
+      name: Indoor Humidity
+
+switch:
+  - platform: template
+    name: Beeper
+    id: midea_beeper
+    icon: mdi:volume-source
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    turn_on_action:
+      midea_ac.beeper_on:
+    turn_off_action:
+      midea_ac.beeper_off:
+
+  - platform: restart
+    name: Restart
+    icon: mdi:restart
+
+# Sensor from HASS for setting up FollowMe temperature
+remote_transmitter:
+  pin: GPIO13                       # For slwf-01pro-v2 dongle
+  carrier_duty_percent: 100%        # 50% for IR LED, 100% for direct connect to TSOP IR receiver output.
+
+binary_sensor:
+  - platform: status
+    name: Status
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 60s
+  - platform: uptime
+    name: Uptime
+    id: uptime_sec
+    internal: true
+  - platform: template
+    name: Uptime Days
+    lambda: |-
+      return (id(uptime_sec).state/60)/60/24;
+    icon: mdi:clock-start
+    unit_of_measurement: days
+    update_interval: 60s
+
+text_sensor:
+  - platform: version
+    name: Esphome Version
+    icon: mdi:information-outline
+
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      icon: mdi:ip-network
+    ssid:
+      name: Connected SSID
+      icon: mdi:access-point
+
+
+# "Power toggle" script
+script:
+  - id: on_button_click
+    then:
+      midea_ac.power_toggle:
+
+
+web_server:
+  port: 80
+

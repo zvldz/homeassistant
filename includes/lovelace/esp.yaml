@@ -14,7 +14,7 @@ cards:
           type: entities
         filter:
           include:
-            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp)_*status"
+            - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*status"
               sort: entity_id
           exclude:
             - entity_id: "*rf_br*"
@@ -31,7 +31,7 @@ cards:
           show_header_toggle: false
         filter:
           include:
-            - entity_id: "light.(sonoff|nodemcu|bw|power_strip|esp)_*"
+            - entity_id: "light.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*"
               sort: entity_id
 
   - type: vertical-stack
@@ -52,7 +52,7 @@ cards:
                 label: WiFi SSID
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*connected_ssid"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*connected_ssid"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -63,7 +63,7 @@ cards:
                 label: WiFi Signal
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*wifi_signal"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*wifi_signal"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -74,7 +74,7 @@ cards:
                 label: IP Address
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*ip_address"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*ip_address"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -85,7 +85,7 @@ cards:
                 label: Uptime
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*uptime"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*uptime"
                   sort: entity_id
                   options:
                     type: custom:template-entity-row
@@ -104,7 +104,7 @@ cards:
                 label: ESP Home Version
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*version"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*version"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -115,7 +115,7 @@ cards:
                 label: Current
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*current"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*current"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -126,7 +126,7 @@ cards:
                 label: Voltage
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*voltage"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*voltage"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -137,7 +137,7 @@ cards:
                 label: Power
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*power"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*power"
                   sort: entity_id
 
           - type: custom:auto-entities
@@ -148,7 +148,7 @@ cards:
                 label: Daily Energy
             filter:
               include:
-                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp)_*daily_energy"
+                - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*daily_energy"
                   sort: entity_id
 
   - type: vertical-stack
@@ -169,7 +169,7 @@ cards:
                 label: Switches
             filter:
               include:
-                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*"
+                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*"
                   sort: entity_id
               exclude:
                 - entity_id: "*restart"
@@ -183,7 +183,7 @@ cards:
                 label: Restart
             filter:
               include:
-                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp)_*restart"
+                - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*restart"
                   sort: entity_id
 
       - type: custom:button-card

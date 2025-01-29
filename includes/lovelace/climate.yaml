@@ -79,7 +79,8 @@ cards:
             - font-size: 14px
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_18691697686913
+        #entity: climate.midea_ac_18691697686913
+        entity: climate.ac_living_room_climate
         name: "A/C Living Room"
         icon: "mdi:air-conditioner"
         control:
@@ -121,7 +122,7 @@ cards:
             - font-size: 14px
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_18691697686914
+        entity: climate.ac_master_bedroom_climate
         name: "A/C Master Bedroom"
         icon: "mdi:air-conditioner"
         control:
@@ -179,7 +180,8 @@ cards:
             - font-size: 14px
 
       - type: custom:simple-thermostat
-        entity: climate.midea_ac_16492674435040
+        #entity: climate.midea_ac_16492674435040
+        entity: climate.ac_bedroom_climate
         name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
         control:

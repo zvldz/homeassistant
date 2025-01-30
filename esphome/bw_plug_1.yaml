@@ -1,14 +1,15 @@
 # BlitzWolf BW-SHP2
 substitutions:
-  device_name: bw_plug_1
+  device_name: bw-plug-1
+  friendly_name: "BW Plug 1"
   current_res: '0.00221'
   #voltage_div: '871'
   voltage_div: '878'
   update_interval: 60s
 
 esphome:
-  #name: ${device_name}
-  name: bw-plug-1
+  name: ${device_name}
+  friendly_name: "${friendly_name}"
   platform: ESP8266
   board: esp8285
 
@@ -35,7 +36,7 @@ captive_portal:
 
 binary_sensor:
   - platform: gpio
-    name: ${device_name}_button
+    name: Button
     pin:
       number: GPIO03
       mode: INPUT_PULLUP
@@ -44,24 +45,16 @@ binary_sensor:
       - switch.toggle: relay
 
   - platform: status
-    name: ${device_name} status
+    name: Status
 
 sensor:
   - platform: uptime
-    name: ${device_name}_uptime
+    name: Uptime
     icon: mdi:timer-outline
 
   - platform: wifi_signal
-    name: ${device_name}_wifi_signal
+    name: WiFi Signal
     icon: mdi:wifi
-
-# - platform: template
-#   name: ${device_name}_free_heap
-#   icon: mdi:memory
-#   lambda: "return ESP.getFreeHeap();"
-#   update_interval: 20s
-#   unit_of_measurement: bytes
-#   accuracy_decimals: 0
 
   - platform: hlw8012
     sel_pin:
@@ -72,56 +65,57 @@ sensor:
     current_resistor: ${current_res}
     voltage_divider: ${voltage_div}
     current:
-      name: ${device_name}_current
+      name: Current
       icon: mdi:current-ac
       unit_of_measurement: A
       filters:
         - throttle_average: ${update_interval}
     voltage:
-      name: ${device_name}_voltage
+      name: Voltage
       icon: mdi:lightning-bolt-circle
       unit_of_measurement: V
       filters:
         - throttle_average: ${update_interval}
     power:
-      name: ${device_name}_power
+      name: Power
       icon: mdi:flash-outline
       unit_of_measurement: W
-      id: ${device_name}_power
+      id: power
       filters:
         - throttle_average: ${update_interval}
     change_mode_every: 8
     update_interval: 10s
 
   - platform: total_daily_energy
-    name: ${device_name}_daily_energy
+    name: Daily Energy
     icon: mdi:power-settings
-    power_id: ${device_name}_power
+    power_id: power
     filters:
       - multiply: 0.001
     unit_of_measurement: kWh
 
 text_sensor:
   - platform: version
-    name: ${device_name}_esphome_version
+    name: ESPHome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:
-      name: ${device_name}_ip_address
+      name: IP Address
       icon: mdi:ip-network
     ssid:
-      name: ${device_name}_connected_ssid
+      name: Connected SSID
       icon: mdi:access-point
 
 switch:
   - platform: restart
-    name: ${device_name}_restart
+    name: Restart
     icon: mdi:restart
 
   - platform: gpio
     id: relay
-    name: ${device_name}_relay
+    name: Relay
     icon: mdi:power-socket-eu
     restore_mode: RESTORE_DEFAULT_OFF
     pin: GPIO14
@@ -132,7 +126,7 @@ switch:
 
   - platform: gpio
     id: blue_led
-    name: ${device_name}_led_blue
+    name: Led Blue
     icon: mdi:led-on
     restore_mode: ALWAYS_ON
     pin:
@@ -141,7 +135,7 @@ switch:
 
   - platform: gpio
     id: red_led
-    name: ${device_name}_led_red
+    name: Led Red
     icon: mdi:led-on
     restore_mode: ALWAYS_OFF
     pin:

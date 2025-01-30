@@ -28,7 +28,7 @@ wifi:
   output_power: 17dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
-  use_address: 192.168.1.59
+  #use_address: 192.168.1.59
   manual_ip:
     static_ip: 192.168.1.59
     gateway: 192.168.1.1
@@ -166,8 +166,9 @@ sensor:
 
 text_sensor:
   - platform: version
-    name: Esphome Version
+    name: ESPHome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:

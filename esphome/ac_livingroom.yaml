@@ -166,8 +166,9 @@ sensor:
 
 text_sensor:
   - platform: version
-    name: Esphome Version
+    name: ESPHome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:

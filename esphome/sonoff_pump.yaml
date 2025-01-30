@@ -1,10 +1,12 @@
 # Sonoff Pow R2
 substitutions:
-  device_name: sonoff_pump
+  device_name: sonoff-pump
+  friendly_name: "Sonoff Pump"
   update_interval: 60s
 
 esphome:
   name: ${device_name}
+  friendly_name: "${friendly_name}"
   platform: ESP8266
   board: esp01_1m
 
@@ -15,7 +17,7 @@ wifi:
   output_power: 20dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
-  use_address: 192.168.1.7
+  #use_address: 192.168.1.7
   manual_ip:
     static_ip: 192.168.1.7
     gateway: 192.168.1.1
@@ -39,10 +41,10 @@ uart:
 
 binary_sensor:
   - platform: status
-    name: ${device_name} status
+    name: Status
 
   - platform: gpio
-    name: ${device_name}_button
+    name: Button
     pin:
       number: GPIO00
       mode: INPUT_PULLUP
@@ -52,11 +54,11 @@ binary_sensor:
 
 switch:
   - platform: restart
-    name: ${device_name}_restart
+    name: Restart
     icon: mdi:restart
 
   - platform: template
-    name: ${device_name}_relay
+    name: Relay
     icon: mdi:water-pump
     optimistic: true
     id: fakebutton
@@ -73,37 +75,29 @@ switch:
 
 sensor:
   - platform: uptime
-    name: ${device_name}_uptime
+    name: Uptime
     icon: mdi:timer-outline
 
   - platform: wifi_signal
-    name: ${device_name}_wifi_signal
+    name: Wifi Signal
     icon: mdi:wifi
-
-# - platform: template
-#   name: ${device_name}_free_heap
-#   icon: mdi:memory
-#   lambda: "return ESP.getFreeHeap();"
-#   update_interval: 20s
-#   unit_of_measurement: bytes
-#   accuracy_decimals: 0
 
   - platform: cse7766
     current:
-      name: ${device_name}_current
+      name: Current
       icon: mdi:current-ac
       unit_of_measurement: A
       filters:
         - throttle_average: ${update_interval}
     voltage:
-      name: ${device_name}_voltage
+      name: Voltage
       icon: mdi:lightning-bolt-circle
       unit_of_measurement: V
       filters:
         - throttle_average: ${update_interval}
     power:
-      id: ${device_name}_power
-      name: ${device_name}_power
+      id: power
+      name: Power
       icon: mdi:flash-outline
       unit_of_measurement: W
       filters:
@@ -118,24 +112,25 @@ sensor:
     #update_interval: 10s
 
   - platform: total_daily_energy
-    name: ${device_name}_daily_energy
+    name: Daily Energy
     icon: mdi:power-settings
-    power_id: ${device_name}_power
+    power_id: power
     filters:
       - multiply: 0.001
     unit_of_measurement: kWh
 
 text_sensor:
   - platform: version
-    name: ${device_name}_esphome_version
+    name: Esphome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:
-      name: ${device_name}_ip_address
+      name: IP Address
       icon: mdi:ip-network
     ssid:
-      name: ${device_name}_connected_ssid
+      name: Connected SSID
       icon: mdi:access-point
 
 output:
@@ -148,7 +143,7 @@ output:
 light:
   - platform: monochromatic
     id: led
-    name: ${device_name}_blue_led
+    name: Blue Led
     output: pow_blue_led
 
 

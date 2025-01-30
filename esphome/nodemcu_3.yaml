@@ -1,8 +1,10 @@
 substitutions:
-  device_name: nodemcu_3
+  device_name: nodemcu-3
+  friendly_name: "NodeMCU 3"
 
 esphome:
   name: ${device_name}
+  friendly_name: "${friendly_name}"
   platform: ESP32
   board: nodemcu-32s
 
@@ -41,15 +43,15 @@ one_wire:
 
 binary_sensor:
   - platform: status
-    name: ${device_name}_status
+    name: Status
 
 sensor:
   - platform: uptime
-    name: ${device_name}_uptime
+    name: Uptime
     icon: mdi:timer-outline
 
   - platform: wifi_signal
-    name: ${device_name}_wifi_signal
+    name: WiFi Signal
     icon: mdi:wifi
 
   - platform: xiaomi_lywsdcgq
@@ -104,25 +106,27 @@ sensor:
 #      name: mf3_soil
 
   - platform: dallas_temp
-    name: ${device_name}_outdoor_temperature
+    name: Outdoor Temperature
     address: !secret dallas_2
     update_interval: 60s
     unit_of_measurement: "°C"
 
 text_sensor:
   - platform: version
-    name: ${device_name}_esphome_version
+    name: ESPHome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:
-      name: ${device_name}_ip_address
+      name: IP Address
       icon: mdi:ip-network
     ssid:
-      name: ${device_name}_connected_ssid
+      name: Connected SSID
       icon: mdi:access-point
 
 switch:
   - platform: restart
-    name: ${device_name}_restart
+    name: Restart
     icon: mdi:restart
+

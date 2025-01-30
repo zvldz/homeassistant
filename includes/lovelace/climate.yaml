@@ -79,7 +79,6 @@ cards:
             - font-size: 14px
 
       - type: custom:simple-thermostat
-        #entity: climate.midea_ac_18691697686913
         entity: climate.ac_living_room_climate
         name: "A/C Living Room"
         icon: "mdi:air-conditioner"
@@ -87,7 +86,7 @@ cards:
           hvac:
             _name: Operation
           preset:
-            _name: Preset mode
+            _name: Preset
         sensors:
           - entity: sensor.0x00158d0002bfe958_temperature
             name: Temperature
@@ -129,7 +128,7 @@ cards:
           hvac:
             _name: Operation
           preset:
-            _name: Preset mode
+            _name: Preset
         sensors:
           - entity: sensor.0x00158d0002323856_temperature
             name: Temperature
@@ -180,7 +179,6 @@ cards:
             - font-size: 14px
 
       - type: custom:simple-thermostat
-        #entity: climate.midea_ac_16492674435040
         entity: climate.ac_bedroom_climate
         name: "A/C Bedroom"
         icon: "mdi:air-conditioner"
@@ -188,7 +186,7 @@ cards:
           hvac:
             _name: Operation
           preset:
-            _name: Preset mode
+            _name: Preset
         sensors:
           - entity: sensor.0x00158d0001ab2a27_temperature
             name: Temperature

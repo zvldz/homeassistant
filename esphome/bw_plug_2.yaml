@@ -1,21 +1,24 @@
 # BlitzWolf BW-SHP5
 substitutions:
-  device_name: bw_plug_2
-  update_interval: 60s
+  device_name: bw-plug-2
+  friendly_name: "BW Plug 2"
+  update_interval: 10s
 
 esphome:
   name: ${device_name}
-  platform: ESP8266
-  board: esp8285
+  friendly_name: "${friendly_name}"
   on_boot:
 #   - light.turn_on: led
     - light.turn_off: led
+
+esp8266:
+  board: esp8285
 
 ota:
   platform: esphome
 
 wifi:
-  output_power: 17dB
+# output_power: 17dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
   manual_ip:
@@ -43,20 +46,21 @@ uart:
 
 text_sensor:
   - platform: version
-    name: ${device_name}_esphome_version
+    name: ESPHome Version
     icon: mdi:information-outline
+    hide_timestamp: true
 
   - platform: wifi_info
     ip_address:
-      name: ${device_name}_ip_address
+      name: IP Address
       icon: mdi:ip-network
     ssid:
-      name: ${device_name}_connected_ssid
+      name: Connected SSID
       icon: mdi:access-point
 
 binary_sensor:
   - platform: gpio
-    name: ${device_name}_button
+    name: Button
     pin:
       number: GPIO16
 #     mode: INPUT_PULLUP
@@ -70,62 +74,64 @@ binary_sensor:
       - switch.toggle: relay_usb
 
   - platform: status
-    name: ${device_name} status
+    name: Status
 
 sensor:
   - platform: uptime
-    name: ${device_name}_uptime
+    name: Uptime
     icon: mdi:timer-outline
 
   - platform: wifi_signal
-    name: ${device_name}_wifi_signal
+    name: WiFi Signal
     icon: mdi:wifi
 
-  - platform: cse7766
-    current:
-      name: ${device_name}_current
-      icon: mdi:current-ac
-      unit_of_measurement: A
-      accuracy_decimals: 3
-      filters:
-        - throttle_average: ${update_interval}
-    voltage:
-      name: ${device_name}_voltage
-      icon: mdi:lightning-bolt-circle
-      unit_of_measurement: V
-      accuracy_decimals: 2
-      filters:
-        - multiply: 1.92
-        - throttle_average: ${update_interval}
-        - delta: 0.5
-    power:
-      id: power
-      name: ${device_name}_power
-      icon: mdi:flash-outline
-      unit_of_measurement: W
-      accuracy_decimals: 1
-      filters:
-        - multiply: 2.15
-        - throttle_average: ${update_interval}
-
-  - platform: total_daily_energy
-    power_id: power
-    name: ${device_name}_daily_energy
-    icon: mdi:power-settings
-    filters:
-      - multiply: 0.001
-    unit_of_measurement: kWh
+#  - platform: cse7766
+#    current:
+#      name: Current
+#      device_class: current
+#      #icon: mdi:current-ac
+#      #unit_of_measurement: A
+#      accuracy_decimals: 3
+#      filters:
+#        - throttle_average: ${update_interval}
+#    voltage:
+#      name: Voltage
+#      device_class: voltage
+#      #icon: mdi:lightning-bolt-circle
+#      #unit_of_measurement: V
+#      #accuracy_decimals: 2
+#      filters:
+#        - multiply: 1.92
+#        - throttle_average: ${update_interval}
+#    power:
+#      id: power
+#      name: Power
+#      device_class: power
+#      #icon: mdi:flash-outline
+#      #unit_of_measurement: W
+#      #accuracy_decimals: 1
+#      filters:
+#        - multiply: 2.15
+#        - throttle_average: ${update_interval}
+#
+#  - platform: total_daily_energy
+#    power_id: power
+#    name: Daily Energy
+#    icon: mdi:power-settings
+#    filters:
+#      - multiply: 0.001
+#    unit_of_measurement: kWh
 
 switch:
   - platform: restart
-    name: ${device_name}_restart
+    name: Restart
     icon: mdi:restart
 
   - platform: gpio
     id: relay_220
-    name: ${device_name}_relay
+    name: Relay
     icon: mdi:power-socket-eu
-    restore_mode: ALWAYS_OFF
+    restore_mode: ALWAYS_ON
     pin: GPIO14
     on_turn_on:
       - light.turn_on: led
@@ -134,7 +140,7 @@ switch:
 
   - platform: gpio
     id: relay_usb
-    name: ${device_name}_relay_usb
+    name: Relay USB
     icon: mdi:usb
     pin: GPIO5
     restore_mode: ALWAYS_ON

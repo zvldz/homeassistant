@@ -27,29 +27,6 @@ group:
       - sensor.ha1_vacuum_schedule
       - sensor.ha1_vacuum_notification
 
-template:
-  - sensor:
-      - name: zigbee_bridge_uptime
-        state: "{{ now() }}"
-
-      - name: zigbee2mqtt_bridge_state
-        state: "OK"
-
-      - name: zigbee2mqtt_version
-        state: "123"
-
-      - name: zigbee_coordinator_version
-        state: "321"
-
-      - name: zigbee_bridge_fw
-        state: "123.321"
-
-      - name: latest_tasmota
-        state: "0.0"
-
-      - name: zigbee_bridge_exception
-        state: ""
-
 sensor:
   - platform: rest
     resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
@@ -160,22 +137,22 @@ automation:
       - service: script.turn_on
         entity_id: script.turn_off_most_automation
 
-  - alias: check_ha1_on_start
-    initial_state: true
-    trigger:
-      - platform: homeassistant
-        event: start
-#     - platform: time_pattern
-#       minutes: '/1'
-    condition:
-      - condition: template
-        value_template: "{{ states.sensor.ha1_uptime is none }}"
-    action:
-      - service: notify.telegram
-        data:
-          message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
-      - service: automation.turn_on
-        entity_id: all
+#  - alias: check_ha1_on_start
+#    initial_state: true
+#    trigger:
+#      - platform: homeassistant
+#        event: start
+##     - platform: time_pattern
+##       minutes: '/1'
+#    condition:
+#      - condition: template
+#        value_template: "{{ states.sensor.ha1_uptime is none }}"
+#    action:
+#      - service: notify.telegram
+#        data:
+#          message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
+#      - service: automation.turn_on
+#        entity_id: all
 
   - alias: ha1_server_off_reserve_control
     trigger:

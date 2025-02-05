@@ -15,9 +15,8 @@ cards:
         filter:
           include:
             - entity_id: "binary_sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*status"
-              sort: entity_id
-          exclude:
-            - entity_id: "*rf_br*"
+              sort:
+                method: name
 
       - type: custom:button-card
         name: "Light"
@@ -32,7 +31,8 @@ cards:
         filter:
           include:
             - entity_id: "light.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*"
-              sort: entity_id
+              sort:
+                method: name
 
   - type: vertical-stack
     cards:
@@ -53,7 +53,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*connected_ssid"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -64,8 +65,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*wifi_signal"
-                  sort: entity_id
-
+                  sort:
+                    method: name
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -75,7 +76,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*ip_address"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -86,7 +88,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*uptime"
-                  sort: entity_id
+                  sort:
+                    method: name
                   options:
                     type: custom:template-entity-row
                     state: >
@@ -105,7 +108,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*version"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -116,7 +120,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*current"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -127,7 +132,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*voltage"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -138,7 +144,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*power"
-                  sort: entity_id
+                  sort:
+                    method: name
 
           - type: custom:auto-entities
             card:
@@ -149,7 +156,8 @@ cards:
             filter:
               include:
                 - entity_id: "sensor.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*daily_energy"
-                  sort: entity_id
+                  sort:
+                    method: name
 
   - type: vertical-stack
     cards:
@@ -170,10 +178,10 @@ cards:
             filter:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*"
-                  sort: entity_id
+                  sort:
+                    method: name
               exclude:
                 - entity_id: "*restart"
-                - entity_id: "*_rf_br_*"
 
           - type: custom:auto-entities
             card:
@@ -184,7 +192,8 @@ cards:
             filter:
               include:
                 - entity_id: "switch.(sonoff|nodemcu|bw|power_strip|esp|ac*)_*restart"
-                  sort: entity_id
+                  sort:
+                    method: name
 
       - type: custom:button-card
         name: "Shelly Firmware"
@@ -198,115 +207,7 @@ cards:
         filter:
           include:
             - entity_id: "binary_sensor.*_firmware_update"
-              sort: entity_id
+              sort:
+                method: name
 
-
-#  - type: vertical-stack
-#    cards:
-#      - type: custom:button-card
-#        name: "RF Bridge"
-#        styles:
-#          card:
-#            - background-color: "#203040"
-#
-#      - type: glance
-#        show_header_toggle: false
-#        entities:
-#          - binary_sensor.sonoff_rf_br_2_status
-#          - binary_sensor.sonoff_rf_br_3_status
-#
-#      - type: horizontal-stack
-#        cards:
-#          - type: custom:button-card
-#            entity: switch.sonoff_rf_br_2_sb_rf
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            entity: switch.sonoff_rf_br_2_gate1
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            entity: switch.sonoff_rf_br_2_gate2
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            entity: switch.sonoff_rf_br_2_key4
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#
-#      - type: horizontal-stack
-#        cards:
-#          - type: custom:button-card
-#            icon: "mdi:flash"
-#            entity: script.rf_br_3_sb_rf
-#            tap_action:
-#              action: call-service
-#              service: script.turn_on
-#              service_data:
-#                entity_id: script.rf_br_3_sb_rf
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            icon: "mdi:flash"
-#            entity: script.rf_br_3_gate1
-#            tap_action:
-#              action: call-service
-#              service: script.turn_on
-#              service_data:
-#                entity_id: script.rf_br_3_gate1
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            icon: "mdi:flash"
-#            entity: script.rf_br_3_gate2
-#            tap_action:
-#              action: call-service
-#              service: script.turn_on
-#              service_data:
-#                entity_id: script.rf_br_3_gate2
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#          - type: custom:button-card
-#            icon: "mdi:flash"
-#            entity: script.rf_br_3_key4
-#            tap_action:
-#              action: call-service
-#              service: script.turn_on
-#              service_data:
-#                entity_id: script.rf_br_3_key4
-#            size: 30%
-#            styles:
-#              card:
-#                - font-size: 14px
-#
-#      - type: glance
-#        show_header_toggle: false
-#        entities:
-#          - binary_sensor.sonoff_rf_br_2_sb_rf
-#          - binary_sensor.sonoff_rf_br_2_gate1
-#          - binary_sensor.sonoff_rf_br_2_gate2
-#          - binary_sensor.sonoff_rf_br_2_key4
-#
-#      - type: glance
-#        show_header_toggle: false
-#        entities:
-#          - binary_sensor.rf_br_3_sb_rf
-#          - binary_sensor.rf_br_3_gate1
-#          - binary_sensor.rf_br_3_gate2
-#          - binary_sensor.rf_br_3_key4
-#
 

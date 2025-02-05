@@ -65,7 +65,7 @@ automation:
       - delay: '00:02:00'
       - service: notify.telegram
         data:
-          message: "\U00002620 {{ states('sensor.time_date') }} | Mains voltage is missinig | ip: {{ states('sensor.myip') }}"
+          message: "\U00002620 {{ states('sensor.time_date') }} | Mains voltage is missinig | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.shellyem_c45bbe602cfc_channel_1_power') }}"
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left
@@ -102,7 +102,7 @@ automation:
       - delay: '00:02:00'
       - service: notify.telegram
         data:
-          message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored | ip: {{ states('sensor.myip') }}"
+          message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.shellyem_c45bbe602cfc_channel_1_power') }}"
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left

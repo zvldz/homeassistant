@@ -3,7 +3,8 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.zigbee2mqtt_bridge_state
+        entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state
+#        entity_id: sensor.zigbee2mqtt_bridge_state
     action:
       - service: notify.telegram
         data:
@@ -13,16 +14,16 @@ automation:
             {%endif%}
 
 mqtt:
-  sensor:
-    - name: Zigbee2MQTT Bridge state
-      state_topic: "zigbee2mqtt2/bridge/state"
-      icon: "mdi:router-wireless"
-      value_template: "{{ value_json.state }}"
+#  sensor:
+#    - name: Zigbee2MQTT Bridge state
+#      state_topic: "zigbee2mqtt2/bridge/state"
+#      icon: "mdi:router-wireless"
+#      value_template: "{{ value_json.state }}"
 
-    - name: Zigbee Coordinator Version
-      state_topic: "zigbee2mqtt2/bridge/config"
-      icon: "mdi:chip"
-      value_template: "{{ value_json.coordinator.meta.revision }}"
+#    - name: Zigbee Coordinator Version
+#      state_topic: "zigbee2mqtt2/bridge/config"
+#      icon: "mdi:chip"
+#      value_template: "{{ value_json.coordinator.meta.revision }}"
 
 sensor:
   - platform: rest

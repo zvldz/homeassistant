@@ -69,15 +69,6 @@ cards:
           card:
             - background-color: "#203040"
 
-      - type: custom:button-card
-        entity: switch.sonoff_1002261f55
-        name: " "
-        icon: mdi:air-conditioner
-        size: 10%
-        styles:
-          card:
-            - font-size: 14px
-
       - type: custom:simple-thermostat
         entity: climate.ac_living_room_climate
         name: "A/C Living Room"
@@ -110,15 +101,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-
-      - type: custom:button-card
-        entity: switch.sonoff_1002262e74
-        name: " "
-        icon: mdi:air-conditioner
-        size: 10%
-        styles:
-          card:
-            - font-size: 14px
 
       - type: custom:simple-thermostat
         entity: climate.ac_master_bedroom_climate
@@ -168,15 +150,6 @@ cards:
         styles:
           card:
             - background-color: "#203040"
-
-      - type: custom:button-card
-        entity: switch.sonoff_1002262715
-        name: " "
-        icon: mdi:air-conditioner
-        size: 10%
-        styles:
-          card:
-            - font-size: 14px
 
       - type: custom:simple-thermostat
         entity: climate.ac_bedroom_climate

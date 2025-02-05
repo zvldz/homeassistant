@@ -75,7 +75,7 @@ cards:
         entities:
           - entity: switch.zigbee2mqtt_bridge_permit_join
             name: Zigbee2MQTT Join
-          - entity: sensor.zigbee2mqtt_bridge_state
+          - entity: binary_sensor.zigbee2mqtt_bridge_connection_state
             name: Zigbee2MQTT
           - entity: sensor.zigbee2mqtt_bridge_version
             name: Zigbee2MQTT Version
@@ -83,7 +83,7 @@ cards:
             entities:
               - entity: sensor.z2m_latest
                 name: false
-          - entity: sensor.zigbee_coordinator_version
+          - entity: sensor.zigbee2mqtt_bridge_coordinator_version
 
       - type: custom:button-card
         name: "Maintenance"

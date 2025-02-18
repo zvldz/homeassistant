@@ -13,3 +13,5 @@
 "*.0x00158d0002e22617*":
   friendly_name: Hallway Button
 
+"*.0x00158d00025f23f4*":
+  friendly_name: Kitchen Button

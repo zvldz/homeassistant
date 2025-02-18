@@ -32,6 +32,7 @@ cards:
                 - font-size: 14px
           - type: custom:button-card
             entity: switch.shelly1_kitchen_lamp
+            name: Kitchen Lamp
             icon: mdi:light-switch
             size: 20%
             styles:

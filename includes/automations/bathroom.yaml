@@ -12,7 +12,7 @@
       to: 'on'
     - platform: state
       entity_id: binary_sensor.0x54ef441000268428_occupancy
-      from: 'off'
+#     from: 'off'
       to: 'on'
   condition:
     - condition: state
@@ -46,7 +46,7 @@
       to: 'on'
     - platform: state
       entity_id: binary_sensor.0x54ef441000268428_occupancy
-      from: 'off'
+#     from: 'off'
       to: 'on'
   condition:
     - condition: state

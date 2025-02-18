@@ -94,24 +94,6 @@ binary_sensor.master_bedroom_lamp_nightlight:
 binary_sensor.bedroom_lamp_nightlight:
   friendly_name: "Bedroom Nightlight"
 
-#binary_sensor.sonoff_br_button_1:
-#  friendly_name: "BR Button 1"
-
-#binary_sensor.sonoff_br_button_2:
-#  friendly_name: "BR Button 2"
-
-#binary_sensor.sonoff_rf_br_1_sb_rf:
-#  friendly_name: "RF Sonoff"
-
-#binary_sensor.sonoff_rf_br_1_key4:
-#  friendly_name: "RF Key 4"
-
-#binary_sensor.sonoff_rf_br_1_gate1:
-#  friendly_name: "RF Gate 1"
-
-#binary_sensor.sonoff_rf_br_1_gate2:
-#  friendly_name: "RF Gate 2"
-
 sensor.bw_plug_1_current:
   friendly_name: "Socket 2 Amperage"
 
@@ -136,33 +118,21 @@ sensor.bw_plug_2_power:
 sensor.bw_plug_2_daily_energy:
   friendly_name: "Socket 3 DE"
 
-binary_sensor.sonoff_pump_status:
-  friendly_name: "Pump"
-
-sensor.sonoff_pump_uptime:
-  friendly_name: "Pump Uptime"
-
-sensor.sonoff_pump_voltage:
-  friendly_name: "Pump Voltage"
-
-sensor.sonoff_pump_power:
-  friendly_name: "Pump Power"
-
-sensor.sonoff_pump_current:
-  friendly_name: "Pump Amperage"
-
-sensor.sonoff_pump_daily_energy:
-  friendly_name: "Pump DE"
-
-sensor.shellyem_c45bbe602cfc_channel_1_voltage:
-  friendly_name: "ShellyEM"
-
-sensor.shellyem_c45bbe602cfc_channel_1_power:
-  friendly_name: "Apartment Power"
-
-binary_sensor.boiler_shelly_firmware_update:
-  friendly_name: "Shelly Boiler"
-
-binary_sensor.shellyem_c45bbe602cfc_firmware_update:
-  friendly_name: "Shelly EM"
+#binary_sensor.sonoff_pump_status:
+#  friendly_name: "Pump"
+#
+#sensor.sonoff_pump_uptime:
+#  friendly_name: "Pump Uptime"
+#
+#sensor.sonoff_pump_voltage:
+#  friendly_name: "Pump Voltage"
+#
+#sensor.sonoff_pump_power:
+#  friendly_name: "Pump Power"
+#
+#sensor.sonoff_pump_current:
+#  friendly_name: "Pump Amperage"
+#
+#sensor.sonoff_pump_daily_energy:
+#  friendly_name: "Pump DE"
 

@@ -106,7 +106,6 @@ class FanEntity(XEntity, BaseEntity):
                     _stp = prop.range_step()
                     self._speed_range = (_min, _max)
                     self._attr_speed_count = (_max - _min) / _stp + 1
-                    self._attr_supported_features |= FanEntityFeature.SET_SPEED
                 elif prop.value_list and not self._conv_speed:
                     self._speed_list = prop.list_descriptions()
                     self._attr_speed_count = len(prop.value_list)
@@ -180,7 +179,7 @@ class FanEntity(XEntity, BaseEntity):
                 des = percentage_to_ordered_list_item(self._speed_list, percentage)
                 val = self._prop_speed.list_value(des)
                 if val is not None:
-                    await self.device.async_set_property(self._prop_percentage, val)
+                    await self.device.async_set_property(self._prop_speed, val)
             elif self._speed_range:
                 dat[self._conv_speed.attr] = percentage_to_ranged_value(self._speed_range, percentage)
             elif self._speed_list:

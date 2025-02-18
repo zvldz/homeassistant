@@ -188,6 +188,44 @@ automation:
           entity_id: input_number.gas_counter
           value: "{{ (states.input_number.gas_counter.state | float(0) + 0.01 ) | round(2) }}"
 
+  - alias: "Kitchen button is pressed single"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.0x00158d00025f23f4_action
+        to: 'single'
+    condition:
+      - condition: state
+        entity_id: input_boolean.gas_boiler_schedule
+        state: 'on'
+    action:
+      - service: climate.set_temperature
+        data:
+          entity_id: climate.gas_boiler
+          temperature: "{{ states('input_number.climate_control_temperature') | float(15) }}"
+          hvac_mode: heat
+      - service: switch.turn_on
+        entity_id:
+          - switch.sonoff_pump_relay
+          - switch.boiler_shelly
+
+  - alias: "Kitchen button is pressed double"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.0x00158d00025f23f4_action
+        to: 'double'
+    condition:
+      - condition: state
+        entity_id: input_boolean.gas_boiler_schedule
+        state: 'on'
+    action:
+      - service: climate.set_temperature
+        data:
+          entity_id: climate.gas_boiler
+          temperature: 17
+          hvac_mode: heat
+
 utility_meter:
   gas_hourly:
     source: input_number.gas_counter

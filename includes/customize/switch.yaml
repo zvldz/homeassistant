@@ -2,25 +2,6 @@ switch.bw_plug_1_relay:
   friendly_name: "Socket 2"
   icon: "mdi:power-socket-eu"
 
-#switch.sonoff_rf_br_1_sb_rf:
-#  friendly_name: "RF Sonoff"
-
-#switch.sonoff_rf_br_1_key4:
-#  friendly_name: "RF Key 4"
-
-#switch.sonoff_rf_br_1_gate1:
-#  friendly_name: "RF Gate 1"
-
-#switch.sonoff_rf_br_1_gate2:
-#  friendly_name: "RF Gate 2"
-
-switch.sonoff_pump_relay:
-  friendly_name: "Pump"
-
-switch.boiler_shelly:
-  friendly_name: "Boiler"
-  icon: "mdi:water-boiler"
-
 switch.bw_plug_2_relay:
   friendly_name: "Socket 3"
   icon: "mdi:power-socket-eu"
@@ -28,7 +9,4 @@ switch.bw_plug_2_relay:
 switch.bw_plug_2_relay_usb:
   friendly_name: "Socket 3 USB"
   icon: "mdi:power-socket-eu"
-
-switch.shelly1_kitchen_lamp:
-  friendly_name: "Kitchen Lamp"
 

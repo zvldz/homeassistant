@@ -7,25 +7,25 @@
     - platform: homeassistant
       event: start
     - platform: state
-      entity_id: switch.0x00158d00022360fe
+      entity_id: switch.0x54ef4410001aab8c
       from: 'unavailable'
     - platform: state
-      entity_id: switch.0x00158d00022360fe
+      entity_id: switch.0x54ef4410001aab8c
       to: 'off'
   condition:
     - condition: state
-      entity_id: switch.0x00158d00022360fe
+      entity_id: switch.0x54ef4410001aab8c
       state: 'off'
   action:
     - service: switch.turn_on
-      entity_id: switch.0x00158d00022360fe
+      entity_id: switch.0x54ef4410001aab8c
 
 # Light
 - alias: "Toggle light in WC"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d00022360fe_action
+      entity_id: sensor.0x54ef4410001aab8c_action
       to: 'single'
   action:
     - service: light.toggle

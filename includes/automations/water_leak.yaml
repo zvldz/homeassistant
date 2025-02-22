@@ -3,9 +3,9 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.0x00158d000232989c_water_leak
-      - binary_sensor.0x00158d000233ddf2_water_leak
-      - binary_sensor.0x00158d00023aa420_water_leak
+      - binary_sensor.0x54ef441000e32a3f_water_leak
+      - binary_sensor.0x54ef441000e32cab_water_leak
+      - binary_sensor.0x54ef441000e32bdf_water_leak
     to: 'on'
   action:
     - service: xiaomi_aqara.play_ringtone
@@ -22,9 +22,9 @@
   trigger:
     platform: state
     entity_id:
-      - binary_sensor.0x00158d000232989c_water_leak
-      - binary_sensor.0x00158d000233ddf2_water_leak
-      - binary_sensor.0x00158d00023aa420_water_leak
+      - binary_sensor.0x54ef441000e32a3f_water_leak
+      - binary_sensor.0x54ef441000e32cab_water_leak
+      - binary_sensor.0x54ef441000e32bdf_water_leak
     from: 'on'
     to: 'off'
   action:

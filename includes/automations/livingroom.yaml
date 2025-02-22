@@ -3,7 +3,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_1_single'
+      to: 'single_left'
   action:
     service: light.toggle
     entity_id:
@@ -14,7 +14,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_2_single'
+      to: 'single_right'
   action:
     service: light.toggle
     entity_id:
@@ -25,7 +25,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_1_hold'
+      to: 'hold_left'
   action:
     service: light.turn_off
     entity_id:
@@ -36,7 +36,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_2_hold'
+      to: 'hold_right'
   action:
     service: light.turn_off
     entity_id:
@@ -47,7 +47,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_both_single'
+      to: 'single_both'
   action:
     service: light.toggle
     entity_id:
@@ -59,7 +59,7 @@
   trigger:
     - platform: state
       entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'button_both_hold'
+      to: 'hold_both'
   action:
     service: light.turn_off
     entity_id:

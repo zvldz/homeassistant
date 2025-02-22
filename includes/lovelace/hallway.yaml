@@ -58,7 +58,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d00022360fe
+            entity: switch.0x54ef4410001aab8c
             name: WC
             icon: "mdi:light-switch"
             size: 14%
@@ -198,10 +198,10 @@ cards:
           - entity: binary_sensor.0x00158d00024de627_contact
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x00158d000233ddf2_water_leak
+          - entity: binary_sensor.0x54ef441000e32cab_water_leak
             type: custom:multiple-entity-row
             secondary_info: last-changed
-          - entity: binary_sensor.0x00158d00023aa420_water_leak
+          - entity: binary_sensor.0x54ef441000e32bdf_water_leak
             type: custom:multiple-entity-row
             secondary_info: last-changed
           - entity: sensor.illumination_7811dcb245b2

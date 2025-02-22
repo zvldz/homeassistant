@@ -152,14 +152,6 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            name: "Mikrotik2 WLAN"
-#            icon: "mdi:file-find-outline"
-            entity: switch.mikrotik2_wlan1_port
-            size: 5%
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
             name: "Purge DB to 0 d"
             icon: "mdi:database-refresh-outline"
             tap_action:

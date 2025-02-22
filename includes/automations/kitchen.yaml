@@ -7,10 +7,6 @@
       entity_id: binary_sensor.0x00158d00022515fe_occupancy
       from: 'off'
       to: 'on'
-#   - platform: state
-#     entity_id: binary_sensor.582d3460a918_motion
-#     from: 'off'
-#     to: 'on'
   condition:
 #   - condition: numeric_state
 #     entity_id: sensor.0x00158d00022515fe_illuminance

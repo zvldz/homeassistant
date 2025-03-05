@@ -3,9 +3,8 @@
   trigger:
     - platform: numeric_state
       entity_id:
-        - sensor.mf1_moisture
-        - sensor.mf2_moisture
-#       - sensor.mf3_moisture
+        - sensor.c47c8d671018_moisture
+        - sensor.c47c8d670f2e_moisture
       below: 20
   action:
     - service: notify.telegram

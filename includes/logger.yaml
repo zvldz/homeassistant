@@ -11,7 +11,6 @@ logs:
 # homeassistant.components.ring: debug
 # yeelight: debug
 # yeelight.light: debug
-# midea: debug
 # custom_components.sonoff: debug
 # climate: debug
   custom_components.tcp_mod.sensor: debug

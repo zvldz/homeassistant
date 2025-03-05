@@ -111,9 +111,9 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
-          - climate.midea_ac_18691697686913
-          - climate.midea_ac_18691697686914
-          - climate.midea_ac_16492674435040
+          - climate.ac_living_room_climate
+          - climate.ac_master_bedroom_climate
+          - climate.ac_bedroom_climate
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
@@ -123,9 +123,9 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
-          - climate.midea_ac_18691697686913
-          - climate.midea_ac_18691697686914
-          - climate.midea_ac_16492674435040
+          - climate.ac_living_room_climate
+          - climate.ac_master_bedroom_climate
+          - climate.ac_bedroom_climate
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
@@ -135,7 +135,6 @@ automation:
           - light.kitchen_lamp
           - light.balcony_strip
           - light.gateway_light_7811dcb245b2
-          - climate.midea_ac_18691697686913
-          - climate.midea_ac_18691697686914
-          - climate.midea_ac_16492674435040
-
+          - climate.ac_living_room_climate
+          - climate.ac_master_bedroom_climate
+          - climate.ac_bedroom_climate

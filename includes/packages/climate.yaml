@@ -52,18 +52,18 @@ script:
     sequence:
       - service: climate.turn_on
         entity_id:
-          - climate.midea_ac_18691697686913
-          - climate.midea_ac_18691697686914
-          - climate.midea_ac_16492674435040
+          - climate.ac_living_room_climate
+          - climate.ac_master_bedroom_climate
+          - climate.ac_bedroom_climate
 
   turn_off_all_ac:
     alias: Turn OFF All AC
     sequence:
       - service: climate.turn_off
         entity_id:
-          - climate.midea_ac_18691697686913
-          - climate.midea_ac_18691697686914
-          - climate.midea_ac_16492674435040
+          - climate.ac_living_room_climate
+          - climate.ac_master_bedroom_climate
+          - climate.ac_bedroom_climate
 
   sync_gas_counter_with_ha1:
     alias: "Sync gas counter with ha1"

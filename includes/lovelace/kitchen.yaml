@@ -56,7 +56,7 @@ cards:
             entities:
               - entity: sensor.0x00158d0002ca0395_temperature
                 name: Kitchen
-              - entity: sensor.kitchen_bt_temperature
+              - entity: sensor.4c65a8d98721_temperature
                 name: Kitchen BT
                 color: red
 
@@ -68,7 +68,7 @@ cards:
             entities:
               - entity: sensor.0x00158d0002ca0395_humidity
                 name: Kitchen
-              - entity: sensor.kitchen_bt_humidity
+              - entity: sensor.4c65a8d98721_humidity
                 name: Kitchen BT
                 color: red
 

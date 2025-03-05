@@ -19,3 +19,5 @@
 "*.0x00158d0002ca0395*":
   friendly_name: Kitchen Thermometer
 
+"*.0x00158d0008c99223*":
+  friendly_name: Outdoor Thermometer

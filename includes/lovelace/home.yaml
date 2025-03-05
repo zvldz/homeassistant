@@ -81,10 +81,15 @@ cards:
               - entity: sensor.0x00158d00027300cc_humidity
                 name: false
 
-          - entity: sensor.nodemcu_3_outdoor_temperature
+          - entity: sensor.0x00158d0008c99223_temperature
             type: custom:multiple-entity-row
-            name: Outdoor DS
+            name: Outdoor
             secondary_info: last-changed
+            entities:
+              - entity: sensor.0x00158d0008c99223_pressure
+                name: false
+              - entity: sensor.0x00158d0008c99223_humidity
+                name: false
 
           - entity: sensor.fazenda_outdoor_temperature
             type: custom:multiple-entity-row

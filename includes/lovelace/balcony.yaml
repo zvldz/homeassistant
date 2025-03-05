@@ -115,7 +115,8 @@ cards:
             entities:
               - entity: sensor.0x00158d00027300cc_temperature
                 name: Balcony
-              - entity: sensor.nodemcu_3_outdoor_temperature
+              - entity: sensor.0x00158d0008c99223_temperature
+                name: Outdoor
                 color: red
 
       - type: horizontal-stack
@@ -124,6 +125,10 @@ cards:
             name: 'Humidity'
             entities:
               - entity: sensor.0x00158d00027300cc_humidity
+                name: Balcony
+              - entity: sensor.0x00158d0008c99223_humidity
+                name: Outdoor
+                color: red
 
       - type: custom:button-card
         name: "Sensors"

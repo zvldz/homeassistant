@@ -24,12 +24,12 @@ cards:
                 head: group.living_room_spot_left
                 entity: group.living_room_spot_left
               - type: custom:fold-entity-row
-#               head: light.12ed88b3dec2e000_light
                 head: group.living_room_spot_right
-                entities:
-                  - light.28d12721e0ee_light
-                  - light.28d12721b455_light
-                  - light.28d1273a1200_light
+                entity: group.living_room_spot_right
+#                entities:
+#                  - light.0x54ef441000e79451
+#                  - light.0x54ef441000e7a6dd
+#                  - light.0x54ef441000e77fb2
 
       - type: horizontal-stack
         cards:
@@ -75,7 +75,7 @@ cards:
             entities:
               - entity: sensor.0x00158d0002bfe958_temperature
                 name: Living Room
-              - entity: sensor.living_room_bt_temperature
+              - entity: sensor.4c65a8d9cf8f_temperature
                 name: Living Room BT
                 color: red
 
@@ -87,7 +87,7 @@ cards:
             entities:
               - entity: sensor.0x00158d0002bfe958_humidity
                 name: Living Room
-              - entity: sensor.living_room_bt_humidity
+              - entity: sensor.4c65a8d9cf8f_humidity
                 name: Living Room BT
                 color: red
 

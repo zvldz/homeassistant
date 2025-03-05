@@ -27,7 +27,8 @@ cards:
                 name: Kitchen
               - entity: sensor.0x00158d00027300cc_temperature
                 name: Balcony
-              - entity: sensor.nodemcu_3_outdoor_temperature
+              - entity: sensor.0x00158d0008c99223_temperature
+                name: Outdoor
             control:
               hvac:
                 some_mode: false

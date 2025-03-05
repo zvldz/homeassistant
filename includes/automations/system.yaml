@@ -95,7 +95,7 @@
           Bedroom2:    {{ states('sensor.0x00158d0001ab2a27_temperature') }}°C
           Bathroom:    {{ states('sensor.0x00158d000273011f_temperature') }}°C
           Balcony:     {{ states('sensor.0x00158d00027300cc_temperature') }}°C
-          Outdoor:     {{ states('sensor.nodemcu_3_outdoor_temperature') }}°C
+          Outdoor:     {{ states('sensor.0x00158d0008c99223_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
           Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}
           {{ states('sensor.total_entities_unavailable') }} entities are unavailable

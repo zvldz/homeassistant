@@ -40,9 +40,6 @@ sensor.ha_fazenda_uptime:
 sensor.ha_off_uptime:
   friendly_name: HA Office Uptime
 
-sensor.nodemcu_3_outdoor_temperature:
-  friendly_name: "Outdoor DS"
-
 sensor.fazenda_outdoor_temperature:
   friendly_name: "Fazenda Outdoor DS"
 

@@ -8,9 +8,9 @@ living_room_spot_left:
 living_room_spot_right:
   name: "Right Spots"
   entities:
-    - light.28d12721e0ee_light
-    - light.28d12721b455_light
-    - light.28d1273a1200_light
+    - light.0x54ef441000e79451
+    - light.0x54ef441000e7a6dd
+    - light.0x54ef441000e77fb2
 
 wc_spots:
   name: "WC Spots"

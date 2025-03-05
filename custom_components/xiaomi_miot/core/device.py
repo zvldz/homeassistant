@@ -160,6 +160,7 @@ class Device(CustomConfigHelper):
     available = True
     miot_entity = None
     miot_results = None
+    _local_fails = 0
     _local_state = None
     _proxy_device = None
     _miot_mapping = None
@@ -524,10 +525,12 @@ class Device(CustomConfigHelper):
 
         all_mapping = {**self.miot_mapping()}
         chunks = self.custom_config_list('chunk_coordinators') or []
+        if self.miio2miot:
+            chunks = []
 
-        def update_factory(mapping, notify=False):
+        def update_factory(mapping, notify=False, chunk_services=None):
             async def _update():
-                result = await self.update_miot_status(mapping)
+                result = await self.update_miot_status(mapping, chunk_services=chunk_services)
                 if notify:
                     for entity in self.entities.values():
                         if isinstance(entity, XEntity):
@@ -558,8 +561,9 @@ class Device(CustomConfigHelper):
             for k in mapping.keys():
                 all_mapping.pop(k, None)
             notify = chunk.get('notify')
+            chunk_services = chunk.get('chunk_services', 0)
             coo = DataCoordinator(
-                self, update_factory(mapping, notify),
+                self, update_factory(mapping, notify, chunk_services=chunk_services),
                 name=f'chunk_{index}',
                 update_interval=timedelta(seconds=inter),
             )
@@ -568,7 +572,12 @@ class Device(CustomConfigHelper):
                 self.main_coordinators.append(coo)
 
         if all_mapping:
-            coo = DataCoordinator(self, update_factory(all_mapping, True), name='miot_status', update_interval=timedelta(seconds=interval))
+            chunk_services = self.custom_config_integer('chunk_services')
+            coo = DataCoordinator(
+                self, update_factory(all_mapping, True, chunk_services=chunk_services),
+                name='miot_status',
+                update_interval=timedelta(seconds=interval),
+            )
             lst.append(coo)
             if not self.main_coordinators:
                 self.main_coordinators.append(coo)
@@ -821,6 +830,7 @@ class Device(CustomConfigHelper):
         auto_cloud=None,
         check_lan=None,
         max_properties=None,
+        chunk_services=None,
     ) -> MiotResults:
         results = []
         self.miot_results = MiotResults()
@@ -859,7 +869,7 @@ class Device(CustomConfigHelper):
                     if not max_properties:
                         max_properties = self.local.get_max_properties(mapping)
                     maps = []
-                    if self.custom_config_integer('chunk_services'):
+                    if chunk_services:
                         for service in self.spec.get_services(excludes=self._exclude_miot_services):
                             mapp = service.mapping(
                                 excludes=self._exclude_miot_properties,
@@ -877,20 +887,23 @@ class Device(CustomConfigHelper):
                         )
                         results.extend(res)
                 self.available = True
+                self._local_fails = 0
                 self._local_state = True
                 self.miot_results.updater = 'local'
                 self.miot_results.set_results(results, mapping)
             except (DeviceException, OSError) as exc:
+                self._local_fails += 1
+                local_state = self._local_fails < 3
                 log = self.log.error
                 if auto_cloud:
                     use_cloud = self.cloud
                     log = self.log.warning
                 else:
                     self.miot_results.errors = exc
-                    self.available = False
+                    self.available = local_state
                 if self._local_state is False:
                     log = self.log.info
-                self._local_state = False
+                self._local_state = local_state
                 props_count = len(mapping)
                 log(
                     'Got MiioException while fetching the state: %s, mapping: %s, max_properties: %s/%s',

@@ -4,4 +4,5 @@
 "*.0x00158d0002677c89*":
   friendly_name: Master Bedroom Socket
 
-
+"*.0xa46dd4fffe4f985d*":
+  friendly_name: Energy Counter

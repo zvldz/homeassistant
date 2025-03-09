@@ -23,21 +23,21 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d000211434a
+            entity: switch.0x54ef441000d37ead
             name: Kitchen
             icon: mdi:light-switch
-            size: 20%
+            size: 10%
             styles:
               card:
                 - font-size: 14px
-          - type: custom:button-card
-            entity: switch.shelly1_kitchen_lamp
-            name: Kitchen Lamp
-            icon: mdi:light-switch
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+#          - type: custom:button-card
+#            entity: switch.shelly1_kitchen_lamp
+#            name: Kitchen Lamp
+#            icon: mdi:light-switch
+#            size: 20%
+#            styles:
+#              card:
+#                - font-size: 14px
 
 
   - type: vertical-stack

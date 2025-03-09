@@ -1,8 +1,49 @@
+# Living Room
+
+- alias: "Turn on left switch in LR(decoupled mode)"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id: switch.0x54ef441000eb9606_left
+      from: 'unavailable'
+    - platform: state
+      entity_id: switch.0x54ef441000eb9606_left
+      to: 'off'
+  condition:
+    - condition: state
+      entity_id: switch.0x54ef441000eb9606_left
+      state: 'off'
+  action:
+    - service: switch.turn_on
+      entity_id: switch.0x54ef441000eb9606_left
+
+- alias: "Turn on right switch in LR (decoupled mode)"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id: switch.0x54ef441000eb9606_right
+      from: 'unavailable'
+    - platform: state
+      entity_id: switch.0x54ef441000eb9606_right
+      to: 'off'
+  condition:
+    - condition: state
+      entity_id: switch.0x54ef441000eb9606_right
+      state: 'off'
+  action:
+    - service: switch.turn_on
+      entity_id: switch.0x54ef441000eb9606_right
+
+
 - alias: "Livingroom switch left"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
+      entity_id: sensor.0x54ef441000eb9606_action
       to: 'single_left'
   action:
     service: light.toggle
@@ -13,30 +54,30 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
+      entity_id: sensor.0x54ef441000eb9606_action
       to: 'single_right'
   action:
     service: light.toggle
     entity_id:
       - group.living_room_spot_right
 
-- alias: "Livingroom switch left long"
+- alias: "Livingroom switch left double"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'hold_left'
+      entity_id: sensor.0x54ef441000eb9606_action
+      to: 'double_left'
   action:
     service: light.turn_off
     entity_id:
       - group.living_room_spot_left
 
-- alias: "Livingroom switch right long"
+- alias: "Livingroom switch right double"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'hold_right'
+      entity_id: sensor.0x54ef441000eb9606_action
+      to: 'double_right'
   action:
     service: light.turn_off
     entity_id:
@@ -46,7 +87,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
+      entity_id: sensor.0x54ef441000eb9606_action
       to: 'single_both'
   action:
     service: light.toggle
@@ -54,12 +95,12 @@
       - group.living_room_spot_right
       - group.living_room_spot_left
 
-- alias: "Livingroom switch both long"
+- alias: "Livingroom switch both double"
   initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.0x00158d0002afc3c7_action
-      to: 'hold_both'
+      entity_id: sensor.0x54ef441000eb9606_action
+      to: 'double_both'
   action:
     service: light.turn_off
     entity_id:

@@ -1,5 +1,8 @@
-"*.0x00158d000211434a*":
+"*.0x54ef441000d37ead*":
   friendly_name: Kitchen Switch
+
+"*.0x54ef441000eb9606*":
+  friendly_name: Living Room Switch
 
 "*.0x00158d0001f9aa37*":
   friendly_name: Balcony 2 Switch
@@ -34,8 +37,3 @@
 "*.boiler_shelly*":
   friendly_name: Boiler Switch
 
-"*.shellyem_c45bbe602cfc*":
-  friendly_name: ShellyEM Counter
-
-"*.shelly1_kitchen_lamp*":
-  friendly_name: Kitchen Lamp Switch

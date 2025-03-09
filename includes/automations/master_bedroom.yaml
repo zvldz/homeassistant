@@ -50,7 +50,7 @@
         - light.master_bedroom_lamp
     - service: switch.turn_off
       entity_id:
-        - switch.0x00158d000211434a
+        - switch.0x54ef441000d37ead
 
 - alias: "Bedroom1 button is pressed double"
   initial_state: true
@@ -66,4 +66,4 @@
         - light.master_bedroom_lamp
     - service: switch.turn_on
       entity_id:
-        - switch.0x00158d000211434a
+        - switch.0x54ef441000d37ead

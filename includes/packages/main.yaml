@@ -54,7 +54,7 @@ automation:
     initial_state: true
     trigger:
       - platform: numeric_state
-        entity_id: sensor.shellyem_c45bbe602cfc_channel_1_power
+        entity_id: sensor.0xa46dd4fffe4f985d_power
         below: 1
     action:
       - service: light.turn_on
@@ -65,7 +65,7 @@ automation:
       - delay: '00:02:00'
       - service: notify.telegram
         data:
-          message: "\U00002620 {{ states('sensor.time_date') }} | Mains voltage is missinig | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.shellyem_c45bbe602cfc_channel_1_power') }}"
+          message: "\U00002620 {{ states('sensor.time_date') }} | 1 Mains voltage is missinig | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}"
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left
@@ -96,13 +96,13 @@ automation:
     initial_state: true
     trigger:
       - platform: numeric_state
-        entity_id: sensor.shellyem_c45bbe602cfc_channel_1_power
+        entity_id: sensor.0xa46dd4fffe4f985d_power
         above: 10
     action:
       - delay: '00:02:00'
       - service: notify.telegram
         data:
-          message: "\U000026A1 {{ states('sensor.time_date') }} | Mains voltage restored | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.shellyem_c45bbe602cfc_channel_1_power') }}"
+          message: "\U000026A1 {{ states('sensor.time_date') }} | 2 Mains voltage restored | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}"
       - service: light.turn_off
         entity_id:
           - group.living_room_spot_left

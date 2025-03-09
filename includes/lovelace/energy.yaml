@@ -13,7 +13,7 @@ cards:
         clickable_entities: true
         entities:
           grid:
-            entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+            entity: sensor.0xa46dd4fffe4f985d_power
             display_state: one_way
             color_circle: true
           battery:
@@ -152,7 +152,7 @@ cards:
             hour24: true
             points_per_hour: 1
             entities:
-              - entity: sensor.shellyem_c45bbe602cfc_channel_1_power
+              - entity: sensor.0xa46dd4fffe4f985d_power
 
       - type: custom:button-card
         name: "Voltage"
@@ -170,7 +170,7 @@ cards:
               - entity: sensor.sonoff_pump_voltage
 #             - entity: sensor.bw_plug_1_voltage
 #               color: red
-              - entity: sensor.shellyem_c45bbe602cfc_channel_1_voltage
+              - entity: sensor.0xa46dd4fffe4f985d_voltage
                 color: blue
 
       - type: conditional

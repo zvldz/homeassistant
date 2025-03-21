@@ -26,23 +26,30 @@ cards:
               - type: custom:fold-entity-row
                 head: group.living_room_spot_right
                 entity: group.living_room_spot_right
-#                entities:
-#                  - light.0x54ef441000e79451
-#                  - light.0x54ef441000e7a6dd
-#                  - light.0x54ef441000e77fb2
 
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: switch.0x00158d0002677c89
-            icon: "mdi:power-socket-au"
-            size: 15%
+            entity: switch.0x54ef441000eb9606_left
+            name: Switch Left
+            icon: "mdi:light-switch"
+            size: 20%
             styles:
               card:
                 - font-size: 14px
+
+          - type: custom:button-card
+            entity: switch.0x54ef441000eb9606_right
+            name: Switch Right
+            icon: "mdi:light-switch"
+            size: 20%
+            styles:
+              card:
+                - font-size: 14px
+
           - type: custom:button-card
             entity: switch.bw_plug_1_relay
-            size: 15%
+            size: 20%
             styles:
               card:
                 - font-size: 14px
@@ -75,6 +82,8 @@ cards:
             entities:
               - entity: sensor.0x00158d0002bfe958_temperature
                 name: Living Room
+              - entity: sensor.0xd44867fffe06aed3_temperature
+                name: Living Room LCD
               - entity: sensor.4c65a8d9cf8f_temperature
                 name: Living Room BT
                 color: red
@@ -87,6 +96,8 @@ cards:
             entities:
               - entity: sensor.0x00158d0002bfe958_humidity
                 name: Living Room
+              - entity: sensor.0xd44867fffe06aed3_humidity
+                name: Living Room LCD
               - entity: sensor.4c65a8d9cf8f_humidity
                 name: Living Room BT
                 color: red

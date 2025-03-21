@@ -7,6 +7,12 @@
       entity_id: binary_sensor.0x00158d00022515fe_occupancy
       from: 'off'
       to: 'on'
+    - platform: state
+      entity_id: sensor.0x54ef441000dbf5d6_movement
+      to: 'movement'
+    - platform: state
+      entity_id: binary_sensor.0x54ef441000dbf5d6_presence
+      to: 'Home'
   condition:
 #   - condition: numeric_state
 #     entity_id: sensor.0x00158d00022515fe_illuminance
@@ -40,6 +46,12 @@
       entity_id: binary_sensor.0x00158d00022515fe_occupancy
       from: 'off'
       to: 'on'
+    - platform: state
+      entity_id: sensor.0x54ef441000dbf5d6_movement
+      to: 'movement'
+    - platform: state
+      entity_id: binary_sensor.0x54ef441000dbf5d6_presence
+      to: 'Home'
   condition:
     - condition: state
       entity_id: switch.0x54ef441000d37ead

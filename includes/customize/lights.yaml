@@ -5,7 +5,7 @@ light.master_bedroom_lamp:
   friendly_name: "Master Bedroom Lamp"
 
 light.bedside:
-  friendly_name: "Master Bedroom bedside lamp"
+  friendly_name: "Master Bedroom Bedside Lamp"
 
 light.bedroom_lamp:
   friendly_name: "Bedroom Lamp"
@@ -24,13 +24,4 @@ light.living_room_lamp_ambilight:
 
 light.gateway_light_7811dcb245b2:
   friendly_name: "Hub 1 Light"
-
-light.living_room_spot_left_1:
-  friendly_name: "Living Room Left Spot 1"
-
-light.living_room_spot_left_2:
-  friendly_name: "Living Room Left Spot 2"
-
-light.living_room_spot_left_3:
-  friendly_name: "Living Room Left Spot 3"
 

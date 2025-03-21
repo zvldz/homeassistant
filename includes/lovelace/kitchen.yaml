@@ -30,15 +30,22 @@ cards:
             styles:
               card:
                 - font-size: 14px
-#          - type: custom:button-card
-#            entity: switch.shelly1_kitchen_lamp
-#            name: Kitchen Lamp
-#            icon: mdi:light-switch
-#            size: 20%
-#            styles:
-#              card:
-#                - font-size: 14px
 
+      - type: custom:button-card
+        name: "Timers"
+        styles:
+          card:
+            - background-color: "#203040"
+
+      - type: horizontal-stack
+        cards:
+        - type: entity-filter
+          show_header_toggle: false
+          entities:
+            - entity: timer.kitchen_light
+            - entity: timer.balcony_living_light
+          state_filter:
+            - 'active'
 
   - type: vertical-stack
     cards:
@@ -56,6 +63,8 @@ cards:
             entities:
               - entity: sensor.0x00158d0002ca0395_temperature
                 name: Kitchen
+              - entity: sensor.0x0ceff6fffe3ad9f3_temperature
+                name: Kitchen LCD
               - entity: sensor.4c65a8d98721_temperature
                 name: Kitchen BT
                 color: red
@@ -68,6 +77,8 @@ cards:
             entities:
               - entity: sensor.0x00158d0002ca0395_humidity
                 name: Kitchen
+              - entity: sensor.0x0ceff6fffe3ad9f3_humidity
+                name: Kitchen LCD
               - entity: sensor.4c65a8d98721_humidity
                 name: Kitchen BT
                 color: red
@@ -100,21 +111,21 @@ cards:
           - entity: sensor.0x00158d00022515fe_illuminance
             type: custom:multiple-entity-row
             secondary_info: last-changed
-
-      - type: custom:button-card
-        name: "Timers"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-        - type: entity-filter
-          show_header_toggle: false
-          entities:
-            - entity: timer.kitchen_light
-            - entity: timer.balcony_living_light
-          state_filter:
-            - 'active'
-
+          - entity: sensor.0x54ef441000dbf5d6_movement
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: binary_sensor.0x54ef441000dbf5d6_presence
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.0x54ef441000dbf5d6_target_distance
+            type: custom:multiple-entity-row
+            secondary_info: last-changed
+          - entity: sensor.nobito_carbon_dioxide
+            type: custom:multiple-entity-row
+            name: Nobito CO2 Density
+            secondary_info: last-changed
+          - entity: sensor.nobito_pm2_5
+            type: custom:multiple-entity-row
+            name: Nobito PM2.5 Density
+            secondary_info: last-changed
 

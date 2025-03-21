@@ -21,3 +21,9 @@
 
 "*.0x00158d0008c99223*":
   friendly_name: Outdoor Thermometer
+
+"*.0xd44867fffe06aed3*":
+  friendly_name: Living Room Thermometer LCD
+
+"*.0x0ceff6fffe3ad9f3*":
+  friendly_name: Kitchen Thermometer LCD

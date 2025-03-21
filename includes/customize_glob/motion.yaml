@@ -13,3 +13,6 @@
 "*.0x54ef441000268428*":
   friendly_name: Bathroom Motion 2
 
+"*.0x54ef441000dbf5d6*":
+  friendly_name: Kitchen Presence
+

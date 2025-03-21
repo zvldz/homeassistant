@@ -20,9 +20,9 @@ cards:
               - entity: sensor.0x00158d0002bfe958_temperature
                 name: Living Room
               - entity: sensor.0x00158d0002323856_temperature
-                name: Master Bedroom
+                name: Bedroom 1
               - entity: sensor.0x00158d0001ab2a27_temperature
-                name: Bedroom
+                name: Bedroom 2
               - entity: sensor.0x00158d0002ca0395_temperature
                 name: Kitchen
               - entity: sensor.0x00158d00027300cc_temperature
@@ -130,22 +130,6 @@ cards:
         sensors:
           - entity: sensor.0x00158d0002323856_temperature
             name: Temperature
-
-      - type: custom:mini-humidifier
-        model: 'zhimi.humidifier.ca4'
-        entity: humidifier.zhimi_ca4_3dd7_humidifier
-        name: Humidifier
-        indicators:
-          depth:
-            icon: 'mdi:tray-full'
-            unit: '%'
-            round: 0
-            order: 0
-            max_value: 125
-            volume: 4
-            type: 'percent'
-            source:
-              attribute: humidifier.water_level
 
   - type: vertical-stack
     cards:

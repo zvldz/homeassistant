@@ -1,9 +1,9 @@
 living_room_spot_left:
   name: "Left Spots"
   entities:
-    - light.living_room_spot_left_1
-    - light.living_room_spot_left_2
-    - light.living_room_spot_left_3
+    - light.0x54ef441000e7a2f5
+    - light.0x54ef441000e7ad0e
+    - light.0x54ef441000e7a5bd
 
 living_room_spot_right:
   name: "Right Spots"

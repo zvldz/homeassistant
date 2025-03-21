@@ -124,7 +124,15 @@ MIIO_TO_MIOT_SPECS = {
         'miio_specs': {
             'prop.2.1': {'prop': 'power', 'setter': True, 'format': 'onoff', 'set_template': '{{ [value|int] }}'},
             'prop.2.2': {'prop': 'speed', 'setter': 'set_wind', 'set_template': '{{ [props.mode, value|int] }}'},
-            'prop.2.3': {'prop': 'mode', 'setter': 'set_wind', 'set_template': '{{ [value|int, props.speed] }}'},
+            'prop.2.3': {
+                'prop': 'mode',
+                'setter': 'set_wind',
+                'dict': {1: 2, 2: 1},
+                'set_template': '{{ '
+                                '[2,props.speed] if value == 1 else '
+                                '[1,props.speed] if value == 2 else '
+                                '[value,props.speed] }}',
+            },
             'prop.3.1': {'prop': 'pm25'},
             'prop.4.1': {
                 'prop': 'lock', 'setter': True,
@@ -2415,6 +2423,9 @@ MIIO_TO_MIOT_SPECS = {
             'prop.3.3': {'prop': 'bright', 'setter': True},
         },
     },
+    'yilai.light.ceiling1': 'yeelink.light._base',
+    'yilai.light.ceiling2': 'yeelink.light._base',
+    'yilai.light.ceiling3': 'yeelink.light._base',
 
     'yunmi.waterpuri.lx5': {
         'chunk_properties': 1,

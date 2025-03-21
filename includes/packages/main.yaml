@@ -36,16 +36,16 @@ automation:
       - delay: '00:04:00'
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
       - delay: '00:08:00'
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
@@ -68,8 +68,8 @@ automation:
           message: "\U00002620 {{ states('sensor.time_date') }} | 1 Mains voltage is missinig | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}"
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
@@ -81,8 +81,8 @@ automation:
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
@@ -97,16 +97,19 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.0xa46dd4fffe4f985d_power
-        above: 10
+        above: 100
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state.state not in  ('unknown', 'unavailable') }}"
     action:
       - delay: '00:02:00'
       - service: notify.telegram
         data:
-          message: "\U000026A1 {{ states('sensor.time_date') }} | 2 Mains voltage restored | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}"
+          message: "\U000026A1 {{ states('sensor.time_date') }} | 2 Mains voltage restored | ip: {{ states('sensor.myip') }} | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }} ({{ trigger.from_state.state }})"
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
@@ -117,8 +120,8 @@ automation:
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip
@@ -129,8 +132,8 @@ automation:
       - delay: '00:02:00'
       - service: light.turn_off
         entity_id:
-          - group.living_room_spot_left
-          - group.living_room_spot_right
+#          - group.living_room_spot_left
+#          - group.living_room_spot_right
           - group.wc_spots
           - light.kitchen_lamp
           - light.balcony_strip

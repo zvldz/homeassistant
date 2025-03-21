@@ -6,3 +6,13 @@
 
 "*.0x54ef441000e77fb2*":
   friendly_name: Living Room Right Spot 3
+
+"*.0x54ef441000e7a2f5*":
+  friendly_name: Living Room Left Spot 1
+
+"*.0x54ef441000e7ad0e*":
+  friendly_name: Living Room Left Spot 2
+
+"*.0x54ef441000e7a5bd*":
+  friendly_name: Living Room Left Spot 3
+

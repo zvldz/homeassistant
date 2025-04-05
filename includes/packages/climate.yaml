@@ -22,7 +22,7 @@ climate:
     name: "Gas Boiler"
     unique_id: 2bfe958
     heater: switch.boiler_shelly
-    target_sensor: sensor.0x00158d0002bfe958_temperature
+    target_sensor: sensor.0x00158d0001ab2a27_temperature
     ac_mode: false
     min_temp: 15
     max_temp: 25

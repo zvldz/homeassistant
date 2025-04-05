@@ -1,0 +1,10 @@
+- name: person1
+  id: ada6790
+  device_trackers:
+    - device_tracker.poco_f6_pro
+
+- name: person2
+  id: ada6789
+  device_trackers:
+    - device_tracker.a4_55_90_e3_c7_4e
+

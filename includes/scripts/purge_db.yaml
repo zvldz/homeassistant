@@ -1,0 +1,21 @@
+purge_db_0d:
+  sequence:
+    - service: recorder.purge
+      data:
+        keep_days: 0
+        repack: true
+
+purge_db_1d:
+  sequence:
+    - service: recorder.purge
+      data:
+        keep_days: 1
+        repack: true
+
+purge_db_2d:
+  sequence:
+    - service: recorder.purge
+      data:
+        keep_days: 2
+        repack: true
+

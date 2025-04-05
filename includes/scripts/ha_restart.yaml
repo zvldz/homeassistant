@@ -1,0 +1,7 @@
+ha1_restart:
+  sequence:
+    - service: rest_command.ha1_restart
+
+ha2_restart:
+  sequence:
+    - service: rest_command.ha2_restart

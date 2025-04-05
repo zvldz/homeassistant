@@ -1,0 +1,23 @@
+- platform: group
+  name: "Livingroom Left Spots"
+  unique_id: 839475935
+  entities:
+    - light.0x54ef441000e7a2f5
+    - light.0x54ef441000e7ad0e
+    - light.0x54ef441000e7a5bd
+
+- platform: group
+  unique_id: 839475936
+  name: "Livingroom Right Spots"
+  entities:
+    - light.0x54ef441000e79451
+    - light.0x54ef441000e7a6dd
+    - light.0x54ef441000e77fb2
+
+- platform: group
+  unique_id: 839475937
+  name: "WC Spots"
+  entities:
+    - light.wc_spot_1
+    - light.wc_spot_2
+

@@ -3,43 +3,54 @@ icon: "mdi:bed-empty"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: light
+          - type: tile
+            name: "Lamp"
             entity: light.bedroom_lamp
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
             entity: switch.bw_plug_2_relay
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
-            entity: switch.bw_plug_2_relay_usb
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
+            icon: "mdi:light-switch"
 
-      - type: custom:button-card
-        name: "Timers"
-        styles:
-          card:
-            - background-color: "#203040"
+          - type: tile
+            entity: switch.bw_plug_2_relay_usb
+            icon: "mdi:light-switch"
+
+      - type: heading
+        heading: "Timers"
+        icon: "mdi:timer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -52,11 +63,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -74,11 +89,15 @@ cards:
             entities:
               - entity: sensor.0x00158d0001ab2a27_humidity
 
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:
@@ -96,20 +115,15 @@ cards:
 
   - type: vertical-stack
     cards:
-#      - type: custom:button-card
-#        name: "Camera1"
-#        styles:
-#          card:
-#            - background-color: "#203040"
-#
-#      - type: 'custom:webrtc-camera'
-#        entity: camera.camera1
-
-      - type: custom:button-card
-        name: "rCamera1"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Camera"
+        icon: "mdi:cctv"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: 'custom:webrtc-camera'
         entity: camera.rcamera1_profile000_mainstream

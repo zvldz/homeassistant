@@ -3,11 +3,15 @@ icon: "mdi:bell-ring"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Doorbell"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Doorbell"
+        icon: "mdi:bell-ring"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         show_header_toggle: false
@@ -23,11 +27,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Camera"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Camera"
+        icon: "mdi:webcam"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: picture-glance
         show_header_toggle: false

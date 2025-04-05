@@ -3,39 +3,54 @@ icon: "mdi:silverware-fork-knife"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: light
+          - type: tile
+            name: "Lamp"
             entity: light.kitchen_lamp
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x54ef441000d37ead
-            name: Kitchen
-            icon: mdi:light-switch
-            size: 10%
-            styles:
-              card:
-                - font-size: 14px
+            name: "Switch"
+            icon: "mdi:light-switch"
+            features_position: inline
+            features:
+              - type: "toggle"
 
-      - type: custom:button-card
-        name: "Timers"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Timers"
+        icon: "mdi:timer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -49,11 +64,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -85,11 +104,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:

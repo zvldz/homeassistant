@@ -3,11 +3,15 @@ icon: "mdi:flash-auto"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Automations"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Automations"
+        icon: "mdi:home-automation"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:auto-entities
         card:
@@ -34,13 +38,15 @@ cards:
                 reverse: true
                 ignore_case: true
 
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Scripts"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Scripts"
+        icon: "mdi:script-text-play"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:auto-entities
         card:
@@ -60,11 +66,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Settings"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Settings"
+        icon: "mdi:tune-vertical"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         show_header_toggle: false

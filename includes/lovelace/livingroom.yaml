@@ -3,64 +3,125 @@ icon: "mdi:sofa"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: light
+          - type: tile
+            name: "Lamp"
             entity: light.living_room_lamp
-          - type: light
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
+
+          - type: tile
+            name: "Ambilight"
             entity: light.living_room_lamp_ambilight
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
       - type: horizontal-stack
         cards:
-          - type: entities
-            entities:
-              - type: custom:fold-entity-row
-                head: group.living_room_spot_left
-                entity: group.living_room_spot_left
-              - type: custom:fold-entity-row
-                head: group.living_room_spot_right
-                entity: group.living_room_spot_right
+          - type: tile
+            name: "Left Spots"
+            entity: light.livingroom_left_spots
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
+
+          - type: tile
+            name: "Rights Spots"
+            entity: light.livingroom_right_spots
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
+            entity: light.0x54ef441000e7a2f5
+            name: "Left Spot 1"
+
+          - type: tile
+            entity: light.0x54ef441000e7ad0e
+            name: "Left Spot 2"
+
+          - type: tile
+            entity: light.0x54ef441000e7ad0e
+            name: "Left Spot 3"
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: light.0x54ef441000e79451
+            name: "Right Spot 1"
+
+          - type: tile
+            entity: light.0x54ef441000e7a6dd
+            name: "Right Spot 2"
+
+          - type: tile
+            entity: light.0x54ef441000e77fb2
+            name: "Right Spot 3"
+
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
             entity: switch.0x54ef441000eb9606_left
-            name: Switch Left
+            name: "Switch Left"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+#            tap_action:
+#              action: toggle
+#            hold_action:
+#              action: more-info
 
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x54ef441000eb9606_right
-            name: Switch Right
+            name: "Switch Right"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+#            tap_action:
+#              action: toggle
+#            hold_action:
+#              action: more-info
 
-          - type: custom:button-card
+          - type: tile
             entity: switch.bw_plug_1_relay
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+            name: "Socket"
+#            tap_action:
+#              action: toggle
+#            hold_action:
+#              action: more-info
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:

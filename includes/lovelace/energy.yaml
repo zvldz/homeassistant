@@ -1,13 +1,104 @@
-title: Energy
-icon: mdi:home-lightning-bolt
+title: "Energy"
+icon: "mdi:home-lightning-bolt"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Visual scheme of energy"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Electrical Status"
+        icon: "mdi:lightning-bolt-outline"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - sensor.delta_2_max_battery_level
+          - sensor.delta_2_max_total_in_power
+          - sensor.delta_2_max_total_out_power
+          - sensor.delta_2_max_battery_temperature
+          - sensor.delta_2_max_inv_out_temperature
+          - sensor.delta_2_max_charge_remaining_time
+          - sensor.delta_2_max_discharge_remaining_time
+
+      - type: heading
+        heading: "Gas"
+        icon: "mdi:gas-burner"
+        card_mod:
+          style: |
+            div.container{
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: input_number.gas_counter
+
+          - type: tile
+            entity: binary_sensor.0x00158d000393f29a_contact
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: script.sync_gas_counter_with_ha1
+            name: "Sync with HA1"
+            icon: "mdi:autorenew"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.sync_gas_counter_with_ha1
+
+          - type: tile
+            entity: script.sync_gas_counter_with_ha2
+            name: "Sync with HA2"
+            icon: "mdi:autorenew"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.sync_gas_counter_with_ha2
+
+      - type: entities
+        entities:
+          - type: custom:fold-entity-row
+            head:
+              type: section
+              label: Details Graphs
+            entities:
+              - type: custom:mini-graph-card
+                hour24: true
+                points_per_hour: 1
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_hourly
+
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_monthly
+
+              - type: custom:mini-graph-card
+                hours_to_show: 720
+                unit: "㎥"
+                entities:
+                  - entity: sensor.gas_yearly
+
+  - type: vertical-stack
+    cards:
+      - type: heading
+        heading: "Visual scheme of energy"
+        icon: "mdi:sitemap-outline"
+        card_mod:
+          style: |
+            div.container{
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:power-flow-card-plus
         clickable_entities: true
@@ -46,104 +137,22 @@ cards:
               display_zero: true
               color_icon: true
 
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: "Additional information"
-        styles:
-          card:
-            - background-color: "#203040"
-
       - type: entities
         show_header_toggle: false
         entities:
-          - sensor.delta_2_max_battery_level
-          - sensor.delta_2_max_total_in_power
-          - sensor.delta_2_max_total_out_power
-          - sensor.delta_2_max_battery_temperature
-          - sensor.delta_2_max_inv_out_temperature
-          - sensor.delta_2_max_charge_remaining_time
-          - sensor.delta_2_max_discharge_remaining_time
-
-      - type: custom:button-card
-        name: "Gas"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        show_header_toggle: false
-        entities:
-          - input_number.gas_counter
-          - binary_sensor.0x00158d000393f29a_contact
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: "Sync with HA1"
-            icon: "mdi:autorenew"
-            entity: script.sync_gas_counter_with_ha1
-            tap_action:
-#             confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.sync_gas_counter_with_ha1
-            size: 18%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Sync with HA2"
-            icon: "mdi:autorenew"
-            entity: script.sync_gas_counter_with_ha2
-            tap_action:
-#             confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.sync_gas_counter_with_ha2
-            size: 18%
-            styles:
-              card:
-                - font-size: 14px
-
-      - type: entities
-        entities:
-          - type: custom:fold-entity-row
-            head:
-              type: section
-              label: Details Graphs
-            entities:
-              - type: custom:mini-graph-card
-                hour24: true
-                points_per_hour: 1
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_hourly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_monthly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_yearly
-
+          - sensor.delta_2_max_ac_in_volts
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Power"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Electrical Status"
+        icon: "mdi:lightning-bolt-outline"
+        card_mod:
+          style: |
+            div.container{
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -153,12 +162,6 @@ cards:
             points_per_hour: 1
             entities:
               - entity: sensor.0xa46dd4fffe4f985d_power
-
-      - type: custom:button-card
-        name: "Voltage"
-        styles:
-          card:
-            - background-color: "#203040"
 
       - type: horizontal-stack
         cards:
@@ -172,17 +175,7 @@ cards:
 #               color: red
               - entity: sensor.0xa46dd4fffe4f985d_voltage
                 color: blue
-
-      - type: conditional
-        conditions:
-          - entity: sensor.instance_name
-            state: "HA1"
-        card:
-          type: custom:button-card
-          name: "UPS"
-          styles:
-            card:
-              - background-color: "#203040"
+              - entity: sensor.delta_2_max_ac_in_volts
 
       - type: conditional
         conditions:
@@ -196,18 +189,12 @@ cards:
                 type: custom:fold-entity-row
                 head:
                   type: section
-                  label: "Details"
+                  label: "UPS"
                 padding: 0
               filter:
                 include:
                   - entity_id: "sensor.ups_*"
                     sort: entity_id
-
-      - type: custom:button-card
-        name: "Battery Level"
-        styles:
-          card:
-            - background-color: "#203040"
 
       - type: entities
         entities:
@@ -216,12 +203,12 @@ cards:
               type: custom:fold-entity-row
               head:
                 type: section
-                label: "Details"
+                label: "Battery Level Of Wireless Devices"
               padding: 0
             filter:
               include:
                 - entity_id: "*battery*"
-                  sort: name
+                  sort: state
                   options:
                     secondary_info: last-changed
                 - attributes:
@@ -233,6 +220,5 @@ cards:
               exclude:
                 - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
                 - entity_id: "*pressure*"
-                - entity_id: "*m2007j20cg*"
 
 

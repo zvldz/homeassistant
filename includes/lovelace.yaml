@@ -1,7 +1,5 @@
 mode: yaml
 resources:
-  - url: /hacsfiles/button-card/button-card.js
-    type: module
   - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
     type: module
   - url: /hacsfiles/mini-media-player/mini-media-player-bundle.js
@@ -14,8 +12,6 @@ resources:
     type: js
   - url: /hacsfiles/miflora-card/miflora-card.js
     type: js
-  - url: /hacsfiles/simple-thermostat/simple-thermostat.js
-    type: module
   - url:  /hacsfiles/lovelace-template-entity-row/template-entity-row.js
     type: module
   - url:  /hacsfiles/flex-table-card/flex-table-card.js
@@ -27,6 +23,4 @@ resources:
   - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
     type: module
   - url: /hacsfiles/power-flow-card-plus/power-flow-card-plus.js
-    type: module
-  - url: /hacsfiles/mini-humidifier/mini-humidifier-bundle.js?v=3.1.1
     type: module

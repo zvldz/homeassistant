@@ -1,26 +1,5 @@
-living_room_spot_left:
-  name: "Left Spots"
-  entities:
-    - light.0x54ef441000e7a2f5
-    - light.0x54ef441000e7ad0e
-    - light.0x54ef441000e7a5bd
-
-living_room_spot_right:
-  name: "Right Spots"
-  entities:
-    - light.0x54ef441000e79451
-    - light.0x54ef441000e7a6dd
-    - light.0x54ef441000e77fb2
-
-wc_spots:
-  name: "WC Spots"
-  entities:
-    - light.wc_spot_1
-    - light.wc_spot_2
-
 persons:
   name: "Persons"
   entities:
-    - device_tracker.a4_55_90_e3_c7_4e
-    - device_tracker.poco_f6_pro
-
+    - person.person1
+    - person.person2

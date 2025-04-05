@@ -3,63 +3,71 @@ icon: "mdi:wall"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: light
-        entity: light.balcony_strip
-
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
+            entity: light.balcony_strip
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
+
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
             entity: switch.0x00158d00022ab4bf
-            name: Balcony 1
+            name: "Balcony 1"
             icon: "mdi:light-switch"
-            size: 35%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+            vertical: true
+
+          - type: tile
             entity: switch.0x00158d0001f9aa37
-            name: Balcony 2
+            name: "Balcony 2"
             icon: "mdi:light-switch"
-            size: 35%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+            vertical: true
+
+          - type: tile
             entity: switch.0x00158d0002114338
-            name: Balcony 3
+            name: "Balcony 3"
             icon: "mdi:light-switch"
-            size: 35%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+            vertical: true
+
+          - type: tile
             entity: switch.0x00158d0002235125
-            name: Storeroom
+            name: "Storeroom"
             icon: "mdi:light-switch"
-            size: 35%
-            styles:
-              card:
-                - font-size: 14px
+            vertical: true
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Flowers"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Flowers"
+        icon: "mdi:flower"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:miflora-card
         title: 'Flower 1'
@@ -70,8 +78,10 @@ cards:
         min_temperature: 12
         entities:
           - moisture:sensor.c47c8d671018_moisture
+          - moisture:sensor.0xa4c1380c9b2fff69_soil_moisture
           - intensity:sensor.c47c8d671018_illuminance
           - temperature:sensor.c47c8d671018_temperature
+          - temperature:sensor.0xa4c1380c9b2fff69_temperature
           - conductivity:sensor.c47c8d671018_conductivity
 
       - type: custom:miflora-card
@@ -83,17 +93,23 @@ cards:
         min_temperature: 12
         entities:
           - moisture:sensor.c47c8d670f2e_moisture
+          - moisture:sensor.0xa4c13898fe3f524d_soil_moisture
           - intensity:sensor.c47c8d670f2e_illuminance
           - temperature:sensor.c47c8d670f2e_temperature
+          - temperature:sensor.0xa4c13898fe3f524d_temperature
           - conductivity:sensor.c47c8d670f2e_conductivity
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -117,11 +133,15 @@ cards:
                 name: Outdoor
                 color: red
 
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:

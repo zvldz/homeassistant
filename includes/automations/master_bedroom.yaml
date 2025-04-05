@@ -43,8 +43,8 @@
     - service: light.turn_off
       entity_id:
         - light.kitchen_lamp
-        - group.living_room_spot_right
-        - group.living_room_spot_left
+        - light.living_room_right_spots
+        - light.living_room_left_spots
         - light.living_room_lamp
         - light.balcony_strip
         - light.master_bedroom_lamp

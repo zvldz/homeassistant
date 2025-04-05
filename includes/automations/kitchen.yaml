@@ -2,6 +2,7 @@
 # Light
 - alias: "Turn on light in Kitchen on conditions"
   initial_state: true
+  id: turn_on_light_in_kitchen_on_conditions
   trigger:
     - platform: state
       entity_id: binary_sensor.0x00158d00022515fe_occupancy
@@ -13,6 +14,9 @@
     - platform: state
       entity_id: binary_sensor.0x54ef441000dbf5d6_presence
       to: 'Home'
+    - platform: numeric_state
+      entity_id: sensor.0x54ef441000dbf5d6_target_distance
+      above: 0
   condition:
 #   - condition: numeric_state
 #     entity_id: sensor.0x00158d00022515fe_illuminance
@@ -41,6 +45,7 @@
 
 - alias: "Reset Kitchen timer"
   initial_state: true
+  id: reset_kitchen_timer
   trigger:
     - platform: state
       entity_id: binary_sensor.0x00158d00022515fe_occupancy
@@ -52,6 +57,9 @@
     - platform: state
       entity_id: binary_sensor.0x54ef441000dbf5d6_presence
       to: 'Home'
+    - platform: numeric_state
+      entity_id: sensor.0x54ef441000dbf5d6_target_distance
+      above: 0.1
   condition:
     - condition: state
       entity_id: switch.0x54ef441000d37ead

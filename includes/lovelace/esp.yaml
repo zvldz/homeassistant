@@ -3,11 +3,15 @@ icon: "mdi:chip"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Binary Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Binary Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:auto-entities
         card:
@@ -18,11 +22,15 @@ cards:
               sort:
                 method: name
 
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:auto-entities
         card:
@@ -34,13 +42,22 @@ cards:
               sort:
                 method: name
 
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - sensor.esphome_latest
+
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:
@@ -67,6 +84,7 @@ cards:
                 - entity_id: "sensor.(sonoff|bw|power_strip|esp|ac*)_*wifi_signal"
                   sort:
                     method: name
+
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -161,11 +179,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:
@@ -195,11 +217,15 @@ cards:
                   sort:
                     method: name
 
-      - type: custom:button-card
-        name: "Shelly Firmware"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Shelly Firmware"
+        icon: "mdi:memory"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:auto-entities
         card:

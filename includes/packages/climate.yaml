@@ -20,6 +20,7 @@ input_number:
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
+    unique_id: 2bfe958
     heater: switch.boiler_shelly
     target_sensor: sensor.0x00158d0002bfe958_temperature
     ac_mode: false
@@ -192,7 +193,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.0x00158d00025f23f4_action
+        entity_id: sensor.0x38398ffffe1ff367_action
         to: 'single'
     condition:
       - condition: state
@@ -213,7 +214,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.0x00158d00025f23f4_action
+        entity_id: sensor.0x38398ffffe1ff367_action
         to: 'double'
     condition:
       - condition: state

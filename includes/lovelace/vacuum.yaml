@@ -3,15 +3,18 @@ icon: "mdi:robot-vacuum"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Status"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Vacuum Status"
+        icon: "mdi:robot-vacuum-alert"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: custom:vacuum-card
         entity: vacuum.xiaomi_vacuum_cleaner
-#       map: camera.rockrobo_map
         stats:
           default:
             - entity_id: sensor.vacuum_cleaner_filter_left
@@ -56,82 +59,69 @@ cards:
             service: script.vacuum_bedroom
             icon: "mdi:bed-empty"
 
-      - type: custom:button-card
-        name: "Reset Counters"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Reset Counters"
+        icon: "mdi:counter"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
+            entity: script.vacuum_reset_filter
             name: "Filter"
             icon: "mdi:autorenew"
-            entity: script.vacuum_reset_filter
+            vertical: true
+            hide_state: true
             tap_action:
-              confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.vacuum_reset_filter
-            size: 30%
-            styles:
-              card:
-                - font-size: 14px
+              action: perform-action
+              perform_action: script.vacuum_reset_filter
 
-          - type: custom:button-card
+          - type: tile
+            entity: script.vacuum_reset_side_brush
             name: "Side Brush"
             icon: "mdi:autorenew"
-            entity: script.vacuum_reset_side_brush
+            vertical: true
+            hide_state: true
             tap_action:
-              confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.vacuum_reset_side_brush
-            size: 30%
-            styles:
-              card:
-                - font-size: 14px
+              action: perform-action
+              perform_action: script.vacuum_reset_side_brush
 
-          - type: custom:button-card
+          - type: tile
+            entity: script.vacuum_reset_main_brush
             name: "Main Brush"
             icon: "mdi:autorenew"
-            entity: script.vacuum_reset_main_brush
+            vertical: true
+            hide_state: true
             tap_action:
-              confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.vacuum_reset_main_brush
-            size: 30%
-            styles:
-              card:
-                - font-size: 14px
+              action: perform-action
+              perform_action: script.vacuum_reset_main_brush
 
-          - type: custom:button-card
+          - type: tile
+            entity: script.vacuum_reset_sensor
             name: "Sensors"
             icon: "mdi:autorenew"
-            entity: script.vacuum_reset_sensor
+            vertical: true
+            hide_state: true
             tap_action:
-              confirmation: true
-              action: call-service
-              service: script.turn_on
-              service_data:
-                entity_id: script.vacuum_reset_sensor
-            size: 30%
-            styles:
-              card:
-                - font-size: 14px
-
+              action: perform-action
+              perform_action: script.vacuum_reset_sensor
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Map"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Map"
+        icon: "mdi:map-clock"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: 'custom:valetudo-map-card'
         vacuum: valetudo_rockrobo

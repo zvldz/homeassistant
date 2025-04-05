@@ -3,112 +3,111 @@ icon: "mdi:swap-vertical-variant"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: light
+          - type: tile
             entity: light.gateway_light_7811dcb245b2
+            features:
+              - type: "light-brightness"
+#             - type: "light-color-temp"
+
+          - type: tile
+            name: "WC Spots"
+            entity: light.wc_spots
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
       - type: horizontal-stack
         cards:
-          - type: entities
-            entities:
-              - type: custom:fold-entity-row
-                head: group.wc_spots
-                entity: group.wc_spots
+          - type: tile
+            entity: light.wc_spot_1
+            name: "WC Spot 1"
 
-      - type: custom:button-card
-        name: "Switches"
-        styles:
-          card:
-            - background-color: "#203040"
+          - type: tile
+            entity: light.wc_spot_2
+            name: "WC Spot 2"
+
+      - type: heading
+        heading: "Switches"
+        icon: "mdi:light-switch"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x00158d0002113ace
-            name: Hallway 1
+            name: "Hallway 1"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+
+          - type: tile
             entity: switch.0x00158d0002112b1e
-            name: Hallway 2
+            name: "Hallway 2"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+
+          - type: tile
             entity: switch.0x00158d00022a8150_right
-            name: Hallway 3
+            name: "Hallway 3"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x54ef4410001aab8c
-            name: WC
+            name: "WC"
             icon: "mdi:light-switch"
-            size: 14%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+
+          - type: tile
             entity: switch.0x54ef4410001f5dd8
-            name: WC Fan
+            name: "WC Fan"
             icon: "mdi:light-switch"
-            size: 14%
-            styles:
-              card:
-                - font-size: 14px
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x00158d00022a8150_left
-            name: Bathroom
+            name: "Bathroom"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+            vertical: true
 
-          - type: custom:button-card
+          - type: tile
             entity: switch.0x54ef4410001ad4c2_right
-            name: Bathroom Fan
+            name: "Bathroom Fan"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-          - type: custom:button-card
+            vertical: true
+
+          - type: tile
             entity: switch.0x54ef4410001ad4c2_left
-            name: Bathroom Mirror
+            name: "Bathroom Mirror"
             icon: "mdi:light-switch"
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
+            vertical: true
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -136,11 +135,15 @@ cards:
                 name: Bathroom
                 color: red
 
-      - type: custom:button-card
-        name: "Timers"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Timers"
+        icon: "mdi:timer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -158,11 +161,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:

@@ -3,12 +3,15 @@ icon: "mdi:heart-pulse"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "System"
-        styles:
-          card:
-            - background-color: "#203040"
-
+      - type: heading
+        heading: "Home Assistant Status"
+        icon: "mdi:home-assistant"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
       - type: entities
         entities:
           - entity: sensor.myip
@@ -24,11 +27,8 @@ cards:
             format: total
 #          - entity: sensor.ha_off_uptime
 #            format: total
-          - entity: sensor.start_time
-            type: custom:multiple-entity-row
-            entities:
-              - entity: sensor.ha_init
-                name: false
+          - entity: sensor.ha_init
+            name: HA Start Time
           - entity: sensor.ha_current
             name: HA Version
             type: custom:multiple-entity-row
@@ -38,15 +38,10 @@ cards:
               - entity: sensor.ha_beta
                 name: false
 
-      - type: custom:button-card
-        name: "Unavailable entities"
-        styles:
-          card:
-            - background-color: "#203040"
-
       - type: entities
         entities:
           - entity: sensor.total_entities_unavailable
+            icon: "mdi:alert-circle"
           - type: custom:auto-entities
             card:
               type: custom:fold-entity-row
@@ -62,147 +57,17 @@ cards:
                   options:
                     secondary_info: last-changed
 
-
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Zigbee2MQTT"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: entities
-        entities:
-          - entity: switch.zigbee2mqtt_bridge_permit_join
-            name: Zigbee2MQTT Join
-          - entity: binary_sensor.zigbee2mqtt_bridge_connection_state
-            name: Zigbee2MQTT
-          - entity: sensor.zigbee2mqtt_bridge_version
-            name: Zigbee2MQTT Version
-            type: custom:multiple-entity-row
-            entities:
-              - entity: sensor.z2m_latest
-                name: false
-          - entity: sensor.zigbee2mqtt_bridge_coordinator_version
-
-      - type: custom:button-card
-        name: "Maintenance"
-        styles:
-          card:
-            - background-color: "#203040"
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: "Restart HA1"
-            icon: "mdi:rotate-3d-variant"
-            tap_action:
-              confirmation: true
-              action: call-service
-              service: rest_command.ha1_restart
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Restart HA2"
-            icon: "mdi:rotate-3d-variant"
-            tap_action:
-              confirmation: true
-              action: call-service
-              service: rest_command.ha2_restart
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-#         - type: custom:button-card
-#           name: "Reboot HA1"
-#           icon: "mdi:autorenew"
-#           tap_action:
-#             confirmation: true
-#             action: call-service
-#             service: script.turn_on
-#             service_data:
-#               entity_id: script.reboot_ha1
-#           size: 20%
-#           styles:
-#             card:
-#               - font-size: 14px
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: "Power HAS"
-            entity: switch.gosund_socket_2
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Power HAF"
-            entity: switch.fazenda_socket
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
-
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: "Purge DB to 0 d"
-            icon: "mdi:database-refresh-outline"
-            tap_action:
-              confirmation: true
-              action: call-service
-              service: recorder.purge
-              service_data:
-                keep_days: 0
-                repack: true
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Purge DB to 1 d"
-            icon: "mdi:database-refresh-outline"
-            tap_action:
-              confirmation: true
-              action: call-service
-              service: recorder.purge
-              service_data:
-                keep_days: 1
-                repack: true
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-          - type: custom:button-card
-            name: "Purge DB to 2 d"
-            icon: "mdi:database-refresh-outline"
-            tap_action:
-              confirmation: true
-              action: call-service
-              service: recorder.purge
-              service_data:
-                keep_days: 2
-                repack: true
-            size: 20%
-            styles:
-              card:
-                - font-size: 14px
-
-  - type: vertical-stack
-    cards:
-      - type: custom:button-card
-        name: Traffic
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "System"
+        icon: "mdi:heart-pulse"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -215,12 +80,6 @@ cards:
                 name: RX
               - entity: sensor.mikrotik_ether1_tx
                 name: TX
-
-      - type: custom:button-card
-        name: "System"
-        styles:
-          card:
-            - background-color: "#203040"
 
       - type: horizontal-stack
         cards:
@@ -257,4 +116,120 @@ cards:
             hour24: true
             entities:
               - entity: sensor.disk_use_percent
+
+  - type: vertical-stack
+    cards:
+      - type: heading
+        heading: "Zigbee2MQTT"
+        icon: "mdi:zigbee"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: entities
+        entities:
+          - entity: switch.zigbee2mqtt_bridge_permit_join
+            name: Zigbee2MQTT Join
+          - entity: binary_sensor.zigbee2mqtt_bridge_connection_state
+            name: Zigbee2MQTT
+          - entity: sensor.zigbee2mqtt_bridge_version
+            name: Zigbee2MQTT Version
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.z2m_latest
+                name: false
+          - entity: sensor.zigbee2mqtt_bridge_coordinator_version
+
+      - type: heading
+        heading: "Maintenance"
+        icon: "mdi:wrench-clock"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: script.ha1_restart
+            name: "Restart HA1"
+            icon: "mdi:rotate-3d-variant"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.ha1_restart
+              confirmation:
+                text: Are you sure you want to restart HA1?
+
+          - type: tile
+            entity: script.ha2_restart
+            name: "Restart HA2"
+            icon: "mdi:rotate-3d-variant"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.ha2_restart
+              confirmation:
+                text: Are you sure you want to restart HA2?
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            name: "Power HAS"
+            entity: switch.gosund_socket_2
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle HAS power?
+
+          - type: tile
+            name: "Power HAF"
+            entity: switch.fazenda_socket
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle HAF power?
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: script.purge_db_0d
+            name: "Purge DB to 0 d"
+            icon: "mdi:database-refresh-outline"
+            hide_state: true
+            vertical: true
+            tap_action:
+              action: perform-action
+              perform_action: script.purge_db_0d
+              confirmation:
+                text: Are you sure you want to purge DB to 0 days?
+
+          - type: tile
+            entity: script.purge_db_1d
+            name: "Purge DB to 1 d"
+            icon: "mdi:database-refresh-outline"
+            hide_state: true
+            vertical: true
+            tap_action:
+              action: perform-action
+              perform_action: script.purge_db_1d
+              confirmation:
+                text: Are you sure you want to purge DB to 1 days?
+
+          - type: tile
+            entity: script.purge_db_2d
+            name: "Purge DB to 2 d"
+            icon: "mdi:database-refresh-outline"
+            hide_state: true
+            vertical: true
+            tap_action:
+              action: perform-action
+              perform_action: script.purge_db_2d
+              confirmation:
+                text: Are you sure you want to purge DB to 2 days?
 

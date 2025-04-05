@@ -1,15 +1,20 @@
 ha1_url:
+  name: "HA1 URL"
   initial: !secret ha1_url
 
 ha2_url:
+  name: "HA2 URL"
   initial: !secret ha2_url
 
 has_url:
+  name: "HAS URL"
   initial: !secret has_url
 
 ha_fazenda_url:
+  name: "HAF URL"
   initial: !secret ha_fazenda_url
 
 ha_off_url:
+  name: "HA_OFF URL"
   initial: !secret ha_off_url
 

@@ -31,7 +31,7 @@ logger:
   max_bytes: 104857600                # file size, default 0
   backup_count: 3                     # file rotation count, default 0
   debug_mode: true,mqtt,zigbee        # global modes for all gateways, default empty
-  level: debug                        # default
+  level: info                         # default
   mode: a                             # a - append to file, w - write new file, default
   format: "%(asctime)s %(levelname)s [%(name)s] %(message)s"  # default
 

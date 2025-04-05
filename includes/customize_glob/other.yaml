@@ -6,3 +6,9 @@
 
 "*.0xa46dd4fffe4f985d*":
   friendly_name: Energy Counter
+
+"*.0xa4c1380c9b2fff69*":
+  friendly_name: Flower 1
+
+"*.0xa4c13898fe3f524d*":
+  friendly_name: Flower 2

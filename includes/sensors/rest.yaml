@@ -10,3 +10,9 @@
   json_attributes:
     - state
 
+- platform: rest
+  name: "ESPHome Latest"
+  icon: "mdi:car-esp"
+  resource: https://api.github.com/repos/esphome/esphome/releases/latest
+  value_template: "{{ value_json.tag_name }}"
+  scan_interval: 1800

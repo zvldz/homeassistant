@@ -184,6 +184,16 @@ automation:
       - service: script.turn_on
         entity_id: script.vacuum_hallway
 
+  - alias: "Kitchen Button Click Long"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.0x38398ffffe1ff367_action
+        to: 'long'
+    action:
+      - service: script.turn_on
+        entity_id: script.vacuum_kitchen
+
   - alias: "Go To Kitchen"
     initial_state: true
     trigger:

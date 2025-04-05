@@ -3,36 +3,53 @@ icon: "mdi:bed"
 cards:
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Light"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Light"
+        icon: "mdi:lightbulb"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
-          - type: light
+          - type: tile
+            name: "Lamp"
             entity: light.master_bedroom_lamp
-          - type: light
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
+
+          - type: tile
+            name: "Bedside"
             entity: light.bedside
+            features:
+              - type: "light-brightness"
+              - type: "light-color-temp"
 
       - type: horizontal-stack
         cards:
-          - type: custom:button-card
+          - type: tile
+            name: Socket
             entity: switch.0x00158d0002677c89
             icon: "mdi:power-socket-au"
-            size: 15%
-            styles:
-              card:
-                - font-size: 14px
+            features_position: inline
+            features:
+              - type: "toggle"
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Climate"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Climate"
+        icon: "mdi:home-thermometer"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: horizontal-stack
         cards:
@@ -52,11 +69,15 @@ cards:
 
   - type: vertical-stack
     cards:
-      - type: custom:button-card
-        name: "Sensors"
-        styles:
-          card:
-            - background-color: "#203040"
+      - type: heading
+        heading: "Sensors"
+        icon: "mdi:state-machine"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         entities:
@@ -93,14 +114,18 @@ cards:
             name: Humidifier
             show_current_as_primary: true
             features:
-              - type: "target-humidity"
               - type: "humidifier-toggle"
+              - type: "target-humidity"
               - type: "humidifier-modes"
                 style: "dropdown"
-
-      - type: entities
-        entities:
-          - entity: sensor.zhimi_ca4_3dd7_water_level
-            name: Water Level
-            icon: "mdi:cup-water"
+            card_mod:
+              style:
+                ha-tile-info$: |
+                  .secondary {
+                     visibility: hidden;
+                   }
+                   .secondary:before {
+                     visibility: visible;
+                     content: "{{ states('humidifier.zhimi_ca4_3dd7_humidifier') | title + ' | Water Level: ' + states('sensor.zhimi_ca4_3dd7_water_level') + '%' | title}}";
+                   }
 

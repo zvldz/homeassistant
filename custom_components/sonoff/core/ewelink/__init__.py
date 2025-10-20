@@ -16,7 +16,7 @@ LOCAL_TTL = 60
 
 class XRegistry(XRegistryBase):
     config: dict = None
-    task: asyncio.Task = None
+    task: asyncio.Task | None = None
 
     def __init__(self, session: ClientSession):
         super().__init__(session)
@@ -79,6 +79,7 @@ class XRegistry(XRegistryBase):
 
         if self.task:
             self.task.cancel()
+            self.task = None
 
     async def send(
         self,
@@ -165,6 +166,27 @@ class XRegistry(XRegistryBase):
 
         # this can be called from different threads/loops
         # https://github.com/AlexxIT/SonoffLAN/issues/1368
+        if params := device.pop("params_bulk", None):
+            return await self.send(device, params)
+
+    # TODO: Unify send_bulk and send_bulk_configure
+    async def send_bulk_configure(self, device: XDevice, params: dict):
+        assert "configure" in params
+
+        if "params_bulk" in device:
+            for new in params["configure"]:
+                for old in device["params_bulk"]["configure"]:
+                    # check on duplicates
+                    if new["outlet"] == old["outlet"]:
+                        old["startup"] = new["switch"]
+                        break
+                else:
+                    device["params_bulk"]["configure"].append(new)
+        else:
+            device["params_bulk"] = params
+
+        await asyncio.sleep(0.1)
+
         if params := device.pop("params_bulk", None):
             return await self.send(device, params)
 
@@ -286,7 +308,9 @@ class XRegistry(XRegistryBase):
             params,
         )
 
-        if "sledOnline" in params:
+        if "params" not in device:
+            device["params"] = params
+        elif "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
 
         # we can get data from device, but without host
@@ -327,8 +351,9 @@ class XRegistry(XRegistryBase):
         uiid = device["extra"]["uiid"]
 
         # [5] POW, [32] POWR2, [182] S40, [190] POWR3 - one channel, only cloud update
-        # [181] THR316D/THR320D, [226] CK-BL602-W102SW18-01
-        if uiid in (5, 32, 182, 190, 181, 226):
+        # [181] THR316D/THR320D, [226] CK-BL602-W102SW18-01, [7032] S60ZBTPF
+        # CK-BL602-SWP1-02(262)
+        if uiid in (5, 32, 181, 182, 190, 226, 262, 7032):
             if self.can_cloud(device):
                 params = {"uiActive": 60}
                 asyncio.create_task(self.cloud.send(device, params, timeout=0))

@@ -200,7 +200,7 @@ class MiotSpec(MiotSpecInstance):
             if dat is None:
                 dat = {}
             nxt = s.mapping(excludes=eps, includes=ips, unreadable_properties=urp) or {}
-            dat = {**nxt, **dat}
+            dat.update({**nxt, **dat})
         return dat
 
     def set_custom_mapping(self, mapping: dict):
@@ -241,9 +241,9 @@ class MiotSpec(MiotSpecInstance):
             return s
         return None
 
-    def get_property(self, *args, only_format=None):
+    def get_property(self, *args, only_format=None, exclude_format=None):
         for srv in self.services.values():
-            if p := srv.get_property(*args, only_format=only_format):
+            if p := srv.get_property(*args, only_format=only_format, exclude_format=exclude_format):
                 return p
         return None
 
@@ -571,14 +571,18 @@ class MiotService(MiotSpecInstance):
             if not p.in_list(excludes) and (not args or p.in_list(args))
         ]
 
-    def get_property(self, *args, only_format=None):
+    def get_property(self, *args, only_format=None, exclude_format=None):
         if only_format:
             only_format = only_format if isinstance(only_format, list) else [only_format]
+        if exclude_format:
+            exclude_format = exclude_format if isinstance(exclude_format, list) else [exclude_format]
         for a in args:
             for p in self.properties.values():
                 if not p.in_list([a]):
                     continue
                 if only_format and p.format not in only_format:
+                    continue
+                if exclude_format and p.format in exclude_format:
                     continue
                 return p
         return None
@@ -697,10 +701,11 @@ class MiotProperty(MiotSpecInstance):
             return False
         names = [
             self.name,
-            self.friendly_name,
+            self.friendly_name,  # service.prop
             self.full_name,
-            self.unique_name,
-            self.unique_prop,
+            self.unique_name,  # service-2.prop-1
+            self.unique_prop,  # prop.2.1
+            f'{self.service.name}.{self.desc_name}',
             self.desc_name,
         ]
         for name in names:
@@ -805,15 +810,17 @@ class MiotProperty(MiotSpecInstance):
                 return val
         return rls if des is None else None
 
-    def list_description(self, val):
+    def list_description(self, val, lower=False):
         rls = []
         for v in self.value_list:
             vid = v.get('value')
-            des = self.get_translation(v.get('description'), viid=vid)
+            des = str(self.get_translation(v.get('description'), viid=vid))
+            if lower:
+                des = des.lower()
             if val is None:
                 if des == '':
-                    des = vid
-                rls.append(str(des))
+                    des = str(vid)
+                rls.append(des)
             elif val == vid:
                 return des
         if rls and val is None:
@@ -826,9 +833,9 @@ class MiotProperty(MiotSpecInstance):
                 return str(val)
         return rls if val is None else None
 
-    def list_descriptions(self, max_length=200):
+    def list_descriptions(self, max_length=200, lower=False):
         if self.value_list:
-            return self.list_description(None)
+            return self.list_description(None, lower)
         elif self.value_range:
             lst = []
             cur = self.range_min()

@@ -1,4 +1,12 @@
 {
+  "090615.switch.x6wtft": [
+    {
+      "iid": 7,
+      "properties": [
+        {"iid": 5, "type": "urn:miot-spec-v2:property:fan-level"}
+      ]
+    }
+  ],
   "aice.motor.kzmu3": [
     {
       "iid": 2,
@@ -1882,7 +1890,25 @@
             {"value": 0, "description": "empty"},
             {"value": 1, "description": "normal"},
             {"value": 2, "description": "full"}
-          ]
+          ],
+          "value-range": []
+        }
+      ]
+    }
+  ],
+  "zhimi.humidifier.ca7": [
+    {
+      "iid": 2,
+      "properties": [
+        {
+          "iid": 6,
+          "unit": "",
+          "value-list": [
+            {"value": 0, "description": "empty"},
+            {"value": 1, "description": "normal"},
+            {"value": 2, "description": "full"}
+          ],
+          "value-range": []
         }
       ]
     }

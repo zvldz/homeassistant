@@ -1,10 +1,6 @@
 from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
 from homeassistant.util import color, percentage
-from miio.utils import (
-    rgb_to_int,
-    int_to_rgb,
-)
 
 if TYPE_CHECKING:
     from .device import Device
@@ -16,12 +12,12 @@ class BaseConv:
     attr: str
     domain: str = None
     mi: str | int = None
-    attrs: set = None
+    attrs: list = None
     option: dict = None
 
     def __post_init__(self):
         if self.attrs is None:
-            self.attrs = set()
+            self.attrs = []
         if self.option is None:
             self.option = {}
 
@@ -182,8 +178,12 @@ class MiotServiceConv(MiotPropConv):
         if not self.prop and self.service and self.main_props:
             self.prop = self.service.get_property(*self.main_props)
         super().__post_init__()
-        if not self.attr and self.prop:
+        if self.attr:
+            pass
+        elif self.prop:
             self.attr = self.prop.full_name
+        elif self.service:
+            self.attr = self.service.desc_name
 
 @dataclass
 class MiotSensorConv(MiotServiceConv):
@@ -218,42 +218,70 @@ class MiotBrightnessConv(MiotPropConv):
 @dataclass
 class MiotColorTempConv(MiotPropConv):
     def decode(self, device: 'Device', payload: dict, value: int):
-        if self.prop.unit not in ['kelvin']:
+        if self.prop.unit == 'percentage':
+            if not value:
+                return
+            value = self.percentage_to_kelvin(value)
+        elif self.prop.unit != 'kelvin':
             if not value:
                 return
             value = round(1000000.0 / value)
         super().decode(device, payload, value)
 
     def encode(self, device: 'Device', payload: dict, value: int):
-        if self.prop.unit not in ['kelvin']:
+        if self.prop.unit == 'percentage':
+            if not value:
+                return
+            value = self.kelvin_to_percentage(value)
+        elif self.prop.unit != 'kelvin':
             if not value:
                 return
             value = round(1000000.0 / value)
+
         if value < self.prop.range_min():
             value = self.prop.range_min()
         if value > self.prop.range_max():
             value = self.prop.range_max()
         super().encode(device, payload, value)
 
+    @staticmethod
+    def percentage_to_kelvin(p: int) -> int:
+        return 6500 - p * 40
+
+    @staticmethod
+    def kelvin_to_percentage(k: int) -> int:
+        return round((6500 - k) / 40)
+
 @dataclass
 class MiotRgbColorConv(MiotPropConv):
     def decode(self, device: 'Device', payload: dict, value: int):
-        super().decode(device, payload, int_to_rgb(value))
+        super().decode(device, payload, MiotRgbColorConv.int_to_rgb(value))
 
-    def encode(self, device: 'Device', payload: dict, value: tuple[int, int, int]):
-        super().encode(device, payload, rgb_to_int(value))
+    def encode(self, device: 'Device', payload: dict, rgb: tuple[int, int, int]):
+        super().encode(device, payload, MiotRgbColorConv.rgb_to_int(rgb))
+
+    @staticmethod
+    def rgb_to_int(rgb: tuple[int, int, int]):
+        num = int(rgb[0]) << 16 | int(rgb[1]) << 8 | int(rgb[2])
+        return int(num)
+
+    @staticmethod
+    def int_to_rgb(value: int):
+        x = int(value)
+        r = (x >> 16) & 0xFF
+        g = (x >> 8) & 0xFF
+        b = x & 0xFF
+        return r, g, b
 
 @dataclass
 class MiotHsColorConv(MiotPropConv):
     def decode(self, device: 'Device', payload: dict, value: int):
-        rgb = int_to_rgb(value)
-        hsc = color.color_RGB_to_hs(*rgb)
-        super().decode(device, payload, hsc)
+        rgb = MiotRgbColorConv.int_to_rgb(value)
+        super().decode(device, payload, color.color_RGB_to_hs(*rgb))
 
     def encode(self, device: 'Device', payload: dict, value: tuple):
         rgb = color.color_hs_to_RGB(*value)
-        num = rgb_to_int(rgb)
-        super().encode(device, payload, num)
+        super().encode(device, payload, MiotRgbColorConv.rgb_to_int(rgb))
 
 @dataclass
 class MiotFanConv(MiotServiceConv):
@@ -281,6 +309,10 @@ class MiotCoverConv(MiotServiceConv):
         if not self.main_props:
             self.main_props = ['motor_control']
         super().__post_init__()
+
+@dataclass
+class MiotCameraConv(MiotServiceConv):
+    domain: str = 'camera'
 
 @dataclass
 class MiotHumidifierConv(MiotServiceConv):

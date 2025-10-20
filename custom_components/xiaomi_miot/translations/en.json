@@ -1,6 +1,6 @@
 {
     "config": {
-        "flow_title": "Xiaomi Miot Auto",
+        "flow_title": "Xiaomi Miot",
         "step": {
             "user": {
                 "title": "Select Action",
@@ -23,6 +23,7 @@
                     "username": "Xiaomi Account ID / Email",
                     "password": "Password",
                     "captcha": "Captcha",
+                    "verify_ticket": "Two-factor verification code",
                     "server_country": "Server location of MiCloud",
                     "conn_mode": "Connection mode for device",
                     "trans_options": "Translation property value description",
@@ -89,11 +90,9 @@
                     "exclude_miot_properties": "exclude_miot_properties",
                     "exclude_miot_services": "exclude_miot_services",
                     "exclude_type": "exclude_type",
-                    "fan_services": "fan_services",
                     "feeding_measure": "feeding_measure",
                     "filter_home": "filter_home",
                     "interval_seconds": "interval_seconds",
-                    "light_services": "light_services",
                     "main_miot_services": "main_miot_services",
                     "miot_did": "miot_did",
                     "mitv_lan_host": "mitv_lan_host",
@@ -135,7 +134,8 @@
             "cannot_login": "Failed to login to the Xiaomi account. Please check your account credentials. If login attempts fail multiple times, please try logging in again on the Xiaomi official website (mi.com) using the same network environment.",
             "cannot_reach": "Unable to access the Xiaomi API interface",
             "tzinfo_error": "There seems to be an issue with your Hass environment. Please refer to: https://github.com/al-one/hass-xiaomi-miot/issues/260",
-            "none_devices": "No devices found under this Xiaomi account"
+            "none_devices": "No devices found under this Xiaomi account",
+            "need_verify": "This login requires security verification. Please open the verification page to send the mobile/email verification code. After receiving the verification code, do not verify it on the webpage. Go back to HomeAssistant and enter it in the input box below."
         },
         "abort": {
             "config_saved": "Configuration saved! [Customize again](/_my_redirect/config_flow_start?domain=xiaomi_miot).\n{tip}\n\nSome custom options may require [reloading the integration](/developer-tools/yaml) to take effect.",
@@ -161,6 +161,7 @@
                     "username": "Xiaomi Account ID / Email",
                     "password": "Password",
                     "captcha": "Captcha",
+                    "verify_ticket": "Two-factor verification code",
                     "server_country": "Server location of MiCloud",
                     "conn_mode": "Connection mode for device",
                     "renew_devices": "Force renew devices",
@@ -196,7 +197,8 @@
             "cannot_login": "Failed to login to the Xiaomi account. Please check your account credentials. If login attempts fail multiple times, please try logging in again on the Xiaomi official website (mi.com) using the same network environment.",
             "cannot_reach": "Unable to access the Xiaomi API interface",
             "tzinfo_error": "There seems to be an issue with your Hass environment. Please refer to: https://github.com/al-one/hass-xiaomi-miot/issues/260",
-            "none_devices": "No devices found under this Xiaomi account"
+            "none_devices": "No devices found under this Xiaomi account",
+            "need_verify": "This login requires security verification. Please open the verification page to send the mobile/email verification code. After receiving the verification code, do not verify it on the webpage. Go back to HomeAssistant and enter it in the input box below."
         },
         "abort": {
             "show_customizes": "[![Add new integration](https://my.home-assistant.io/badges/config_flow_start.svg)](/_my_redirect/config_flow_start?domain=xiaomi_miot)\n[Add a new integration](/_my_redirect/config_flow_start?domain=xiaomi_miot) to modify customization.\n{tip}"

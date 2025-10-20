@@ -134,23 +134,29 @@ class XZigbeeCover(XCover):
         await self.ewelink.send(self.device, {"openPercent": 100 - position})
 
 
-# https://github.com/AlexxIT/SonoffLAN/issues/1304
-class XCover91(XEntity, CoverEntity):
+class XCoverOP(XEntity, CoverEntity):
     param = "op"
 
     _attr_is_closed = None  # unknown state
 
     def set_state(self, params: dict):
-        if v := params.get(self.param):
-            if v == 1:
+        if "per" in params:
+            # UIID 67: {'op': 3, 'per': 0, 'statu': 6} - CLOSED
+            # UIID 67: {'op': 1, 'per': 100, 'statu': 5} - OPEN
+            self._attr_is_closed = params["per"] == 0
+            self._attr_is_closing = self._attr_is_opening = False
+        elif "op" in params:
+            if params["op"] == 1:
+                # UIID 67: {"op": 1} - OPENING
+                self._attr_is_closing = False
                 self._attr_is_opening = True
-                self._attr_is_closing = False
-            elif v == 2:
-                self._attr_is_opening = False
-                self._attr_is_closing = False
-            elif v == 3:
-                self._attr_is_opening = False
+            elif params["op"] == 2:
+                self._attr_is_closed = None
+                self._attr_is_closing = self._attr_is_opening = False
+            elif params["op"] == 3:
+                # UIID 67: {"op": 3} - CLOSING
                 self._attr_is_closing = True
+                self._attr_is_opening = False
 
     async def async_stop_cover(self, **kwargs):
         await self.ewelink.send(self.device, {self.param: 2})
@@ -160,3 +166,40 @@ class XCover91(XEntity, CoverEntity):
 
     async def async_close_cover(self, **kwargs):
         await self.ewelink.send(self.device, {self.param: 3})
+
+
+# noinspection PyAbstractClass
+class XCoverT5(XCover):
+    params = {"electromotor", "percentageControl"}
+
+    _attr_entity_registry_enabled_default = False
+
+    _attr_is_closed = None  # unknown state
+
+    def set_state(self, params: dict):
+        if "percentageControl" in params and params["calibState"] is True:
+            self._attr_current_cover_position = 100 - params["percentageControl"]
+            self._attr_is_closed = self._attr_current_cover_position == 0
+
+        if "electromotor" in params:
+            if params["electromotor"] == 1:  # stop
+                self._attr_is_opening = False
+                self._attr_is_closing = False
+            elif params["electromotor"] == 0:  # open
+                self._attr_is_opening = True
+                self._attr_is_closing = False
+            elif params["electromotor"] == 2:  # close
+                self._attr_is_opening = False
+                self._attr_is_closing = True
+
+    async def async_stop_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"electromotor": 1})
+
+    async def async_open_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"electromotor": 0})
+
+    async def async_close_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"electromotor": 2})
+
+    async def async_set_cover_position(self, position: int, **kwargs):
+        await self.ewelink.send(self.device, {"percentageControl": 100 - position})

@@ -173,8 +173,9 @@ class XLight57(XLight):
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1637
         if "channel0" in params:
-            self._attr_brightness = conv(params["channel0"], 25, 255, 1, 255)
+            self._attr_brightness = conv(int(params["channel0"]), 25, 255, 1, 255)
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
@@ -822,6 +823,10 @@ class XLightB02(XLight):
 
         self._attr_effect = params["ltype"]
 
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1649
+        if self.effect not in params:
+            return
+
         state = params[self.effect]
         if "br" in state:
             self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
@@ -1230,18 +1235,11 @@ class XT5Light(XOnOffLight):
                 (k for k, v in T5_EFFECTS.items() if v == params["lightMode"]), None
             )
 
-    async def async_turn_on(
-        self, brightness: int = None, effect: str = None, **kwargs
-    ) -> None:
-        params = {}
-
+    async def async_turn_on(self, effect: str = None, **kwargs) -> None:
         if effect and effect in T5_EFFECTS:
-            params["lightMode"] = T5_EFFECTS[effect]
+            await self.ewelink.send(self.device, {"lightMode": T5_EFFECTS[effect]})
 
-        if not params:
-            params["lightSwitch"] = "on"
-
-        await self.ewelink.send(self.device, params)
+        await self.ewelink.send(self.device, {"lightSwitch": "on"})
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"lightSwitch": "off"})

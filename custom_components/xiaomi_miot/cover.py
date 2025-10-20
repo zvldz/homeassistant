@@ -79,9 +79,11 @@ class CoverEntity(XEntity, BaseEntity):
         self._close_texts = self.custom_config_list('close_texts', self._close_texts)
         if self._motor_reverse:
             self._open_texts, self._close_texts = self._close_texts, self._open_texts
-        self._target_position_props = self.custom_config_list('target_position_props') or ['target_position']
+        self._target_position_props = self.custom_config_list('target_position_props') or []
         self._cover_position_mapping = self.custom_config_json('cover_position_mapping') or {}
 
+        if not self.conv.attrs:
+            self.conv.attrs.append(self.conv.full_name)
         for attr in self.conv.attrs:
             conv = self.device.find_converter(attr)
             prop = getattr(conv, 'prop', None) if conv else None
@@ -93,15 +95,17 @@ class CoverEntity(XEntity, BaseEntity):
                 self._conv_motor = conv
                 self._attr_supported_features |= CoverEntityFeature.OPEN
                 self._attr_supported_features |= CoverEntityFeature.CLOSE
-                if prop.list_first('Stop', 'Pause') != None:
+                if prop.list_first('Stop', 'Pause') is not None:
                     self._attr_supported_features |= CoverEntityFeature.STOP
             elif prop.in_list(['current_position']):
                 if prop.value_range:
                     self._conv_current_position = conv
                     self._current_range = (prop.range_min(), prop.range_max())
-                elif prop.value_list and self._cover_position_mapping:
+                    self.log.debug('current_position: %s', conv)
+                elif prop.value_list and self._cover_position_mapping and not self._conv_current_position:
                     self._conv_current_position = conv
                     self._current_range = (0, 100)
+                    self.log.debug('current_position: %s', conv)
             elif prop.value_range and isinstance(conv, MiotTargetPositionConv):
                 self._conv_target_position = conv
                 self._target_range = conv.ranged
@@ -110,6 +114,10 @@ class CoverEntity(XEntity, BaseEntity):
                 self._conv_target_position = conv
                 self._target_range = (prop.range_min(), prop.range_max())
                 self._attr_supported_features |= CoverEntityFeature.SET_POSITION
+
+        if self.custom_config_bool('disable_target_position'):
+            self._conv_target_position = None
+            self._attr_supported_features &= ~CoverEntityFeature.SET_POSITION
 
         self._deviated_position = self.custom_config_integer('deviated_position', 2)
         if self._current_range:
@@ -132,9 +140,13 @@ class CoverEntity(XEntity, BaseEntity):
         prop_status = getattr(self._conv_status, 'prop', None) if self._conv_status else None
         if prop_status:
             val = self._conv_status.value_from_dict(data)
-            if val in prop_status.list_search('Closed', 'Stop Upper Limit', 'Stop At Highest', 'Ceiling'):
+            if val is not None:
+                self._attr_is_closed = None
+                self._attr_is_opening = None
+                self._attr_is_closing = None
+            if val in prop_status.list_search('Closed'):
                 self._attr_is_closed = True
-            elif val in prop_status.list_search('Opened', 'Stop Lower Limit', 'Stop At Lowest'):
+            elif val in prop_status.list_search('Opened'):
                 self._attr_is_closed = False
             elif val in prop_status.list_search('Opening'):
                 self._attr_is_opening = True
@@ -144,16 +156,12 @@ class CoverEntity(XEntity, BaseEntity):
                 self._attr_is_closing = self._position_reverse
             elif val in prop_status.list_search('Falling', 'Dropping'):
                 self._attr_is_opening = self._position_reverse
+            elif val in prop_status.list_search('Stop Lower Limit', 'Stop At Lowest', 'Floor'):
+                self._attr_is_closed = not self._position_reverse
+            elif val in prop_status.list_search('Stop Upper Limit', 'Stop At Highest', 'Ceiling'):
+                self._attr_is_closed = self._position_reverse
             elif self._is_airer and val in prop_status.list_search('Down'):
                 self._attr_is_closed = False
-            else:
-                self._attr_is_closed = None
-                self._attr_is_opening = None
-                self._attr_is_closing = None
-            if self._attr_is_opening is not None:
-                self._attr_is_closing = not self._attr_is_opening
-            elif self._attr_is_closing is not None:
-                self._attr_is_opening = not self._attr_is_closing
         if self._conv_current_position:
             val = self._conv_current_position.value_from_dict(data)
             if val is not None:
@@ -194,7 +202,7 @@ class CoverEntity(XEntity, BaseEntity):
     async def async_open_cover(self, **kwargs):
         if conv := self._conv_motor:
             val = conv.prop.list_first(*self._open_texts)
-            if val != None:
+            if val is not None:
                 await self.device.async_write({conv.full_name: val})
                 return
             self.log.warning('No open command found in motor control property: %s', self._open_texts)
@@ -203,7 +211,7 @@ class CoverEntity(XEntity, BaseEntity):
     async def async_close_cover(self, **kwargs):
         if conv := self._conv_motor:
             val = conv.prop.list_first(*self._close_texts)
-            if val != None:
+            if val is not None:
                 await self.device.async_write({conv.full_name: val})
                 return
             self.log.warning('No close command found in motor control property: %s', [self._close_texts, conv.prop.value_list])
@@ -213,7 +221,7 @@ class CoverEntity(XEntity, BaseEntity):
         if not self._conv_motor:
             return
         val = self._conv_motor.prop.list_first('Stop', 'Pause')
-        if val != None:
+        if val is not None:
             await self.device.async_write({self._conv_motor.full_name: val})
 
     async def async_set_cover_position(self, position, **kwargs):
@@ -222,5 +230,6 @@ class CoverEntity(XEntity, BaseEntity):
         if self._position_reverse:
             position = self._target_range[1] - position
         await self.device.async_write({self._conv_target_position.full_name: position})
+
 
 XEntity.CLS[ENTITY_DOMAIN] = CoverEntity

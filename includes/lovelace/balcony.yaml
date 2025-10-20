@@ -77,12 +77,12 @@ cards:
         min_conductivity: 350
         min_temperature: 12
         entities:
-          - moisture:sensor.c47c8d671018_moisture
+          #- moisture:sensor.c47c8d671018_moisture
           - moisture:sensor.0xa4c1380c9b2fff69_soil_moisture
-          - intensity:sensor.c47c8d671018_illuminance
-          - temperature:sensor.c47c8d671018_temperature
+          #- intensity:sensor.c47c8d671018_illuminance
+          #- temperature:sensor.c47c8d671018_temperature
           - temperature:sensor.0xa4c1380c9b2fff69_temperature
-          - conductivity:sensor.c47c8d671018_conductivity
+          #- conductivity:sensor.c47c8d671018_conductivity
 
       - type: custom:miflora-card
         title: 'Flower 2'
@@ -92,12 +92,12 @@ cards:
         min_conductivity: 350
         min_temperature: 12
         entities:
-          - moisture:sensor.c47c8d670f2e_moisture
+          #- moisture:sensor.c47c8d670f2e_moisture
           - moisture:sensor.0xa4c13898fe3f524d_soil_moisture
-          - intensity:sensor.c47c8d670f2e_illuminance
-          - temperature:sensor.c47c8d670f2e_temperature
+          #- intensity:sensor.c47c8d670f2e_illuminance
+          #- temperature:sensor.c47c8d670f2e_temperature
           - temperature:sensor.0xa4c13898fe3f524d_temperature
-          - conductivity:sensor.c47c8d670f2e_conductivity
+          #- conductivity:sensor.c47c8d670f2e_conductivity
 
   - type: vertical-stack
     cards:

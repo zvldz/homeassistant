@@ -12,6 +12,7 @@ cards:
               justify-content: center;
               background-color: #203040;
             }
+
       - type: entities
         entities:
           - entity: sensor.myip
@@ -157,7 +158,7 @@ cards:
         cards:
           - type: tile
             entity: script.ha1_restart
-            name: "Restart HA1"
+            nscripts/purge_db.yamlame: "Restart HA1"
             icon: "mdi:rotate-3d-variant"
             hide_state: true
             tap_action:

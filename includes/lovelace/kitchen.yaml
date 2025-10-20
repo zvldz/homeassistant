@@ -84,8 +84,6 @@ cards:
                 name: Kitchen
               - entity: sensor.0x0ceff6fffe3ad9f3_temperature
                 name: Kitchen LCD
-              - entity: sensor.4c65a8d98721_temperature
-                name: Kitchen BT
                 color: red
 
       - type: horizontal-stack
@@ -98,8 +96,6 @@ cards:
                 name: Kitchen
               - entity: sensor.0x0ceff6fffe3ad9f3_humidity
                 name: Kitchen LCD
-              - entity: sensor.4c65a8d98721_humidity
-                name: Kitchen BT
                 color: red
 
   - type: vertical-stack

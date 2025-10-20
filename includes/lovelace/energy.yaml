@@ -17,6 +17,7 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.delta_2_max_battery_level
+          - number.delta_2_max_backup_reserve_level
           - sensor.delta_2_max_total_in_power
           - sensor.delta_2_max_total_out_power
           - sensor.delta_2_max_battery_temperature

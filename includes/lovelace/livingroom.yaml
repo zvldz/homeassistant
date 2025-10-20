@@ -145,9 +145,6 @@ cards:
                 name: Living Room
               - entity: sensor.0xd44867fffe06aed3_temperature
                 name: Living Room LCD
-              - entity: sensor.4c65a8d9cf8f_temperature
-                name: Living Room BT
-                color: red
 
       - type: horizontal-stack
         cards:
@@ -159,7 +156,4 @@ cards:
                 name: Living Room
               - entity: sensor.0xd44867fffe06aed3_humidity
                 name: Living Room LCD
-              - entity: sensor.4c65a8d9cf8f_humidity
-                name: Living Room BT
-                color: red
 

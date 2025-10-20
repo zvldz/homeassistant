@@ -105,8 +105,28 @@ cards:
           - type: "climate-preset-modes"
             style: icons
 
+      # - type: tile
+      #   entity: climate.0x54ef44100060b86b
+      #   features:
+      #     - type: "target-temperature"
+      #     - type: "climate-hvac-modes"
+      #       hvac_modes:
+      #         - heat
+      #         - "off"
+      #   card_mod:
+      #     style:
+      #       ha-tile-info$: |
+      #         .secondary {
+      #            visibility: hidden;
+      #          }
+      #          .secondary:before {
+      #            visibility: visible;
+      #            content: "{{ states('climate.0x54ef44100060b86b') | title + ' - ' + state_attr('climate.0x54ef44100060b86b', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | round(1) | title  + '°C' | title}}"
+      #          }
+
+
       - type: tile
-        entity: climate.0x54ef44100060b86b
+        entity: climate.0x0cae5ffffeb0a9de
         features:
           - type: "target-temperature"
           - type: "climate-hvac-modes"
@@ -121,8 +141,9 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x54ef44100060b86b') | title + ' - ' + state_attr('climate.0x54ef44100060b86b', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x0cae5ffffeb0a9de') | title + ' - ' + state_attr('climate.0x0cae5ffffeb0a9de', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | round(1) | title  + '°C' | title}}"
                }
+
 
       - type: horizontal-stack
         cards:
@@ -150,8 +171,27 @@ cards:
           - type: "climate-preset-modes"
             style: icons
 
+      # - type: tile
+      #   entity: climate.0x54ef44100060c290
+      #   features:
+      #     - type: "target-temperature"
+      #     - type: "climate-hvac-modes"
+      #       hvac_modes:
+      #         - heat
+      #         - "off"
+      #   card_mod:
+      #     style:
+      #       ha-tile-info$: |
+      #         .secondary {
+      #            visibility: hidden;
+      #          }
+      #          .secondary:before {
+      #            visibility: visible;
+      #            content: "{{ states('climate.0x54ef44100060c290') | title + ' - ' + state_attr('climate.0x54ef44100060c290', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002323856_temperature') | round(1) | title  + '°C' | title}}"
+      #          }
+
       - type: tile
-        entity: climate.0x54ef44100060c290
+        entity: climate.0x44e2f8fffe0ffdf3
         features:
           - type: "target-temperature"
           - type: "climate-hvac-modes"
@@ -166,8 +206,9 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x54ef44100060c290') | title + ' - ' + state_attr('climate.0x54ef44100060c290', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002323856_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x44e2f8fffe0ffdf3') | title + ' - ' + state_attr('climate.0x44e2f8fffe0ffdf3', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002323856_temperature') | round(1) | title  + '°C' | title}}"
                }
+
 
       - type: tile
         entity: script.turn_on_all_ac
@@ -197,8 +238,27 @@ cards:
           - type: "climate-preset-modes"
             style: icons
 
+      # - type: tile
+      #   entity: climate.0x54ef44100060b73a
+      #   features:
+      #     - type: "target-temperature"
+      #     - type: "climate-hvac-modes"
+      #       hvac_modes:
+      #         - heat
+      #         - "off"
+      #   card_mod:
+      #     style:
+      #       ha-tile-info$: |
+      #         .secondary {
+      #            visibility: hidden;
+      #          }
+      #          .secondary:before {
+      #            visibility: visible;
+      #            content: "{{ states('climate.0x54ef44100060b73a') | title + ' - ' + state_attr('climate.0x54ef44100060b73a', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0001ab2a27_temperature') | round(1) | title  + '°C' | title}}"
+      #          }
+
       - type: tile
-        entity: climate.0x54ef44100060b73a
+        entity: climate.0x44e2f8fffe11319c
         features:
           - type: "target-temperature"
           - type: "climate-hvac-modes"
@@ -213,8 +273,9 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x54ef44100060b73a') | title + ' - ' + state_attr('climate.0x54ef44100060b73a', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0001ab2a27_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x44e2f8fffe11319c') | title + ' - ' + state_attr('climate.0x44e2f8fffe11319c', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0001ab2a27_temperature') | round(1) | title  + '°C' | title}}"
                }
+
 
       - type: tile
         entity: script.turn_off_all_ac

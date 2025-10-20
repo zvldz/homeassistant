@@ -13,7 +13,7 @@
       to: 'movement'
     - platform: state
       entity_id: binary_sensor.0x54ef441000dbf5d6_presence
-      to: 'Home'
+      to: 'on'
     - platform: numeric_state
       entity_id: sensor.0x54ef441000dbf5d6_target_distance
       above: 0
@@ -56,7 +56,7 @@
       to: 'movement'
     - platform: state
       entity_id: binary_sensor.0x54ef441000dbf5d6_presence
-      to: 'Home'
+      to: 'on'
     - platform: numeric_state
       entity_id: sensor.0x54ef441000dbf5d6_target_distance
       above: 0.1
@@ -133,6 +133,28 @@
   action:
     - service: timer.start
       entity_id: timer.kitchen_light
+
+#- alias: "Periodic reset of Kitchen timer while movement"
+#  id: periodic_reset_kitchen_timer
+#  initial_state: true
+#  trigger:
+#    - platform: time_pattern
+#      minutes: "*"
+#  condition:
+#    - condition: or
+#      conditions:
+#        - condition: state
+#          entity_id: binary_sensor.0x00158d00022515fe_occupancy
+#          state: 'on'
+#        - condition: state
+#          entity_id: sensor.0x54ef441000dbf5d6_movement
+#          state: 'movement'
+#  action:
+#    - service: timer.cancel
+#      entity_id: timer.kitchen_light
+#    - service: timer.start
+#      entity_id: timer.kitchen_light
+
 
 # Reboot lamp if offline
 #- alias: kitchen_lamp_offline

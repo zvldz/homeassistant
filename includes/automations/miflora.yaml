@@ -1,10 +1,23 @@
-- alias: "Plant Data Update"
+#- alias: "Plant Data Update"
+#  initial_state: true
+#  trigger:
+#    - platform: numeric_state
+#      entity_id:
+#        - sensor.c47c8d671018_moisture
+#        - sensor.c47c8d670f2e_moisture
+#      below: 20
+#  action:
+#    - service: notify.telegram
+#      data:
+#        message: "\U0001F940 This flower needs water - '{{ trigger.from_state.attributes.friendly_name }}', moisture {{ trigger.to_state.state }}"
+
+- alias: "Plant Data Update ZB"
   initial_state: true
   trigger:
     - platform: numeric_state
       entity_id:
-        - sensor.c47c8d671018_moisture
-        - sensor.c47c8d670f2e_moisture
+        - sensor.0xa4c1380c9b2fff69_soil_moisture
+        - sensor.0xa4c13898fe3f524d_soil_moisture
       below: 20
   action:
     - service: notify.telegram

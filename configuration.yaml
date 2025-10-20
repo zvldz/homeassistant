@@ -16,12 +16,12 @@ homeassistant:
 config:
 api:
 system_health:
-conversation:
 history:
 wake_on_lan:
 zeroconf:
 mobile_app:
 sun:
+media_source:
 ffmpeg:
 stream:
 energy:
@@ -44,7 +44,14 @@ system_log:
 tts:
   - platform: google_translate
     service_name: google_say
+    cache: true
+    cache_dir: /tts
     language: 'ru'
+
+cloud:
+conversation:
+#intent_script:      !include includes/intents.yaml
+#assist_pipeline:    !include_dir_merge_named includes/assist_pipeline
 
 switch:             !include_dir_merge_list includes/switches
 sensor:             !include_dir_merge_list includes/sensors
@@ -62,7 +69,7 @@ logbook:            !include includes/logbook.yaml
 influxdb:           !include includes/influxdb.yaml
 logger:             !include includes/logger.yaml
 device_tracker:     !include includes/device_tracker.yaml
-telegram_bot:       !include includes/telegram_bot.yaml
+#telegram_bot:       !include includes/telegram_bot.yaml
 notify:             !include includes/notify.yaml
 group:              !include includes/groups.yaml
 media_player:       !include includes/media_player.yaml

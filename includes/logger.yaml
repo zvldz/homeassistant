@@ -3,6 +3,7 @@ default: info
 logs:
   libav.rtsp: critical
   pychromecast.socket_client: fatal
+  homeassistant.components.conversation: debug
 # custom_components.xiaomi_gateway3: debug
 # custom_components.aqara_gateway.core.gateway: debug
 # homeassistant.components.yeelight: debug

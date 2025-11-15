@@ -1,27 +1,3 @@
-#- platform: systemmonitor
-#  resources:
-#    - type: last_boot
-#    - type: processor_use
-#    - type: memory_use_percent
-#    - type: swap_use_percent
-#    - type: disk_use_percent
-#      arg: /
-
-#- platform: command_line
-#  name: "CPU Temperature"
-#  command: 'cat /sys/class/thermal/thermal_zone0/temp'
-#  unit_of_measurement: "°C"
-#  value_template: "{{ value | multiply(0.001) | round(2) }}"
-#
-#- platform: command_line
-#  name: "HA Init"
-#  command: grep -m 1 -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" /config/home-assistant.log | grep -o "[0-9]\+.[0-9]\+$" || echo -1
-#  scan_interval: 120
-#  unit_of_measurement: "sec"
-#
-#- platform: uptime
-#  name: "HA Online"
-
 - platform: rest
   name: "HA Latest"
   resource: https://version.home-assistant.io/stable.json
@@ -42,10 +18,8 @@
   headers:
     authorization: !secret ha1_token
   value_template: >
-    {% if value_json is defined %}
+    {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
       {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-    {% else %}
-      {{ "unavailable" }}
     {% endif %}
 
 - platform: rest
@@ -56,10 +30,8 @@
   headers:
     authorization: !secret ha2_token
   value_template: >
-    {% if value_json is defined %}
+    {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
       {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-    {% else %}
-      {{ "unavailable" }}
     {% endif %}
 
 - platform: rest
@@ -70,10 +42,8 @@
   headers:
     authorization: !secret has_token
   value_template: >
-    {% if value_json is defined %}
+    {% if states('input_text.has_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
       {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-    {% else %}
-      {{ "unavailable" }}
     {% endif %}
 
 - platform: rest
@@ -84,23 +54,6 @@
   headers:
     authorization: !secret ha_fazenda_token
   value_template: >
-    {% if value_json is defined %}
+    {% if states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
       {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-    {% else %}
-      {{ "unavailable" }}
     {% endif %}
-
-#- platform: rest
-#  name: ha_off_uptime
-#  resource_template: "{{ states('input_text.ha_off_url') }}api/states/sensor.ha_uptime"
-#  device_class: timestamp
-#  force_update: true
-#  headers:
-#    authorization: !secret ha_off_token
-#  value_template: >
-#    {% if value_json is defined %}
-#      {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
-#    {% else %}
-#      {{ "unavailable" }}
-#    {% endif %}
-

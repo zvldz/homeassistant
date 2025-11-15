@@ -114,22 +114,3 @@ sensor.bw_plug_2_power:
 
 sensor.bw_plug_2_daily_energy:
   friendly_name: "Socket 3 DE"
-
-#binary_sensor.sonoff_pump_status:
-#  friendly_name: "Pump"
-#
-#sensor.sonoff_pump_uptime:
-#  friendly_name: "Pump Uptime"
-#
-#sensor.sonoff_pump_voltage:
-#  friendly_name: "Pump Voltage"
-#
-#sensor.sonoff_pump_power:
-#  friendly_name: "Pump Power"
-#
-#sensor.sonoff_pump_current:
-#  friendly_name: "Pump Amperage"
-#
-#sensor.sonoff_pump_daily_energy:
-#  friendly_name: "Pump DE"
-

@@ -9,4 +9,3 @@ switch.bw_plug_2_relay:
 switch.bw_plug_2_relay_usb:
   friendly_name: "Socket 3 USB"
   icon: "mdi:power-socket-eu"
-

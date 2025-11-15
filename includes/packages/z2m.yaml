@@ -4,9 +4,16 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state
+        from:
+          - 'on'
+          - 'off'
+        to:
+          - 'on'
+          - 'off'
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: >
             {%if is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on')%}{{"\U00002705"}} Z2M is online!
             {%else%}{{"\U0000274C"}} Attention! Z2M is offline!

@@ -18,4 +18,3 @@ purge_db_2d:
       data:
         keep_days: 2
         repack: true
-

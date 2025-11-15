@@ -141,7 +141,7 @@
     - service: timer.start
       entity_id: timer.wc_fan
 
-- alias: "Turn on WC fan if door openned 60 sec"
+- alias: "Turn on WC fan if door opened 60 sec"
   initial_state: true
   trigger:
     - platform: state
@@ -200,4 +200,3 @@
   action:
     - service: timer.start
       entity_id: timer.wc_fan
-

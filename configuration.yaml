@@ -17,7 +17,9 @@ config:
 api:
 system_health:
 history:
-wake_on_lan:
+#wake_on_lan:  # Deprecated - moved to integrations (GUI)
+# Zeroconf/mDNS for device discovery
+# Note: May show warnings on WireGuard interfaces - this is harmless
 zeroconf:
 mobile_app:
 sun:
@@ -70,7 +72,7 @@ influxdb:           !include includes/influxdb.yaml
 logger:             !include includes/logger.yaml
 device_tracker:     !include includes/device_tracker.yaml
 #telegram_bot:       !include includes/telegram_bot.yaml
-notify:             !include includes/notify.yaml
+#notify:             !include includes/notify.yaml
 group:              !include includes/groups.yaml
 media_player:       !include includes/media_player.yaml
 input_boolean:      !include includes/input_boolean.yaml

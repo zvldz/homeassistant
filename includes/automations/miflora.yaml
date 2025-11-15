@@ -7,7 +7,7 @@
 #        - sensor.c47c8d670f2e_moisture
 #      below: 20
 #  action:
-#    - service: notify.telegram
+#    - service: notify.telegram_vtel
 #      data:
 #        message: "\U0001F940 This flower needs water - '{{ trigger.from_state.attributes.friendly_name }}', moisture {{ trigger.to_state.state }}"
 
@@ -20,6 +20,7 @@
         - sensor.0xa4c13898fe3f524d_soil_moisture
       below: 20
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
-        message: "\U0001F940 This flower needs water - '{{ trigger.from_state.attributes.friendly_name }}', moisture {{ trigger.to_state.state }}"
+        entity_id: notify.telegram_vtel
+        message: "\U0001F940 This flower needs water - '{{ state_attr(trigger.entity_id, 'friendly_name') if trigger.entity_id is defined else 'Test' }}', moisture {{ trigger.to_state.state if trigger.to_state is defined else 'unknown' }}"

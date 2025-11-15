@@ -1,28 +1,27 @@
 - alias: "Door opened in storeroom"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: binary_sensor.0x00158d0002537042_contact
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x00158d0002537042_contact
+      to: 'on'
   condition:
-    condition: state
-    entity_id: switch.0x00158d0002235125
-    state: 'off'
+    - condition: state
+      entity_id: switch.0x00158d0002235125
+      state: 'off'
   action:
-    service: switch.turn_on
-    entity_id: switch.0x00158d0002235125
+    - service: switch.turn_on
+      entity_id: switch.0x00158d0002235125
 
 - alias: "Door closed in storeroom"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: binary_sensor.0x00158d0002537042_contact
-    to: 'off'
+    - platform: state
+      entity_id: binary_sensor.0x00158d0002537042_contact
+      to: 'off'
   condition:
-    condition: state
-    entity_id: switch.0x00158d0002235125
-    state: 'on'
+    - condition: state
+      entity_id: switch.0x00158d0002235125
+      state: 'on'
   action:
-    service: switch.turn_off
-    entity_id: switch.0x00158d0002235125
-
+    - service: switch.turn_off
+      entity_id: switch.0x00158d0002235125

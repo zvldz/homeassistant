@@ -141,7 +141,7 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x0cae5ffffeb0a9de') | title + ' - ' + state_attr('climate.0x0cae5ffffeb0a9de', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x0cae5ffffeb0a9de') | title + ' - ' + state_attr('climate.0x0cae5ffffeb0a9de', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | float(default='N/A') | round(1, default='N/A') | string  + '°C' | title}}"
                }
 
 
@@ -206,7 +206,7 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x44e2f8fffe0ffdf3') | title + ' - ' + state_attr('climate.0x44e2f8fffe0ffdf3', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002323856_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x44e2f8fffe0ffdf3') | title + ' - ' + state_attr('climate.0x44e2f8fffe0ffdf3', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002323856_temperature') | float(default='N/A') | round(1, default='N/A') | string  + '°C' | title}}"
                }
 
 
@@ -273,7 +273,7 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x44e2f8fffe11319c') | title + ' - ' + state_attr('climate.0x44e2f8fffe11319c', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0001ab2a27_temperature') | round(1) | title  + '°C' | title}}"
+                 content: "{{ states('climate.0x44e2f8fffe11319c') | title + ' - ' + state_attr('climate.0x44e2f8fffe11319c', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0001ab2a27_temperature') | float(default='N/A') | round(1, default='N/A') | string  + '°C' | title}}"
                }
 
 

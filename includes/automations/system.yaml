@@ -1,11 +1,12 @@
 - alias: 'Set theme at startup'
+  initial_state: true
   trigger:
-    platform: homeassistant
-    event: start
+    - platform: homeassistant
+      event: start
   action:
-    service: frontend.set_theme
-    data:
-      name: "slate"
+    - service: frontend.set_theme
+      data:
+        name: "slate"
 
 - alias: system_entity_change
   initial_state: true
@@ -17,18 +18,26 @@
     - |
         {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg', 'm2007j20cg', 'media_player', 'select.']  -%}
         {% set result = namespace(bool=True) -%}
-        {% if trigger.event.data.action == 'update' -%}
+        {% if trigger.event is defined and trigger.event.data.action == 'update' -%}
           {% for pattern in patterns -%}
             {% if pattern in trigger.event.data.entity_id -%}
               {% set result.bool = False -%}
             {% endif -%}
           {% endfor -%}
+        {% elif trigger.event is not defined -%}
+          {% set result.bool = True -%}
         {% endif -%}
         {{ result.bool }}
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
-        message: "\U00002747 {{ trigger.event.data.action | capitalize }}: {{ trigger.event.data.old_entity_id+'->' if trigger.event.data.old_entity_id is defined }}{{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }}"
+        entity_id: notify.telegram_vtel
+        message: >-
+          {% if trigger.event is defined -%}
+          ❇ {{ trigger.event.data.action | capitalize }}: {{ trigger.event.data.old_entity_id+'->' if trigger.event.data.old_entity_id is defined }}{{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }}
+          {%- else -%}
+          ❇ Entity registry changed (test mode)
+          {%- endif -%}
 
 - alias: system_device_entity_deletion
   id:  system_device_entity_deletion
@@ -40,7 +49,7 @@
   action:
     - service: python_script.exec
       data:
-        device_id: "{{ trigger.event.data.device_id }}"
+        device_id: "{{ trigger.event.data.device_id if trigger.event is defined else 'test_device_id' }}"
         source: |
           registry = hass.data['device_registry']
           device = registry.async_get(data['device_id'])
@@ -67,8 +76,11 @@
       for:
         minutes: 5
   action:
-    - service: notify.telegram
+    - service: telegram_bot.send_message
       data:
+        disable_notification: true
+        target: !secret telegram_bot_allowed_chat_id1
+        parse_mode: HTML
         message: |
           <pre>
           {{ "\U00002620" }} {{ states('sensor.total_entities_unavailable') }} entities are unavailable:
@@ -85,6 +97,7 @@
       data:
         disable_notification: true
         target: !secret telegram_bot_allowed_chat_id1
+        parse_mode: HTML
         message: |
           <pre>
           {{ "\U0001F305" }} Good morning!
@@ -100,4 +113,3 @@
           Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}
           {{ states('sensor.total_entities_unavailable') }} entities are unavailable
           </pre>
-

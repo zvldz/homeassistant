@@ -2,15 +2,15 @@
 - alias: "Turn on lights in Hallway on conditions"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: binary_sensor.0x00158d00032b7db7_contact
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x00158d00032b7db7_contact
+      to: 'on'
   condition:
-    condition: state
-    entity_id: switch.0x00158d0002112b1e
-    state: 'off'
-    for:
-      minutes: 2
+    - condition: state
+      entity_id: switch.0x00158d0002112b1e
+      state: 'off'
+      for:
+        minutes: 2
   action:
     - service: switch.turn_on
       entity_id:
@@ -24,12 +24,13 @@
 - alias: "Front door opened"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: binary_sensor.0x00158d00032b7db7_contact
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x00158d00032b7db7_contact
+      to: 'on'
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
+        entity_id: notify.telegram_vtel
         message: "\U0001F6AA The front door opened"
 
 - alias: "Door opened more than"
@@ -51,21 +52,22 @@
       for:
         minutes: 10
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
+        entity_id: notify.telegram_vtel
         message: "\U0001F6AA The door is open for more than {{ trigger.for }}"
 
 - alias: "Turn on light in Hallway sw1"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: switch.0x00158d0002112b1e
-    from: 'off'
-    to: 'on'
+    - platform: state
+      entity_id: switch.0x00158d0002112b1e
+      from: 'off'
+      to: 'on'
   condition:
-    condition: state
-    entity_id: switch.0x00158d0002113ace
-    state: 'off'
+    - condition: state
+      entity_id: switch.0x00158d0002113ace
+      state: 'off'
   action:
     - service: switch.turn_on
       entity_id: switch.0x00158d0002113ace
@@ -77,10 +79,10 @@
 - alias: "Turn off light in Hallway sw1"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: switch.0x00158d0002112b1e
-    from: 'on'
-    to: 'off'
+    - platform: state
+      entity_id: switch.0x00158d0002112b1e
+      from: 'on'
+      to: 'off'
   action:
     - service: switch.turn_off
       entity_id: switch.0x00158d0002113ace
@@ -90,14 +92,14 @@
 - alias: "Turn on light in Hallway sw2"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: switch.0x00158d0002113ace
-    from: 'off'
-    to: 'on'
+    - platform: state
+      entity_id: switch.0x00158d0002113ace
+      from: 'off'
+      to: 'on'
   condition:
-    condition: state
-    entity_id: switch.0x00158d0002112b1e
-    state: 'off'
+    - condition: state
+      entity_id: switch.0x00158d0002112b1e
+      state: 'off'
   action:
     - service: switch.turn_on
       entity_id: switch.0x00158d0002112b1e
@@ -109,10 +111,10 @@
 - alias: "Turn off light in Hallway sw2"
   initial_state: true
   trigger:
-    platform: state
-    entity_id: switch.0x00158d0002113ace
-    from: 'on'
-    to: 'off'
+    - platform: state
+      entity_id: switch.0x00158d0002113ace
+      from: 'on'
+      to: 'off'
   action:
     - service: switch.turn_off
       entity_id: switch.0x00158d0002112b1e
@@ -134,10 +136,10 @@
       entity_id: binary_sensor.0x00158d00032b7db7_contact
       state: 'off'
   action:
-    service: switch.turn_off
-    entity_id:
-      - switch.0x00158d0002112b1e
-      - switch.0x00158d0002113ace
+    - service: switch.turn_off
+      entity_id:
+        - switch.0x00158d0002112b1e
+        - switch.0x00158d0002113ace
 
 - alias: "Hallway button is pressed and held"
   initial_state: true
@@ -217,8 +219,6 @@
       entity_id: switch.0x00158d00022a8150_right
       state: 'on'
   action:
-    service: switch.turn_off
-    entity_id:
-      - switch.0x00158d00022a8150_right
-
-
+    - service: switch.turn_off
+      entity_id:
+        - switch.0x00158d00022a8150_right

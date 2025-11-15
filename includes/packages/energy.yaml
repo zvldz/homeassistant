@@ -1,0 +1,160 @@
+################################################################################
+
+input_boolean:
+  ups_on_battery:
+    name: UPS on battery (memory)
+    icon: mdi:car-battery
+
+automation:
+  - alias: 'Notify when UPS goes on battery'
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.ups_status_data
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state is not none and trigger.to_state is not none
+             and 'OL' in trigger.from_state.state and 'OB' in trigger.to_state.state }}
+    action:
+      - delay: '00:02:00'
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            ⚠ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | 1 Mains voltage is missing
+            | ip: {{ states('sensor.myip') }}
+
+  - alias: 'Notify when working PowerStation'
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.0xa46dd4fffe4f985d_power
+        below: 1
+    action:
+      - service: light.turn_on
+        entity_id: light.gateway_light_7811dcb245b2
+        data:
+          brightness: 127
+          rgb_color: [255, 0, 0]
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            ⚠ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | 2 Mains voltage is missing
+            | ip: {{ states('sensor.myip') }}
+            | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}
+      - repeat:
+          count: 3
+          sequence:
+            - service: light.turn_on
+              entity_id: light.gateway_light_7811dcb245b2
+              data:
+                brightness: 255
+                rgb_color: [255, 0, 0]
+            - delay: "00:01:00"
+
+  - alias: "UPS mirror OB/OL to helper"
+    id: ups_mirror_ob_ol
+    initial_state: true
+    mode: queued
+    trace:
+      stored_traces: 20
+    trigger:
+      - platform: state
+        entity_id: sensor.ups_status_data
+    action:
+      - choose:
+          # If UPS status contains OB -> set helper ON (we are on battery)
+          - conditions: >
+              {{ trigger.to_state is not none and 'OB' in trigger.to_state.state }}
+            sequence:
+              - service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.ups_on_battery
+          # If UPS status contains OL -> set helper OFF (we are on mains)
+          - conditions: >
+              {{ trigger.to_state is not none and 'OL' in trigger.to_state.state }}
+            sequence:
+              - service: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.ups_on_battery
+
+  - alias: "Notify when UPS goes on AC"
+    id: notify_when_ups_goes_on_ac_v2
+    initial_state: true
+    mode: single
+    trace:
+      stored_traces: 20
+    trigger:
+      - platform: state
+        entity_id: input_boolean.ups_on_battery
+        from: "on"        # was on battery
+        to: "off"         # now on mains
+        for: "00:01:00"   # mains stable for 1 minute
+    action:
+      - wait_template: >
+          {{ states('sensor.myip') not in ['unknown', 'unavailable', 'None', ''] }}
+        timeout: "00:02:00"
+        continue_on_timeout: true
+
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            ⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | 1 Mains voltage restored
+            | ip: {{ states('sensor.myip') }}
+
+      - service: script.ups_power_restore_cleanup
+
+  - alias: 'Notify when Mains voltage restored'
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.0xa46dd4fffe4f985d_power
+        above: 100
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state is not none
+             and trigger.from_state.state not in ('unknown', 'unavailable') }}
+    action:
+      - delay: '00:02:00'
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            ⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | 2 Mains voltage restored
+            | ip: {{ states('sensor.myip') }}
+            | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }} ({{ trigger.from_state.state }})
+
+      - service: script.ups_power_restore_cleanup
+
+group:
+  power_restore_targets:
+    name: Power restore targets
+    entities:
+      - light.wc_spots
+      - light.kitchen_lamp
+      - light.balcony_strip
+      - light.gateway_light_7811dcb245b2
+      - climate.ac_living_room_climate
+      - climate.ac_master_bedroom_climate
+      - climate.ac_bedroom_climate
+
+script:
+  ups_power_restore_cleanup:
+    alias: UPS power restore cleanup
+    mode: single
+    sequence:
+      - repeat:
+          count: 3
+          sequence:
+            - service: homeassistant.turn_off
+              target:
+                entity_id: group.power_restore_targets
+            - delay: "00:02:00"

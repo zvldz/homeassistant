@@ -24,8 +24,9 @@ automation:
 #      entity_id: binary_sensor.front_door_ding
 #      to: 'on'
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: "\U0001F515 The doorbell rings !!!"
 
   - alias: "Ring Video Download"
@@ -42,4 +43,3 @@ automation:
           url: "{{ state_attr('camera.front_door', 'video_url') }}"
           subdir: "ring_{{ now().strftime('%Y_%m_%d') }}"
           filename: "motion_{{ now().strftime('%Y_%m_%d_%H_%M') }}.mpg"
-

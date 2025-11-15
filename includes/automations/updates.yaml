@@ -1,18 +1,3 @@
-#- alias: "HACS Persistent Notification"
-#  initial_state: true
-#  trigger:
-#    platform: numeric_state
-#    entity_id: sensor.hacs
-#    above: 0
-#  action:
-#   - service: persistent_notification.create
-#     data:
-#        title: "HACS updates are available"
-#        message: >
-#          {% for item in states.sensor.hacs.attributes.repositories %}
-#            {{ item.display_name }} {{ item.installed_version }} -> {{ item.available_version }}
-#          {% endfor %}
-
 - alias: "HA Persistent Notification"
   initial_state: true
   trigger:

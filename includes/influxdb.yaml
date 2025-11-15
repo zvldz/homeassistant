@@ -1,20 +1,153 @@
 host: 127.0.0.1
 max_retries: 5
 default_measurement: state
+
+tags_attributes:
+  - entity_id
+  - domain
+
+ignore_attributes:
+  - friendly_name
+  - icon
+  - device_class
+  - state_class
+  - unit_of_measurement
+  - attribution
+  - integration
+  - device_name
+  - gateway_name
+  - restored
+  - supported_features
+  - mode
+  - entity_picture
+  - assumed_state
+
 exclude:
   domains:
     - automation
-    - climate
-    - lock
-    - switch
-    - remote
-    - script
-    - media_player
-    - alarm_control_panel
+    - binary_sensor
+    - button
     - camera
+    - climate
+    - conversation
+    - cover
+    - device_tracker
+    - event
+    - fan
+    - group
+    - humidifier
+    - input_boolean
+    - input_button
+    - input_datetime
+    - input_number
+    - input_select
+    - input_text
+    - light
+    - lock
+    - media_player
+    - notify
+    - number
+    - person
+    - remote
+    - scene
+    - script
+    - select
+    - sun
+    - switch
+    - text
     - timer
+    - tts
+    - update
+    - vacuum
     - weather
     - zone
+    - alarm_control_panel
+    - assist_satellite
+
+  entity_globs:
+    # Device metadata and batteries (except UPS and EcoFlow)
+    - sensor.*battery*
+    - sensor.*_battery_*
+    - number.*battery*
+    - number.*_battery_*
+    - sensor.*_last_seen
+    - sensor.*_linkquality
+    - sensor.*link_quality
+    - sensor.*_rssi
+    - sensor.*_wifi_signal
+    - sensor.*_uptime
+    - sensor.*_uptime_days
+
+    # Device temperatures (chip/internal temps, not room temps)
+    - sensor.*_device_temperature
+    - sensor.*device_temperature*
+    - sensor.*_battery_temperature
+    - sensor.*_cpu_temperature
+    - sensor.*_chip_temperature
+    - sensor.cpu_temperature
+
+    # System metrics (CPU, memory, disk)
+    - sensor.*cpu*
+    - sensor.*_cpu_*
+    - sensor.*memory*
+    - sensor.*_memory_*
+    - sensor.*disk*
+    - sensor.*_disk_*
+    - sensor.*swap*
+    - sensor.*_swap_*
+    - sensor.processor*
+    - sensor.*hdd*
+    - sensor.*_load
+
+    # Mikrotik router stats (not needed)
+    - sensor.mikrotik*
+    - sensor.mikrotik_*
+    - sensor.mikrotik2*
+
+    # Network statistics
+    - sensor.*_tx
+    - sensor.*_tx_*
+    - sensor.*_rx
+    - sensor.*_rx_*
+    - sensor.*ether*
+
+    # OpenWeatherMap (not needed)
+    - sensor.openweathermap*
+    - weather.openweathermap*
+
+    # AC/system temperatures (not room climate)
+    - sensor.ac_*_outdoor_temperature
+    - sensor.ac_*_indoor_temperature
+    - sensor.midea_ac_*_temperature
+    - sensor.*indoor_humidity
+    - sensor.*_indoor_humidity
+
+    # TRV/valve control and calibrations
+    - sensor.*_valve_*
+    - sensor.*valve*
+    - number.*_valve_*
+    - number.*valve*
+    - number.*calibration*
+    - number.*_calibration_*
+
+    # System/config (not useful data)
+    - sensor.*_action
+    - sensor.*_scene_history
+    - sensor.*_ip_address
+    - sensor.*_connected_ssid
+    - sensor.*_esphome_version
+    - sensor.*_weekly_schedule
+
+    # BLE/Zigbee/Mesh metadata
+    - sensor.*_ble
+    - sensor.*_zigbee
+    - sensor.*_mesh
+
+    # Phone batteries
+    - sensor.m2007j20cg*
+    - sensor.x12_battery*
+    - sensor.*_bt_battery*
+
   entities:
     - sensor.time
     - sensor.time_date
@@ -22,11 +155,3 @@ exclude:
     - sensor.date_time
     - camera.valetudo_rockrobo_map_data
     - sensor.map_segments
-    - weather.openweathermap
-  entity_globs:
-    - binary_sensor.*_trv_*
-    - sensor.*_trv_*
-    - switch.*_trv_*
-    - sensor.*_zigbee
-    - sensor.*_ble
-    - sensor.*_mesh

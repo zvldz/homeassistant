@@ -1,11 +1,11 @@
 - alias: "Turn on bedside lamp"
   initial_state: true
   trigger:
-    platform: numeric_state
-    entity_id: sun.sun
-    value_template: "{{ state.attributes.elevation }}"
-    below: 7
-    above: 5
+    - platform: numeric_state
+      entity_id: sun.sun
+      value_template: "{{ state.attributes.elevation }}"
+      below: 7
+      above: 5
   condition:
     - condition: state
       state: 'off'
@@ -23,12 +23,12 @@
 - alias: "Turn off bedside lamp"
   initial_state: true
   trigger:
-    platform: time
-    at: '02:00:00'
+    - platform: time
+      at: '02:00:00'
   condition:
-    condition: state
-    entity_id: light.bedside
-    state: 'on'
+    - condition: state
+      entity_id: light.bedside
+      state: 'on'
   action:
     service: light.turn_off
     entity_id: light.bedside

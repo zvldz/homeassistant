@@ -38,14 +38,20 @@ sensor:
     name: ha1_gas_counter
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    value_template: >
+      {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
+        {{ value_json.state }}
+      {% endif %}
 
   - platform: rest
     resource_template: "{{ states('input_text.ha2_url') }}api/states/input_number.gas_counter"
     name: ha2_gas_counter
     headers:
       authorization: !secret ha2_token
-    value_template: "{{ value_json.state }}"
+    value_template: >
+      {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
+        {{ value_json.state }}
+      {% endif %}
 
 script:
   turn_on_all_ac:
@@ -187,7 +193,7 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.gas_counter
-          value: "{{ (states.input_number.gas_counter.state | float(0) + 0.01 ) | round(2) }}"
+          value: "{{ (states('input_number.gas_counter') | float(0) + 0.01 ) | round(2) }}"
 
   - alias: "Kitchen button is pressed single"
     initial_state: true

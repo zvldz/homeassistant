@@ -4,12 +4,15 @@ logs:
   libav.rtsp: critical
   pychromecast.socket_client: fatal
   homeassistant.components.conversation: debug
+  aioesphomeapi.reconnect_logic: warning
+  homeassistant.components.esphome: warning
 # custom_components.xiaomi_gateway3: debug
 # custom_components.aqara_gateway.core.gateway: debug
 # homeassistant.components.yeelight: debug
 # homeassistant.components.yeelight.light: debug
 # homeassistant.components.mikrotik: debug
 # homeassistant.components.ring: debug
+# homeassistant.components.influxdb: debug
 # yeelight: debug
 # yeelight.light: debug
 # custom_components.sonoff: debug
@@ -19,3 +22,16 @@ logs:
   custom_components.rest_mod.sensor: debug
 # homeassistant.components.discovery: debug
 # custom_components.mikrotik_router: debug
+
+  # EXPERIMENTAL: Suppress DNS and connection tracebacks from aiohttp
+  # This hides long traceback messages when internet is unavailable
+  aiohttp.resolver: warning
+  aiohttp.connector: error
+  aiodns: warning
+
+  # EXPERIMENTAL: Integrations that fail when internet is unavailable
+  custom_components.ecoflow_cloud: warning
+  homeassistant.components.yeelight: warning
+
+  # EXPERIMENTAL: Suppress ESPHome connection tracebacks
+  aioesphomeapi.connection: warning

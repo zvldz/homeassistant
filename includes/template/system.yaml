@@ -1,7 +1,7 @@
 - binary_sensor:
     - name: "Update_Available"
       state: >
-        {% if states('sensor.ha_latest') in ['unavailable', 'unknown', 'none'] or states('sensor.ha_current') ==  states('sensor.ha_latest')%}
+        {% if states('sensor.ha_latest') in ['unavailable', 'unknown', 'none'] or states('sensor.ha_current') ==  states('sensor.ha_latest') %}
           false
         {% else %}
           true
@@ -20,4 +20,3 @@
       unit_of_measurement: 'ea'
       state: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | list | count }}"
       icon: mdi:counter
-

@@ -25,9 +25,10 @@
 #      to: "unavailable"
 #      for: "00:02:00"
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
-        message: "\U00002620 {{ states.sensor.date_time.state }} | {{ trigger.from_state.attributes.friendly_name | replace(' Uptime', '') }} is not working"
+        entity_id: notify.telegram_vtel
+        message: "\U00002620 {{ states.sensor.date_time.state }} | {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Uptime', '') if trigger.entity_id is defined else 'Test' }} is not working"
 
 - alias: ha1_server_on
   # blackout
@@ -51,7 +52,8 @@
 #      entity_id: sensor.ha_off_uptime
 #      from: "unavailable"
   action:
-    - service: notify.telegram
+    - service: notify.send_message
       data:
-        message: "\U00002705 {{ states.sensor.date_time.state }} | {{ trigger.from_state.attributes.friendly_name | replace(' Uptime', '') }} is now working"
+        entity_id: notify.telegram_vtel
+        message: "\U00002705 {{ states.sensor.date_time.state }} | {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Uptime', '') if trigger.entity_id is defined else 'Test' }} is now working"
 

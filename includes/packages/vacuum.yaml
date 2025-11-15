@@ -54,8 +54,7 @@ automation:
         entity_id: group.persons
         state: 'not_home'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_all_except_balcony
+      - service: script.vacuum_all_except_balcony
 
   - alias: "Vacuum Time Clean 2"
     initial_state: true
@@ -74,8 +73,7 @@ automation:
         entity_id: group.persons
         state: 'not_home'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_living_room
+      - service: script.vacuum_living_room
 
   - alias: "Vacuum Cleaning"
     initial_state: true
@@ -141,14 +139,18 @@ automation:
         entity_id: sensor.vacuum_cleaner_status_sensor
         to: 'Charging Error'
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
-          message: >
-            {% if is_state('sensor.vacuum_cleaner_error_sensor', 'No Error')  %}
-              {{ state_attr("vacuum.xiaomi_vacuum_cleaner", "status") }}
-            {% else %}
-              {{ states('sensor.vacuum_cleaner_error_sensor') }}
-            {% endif %}
+          entity_id: notify.telegram_vtel
+          message: >-
+            {% set error = states('sensor.vacuum_cleaner_error_sensor') -%}
+            {% if error == 'No Error' -%}
+            {{ state_attr("vacuum.xiaomi_vacuum_cleaner", "status") or 'Vacuum status unknown' }}
+            {%- elif error in ['unknown', 'unavailable'] -%}
+            Vacuum error (test mode - sensors unavailable)
+            {%- else -%}
+            {{ error or 'Vacuum error (test mode)' }}
+            {%- endif -%}
 
   - alias: "Vacuum Cleaner Error Solved"
     initial_state: true
@@ -160,8 +162,9 @@ automation:
       condition: template
       value_template: "{{ states('sensor.ha_uptime') | int > 10 }}"
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: "Vacuum cleaner error solved"
 
   - alias: "Hallway Button Click Single"
@@ -171,8 +174,7 @@ automation:
         entity_id: sensor.0x00158d0002e22617_action
         to: 'single'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_entryway
+      - service: script.vacuum_entryway
 
   - alias: "Hallway Button Click Double"
     initial_state: true
@@ -181,8 +183,7 @@ automation:
         entity_id: sensor.0x00158d0002e22617_action
         to: 'double'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_hallway
+      - service: script.vacuum_hallway
 
   - alias: "Kitchen Button Click Long"
     initial_state: true
@@ -191,8 +192,7 @@ automation:
         entity_id: sensor.0x38398ffffe1ff367_action
         to: 'long'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_kitchen
+      - service: script.vacuum_kitchen
 
   - alias: "Go To Kitchen"
     initial_state: true
@@ -210,8 +210,7 @@ automation:
         entity_id: group.persons
         state: 'home'
     action:
-      - service: script.turn_on
-        entity_id: script.vacuum_goto_kitchen
+      - service: script.vacuum_goto_kitchen
 
 
 script:
@@ -385,4 +384,3 @@ script:
           entity_id: vacuum.xiaomi_vacuum_cleaner
           command: app_goto_target
           params: [ 34660,33370 ]
-

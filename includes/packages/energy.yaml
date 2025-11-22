@@ -5,6 +5,60 @@ input_boolean:
     name: UPS on battery (memory)
     icon: mdi:car-battery
 
+input_number:
+  power_outage_timestamp:
+    name: "Power Outage Timestamp"
+    min: 0
+    max: 9999999999
+    step: 1
+    mode: box
+
+template:
+  - trigger:
+      - platform: time_pattern
+        minutes: "/1"
+      - platform: state
+        entity_id: input_number.power_outage_timestamp
+    sensor:
+      - name: "Power Outage Start Time"
+        unique_id: power_outage_start_time
+        state: >
+          {% set timestamp = states('input_number.power_outage_timestamp') | float(0) %}
+          {% if timestamp > 0 %}
+            {{ timestamp | timestamp_local }}
+          {% else %}
+            unavailable
+          {% endif %}
+        device_class: timestamp
+        icon: mdi:power-plug-off
+
+      - name: "Power Outage Duration Formatted"
+        unique_id: power_outage_duration_formatted
+        state: >
+          {% set timestamp = states('input_number.power_outage_timestamp') | float(0) %}
+          {% if timestamp > 0 %}
+            {% set duration = (now().timestamp() - timestamp) | int %}
+            {% set hours = duration // 3600 %}
+            {% set minutes = (duration % 3600) // 60 %}
+            {{ '%02d:%02d' | format(hours, minutes) }}
+          {% else %}
+            -
+          {% endif %}
+        icon: mdi:timer-outline
+
+  - binary_sensor:
+      - name: "Mains Power Status"
+        unique_id: mains_power_status
+        state: >
+          {{ states('input_number.power_outage_timestamp') | float(0) == 0 }}
+        device_class: power
+        icon: >
+          {% if states('input_number.power_outage_timestamp') | float(0) == 0 %}
+            mdi:power-plug
+          {% else %}
+            mdi:power-plug-off
+          {% endif %}
+
 automation:
   - alias: 'Notify when UPS goes on battery'
     initial_state: true
@@ -133,6 +187,91 @@ automation:
             | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }} ({{ trigger.from_state.state }})
 
       - service: script.ups_power_restore_cleanup
+
+  - alias: 'Notify when EcoFlow Delta 2 battery low'
+    id: notify_ecoflow_delta2_battery_low
+    initial_state: true
+    mode: restart
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.delta_2_max_battery_level
+        below: 21
+        above: 10
+        for: "00:01:00"
+      - platform: numeric_state
+        entity_id: sensor.delta_2_max_battery_level
+        below: 11
+        above: 5
+        for: "00:01:00"
+      - platform: numeric_state
+        entity_id: sensor.delta_2_max_battery_level
+        below: 6
+        above: 1
+        for: "00:01:00"
+      - platform: numeric_state
+        entity_id: sensor.delta_2_max_battery_level
+        below: 2
+        for: "00:00:30"
+    action:
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            🪫⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | EcoFlow Delta 2 battery low!
+            | Battery level: {{ states('sensor.delta_2_max_battery_level') }}%
+
+  - alias: 'Start power outage timer'
+    id: start_power_outage_timer
+    initial_state: true
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.0xa46dd4fffe4f985d_power
+        below: 10
+        for: "00:01:00"
+      - platform: homeassistant
+        event: start
+        id: ha_start
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('input_number.power_outage_timestamp') | float(0) == 0 }}
+      - condition: template
+        value_template: >
+          {{ states('sensor.0xa46dd4fffe4f985d_power') | float(999) < 10 }}
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.power_outage_timestamp
+        data:
+          value: "{{ now().timestamp() | int }}"
+
+  - alias: 'Stop power outage timer'
+    id: stop_power_outage_timer
+    initial_state: true
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.0xa46dd4fffe4f985d_power
+        above: 180
+        for: "00:01:00"
+      - platform: homeassistant
+        event: start
+        id: ha_start
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('input_number.power_outage_timestamp') | float(0) > 0 }}
+      - condition: template
+        value_template: >
+          {{ states('sensor.0xa46dd4fffe4f985d_power') | float(0) > 180 }}
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.power_outage_timestamp
+        data:
+          value: 0
 
 group:
   power_restore_targets:

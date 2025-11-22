@@ -17,6 +17,8 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.delta_2_max_battery_level
+          - sensor.delta_2_max_main_battery_level
+          - sensor.delta_2_max_slave_1_battery_level
           - number.delta_2_max_backup_reserve_level
           - sensor.delta_2_max_total_in_power
           - sensor.delta_2_max_total_out_power
@@ -115,7 +117,8 @@ cards:
             secondary_info:
               entity: sensor.delta_2_max_discharge_remaining_time
               display_zero: true
-            state_of_charge: sensor.delta_2_max_main_battery_level
+            #state_of_charge: sensor.delta_2_max_main_battery_level
+            state_of_charge: sensor.delta_2_max_battery_level
             display_state: one_way
             color_circle: true
           home:
@@ -142,6 +145,26 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.delta_2_max_ac_in_volts
+
+      - type: history-graph
+#        title: "Mains Power History"
+        hours_to_show: 24
+        entities:
+          - entity: binary_sensor.mains_power_status
+            name: Power History
+
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.mains_power_status
+            state: "off"
+        card:
+          type: entities
+          show_header_toggle: false
+          entities:
+            - entity: sensor.power_outage_start_time
+              name: "Power Off"
+            - entity: sensor.power_outage_duration_formatted
+              name: "Power Off For"
 
   - type: vertical-stack
     cards:

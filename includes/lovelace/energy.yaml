@@ -244,5 +244,8 @@ cards:
               exclude:
                 - entity_id: "*(battery_voltage|notify_when_ups_goes_on_battery|_trv_battery$)"
                 - entity_id: "*pressure*"
+                - entity_id: "*ups*battery*"
+                - entity_id: "*delta*battery*"
+                - entity_id: "*23113rkc6g*battery*"
 
 

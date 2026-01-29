@@ -1,23 +1,13 @@
 group:
   active_automations:
     entities:
-      - automation.ha_persistent_notification
-      - automation.hacs_persistent_notification
       - automation.ha1_server_off_reserve_control
       - automation.ha1_server_not_working
-      - automation.check_ha1_on_start
       - automation.sync_input_boolean
       - automation.sync_thermostat_temperature
       - automation.gas_counter
       - automation.system_entity_change
       - automation.system_database_purge
-#     - automation.telegram_msg_info
-      - automation.update_gw3_sensor_ota
-      - automation.update_gw3_zigbee_ota_fw
-#     - automation.system_start
-#     - automation.system_error_counter
-#     - automation.system_warning_counter
-#     - automation.reset_system_counters
 
   sync_input_boolean:
     entities:
@@ -70,9 +60,6 @@ sensor:
       authorization: !secret ha1_token
     value_template: "{{ value_json.attributes.temperature }}"
 
-# - platform: rups
-#   name: raspberry_ups
-
 rest_command:
   ha1_set_input_boolean:
     url: "{{ states('input_text.ha1_url') }}api/services/input_boolean/turn_{{ set_state }}"
@@ -86,7 +73,6 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-#       entity_id: group.sync_input_boolean # not working
         entity_id:
           - sensor.ha1_gas_boiler_schedule
           - sensor.ha1_auto_turn_off_lights
@@ -95,7 +81,6 @@ automation:
           - sensor.ha1_vacuum_notification
     condition:
       - condition: template
-#       value_template: '{{ (state_attr("sensor.ha1_uptime", "state") | int(0)) > 0 }}'
         value_template: '{{ (as_timestamp(now()) - as_timestamp(states("sensor.ha1_uptime"))) | int(0) > 90 }}'
     action:
       - service: >
@@ -129,30 +114,14 @@ automation:
         from: "unknown"
     action:
       - delay: 00:00:30
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: "\U00002747 {{ states.sensor.date_time.state }} | HA1 is now working. Return of control to main !!!"
       - service: script.turn_on
         entity_id: script.sync_input_boolean_to_ha1
       - service: script.turn_on
         entity_id: script.turn_off_most_automation
-
-#  - alias: check_ha1_on_start
-#    initial_state: true
-#    trigger:
-#      - platform: homeassistant
-#        event: start
-##     - platform: time_pattern
-##       minutes: '/1'
-#    condition:
-#      - condition: template
-#        value_template: "{{ states.sensor.ha1_uptime is none }}"
-#    action:
-#      - service: notify.telegram
-#        data:
-#          message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
-#      - service: automation.turn_on
-#        entity_id: all
 
   - alias: ha1_server_off_reserve_control
     trigger:
@@ -161,8 +130,9 @@ automation:
         to: "unavailable"
         for: "00:01:00"
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Take control !!!"
       - service: automation.turn_on
         entity_id: all
@@ -173,11 +143,10 @@ automation:
         entity_id: device_tracker.ha1
         from: 'home'
         to: 'not_home'
-#       for:
-#         minutes: 5
     action:
-      - service: notify.telegram
+      - service: notify.send_message
         data:
+          entity_id: notify.telegram_vtel
           message: "\U0001F680 {{ states.sensor.date_time.state }} | HA1 is not working. Need reboot !!!"
 
   - alias: sync_thermostat_temperature
@@ -228,4 +197,3 @@ script:
       - delay: '00:00:15'
       - service: switch.turn_on
         entity_id: switch.power_strip_1_relay2
-

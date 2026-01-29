@@ -1,0 +1,81 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured",
+            "reconfigure_successful": "Reconfigured",
+            "reconfigure_failed": "Reconfiguration failed"
+        },
+        "error": {
+            "invalid_api_key": "Invalid API Key",
+            "unauthorized": "Make sure your api key has READ permission to 'Models' and WRITE permission to 'Model capabilities'",
+            "whisper_not_found":  "Whisper model not found"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "source": "API Provider"
+                }
+            },
+            "whisper": {
+                "data": {
+                    "name": "Name",
+                    "url": "Url",
+                    "api_key": "API key",
+                    "model": "Model",
+                    "temperature": "Temperature",
+                    "prompt": "Prompt (Optional)",
+                    "reduce_noise": "Reduce noise"
+                },
+                "data_description": {
+                    "url": "Full whisper api url. Example: `https://api.openai.com/v1/audio/transcriptions`",
+                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
+                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                }
+            },
+            "reconfigure": {
+                "data": {
+                    "name": "Name",
+                    "url": "Url",
+                    "api_key": "API key (Optional)",
+                    "model": "Model",
+                    "temperature": "Temperature",
+                    "prompt": "Prompt (Optional)",
+                    "reduce_noise": "Reduce noise"
+                },
+                "data_description": {
+                    "url": "Full whisper api url. Example: `https://api.openai.com/v1/audio/transcriptions`",
+                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
+                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "Device is already configured",
+            "reconfigure_successful": "Reconfigured",
+            "reconfigure_failed": "Reconfiguration failed"
+        },
+        "error": {
+            "invalid_api_key": "Invalid API Key",
+            "unauthorized": "Make sure your api key has READ permission to 'Models' and WRITE permission to 'Model capabilities'",
+            "whisper_not_found":  "Whisper model not found"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "name": "Name",
+                    "api_key": "API key (leave blank to keep existing)",
+                    "model": "Model",
+                    "temperature": "Temperature",
+                    "prompt": "Prompt (Optional)",
+                    "reduce_noise": "Reduce noise"
+                },
+                "data_description": {
+                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
+                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                }
+            }
+        }
+    }
+}

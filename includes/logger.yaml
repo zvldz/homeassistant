@@ -6,6 +6,12 @@ logs:
   homeassistant.components.conversation: debug
   aioesphomeapi.reconnect_logic: warning
   homeassistant.components.esphome: warning
+# TEMPORARY: Voice assistant debugging
+  homeassistant.components.stt: debug
+  homeassistant.components.tts: debug
+  homeassistant.components.assist_pipeline: debug
+  homeassistant.components.anthropic: debug
+  custom_components.openai_whisper_cloud: debug
 # custom_components.xiaomi_gateway3: debug
 # custom_components.aqara_gateway.core.gateway: debug
 # homeassistant.components.yeelight: debug

@@ -77,7 +77,7 @@ automation:
           entity_id: notify.telegram_vtel
           message: >
             ⚠ {{ now().strftime('%Y-%m-%d %H:%M') }}
-            | 1 Mains voltage is missing
+            | 2 Mains voltage (UPS) is missing
             | ip: {{ states('sensor.myip') }}
 
   - alias: 'Notify when working PowerStation'
@@ -86,6 +86,15 @@ automation:
       - platform: numeric_state
         entity_id: sensor.0xa46dd4fffe4f985d_power
         below: 1
+        id: power_lost
+      - platform: homeassistant
+        event: start
+        id: ha_start
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.id == 'power_lost' or
+             (trigger.id == 'ha_start' and states('sensor.0xa46dd4fffe4f985d_power') | float(999) < 1 and states('input_number.power_outage_timestamp') | float(0) == 0) }}
     action:
       - service: light.turn_on
         entity_id: light.gateway_light_7811dcb245b2
@@ -97,9 +106,10 @@ automation:
           entity_id: notify.telegram_vtel
           message: >
             ⚠ {{ now().strftime('%Y-%m-%d %H:%M') }}
-            | 2 Mains voltage is missing
+            | 1 Mains voltage (sensor) is missing
             | ip: {{ states('sensor.myip') }}
             | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}
+            | battery: {{ states('sensor.delta_2_max_battery_level') }}%
       - repeat:
           count: 3
           sequence:
@@ -159,34 +169,8 @@ automation:
           entity_id: notify.telegram_vtel
           message: >
             ⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
-            | 1 Mains voltage restored
-            | ip: {{ states('sensor.myip') }}
-
-      - service: script.ups_power_restore_cleanup
-
-  - alias: 'Notify when Mains voltage restored'
-    initial_state: true
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.0xa46dd4fffe4f985d_power
-        above: 100
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state is not none
-             and trigger.from_state.state not in ('unknown', 'unavailable') }}
-    action:
-      - delay: '00:02:00'
-      - service: notify.send_message
-        data:
-          entity_id: notify.telegram_vtel
-          message: >
-            ⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
             | 2 Mains voltage restored
             | ip: {{ states('sensor.myip') }}
-            | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }} ({{ trigger.from_state.state }})
-
-      - service: script.ups_power_restore_cleanup
 
   - alias: 'Notify when EcoFlow Delta 2 battery low'
     id: notify_ecoflow_delta2_battery_low
@@ -267,11 +251,24 @@ automation:
         value_template: >
           {{ states('sensor.0xa46dd4fffe4f985d_power') | float(0) > 180 }}
     action:
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >
+            ⚡ {{ now().strftime('%Y-%m-%d %H:%M') }}
+            | 1 Mains voltage restored
+            | ip: {{ states('sensor.myip') }}
+            | power: {{ states('sensor.0xa46dd4fffe4f985d_power') }}W
+            | outage duration: {{ states('sensor.power_outage_duration_formatted') }}
+            | battery: {{ states('sensor.delta_2_max_battery_level') }}%
+
       - service: input_number.set_value
         target:
           entity_id: input_number.power_outage_timestamp
         data:
           value: 0
+
+      - service: script.ups_power_restore_cleanup
 
 group:
   power_restore_targets:

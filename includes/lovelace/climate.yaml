@@ -32,7 +32,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
-            entity: sensor.0x00158d00027300cc_temperature
+            entity: sensor.0x00158d0002ca0395_temperature
             name: Kitchen
 
           - type: tile

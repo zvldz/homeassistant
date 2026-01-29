@@ -7,7 +7,7 @@
   headers:
     authorization: !secret ha_fazenda_token
   value_template: >
-    {% if states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
+    {% if states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None, ''] %}
       {{ value_json.state }}
     {% endif %}
   json_attributes:

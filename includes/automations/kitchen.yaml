@@ -121,6 +121,42 @@
     - service: timer.cancel
       entity_id: timer.kitchen_light
 
+# Sandwich Socket
+- alias: "Turn on Sandwich Socket timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0xa4c1381ca4c52e14
+      to: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.sandwich_socket
+
+- alias: "Turn off Sandwich Socket on timer"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.sandwich_socket
+  action:
+    - service: switch.turn_off
+      entity_id: switch.0xa4c1381ca4c52e14
+    - service: notify.send_message
+      data:
+        entity_id: notify.telegram_vtel
+        message: "🥪 Sandwich maker turned off (15 min timer)"
+
+- alias: "Cancel Sandwich Socket timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0xa4c1381ca4c52e14
+      to: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.sandwich_socket
+
 # Start HA
 - alias: "Start Kitchen timer if not starting"
   initial_state: true

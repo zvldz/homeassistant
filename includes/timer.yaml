@@ -33,3 +33,7 @@ hallway_light_sw3:
 balcony_living_light:
   name: "Balcony & Livinroom light"
   duration: '00:03:00'
+
+sandwich_socket:
+  name: "Sandwich Socket"
+  duration: '00:15:00'

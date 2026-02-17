@@ -42,6 +42,16 @@ cards:
             features:
               - type: "toggle"
 
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: switch.0xa4c1381ca4c52e14
+            name: "Sandwich Socket"
+            icon: "mdi:light-switch"
+            features_position: inline
+            features:
+              - type: "toggle"
+
       - type: heading
         heading: "Timers"
         icon: "mdi:timer"
@@ -59,6 +69,7 @@ cards:
           entities:
             - entity: timer.kitchen_light
             - entity: timer.balcony_living_light
+            - entity: timer.sandwich_socket
           state_filter:
             - 'active'
 

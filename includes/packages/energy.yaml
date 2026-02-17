@@ -90,12 +90,17 @@ automation:
       - platform: homeassistant
         event: start
         id: ha_start
-    condition:
+    action:
+      # TEST: delay 2 min after ha_start to let entities restore their states
+      - if:
+          - condition: trigger
+            id: ha_start
+        then:
+          - delay: "00:02:00"
       - condition: template
         value_template: >
-          {{ trigger.id == 'power_lost' or
-             (trigger.id == 'ha_start' and states('sensor.0xa46dd4fffe4f985d_power') | float(999) < 1 and states('input_number.power_outage_timestamp') | float(0) == 0) }}
-    action:
+          {{ states('sensor.0xa46dd4fffe4f985d_power') | float(999) < 1
+             and states('input_number.power_outage_timestamp') | float(0) == 0 }}
       - service: light.turn_on
         entity_id: light.gateway_light_7811dcb245b2
         data:

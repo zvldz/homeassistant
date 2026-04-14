@@ -1,17 +1,34 @@
-from custom_components.ecoflow_cloud.api import EcoflowApiClient
-from custom_components.ecoflow_cloud.devices import const, BaseDevice
-from custom_components.ecoflow_cloud.entities import BaseSensorEntity, BaseNumberEntity, BaseSwitchEntity, \
-    BaseSelectEntity
-from custom_components.ecoflow_cloud.sensor import WattsSensorEntity,LevelSensorEntity,CapacitySensorEntity, \
-    InWattsSensorEntity,OutWattsSensorEntity, RemainSensorEntity, MilliVoltSensorEntity, TempSensorEntity, \
-    CyclesSensorEntity, EnergySensorEntity, CumulativeCapacitySensorEntity
-from homeassistant.util import utcnow
+from typing import override
+from typing import Any
 import logging
+
+from homeassistant.components.number import NumberEntity
+from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.util import utcnow
+
+from custom_components.ecoflow_cloud.api import EcoflowApiClient
+from custom_components.ecoflow_cloud.devices import BaseInternalDevice, const
+from custom_components.ecoflow_cloud.sensor import (
+    CapacitySensorEntity,
+    CumulativeCapacitySensorEntity,
+    CyclesSensorEntity,
+    EnergySensorEntity,
+    InWattsSensorEntity,
+    LevelSensorEntity,
+    MilliVoltSensorEntity,
+    OutWattsSensorEntity,
+    RemainSensorEntity,
+    TempSensorEntity,
+    WattsSensorEntity,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-class StreamAC(BaseDevice):
-    def sensors(self, client: EcoflowApiClient) -> list[BaseSensorEntity]:
+
+class StreamAC(BaseInternalDevice):
+    def sensors(self, client: EcoflowApiClient) -> list[SensorEntity]:
         return [
             # "accuChgCap": 198511,
             CumulativeCapacitySensorEntity(client, self, "accuChgCap", const.ACCU_CHARGE_CAP, False),
@@ -76,9 +93,9 @@ class StreamAC(BaseDevice):
             # "curSensorTemp": [],
             # "cycleSoh": 100.0,
             # "cycles": 1,
-            CyclesSensorEntity(client, self, "cycles", const.CYCLES,False),
+            CyclesSensorEntity(client, self, "cycles", const.CYCLES, False),
             # "designCap": 100000,
-            CapacitySensorEntity(client, self, "designCap", const.STREAM_DESIGN_CAPACITY,False),
+            CapacitySensorEntity(client, self, "designCap", const.STREAM_DESIGN_CAPACITY, False),
             # "devCtrlStatus": 1,
             # "devSleepState": 0,
             # "diffSoc": 0.2050476,
@@ -92,7 +109,7 @@ class StreamAC(BaseDevice):
             # "energyStrategyOperateMode.operateSelfPoweredOpen": true,
             # "energyStrategyOperateMode.operateTouModeOpen": false,
             # "f32ShowSoc": 46.317574,
-            LevelSensorEntity(client, self, "f32ShowSoc", const.STREAM_POWER_BATTERY_SOC,False),
+            LevelSensorEntity(client, self, "f32ShowSoc", const.STREAM_POWER_BATTERY_SOC, False),
             # "feedGridMode": 2,
             # "feedGridModePowLimit": 800,
             # "feedGridModePowMax": 800,
@@ -180,7 +197,12 @@ class StreamAC(BaseDevice):
             # "powGetSysLoadFromBp": 0.0,
             WattsSensorEntity(client, self, "powGetSysLoadFromBp", const.STREAM_GET_SYS_LOAD_FROM_BP),
             # "powGetSysLoadFromGrid": 0.0,
-            WattsSensorEntity(client, self, "powGetSysLoadFromGrid", const.STREAM_GET_SYS_LOAD_FROM_GRID),
+            WattsSensorEntity(
+                client,
+                self,
+                "powGetSysLoadFromGrid",
+                const.STREAM_GET_SYS_LOAD_FROM_GRID,
+            ),
             # "powGetSysLoadFromPv": 0.0,
             WattsSensorEntity(client, self, "powGetSysLoadFromPv", const.STREAM_GET_SYS_LOAD_FROM_PV),
             # "powSysAcInMax": 4462,
@@ -194,7 +216,7 @@ class StreamAC(BaseDevice):
             # "relay3Onoff": true,
             # "relay4Onoff": true,
             # "remainCap": 46317,
-            CapacitySensorEntity(client, self, "remainCap", const.STREAM_REMAIN_CAPACITY,False),
+            CapacitySensorEntity(client, self, "remainCap", const.STREAM_REMAIN_CAPACITY, False),
             # "remainTime": 88,
             RemainSensorEntity(client, self, "remainTime", const.REMAINING_TIME, False),
             # "runtimePropertyFullUploadPeriod": 120000,
@@ -257,61 +279,73 @@ class StreamAC(BaseDevice):
             .attr("minCellVol", const.ATTR_MIN_CELL_VOLT, 0)
             .attr("maxCellVol", const.ATTR_MAX_CELL_VOLT, 0),
             # "waterInFlag": 0,
-
         ]
+
     # moduleWifiRssi
-    def numbers(self, client: EcoflowApiClient) -> list[BaseNumberEntity]:
+    def numbers(self, client: EcoflowApiClient) -> list[NumberEntity]:
         return []
 
-    def switches(self, client: EcoflowApiClient) -> list[BaseSwitchEntity]:
+    def switches(self, client: EcoflowApiClient) -> list[SwitchEntity]:
         return []
 
-    def selects(self, client: EcoflowApiClient) -> list[BaseSelectEntity]:
+    def selects(self, client: EcoflowApiClient) -> list[SelectEntity]:
         return []
 
-    def _prepare_data_get_topic(self, raw_data) -> dict[str, any]:
-        return super()._prepare_data(raw_data)
+    @override
+    def _prepare_data(self, raw_data: bytes) -> dict[str, Any]:
+        raw: dict[str, Any] = {"params": {}}
+        from .proto import stream_ac_pb2 as stream_ac
+        from .proto import stream_ac_pb2 as stream_ac2
 
-    def _prepare_data(self, raw_data) -> dict[str, any]:
-        raw = {"params": {}}
-        from .proto import ecopacket_pb2 as ecopacket, stream_ac_pb2 as stream_ac, stream_ac_pb2 as stream_ac2
         try:
-            payload =raw_data
+            payload = raw_data
 
             while True:
-                _LOGGER.debug("payload \"%s\"", payload.hex())
-                packet = stream_ac.SendHeaderStreamMsg()
+                _LOGGER.debug('payload "%s"', payload.hex())
+                packet = stream_ac.StreamACSendHeaderMsg()
                 packet.ParseFromString(payload)
 
-                if hasattr(packet.msg, "pdata") :
-                    _LOGGER.debug("cmd id \"%u\" fct id \"%u\" content \"%s\" - pdata:\"%s\"", packet.msg.cmd_id, packet.msg.cmd_func, str(packet), str(packet.msg.pdata.hex()))
-                else :
-                    _LOGGER.debug("cmd id \"%u\" fct id \"%u\" content \"%s\"", packet.msg.cmd_id, str(packet))
+                if hasattr(packet.msg, "pdata"):
+                    _LOGGER.debug(
+                        'cmd id "%u" fct id "%u" content "%s" - pdata:"%s"',
+                        packet.msg.cmd_id,
+                        packet.msg.cmd_func,
+                        str(packet),
+                        str(packet.msg.pdata.hex()),
+                    )
+                else:
+                    _LOGGER.debug(
+                        'cmd id "%u" fct id "%u" content "%s"',
+                        packet.msg.cmd_id,
+                        str(packet),
+                    )
 
-                if packet.msg.cmd_id < 0: #packet.msg.cmd_id != 21 and packet.msg.cmd_id != 22 and packet.msg.cmd_id != 50:
+                if (
+                    packet.msg.cmd_id < 0
+                ):  # packet.msg.cmd_id != 21 and packet.msg.cmd_id != 22 and packet.msg.cmd_id != 50:
                     _LOGGER.info("Unsupported EcoPacket cmd id %u", packet.msg.cmd_id)
 
                 else:
-                    _LOGGER.debug("new payload \"%s\"",str(packet.msg.pdata.hex()))
+                    _LOGGER.debug('new payload "%s"', str(packet.msg.pdata.hex()))
                     # paquet HeaderStream
                     if packet.msg.cmd_id > 0:
-                        self._parsedata(packet, stream_ac2.HeaderStream(), raw)
+                        self._parsedata(packet, stream_ac2.StreamACHeader(), raw)
 
                     # paquet Champ_cmd21
                     if packet.msg.cmd_id > 0:
-                        self._parsedata(packet, stream_ac2.Champ_cmd21(), raw)
+                        self._parsedata(packet, stream_ac2.StreamACChamp_cmd21(), raw)
 
                     # paquet Champ_cmd21_3
                     if packet.msg.cmd_id > 0:
-                        self._parsedata(packet, stream_ac2.Champ_cmd21_3(), raw)
+                        self._parsedata(packet, stream_ac2.StreamACChamp_cmd21_3(), raw)
 
                     # paquet Champ_cmd50
                     if packet.msg.cmd_id > 0:
-                        self._parsedata(packet, stream_ac2.Champ_cmd50(), raw)
+                        self._parsedata(packet, stream_ac2.StreamACChamp_cmd50(), raw)
 
                     # paquet Champ_cmd50_3
                     if packet.msg.cmd_id > 0:
-                        self._parsedata(packet, stream_ac2.Champ_cmd50_3(), raw)
+                        self._parsedata(packet, stream_ac2.StreamACChamp_cmd50_3(), raw)
 
                     _LOGGER.info("Found %u fields", len(raw["params"]))
 
@@ -327,16 +361,25 @@ class StreamAC(BaseDevice):
 
         except Exception as error:
             _LOGGER.error(error)
-            _LOGGER.debug("raw_data : \"%s\"  raw_data.hex() : \"%s\"",str(raw_data),str(raw_data.hex()))
+            _LOGGER.debug(
+                'raw_data : "%s"  raw_data.hex() : "%s"',
+                str(raw_data),
+                str(raw_data.hex()),
+            )
         return raw
 
-    def _parsedata(self, packet, content, raw) :
+    def _parsedata(self, packet, content, raw):
         try:
-            if hasattr(packet.msg, "pdata") and len(packet.msg.pdata) > 0 :
+            if hasattr(packet.msg, "pdata") and len(packet.msg.pdata) > 0:
                 content.ParseFromString(packet.msg.pdata)
 
                 if len(str(content)) > 0:
-                    _LOGGER.debug("initial cmd id \"%u\" fct id \"%u\" msg \n\"%s\"", packet.msg.cmd_id, packet.msg.cmd_func, str(content))
+                    _LOGGER.debug(
+                        'initial cmd id "%u" fct id "%u" msg \n"%s"',
+                        packet.msg.cmd_id,
+                        packet.msg.cmd_func,
+                        str(content),
+                    )
 
                 for descriptor in content.DESCRIPTOR.fields:
                     if not content.HasField(descriptor.name):
@@ -346,4 +389,4 @@ class StreamAC(BaseDevice):
 
         except Exception as error:
             _LOGGER.debug(error)
-            _LOGGER.debug("Erreur parsing pour le flux : %s",str(packet.msg.pdata.hex()))
+            _LOGGER.debug("Erreur parsing pour le flux : %s", str(packet.msg.pdata.hex()))

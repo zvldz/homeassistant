@@ -1,17 +1,34 @@
-from ...api import EcoflowApiClient
-from ...sensor import StatusSensorEntity
-from .data_bridge import to_plain
+from typing import Any
+
+from homeassistant.components.number import NumberEntity
+from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
-from custom_components.ecoflow_cloud.devices import const, BaseDevice
-from custom_components.ecoflow_cloud.entities import BaseSensorEntity, BaseNumberEntity, BaseSwitchEntity, \
-    BaseSelectEntity
-from custom_components.ecoflow_cloud.sensor import WattsSensorEntity,LevelSensorEntity,CapacitySensorEntity, \
-    InWattsSensorEntity,OutWattsSensorEntity, RemainSensorEntity, MilliVoltSensorEntity, TempSensorEntity, \
-    CyclesSensorEntity, EnergySensorEntity, CumulativeCapacitySensorEntity
+from custom_components.ecoflow_cloud.devices import BaseDevice, const
+from custom_components.ecoflow_cloud.devices.public.data_bridge import to_plain
+from custom_components.ecoflow_cloud.number import BatteryBackupLevel
+from custom_components.ecoflow_cloud.sensor import (
+    CapacitySensorEntity,
+    CumulativeCapacitySensorEntity,
+    CyclesSensorEntity,
+    EnergySensorEntity,
+    InWattsSensorEntity,
+    LevelSensorEntity,
+    MilliVoltSensorEntity,
+    OutWattsSensorEntity,
+    RemainSensorEntity,
+    StatusSensorEntity,
+    TempSensorEntity,
+    VoltSensorEntity,
+    WattsSensorEntity,
+)
+from custom_components.ecoflow_cloud.switch import EnabledEntity
+
 
 class StreamAC(BaseDevice):
-
-    def sensors(self, client: EcoflowApiClient) -> list[BaseSensorEntity]:
+    def sensors(self, client: EcoflowApiClient) -> list[SensorEntity]:
         return [
             # "accuChgCap": 198511,
             CumulativeCapacitySensorEntity(client, self, "accuChgCap", const.ACCU_CHARGE_CAP, False),
@@ -72,13 +89,15 @@ class StreamAC(BaseDevice):
             # "cmsDsgRemTime": 5939,
             # "cmsMaxChgSoc": 100,
             # "cmsMinDsgSoc": 5,
+            LevelSensorEntity(client, self, "cmsMaxChgSoc", const.MAX_CHARGE_LEVEL),
+            LevelSensorEntity(client, self, "cmsMinDsgSoc", const.MIN_DISCHARGE_LEVEL),
             # "curSensorNtcNum": 0,
             # "curSensorTemp": [],
             # "cycleSoh": 100.0,
             # "cycles": 1,
             CyclesSensorEntity(client, self, "cycles", const.CYCLES),
             # "designCap": 100000,
-            CapacitySensorEntity(client, self, "designCap", const.STREAM_DESIGN_CAPACITY,False),
+            CapacitySensorEntity(client, self, "designCap", const.STREAM_DESIGN_CAPACITY, False),
             # "devCtrlStatus": 1,
             # "devSleepState": 0,
             # "diffSoc": 0.2050476,
@@ -105,7 +124,7 @@ class StreamAC(BaseDevice):
             WattsSensorEntity(client, self, "gridConnectionPower", const.STREAM_POWER_AC),
             # "gridConnectionSta": "PANEL_GRID_IN",
             # "gridConnectionVol": 235.34576,
-            MilliVoltSensorEntity(client, self, "gridConnectionVol", const.STREAM_POWER_VOL, False),
+            VoltSensorEntity(client, self, "gridConnectionVol", const.STREAM_POWER_VOL, False),
             # "gridSysDeviceCnt": 2,
             # "heatfilmNtcNum": 0,
             # "heatfilmTemp": [],
@@ -194,7 +213,7 @@ class StreamAC(BaseDevice):
             # "relay3Onoff": true,
             # "relay4Onoff": true,
             # "remainCap": 46317,
-            CapacitySensorEntity(client, self, "remainCap", const.STREAM_REMAIN_CAPACITY,False),
+            CapacitySensorEntity(client, self, "remainCap", const.STREAM_REMAIN_CAPACITY, False),
             # "remainTime": 88,
             RemainSensorEntity(client, self, "remainTime", const.REMAINING_TIME),
             # "runtimePropertyFullUploadPeriod": 120000,
@@ -257,24 +276,137 @@ class StreamAC(BaseDevice):
             .attr("minCellVol", const.ATTR_MIN_CELL_VOLT, 0)
             .attr("maxCellVol", const.ATTR_MAX_CELL_VOLT, 0),
             # "waterInFlag": 0,
-
         ]
+
     # moduleWifiRssi
-    def numbers(self, client: EcoflowApiClient) -> list[BaseNumberEntity]:
+    def numbers(self, client: EcoflowApiClient) -> list[NumberEntity]:
+        return [
+            BatteryBackupLevel(
+                client,
+                self,
+                "backupReverseSoc",
+                const.BACKUP_RESERVE_LEVEL,
+                3,
+                95,
+                "cmsMinDsgSoc",
+                "cmsMaxChgSoc",
+                3,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {
+                        "cfgBackupReverseSoc": int(value),
+                    },
+                },
+            ),
+        ]
+
+    def switches(self, client: EcoflowApiClient) -> list[SwitchEntity]:
+        return [
+            EnabledEntity(
+                client,
+                self,
+                "relay2Onoff",
+                const.MODE_AC1_ON,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {"cfgRelay2Onoff": value},
+                },
+                enableValue=True,
+                disableValue=False,
+            ),
+            EnabledEntity(
+                client,
+                self,
+                "relay3Onoff",
+                const.MODE_AC2_ON,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {"cfgRelay3Onoff": value},
+                },
+                enableValue=True,
+                disableValue=False,
+            ),
+            EnabledEntity(
+                client,
+                self,
+                "energyStrategyOperateMode.operateSelfPoweredOpen",
+                const.STREAM_OPERATION_MODE_SELF_POWERED,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {"cfgEnergyStrategyOperateMode": {"operateSelfPoweredOpen": value}},
+                },
+                enableValue=True,
+                disableValue=False,
+            ),
+            EnabledEntity(
+                client,
+                self,
+                "energyStrategyOperateMode.operateIntelligentScheduleModeOpen",
+                const.STREAM_OPERATION_MODE_AI_MODE,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {"cfgEnergyStrategyOperateMode": {"operateIntelligentScheduleModeOpen": value}},
+                },
+                enableValue=True,
+                disableValue=False,
+            ),
+            EnabledEntity(
+                client,
+                self,
+                "feedGridMode",
+                const.STREAM_FEED_IN_CONTROL,
+                lambda value: {
+                    "sn": self.device_info.sn,
+                    "cmdId": 17,
+                    "cmdFunc": 254,
+                    "dirDest": 1,
+                    "dirSrc": 1,
+                    "dest": 2,
+                    "needAck": True,
+                    "params": {"cfgFeedGridMode": value},
+                },
+                enableValue=2,
+                disableValue=1,
+            ),
+        ]
+
+    def selects(self, client: EcoflowApiClient) -> list[SelectEntity]:
         return []
 
-    def switches(self, client: EcoflowApiClient) -> list[BaseSwitchEntity]:
-        return []
-
-    def selects(self, client: EcoflowApiClient) -> list[BaseSelectEntity]:
-        return []
-
-    def _prepare_data(self, raw_data) -> dict[str, any]:
+    def _prepare_data(self, raw_data) -> dict[str, Any]:
         res = super()._prepare_data(raw_data)
         res = to_plain(res)
         return res
 
     def _status_sensor(self, client: EcoflowApiClient) -> StatusSensorEntity:
         return StatusSensorEntity(client, self)
-
-

@@ -145,6 +145,9 @@ cards:
         show_header_toggle: false
         entities:
           - sensor.delta_2_max_ac_in_volts
+          - sensor.delta_2_max_solar_1_in_power
+          - sensor.delta_2_max_solar_1_in_amps
+          - sensor.delta_2_max_solar_1_in_volts
 
       - type: history-graph
 #        title: "Mains Power History"

@@ -79,8 +79,8 @@
     - service: telegram_bot.send_message
       data:
         disable_notification: true
-        target: !secret telegram_bot_allowed_chat_id1
-        parse_mode: HTML
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
         message: |
           <pre>
           {{ "\U00002620" }} {{ states('sensor.total_entities_unavailable') }} entities are unavailable:
@@ -96,8 +96,8 @@
     - service: telegram_bot.send_message
       data:
         disable_notification: true
-        target: !secret telegram_bot_allowed_chat_id1
-        parse_mode: HTML
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
         message: |
           <pre>
           {{ "\U0001F305" }} Good morning!
@@ -110,6 +110,6 @@
           Balcony:     {{ states('sensor.0x00158d00027300cc_temperature') }}°C
           Outdoor:     {{ states('sensor.0x00158d0008c99223_temperature') }}°C
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
-          Weather:     {{ states('sensor.openweathermap_forecast_temperature_low') }} - {{ states('sensor.openweathermap_forecast_temperature') }}°C, {{ states('sensor.openweathermap_forecast_condition') }}
+          Weather:     {{ states('sensor.openweathermap_temperature') }}°C, {{ states('sensor.openweathermap_condition') }}
           {{ states('sensor.total_entities_unavailable') }} entities are unavailable
           </pre>

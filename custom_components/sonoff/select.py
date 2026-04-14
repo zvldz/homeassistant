@@ -1,4 +1,5 @@
 from homeassistant.components.select import SelectEntity
+from homeassistant.const import EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -22,6 +23,7 @@ class XSelectStartup(XEntity, SelectEntity):
     get_params = {"configure": "get"}
 
     _attr_current_option = None
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_options = ["off", "on", "stay"]
 
     def __init__(self, ewelink: XRegistry, device: dict):
@@ -76,3 +78,16 @@ class XSelectStartup(XEntity, SelectEntity):
 
         # Send all channels at once
         await self.ewelink.send(self.device, {"configure": configure_list})
+
+
+class XStartup(XEntity, SelectEntity):
+    param = "startup"
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_options = ["off", "on", "stay"]
+
+    def set_state(self, params: dict):
+        self._attr_current_option = params[self.param]
+
+    async def async_select_option(self, option: str):
+        await self.ewelink.send(self.device, {self.param: option})

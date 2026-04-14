@@ -1,23 +1,28 @@
-from __future__ import annotations  # for DeviceData.parent: DeviceData
-import dataclasses
+from typing import Any
+from custom_components.ecoflow_cloud.api import EcoflowApiClient
 import logging
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
+
+from . import _preload_proto  # noqa: F401 # pyright: ignore[reportUnusedImport]
+from .device_data import DeviceData, DeviceOptions
 
 _LOGGER = logging.getLogger(__name__)
 
 ECOFLOW_DOMAIN = "ecoflow_cloud"
-CONFIG_VERSION = 9
+CONFIG_VERSION = 10
 
 _PLATFORMS = {
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
-    Platform.BUTTON,
 }
 
 ATTR_STATUS_SN = "SN"
@@ -50,25 +55,11 @@ CONF_PARENT_SN: Final = "parent_sn"
 OPTS_DIAGNOSTIC_MODE: Final = "diagnostic_mode"
 OPTS_POWER_STEP: Final = "power_step"
 OPTS_REFRESH_PERIOD_SEC: Final = "refresh_period_sec"
+OPTS_ASSUME_OFFLINE_SEC: Final = "assume_offline_sec"
+OPTS_VERBOSE_STATUS_MODE: Final = "verbose_status_mode"
 
 DEFAULT_REFRESH_PERIOD_SEC: Final = 5
-
-
-@dataclasses.dataclass
-class DeviceOptions:
-    refresh_period: int
-    power_step: int
-    diagnostic_mode: bool
-
-
-@dataclasses.dataclass
-class DeviceData:
-    sn: str
-    name: str
-    device_type: str
-    options: DeviceOptions
-    display_name: str | None
-    parent: DeviceData | None
+DEFAULT_ASSUME_OFFLINE_SEC: Final = 300  # 5 minutes
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -76,21 +67,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version in (5, 6):
         new_data = dict(config_entry.data)
         new_options = dict(config_entry.options)
-        new_devices = dict[str, DeviceData]()
+        new_devices = dict[str, Any]()
         for sn, device_info in config_entry.data[CONF_DEVICE_LIST].items():
             new_devices[sn] = {
                 CONF_DEVICE_NAME: device_info[CONF_DEVICE_NAME],
                 CONF_DEVICE_TYPE: device_info[CONF_DEVICE_TYPE],
                 "options": {
-                    OPTS_REFRESH_PERIOD_SEC: config_entry.options[CONF_DEVICE_LIST][sn][
-                        OPTS_REFRESH_PERIOD_SEC
-                    ],
-                    OPTS_POWER_STEP: config_entry.options[CONF_DEVICE_LIST][sn][
-                        OPTS_POWER_STEP
-                    ],
-                    OPTS_DIAGNOSTIC_MODE: config_entry.options[CONF_DEVICE_LIST][sn][
-                        OPTS_DIAGNOSTIC_MODE
-                    ],
+                    OPTS_REFRESH_PERIOD_SEC: config_entry.options[CONF_DEVICE_LIST][sn][OPTS_REFRESH_PERIOD_SEC],
+                    OPTS_POWER_STEP: config_entry.options[CONF_DEVICE_LIST][sn][OPTS_POWER_STEP],
+                    OPTS_DIAGNOSTIC_MODE: config_entry.options[CONF_DEVICE_LIST][sn][OPTS_DIAGNOSTIC_MODE],
                 },
             }
 
@@ -115,9 +100,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         else:
             new_data[CONF_API_HOST] = "api.ecoflow.com"
 
-        updated = hass.config_entries.async_update_entry(
-            config_entry, version=8, data=new_data
-        )
+        updated = hass.config_entries.async_update_entry(config_entry, version=8, data=new_data)
         _LOGGER.info("Config entries updated to version %d", config_entry.version)
 
     if config_entry.version == 8:
@@ -128,23 +111,26 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
         for sn, device_info in new_data[CONF_DEVICE_LIST].items():
             if "name" in device_info:
-                new_data[CONF_DEVICE_LIST][sn][CONF_DEVICE_NAME] = new_data[
-                    CONF_DEVICE_LIST
-                ][sn].pop("name")
+                new_data[CONF_DEVICE_LIST][sn][CONF_DEVICE_NAME] = new_data[CONF_DEVICE_LIST][sn].pop("name")
                 new_data[CONF_DEVICE_LIST][sn].pop("sn", None)
 
-            new_options[CONF_DEVICE_LIST][sn] = new_data[CONF_DEVICE_LIST][sn].pop(
-                "options"
-            )
+            new_options[CONF_DEVICE_LIST][sn] = new_data[CONF_DEVICE_LIST][sn].pop("options")
 
             if "refresh_period" in new_options[CONF_DEVICE_LIST][sn]:
-                new_options[CONF_DEVICE_LIST][sn][OPTS_REFRESH_PERIOD_SEC] = (
-                    new_options[CONF_DEVICE_LIST][sn].pop("refresh_period")
+                new_options[CONF_DEVICE_LIST][sn][OPTS_REFRESH_PERIOD_SEC] = new_options[CONF_DEVICE_LIST][sn].pop(
+                    "refresh_period"
                 )
 
-        updated = hass.config_entries.async_update_entry(
-            config_entry, version=9, data=new_data, options=new_options
-        )
+        updated = hass.config_entries.async_update_entry(config_entry, version=9, data=new_data, options=new_options)
+        _LOGGER.info("Config entries updated to version %d", config_entry.version)
+
+    if config_entry.version == 9:
+        new_options = dict(config_entry.options)
+        for sn, device_options in new_options[CONF_DEVICE_LIST].items():
+            device_options[OPTS_VERBOSE_STATUS_MODE] = False
+            device_options[OPTS_ASSUME_OFFLINE_SEC] = DEFAULT_ASSUME_OFFLINE_SEC
+
+        updated = hass.config_entries.async_update_entry(config_entry, version=10, options=new_options)
         _LOGGER.info("Config entries updated to version %d", config_entry.version)
 
     return updated
@@ -161,6 +147,8 @@ def extract_devices(entry: ConfigEntry) -> dict[str, DeviceData]:
                 entry.options[CONF_DEVICE_LIST][sn][OPTS_REFRESH_PERIOD_SEC],
                 entry.options[CONF_DEVICE_LIST][sn][OPTS_POWER_STEP],
                 entry.options[CONF_DEVICE_LIST][sn][OPTS_DIAGNOSTIC_MODE],
+                entry.options[CONF_DEVICE_LIST][sn][OPTS_VERBOSE_STATUS_MODE],
+                entry.options[CONF_DEVICE_LIST][sn][OPTS_ASSUME_OFFLINE_SEC],
             ),
             None,
             None,
@@ -178,9 +166,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         return False
 
     _LOGGER.info("Setup entry %s (data = %s)", str(entry), str(entry.data))
+    api_client: EcoflowApiClient
     if ECOFLOW_DOMAIN not in hass.data:
         hass.data[ECOFLOW_DOMAIN] = {}
-
     if CONF_USERNAME in entry.data and CONF_PASSWORD in entry.data:
         from .api.private_api import EcoflowPrivateApiClient
 
@@ -204,8 +192,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         return False
 
     devices_list: dict[str, DeviceData] = extract_devices(entry)
-
-    await api_client.login()
+    # Try to connect and authenticate
+    try:
+        await api_client.login()
+    except (ConnectionError, TimeoutError) as ex:
+        # Transient network issues - retry later
+        _LOGGER.warning("Failed to connect to EcoFlow API: %s", ex)
+        raise ConfigEntryNotReady(f"Connection failed: {ex}") from ex
 
     for sn, device_data in devices_list.items():
         device = api_client.configure_device(device_data)
@@ -213,9 +206,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     await hass.async_add_executor_job(api_client.start)
     hass.data[ECOFLOW_DOMAIN][entry.entry_id] = api_client
-    await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
+    # Must load all device data before configuring devices because the data
+    # is used for entity setup.
     await api_client.quota_all(None)
+
+    for device in api_client.devices.values():
+        await device.async_restore_state()
+
+    # Forward entry setup to the platforms to set up the entities
+    await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
 

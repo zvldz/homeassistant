@@ -73,7 +73,11 @@ automation:
         entity_id: group.persons
         state: 'not_home'
     action:
-      - service: script.vacuum_living_room
+      - service: vacuum.send_command
+        data:
+          entity_id: vacuum.xiaomi_vacuum_cleaner
+          command: app_zoned_clean
+          params: [ [33000,28100,37750,32550,2], [31350,31300,33100,34150,2], [31350,26900,33100,31300,1], [28800,26900,31350,28100,1] ]
 
   - alias: "Vacuum Cleaning"
     initial_state: true
@@ -89,7 +93,7 @@ automation:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Vacuum cleaner started cleaning"
 
   - alias: "Vacuum Returning"
@@ -106,7 +110,7 @@ automation:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Vacuum cleaner has finished cleaning and is returning to the base. Cleaning time: {{ ( states('sensor.xiaomi_vacuum_cleaner_last_clean_duration') | float / 60 )| round }} min. Total cleaning area: {{ states('sensor.xiaomi_vacuum_cleaner_last_clean_area') | round(2) }} m²"
 
   - alias: "Vacuum Docked"
@@ -123,7 +127,7 @@ automation:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Vacuum cleaner docked and charging."
 
   - alias: "Vacuum Cleaner Error"
@@ -229,7 +233,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up All Except Balcony"
 
   vacuum_master_bedroom:
@@ -247,7 +251,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Master Bedroom"
 
   vacuum_bedroom:
@@ -265,7 +269,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Bedroom"
 
   vacuum_entryway:
@@ -283,7 +287,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Entryway"
 
   vacuum_hallway:
@@ -301,7 +305,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Hallway"
 
   vacuum_kitchen:
@@ -319,7 +323,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Kitchen"
 
   vacuum_living_room:
@@ -337,7 +341,7 @@ script:
       - service: telegram_bot.send_message
         data:
           disable_notification: true
-          target: !secret telegram_bot_allowed_chat_id1
+          chat_id: !secret telegram_bot_allowed_chat_id1
           message: "Clean Up Living Room"
 
   vacuum_reset_main_brush:

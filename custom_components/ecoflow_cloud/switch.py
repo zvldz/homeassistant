@@ -1,62 +1,61 @@
 import logging
-from typing import Any, Callable, get_type_hints
+from typing import Any, Callable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from custom_components.ecoflow_cloud.devices import (
     BaseDevice,
 )
 
 from . import ECOFLOW_DOMAIN
-from .api import EcoflowApiClient
+from .api import EcoflowApiClient, Message
 from .entities import BaseSwitchEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
-):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     client: EcoflowApiClient = hass.data[ECOFLOW_DOMAIN][entry.entry_id]
     for sn, device in client.devices.items():
         async_add_entities(device.switches(client))
 
 
-class EnabledEntity(BaseSwitchEntity):
+class EnabledEntity(BaseSwitchEntity[int]):
     def __init__(
         self,
         client: EcoflowApiClient,
         device: BaseDevice,
         mqtt_key: str,
         title: str,
-        command: Callable[[int, dict[str, Any] | None], dict[str, Any]] | None,
+        command: Callable[[int], dict[str, Any] | Message]
+        | Callable[[int, dict[str, Any]], dict[str, Any] | Message]
+        | None,
         enabled: bool = True,
         auto_enable: bool = False,
         enableValue: Any = None,
+        disableValue: Any = None,
     ):
         super().__init__(client, device, mqtt_key, title, command, enabled, auto_enable)
         self._enable_value = enableValue
+        self._disable_value = disableValue
 
     def _update_value(self, val: Any) -> bool:
         _LOGGER.debug("Updating switch " + self._attr_unique_id + " to " + str(val))
-        if self._enable_value is not None:
-            if self._enable_value == val:
-                self._attr_is_on = True
-            else:
-                self._attr_is_on = False
-        else:
-            self._attr_is_on = bool(val)
+        self._attr_is_on = self._enable_value == val if self._enable_value is not None else bool(val)
         return True
 
     def turn_on(self, **kwargs: Any) -> None:
         if self._command:
-            self.send_set_message(1, self.command_dict(1))
+            value = self._enable_value if self._enable_value is not None else 1
+            self.send_set_message(value, self.command_dict(value))
 
     def turn_off(self, **kwargs: Any) -> None:
         if self._command:
-            self.send_set_message(0, self.command_dict(0))
+            value = self._disable_value if self._disable_value is not None else 0
+            self.send_set_message(value, self.command_dict(value))
 
 
 class BitMaskEnableEntity(EnabledEntity):
@@ -88,9 +87,7 @@ class BitMaskEnableEntity(EnabledEntity):
         device: BaseDevice,
         switchKey: str,
         title: str,
-        command: Callable[[str, int, dict[str, Any] | None], dict[str, Any]]
-        | Callable[[int, dict[str, Any] | None], dict[str, Any]]
-        | None,
+        command: Callable[[str, int], dict[str, Any] | Message],
         enabled: bool = True,
         auto_enable: bool = False,
     ):
@@ -121,20 +118,13 @@ class BitMaskEnableEntity(EnabledEntity):
             enabled,
             auto_enable,
         )
-        self._attr_unique_id = self._gen_unique_id(
-            self._device.device_data.sn, switchKey
-        )
+        self._attr_unique_id = self._gen_unique_id(self._device.device_data.sn, switchKey)
 
     def _update_value(self, val: Any) -> bool:
         self.bitmask = ("{0:06b}".format(val))[::-1]
         self._attr_is_on = bool(int(self.bitmask[self.switchNumber - 1]))
         _LOGGER.debug(
-            "Updating switch "
-            + self._attr_unique_id
-            + " with value "
-            + str(val)
-            + " to "
-            + self._attr_is_on.__str__()
+            "Updating switch " + str(self._attr_unique_id) + " with value " + str(val) + " to " + str(self._attr_is_on)
         )
         return True
 
@@ -150,22 +140,7 @@ class BitMaskEnableEntity(EnabledEntity):
             self.send_set_message(0, self.command_dict((self.switchNumber - 1)))
 
 
-class DisabledEntity(BaseSwitchEntity):
-    def _update_value(self, val: Any) -> bool:
-        _LOGGER.debug("Updating switch " + self._attr_unique_id + " to " + str(val))
-        self._attr_is_on = not bool(val)
-        return True
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        if self._command:
-            self.send_set_message(0, self.command_dict(0))
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        if self._command:
-            self.send_set_message(1, self.command_dict(1))
-
-
-class FanModeEntity(BaseSwitchEntity):  # for River Max
+class FanModeEntity(BaseSwitchEntity[int]):  # for River Max
     def _update_value(self, val: Any) -> bool:
         _LOGGER.debug("Updating switch " + self._attr_unique_id + " to " + str(val))
         self._attr_is_on = val == 1
@@ -180,8 +155,35 @@ class FanModeEntity(BaseSwitchEntity):  # for River Max
             self.send_set_message(3, self.command_dict(3))
 
 
-class BeeperEntity(DisabledEntity):
+class BeeperEntity(EnabledEntity):
     _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self,
+        client: EcoflowApiClient,
+        device: BaseDevice,
+        mqtt_key: str,
+        title: str,
+        command: Callable[[int], dict[str, Any] | Message]
+        | Callable[[int, dict[str, Any]], dict[str, Any] | Message]
+        | None,
+        enabled: bool = True,
+        auto_enable: bool = False,
+        # Inverted logic for beeper
+        enableValue: Any = 0,
+        disableValue: Any = 1,
+    ):
+        super().__init__(
+            client,
+            device,
+            mqtt_key,
+            title,
+            command,
+            enabled,
+            auto_enable,
+            enableValue,
+            disableValue,
+        )
 
     @property
     def icon(self) -> str | None:

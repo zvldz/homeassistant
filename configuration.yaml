@@ -68,7 +68,7 @@ script:             !include_dir_merge_named includes/scripts
 lovelace:           !include includes/lovelace.yaml
 recorder:           !include includes/recorder.yaml
 logbook:            !include includes/logbook.yaml
-influxdb:           !include includes/influxdb.yaml
+#influxdb:           !include includes/influxdb.yaml
 logger:             !include includes/logger.yaml
 device_tracker:     !include includes/device_tracker.yaml
 #telegram_bot:       !include includes/telegram_bot.yaml

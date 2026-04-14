@@ -275,6 +275,37 @@ automation:
 
       - service: script.ups_power_restore_cleanup
 
+  # Safety net: turn off lights if they turn on due to power event
+  # (Yeelight/other devices may turn on due to firmware behavior on power loss/restore)
+  - alias: "Turn off lights after power event (safety)"
+    id: turn_off_lights_after_power_event_safety
+    initial_state: true
+    mode: single
+    trigger:
+      - platform: state
+        entity_id:
+          - light.balcony_strip
+          - light.kitchen_lamp
+        to: "on"
+    condition:
+      - condition: or
+        conditions:
+          # Within 5 min after power restore
+          - condition: template
+            value_template: >
+              {{ states.automation.stop_power_outage_timer.last_triggered is not none
+                 and (as_timestamp(now()) - as_timestamp(states.automation.stop_power_outage_timer.last_triggered)) < 300 }}
+          # Within 5 min after power outage started
+          - condition: template
+            value_template: >
+              {{ states.automation.start_power_outage_timer.last_triggered is not none
+                 and (as_timestamp(now()) - as_timestamp(states.automation.start_power_outage_timer.last_triggered)) < 300 }}
+    action:
+      - delay: "00:00:05"
+      - service: light.turn_off
+        target:
+          entity_id: "{{ trigger.entity_id }}"
+
 group:
   power_restore_targets:
     name: Power restore targets

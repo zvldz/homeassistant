@@ -18,6 +18,7 @@ wifi:
   output_power: 20dB
   ssid: !secret wifi_ssid_3
   password: !secret wifi_pass_3
+  min_auth_mode: WPA2
   #use_address: 192.168.1.7
   manual_ip:
     static_ip: 192.168.1.7
@@ -30,7 +31,7 @@ time:
   - platform: homeassistant
 
 api:
-captive_portal:
+# captive_portal:
 
 logger:
   baud_rate: 0

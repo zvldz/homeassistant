@@ -1,60 +1,188 @@
+"""TTS Engine for OpenAI TTS with optional streaming support.
+
+The engine provides two parallel call paths:
+
+- ``get_tts()``: blocking, called via an executor by the legacy
+  ``async_get_tts_audio()`` HA TTS contract. Always reads the full
+  audio body inside the executor so the event loop never blocks on
+  socket I/O.
+- ``async_get_tts_stream()``: native async generator used by HA 2025.7+
+  streaming TTS contract. Reuses HA's shared aiohttp session and
+  retries pre-stream errors (connect resets, 5xx, true 429) once.
+
+Both paths share a single ``_RequestBuilder`` for header/payload assembly
+and a single ``_classify_http_error()`` for status-to-exception mapping,
+so error handling stays consistent across them.
 """
-TTS Engine for OpenAI TTS with optional streaming support.
-"""
+from __future__ import annotations
+
+import asyncio
 import json
 import logging
 import time
-import io
-import asyncio
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
 from asyncio import CancelledError
-from typing import Optional, Iterator, Callable, Union, AsyncGenerator
-import aiohttp
+from typing import AsyncGenerator, Optional
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
-from homeassistant.exceptions import HomeAssistantError
+import aiohttp
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from .exceptions import (
+    OpenAIAuthError,
+    OpenAINetworkError,
+    OpenAIQuotaExceededError,
+    OpenAIRateLimitError,
+    OpenAIServerError,
+    OpenAITTSError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-# Chunk size for streaming (in bytes)
-CHUNK_SIZE = 8192  # 8KB chunks for better network efficiency
+DEFAULT_TIMEOUT_SECONDS = 30
+STREAMING_TIMEOUT_SECONDS = 60
+INITIAL_BUFFER_BYTES = 1024
+
+
+def _classify_http_error(status: int, body_snippet: str = "") -> OpenAITTSError:
+    """Map an HTTP status (and optional body) to a typed exception."""
+    if status in (401, 403):
+        return OpenAIAuthError(f"Authentication failed (HTTP {status})")
+    if status == 402:
+        return OpenAIQuotaExceededError(
+            f"OpenAI account balance/quota exhausted (HTTP {status})"
+        )
+    if status == 429:
+        # OpenAI returns 429 for BOTH true rate limits and out-of-credits.
+        # The body's `insufficient_quota` marker disambiguates them.
+        if "insufficient_quota" in body_snippet:
+            return OpenAIQuotaExceededError(
+                "OpenAI account quota exhausted (HTTP 429 insufficient_quota)"
+            )
+        return OpenAIRateLimitError(f"Rate limit hit (HTTP {status})")
+    if status >= 500:
+        return OpenAIServerError(f"OpenAI server error (HTTP {status})")
+    return OpenAITTSError(f"OpenAI API error (HTTP {status})")
+
+
+def _is_retryable(exc: BaseException) -> bool:
+    """Auth/quota errors will fail again immediately, so don't waste a retry."""
+    if isinstance(exc, (OpenAIAuthError, OpenAIQuotaExceededError)):
+        return False
+    if isinstance(exc, (OpenAIRateLimitError, OpenAIServerError, OpenAINetworkError)):
+        return True
+    if isinstance(exc, (URLError, aiohttp.ClientError)):
+        return True
+    return False
+
+
+class _RequestBuilder:
+    """Assembles HTTP headers + JSON payload for an OpenAI TTS request.
+
+    Lives in its own class so the sync and async engine paths can share
+    the same defaults-merge and ``extra_payload`` logic without drifting.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        default_voice: str,
+        default_model: str,
+        default_speed: float,
+    ) -> None:
+        self._api_key = api_key
+        self._default_voice = default_voice
+        self._default_model = default_model
+        self._default_speed = default_speed
+
+    def build(
+        self,
+        text: str,
+        response_format: str,
+        voice: Optional[str] = None,
+        model: Optional[str] = None,
+        speed: Optional[float] = None,
+        instructions: Optional[str] = None,
+        extra_payload: Optional[str] = None,
+    ) -> tuple[dict[str, str], dict[str, object]]:
+        """Return (headers, payload) for an OpenAI TTS request."""
+        headers: dict[str, str] = {
+            "Content-Type": "application/json",
+            "User-Agent": "HomeAssistant-OpenAI-TTS",
+        }
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
+
+        payload: dict[str, object] = {
+            "model": model or self._default_model,
+            "input": text,
+            "voice": voice or self._default_voice,
+            "response_format": response_format,
+            "speed": speed if speed is not None else self._default_speed,
+        }
+        if instructions is not None:
+            payload["instructions"] = instructions
+
+        if extra_payload:
+            try:
+                extra = json.loads(extra_payload)
+            except json.JSONDecodeError as e:
+                # Surface configuration errors as typed exceptions so the
+                # caller sees a real failure (HomeAssistantError + sensor
+                # update) instead of a quiet warning that the user might
+                # never notice. Silent fallback hid bugs in custom-backend
+                # configs where the user thought their params were sent.
+                raise OpenAITTSError(
+                    f"Invalid extra_payload JSON: {e}"
+                ) from e
+            if not isinstance(extra, dict):
+                raise OpenAITTSError(
+                    "extra_payload must be a JSON object, "
+                    f"got {type(extra).__name__}"
+                )
+            payload.update(extra)
+            _LOGGER.debug("Merged extra payload keys: %s", list(extra.keys()))
+
+        return headers, payload
+
 
 class AudioResponse:
-    """A simple response wrapper with a 'content' attribute to hold audio bytes."""
-    def __init__(self, content: bytes):
+    """Wraps a complete audio payload returned by ``get_tts()``.
+
+    Kept as a thin wrapper rather than returning raw ``bytes`` so callers
+    can dispatch on a stable shape (``response.content``) regardless of
+    whether the engine grows alternative response variants in the future.
+    """
+
+    def __init__(self, content: bytes) -> None:
         self.content = content
 
-class StreamingAudioResponse:
-    """A streaming response that collects audio chunks."""
-    def __init__(self, response, on_first_chunk: Optional[Callable[[], None]] = None):
-        self.response = response
-        self._chunks = []
-        self._first_chunk_callback = on_first_chunk
-        self._first_chunk_received = False
-        
-    def read_all(self) -> bytes:
-        """Read all chunks and return complete audio."""
-        while True:
-            chunk = self.response.read(CHUNK_SIZE)
-            if not chunk:
-                break
-                
-            # Call callback on first chunk
-            if not self._first_chunk_received and self._first_chunk_callback:
-                self._first_chunk_received = True
-                self._first_chunk_callback()
-                
-            self._chunks.append(chunk)
-        
-        return b''.join(self._chunks)
 
 class OpenAITTSEngine:
-    def __init__(self, api_key: str, voice: str, model: str, speed: float, url: str):
+    """OpenAI TTS API client.
+
+    Raises typed ``OpenAITTSError`` subclasses (see ``exceptions.py``)
+    on every failure so callers can handle each mode (auth / quota /
+    rate-limit / server / unknown) distinctly.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        voice: str,
+        model: str,
+        speed: float,
+        url: str,
+        hass: Optional[HomeAssistant] = None,
+    ) -> None:
         self._api_key = api_key
         self._voice = voice
         self._model = model
         self._speed = speed
         self._url = url
+        self._hass = hass
+        self._builder = _RequestBuilder(api_key, voice, model, speed)
 
     def get_tts(
         self,
@@ -64,59 +192,36 @@ class OpenAITTSEngine:
         model: str | None = None,
         instructions: str | None = None,
         extra_payload: str | None = None,
-        stream: bool = False,
-        on_first_chunk: Optional[Callable[[], None]] = None
-    ) -> Union[AudioResponse, StreamingAudioResponse]:
-        """TTS request with optional streaming support.
+        response_format: str = "mp3",
+    ) -> AudioResponse:
+        """Blocking TTS request. Must be invoked via an executor.
 
-        Args:
-            text: Text to convert to speech
-            speed: Speech speed (0.25-4.0)
-            voice: Voice to use
-            instructions: Optional instructions for the model
-            extra_payload: JSON string with extra parameters to merge into the request
-            stream: If True, returns StreamingAudioResponse for lower latency
-            on_first_chunk: Callback when first chunk is received (streaming only)
+        Always reads the full body INSIDE the executor (no lazy/streaming
+        variant). The previous lazy ``StreamingAudioResponse`` would have
+        the executor open the socket but defer reads to the event-loop
+        caller, which then blocked the loop on socket I/O - exactly the
+        thing run_in_executor is supposed to prevent.
+
+        Raises:
+            OpenAIAuthError: 401/403. Caller should trigger reauth.
+            OpenAIQuotaExceededError: 402, or 429 with insufficient_quota.
+            OpenAIRateLimitError: 429 due to true rate limiting.
+            OpenAIServerError: 5xx (will retry once before raising).
+            OpenAITTSError: other failures.
         """
-        if speed is None:
-            speed = self._speed
-        if voice is None:
-            voice = self._voice
-        if model is None:
-            model = self._model
-
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "HomeAssistant-OpenAI-TTS"
-        }
-        if self._api_key:
-            headers["Authorization"] = f"Bearer {self._api_key}"
-
-        payload: dict[str, object] = {
-            "model": model,
-            "input": text,
-            "voice": voice,
-            "response_format": "mp3",
-            "speed": speed,
-        }
-        # Include instructions if provided
-        if instructions is not None:
-            payload["instructions"] = instructions
-
-        # Merge extra payload if provided (for custom backends)
-        if extra_payload:
-            try:
-                extra = json.loads(extra_payload)
-                if isinstance(extra, dict):
-                    payload.update(extra)
-                    _LOGGER.debug("Merged extra payload: %s", extra)
-            except json.JSONDecodeError as e:
-                _LOGGER.warning("Invalid extra_payload JSON, ignoring: %s", e)
-
-        # Debug logging for payload
-        _LOGGER.debug("TTS API payload: model=%s, voice=%s, speed=%s, instructions=%s, extra_keys=%s",
-                     model, voice, speed, instructions,
-                     [k for k in payload.keys() if k not in ("model", "input", "voice", "response_format", "speed", "instructions")])
+        headers, payload = self._builder.build(
+            text=text,
+            response_format=response_format,
+            speed=speed,
+            voice=voice,
+            model=model,
+            instructions=instructions,
+            extra_payload=extra_payload,
+        )
+        _LOGGER.debug(
+            "TTS API request: model=%s, voice=%s, speed=%s",
+            payload["model"], payload["voice"], payload["speed"],
+        )
 
         max_retries = 1
         attempt = 0
@@ -128,186 +233,232 @@ class OpenAITTSEngine:
                     headers=headers,
                     method="POST",
                 )
-                
-                if stream:
-                    # Return streaming response
-                    resp = urlopen(req, timeout=30)
-                    _LOGGER.debug("Using streaming mode for TTS")
-                    return StreamingAudioResponse(resp, on_first_chunk)
-                else:
-                    # Return complete response (original behavior)
-                    with urlopen(req, timeout=30) as resp:
-                        return AudioResponse(resp.read())
+                with urlopen(req, timeout=DEFAULT_TIMEOUT_SECONDS) as resp:
+                    return AudioResponse(resp.read())
 
             except CancelledError:
-                _LOGGER.exception("TTS request cancelled")
+                _LOGGER.debug("TTS request cancelled")
                 raise
 
-            except (HTTPError, URLError) as net_err:
-                _LOGGER.error("Network error fetching TTS audio (attempt %d): %s", attempt+1, net_err)
-                if attempt < max_retries:
-                    attempt += 1
-                    time.sleep(1)
-                    continue
-                raise HomeAssistantError("Network error fetching TTS audio") from net_err
+            except HTTPError as http_err:
+                body_snippet = ""
+                try:
+                    body_snippet = http_err.read(2048).decode("utf-8", errors="replace")
+                except Exception:
+                    pass
+                classified = _classify_http_error(http_err.code, body_snippet)
+                _LOGGER.error(
+                    "OpenAI TTS HTTP %s on attempt %d: %s",
+                    http_err.code, attempt + 1, classified,
+                )
+                if not _is_retryable(classified) or attempt >= max_retries:
+                    raise classified from http_err
+                attempt += 1
+                time.sleep(1)
+                continue
+
+            except URLError as net_err:
+                _LOGGER.error(
+                    "Network error fetching TTS audio (attempt %d): %s",
+                    attempt + 1, net_err,
+                )
+                if attempt >= max_retries:
+                    raise OpenAINetworkError(
+                        f"Network error fetching TTS audio: {net_err}"
+                    ) from net_err
+                attempt += 1
+                time.sleep(1)
+                continue
+
+            except OpenAITTSError:
+                raise
 
             except Exception as exc:
-                _LOGGER.error("Unknown error fetching TTS audio (attempt %d): %s", attempt+1, exc)
-                if attempt < max_retries:
-                    attempt += 1
-                    time.sleep(1)
-                    continue
-                raise HomeAssistantError("Unknown error fetching TTS audio") from exc
+                _LOGGER.error(
+                    "Unknown error fetching TTS audio (attempt %d): %s",
+                    attempt + 1, exc,
+                )
+                if attempt >= max_retries:
+                    raise OpenAITTSError(
+                        f"Unknown error fetching TTS audio: {exc}"
+                    ) from exc
+                attempt += 1
+                time.sleep(1)
 
     async def async_get_tts_stream(
         self,
         text: str,
-        response_format: str = "opus",
+        response_format: str = "mp3",
         speed: float | None = None,
         voice: str | None = None,
         model: str | None = None,
         instructions: str | None = None,
-        extra_payload: str | None = None
+        extra_payload: str | None = None,
     ) -> AsyncGenerator[bytes, None]:
-        """Stream TTS audio from OpenAI API.
+        """Stream TTS audio from the OpenAI API.
 
-        Args:
-            text: Text to convert to speech
-            response_format: Audio format (opus recommended for streaming)
-            speed: Speech speed (0.25-4.0)
-            voice: Voice to use
-            model: Model to use
-            instructions: Optional instructions for the model
-            extra_payload: JSON string with extra parameters to merge into the request
+        ``response_format`` defaults to ``mp3`` because that's what HA's
+        TTS proxy + Chromecast handle most reliably. Opus has known
+        receiver-side compatibility issues on older cast hardware,
+        which is why the entity always passes ``mp3`` explicitly - this
+        default just makes the engine safe to call directly.
 
-        Yields:
-            Audio data chunks as bytes
+        Error responses are classified BEFORE any chunk is yielded,
+        so a failed request can never leak partial bytes into the HA
+        TTS cache (see issue #64).
         """
-        if speed is None:
-            speed = self._speed
-        if voice is None:
-            voice = self._voice
-        if model is None:
-            model = self._model
+        headers, payload = self._builder.build(
+            text=text,
+            response_format=response_format,
+            speed=speed,
+            voice=voice,
+            model=model,
+            instructions=instructions,
+            extra_payload=extra_payload,
+        )
+        _LOGGER.debug(
+            "Streaming TTS API request: model=%s, voice=%s, speed=%s, format=%s",
+            payload["model"], payload["voice"], payload["speed"], response_format,
+        )
 
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "HomeAssistant-OpenAI-TTS"
-        }
-        if self._api_key:
-            headers["Authorization"] = f"Bearer {self._api_key}"
+        # Reuse HA's shared aiohttp session so we get connection
+        # pooling and DNS reuse across calls. Spinning up a new
+        # ClientSession per request (the old behaviour) defeated both
+        # and added per-call setup cost. Falling back to a one-shot
+        # session keeps the engine usable from contexts without an HA
+        # instance (tests, eventually CLI), even though that's slower.
+        if self._hass is not None:
+            session = async_get_clientsession(self._hass)
+            owns_session = False
+        else:
+            session = aiohttp.ClientSession()
+            owns_session = True
 
-        payload = {
-            "model": model,
-            "input": text,
-            "voice": voice,
-            "response_format": response_format,
-            "speed": speed
-        }
+        chunk_size = 4096 if response_format == "opus" else 8192
+        max_retries = 1
 
-        # Include instructions if provided
-        if instructions is not None:
-            payload["instructions"] = instructions
-
-        # Merge extra payload if provided (for custom backends)
-        if extra_payload:
+        try:
+            response = await self._open_stream_with_retries(
+                session, payload, headers, max_retries
+            )
             try:
-                extra = json.loads(extra_payload)
-                if isinstance(extra, dict):
-                    payload.update(extra)
-                    _LOGGER.debug("Merged extra payload: %s", extra)
-            except json.JSONDecodeError as e:
-                _LOGGER.warning("Invalid extra_payload JSON, ignoring: %s", e)
+                _LOGGER.debug(
+                    "Response content type: %s",
+                    response.headers.get("Content-Type", ""),
+                )
 
-        _LOGGER.debug("Streaming TTS API request: model=%s, voice=%s, speed=%s, format=%s",
-                     model, voice, speed, response_format)
+                chunks_received = 0
+                total_bytes = 0
+                initial_buffer: list[bytes] = []
+                initial_buffer_size = 0
 
-        # Create session that will live for the entire streaming duration
-        async with aiohttp.ClientSession() as session:
+                try:
+                    async for chunk in response.content.iter_chunked(chunk_size):
+                        if not chunk:
+                            continue
+                        chunks_received += 1
+                        total_bytes += len(chunk)
+
+                        if initial_buffer_size < INITIAL_BUFFER_BYTES:
+                            initial_buffer.append(chunk)
+                            initial_buffer_size += len(chunk)
+                            if initial_buffer_size >= INITIAL_BUFFER_BYTES:
+                                yield b"".join(initial_buffer)
+                                initial_buffer = []
+                        else:
+                            if chunks_received % 50 == 0:
+                                _LOGGER.debug(
+                                    "Streaming progress: %d chunks, %d bytes",
+                                    chunks_received, total_bytes,
+                                )
+                            yield chunk
+
+                    # Flush any leftover initial buffer for very short clips
+                    # whose total size never reached INITIAL_BUFFER_BYTES.
+                    if initial_buffer:
+                        yield b"".join(initial_buffer)
+
+                except asyncio.CancelledError:
+                    _LOGGER.warning(
+                        "Streaming cancelled after %d chunks (%d bytes)",
+                        chunks_received, total_bytes,
+                    )
+                    raise
+
+                _LOGGER.debug(
+                    "Finished streaming: %d chunks, %d total bytes",
+                    chunks_received, total_bytes,
+                )
+            finally:
+                # Always release the response - covers cancellation and
+                # any exception during chunk iteration. aiohttp leaves
+                # the underlying socket connected to the pool only if
+                # release() runs.
+                response.release()
+        finally:
+            if owns_session:
+                await session.close()
+
+    async def _open_stream_with_retries(
+        self,
+        session: aiohttp.ClientSession,
+        payload: dict,
+        headers: dict[str, str],
+        max_retries: int,
+    ) -> aiohttp.ClientResponse:
+        """POST and return the open response, retrying transient pre-stream errors.
+
+        Retries cover errors that happen BEFORE the first audio byte is
+        observed: connection resets, true 5xx, true rate-limits. Once
+        chunk iteration starts we cannot retry (HA is already consuming
+        bytes), so this guard is the only place to absorb a flapping
+        network or a momentarily unhappy backend.
+
+        Auth/quota errors are NOT retried - they will fail again
+        identically and waking the speaker twice helps no one.
+        """
+        attempt = 0
+        while True:
             try:
-                async with session.post(
+                response = await session.post(
                     self._url,
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=60)  # Increased timeout for streaming
-                ) as response:
-                    response.raise_for_status()
-
-                    # Get content type to verify we're getting audio
-                    content_type = response.headers.get('Content-Type', '')
-                    _LOGGER.debug("Response content type: %s", content_type)
-
-                    # Choose chunk size based on format
-                    chunk_size = 4096 if response_format == "opus" else 8192
-
-                    _LOGGER.debug("Starting to stream audio chunks (chunk_size=%d)", chunk_size)
-
-                    # Collect all chunks first to debug
-                    chunks_received = 0
-                    total_bytes = 0
-                    initial_buffer = []
-                    initial_buffer_size = 0
-                    min_initial_size = 1024  # Buffer at least 1KB before starting to yield
-
-                    # Stream chunks as they arrive
-                    try:
-                        async for chunk in response.content.iter_chunked(chunk_size):
-                            if chunk:
-                                chunks_received += 1
-                                total_bytes += len(chunk)
-
-                                # Buffer initial chunks to ensure we have valid audio header
-                                if initial_buffer_size < min_initial_size:
-                                    initial_buffer.append(chunk)
-                                    initial_buffer_size += len(chunk)
-                                    # Only log initial buffering on first and when complete
-                                    if chunks_received == 1:
-                                        _LOGGER.debug("Buffering initial audio data...")
-
-                                    # Once we have enough initial data, yield it all
-                                    if initial_buffer_size >= min_initial_size:
-                                        combined = b''.join(initial_buffer)
-                                        _LOGGER.debug("Initial buffer complete: %d bytes, starting stream", len(combined))
-                                        yield combined
-                                        initial_buffer = []
-                                else:
-                                    # After initial buffer, only log every 50 chunks to reduce spam
-                                    if chunks_received % 50 == 0:
-                                        _LOGGER.debug("Streaming progress: %d chunks, %d total bytes",
-                                                    chunks_received, total_bytes)
-                                    yield chunk
-                            else:
-                                _LOGGER.debug("Received empty chunk, continuing...")
-                    except asyncio.CancelledError:
-                        _LOGGER.warning("Streaming cancelled after %d chunks (%d bytes)",
-                                      chunks_received, total_bytes)
-                        raise
-                    except Exception as e:
-                        _LOGGER.error("Error while iterating chunks: %s", e, exc_info=True)
-                        raise
-
-                    _LOGGER.debug("Finished streaming audio: %d chunks, %d total bytes",
-                                chunks_received, total_bytes)
-
-            except aiohttp.ClientError as e:
-                _LOGGER.error("Network error during TTS streaming: %s", e)
-                raise HomeAssistantError(f"Network error during TTS streaming: {e}") from e
+                    timeout=aiohttp.ClientTimeout(total=STREAMING_TIMEOUT_SECONDS),
+                )
             except asyncio.CancelledError:
-                _LOGGER.warning("TTS streaming was cancelled")
+                _LOGGER.warning("TTS streaming connect was cancelled")
                 raise
-            except Exception as e:
-                _LOGGER.error("Unexpected error during TTS streaming: %s", e, exc_info=True)
-                raise HomeAssistantError(f"Unexpected error during TTS streaming: {e}") from e
+            except aiohttp.ClientError as e:
+                _LOGGER.error(
+                    "Network error opening TTS stream (attempt %d): %s",
+                    attempt + 1, e,
+                )
+                if attempt >= max_retries:
+                    raise OpenAINetworkError(
+                        f"Network error opening TTS stream: {e}"
+                    ) from e
+                attempt += 1
+                await asyncio.sleep(1)
+                continue
 
-    def close(self):
-        """Nothing to close."""
-        pass
+            if response.status < 400:
+                return response
 
-    @staticmethod
-    def get_supported_langs() -> list[str]:
-        return [
-            "af","ar","hy","az","be","bs","bg","ca","zh","hr","cs","da","nl","en",
-            "et","fi","fr","gl","de","el","he","hi","hu","is","id","it","ja","kn",
-            "kk","ko","lv","lt","mk","ms","mr","mi","ne","no","fa","pl","pt","ro",
-            "ru","sr","sk","sl","es","sw","sv","tl","ta","th","tr","uk","ur","vi","cy"
-        ]
+            body_snippet = ""
+            try:
+                body_snippet = (await response.content.read(2048)).decode(
+                    "utf-8", errors="replace"
+                )
+            except Exception:
+                pass
+            response.release()
+            classified = _classify_http_error(response.status, body_snippet)
+            if not _is_retryable(classified) or attempt >= max_retries:
+                raise classified
+            _LOGGER.warning(
+                "TTS stream HTTP %s on attempt %d (retryable): %s",
+                response.status, attempt + 1, classified,
+            )
+            attempt += 1
+            await asyncio.sleep(1)

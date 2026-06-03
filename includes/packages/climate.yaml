@@ -22,7 +22,7 @@ climate:
     name: "Gas Boiler"
     unique_id: 2bfe958
     heater: switch.boiler_shelly
-    target_sensor: sensor.0x00158d0001ab2a27_temperature
+    target_sensor: sensor.bedroom_temperature_with_fallback
     ac_mode: false
     min_temp: 15
     max_temp: 25
@@ -31,6 +31,51 @@ climate:
     hot_tolerance: 0.3
     min_cycle_duration:
       minutes: 5
+
+template:
+  - sensor:
+      - name: "Bedroom Temperature With Fallback"
+        unique_id: bedroom_temperature_with_fallback
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {% set chain = [
+            'sensor.0x00158d0001ab2a27_temperature',
+            'sensor.0x00158d0002323856_temperature',
+            'sensor.0x00158d000231f03e_temperature',
+            'sensor.0x00158d0002bfe958_temperature'
+          ] %}
+          {{ chain | map('states') | reject('in', ['unknown','unavailable','none','None']) | list | count > 0 }}
+        state: >
+          {% set chain = [
+            ('sensor.0x00158d0001ab2a27_temperature', 'bedroom'),
+            ('sensor.0x00158d0002323856_temperature', 'master_bedroom'),
+            ('sensor.0x00158d000231f03e_temperature', 'hallway'),
+            ('sensor.0x00158d0002bfe958_temperature', 'living_room')
+          ] %}
+          {% set ns = namespace(value=none) %}
+          {% for entity, _ in chain if ns.value is none %}
+            {% if states(entity) not in ['unknown','unavailable','none','None'] %}
+              {% set ns.value = states(entity) %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.value }}
+        attributes:
+          source: >
+            {% set chain = [
+              ('sensor.0x00158d0001ab2a27_temperature', 'bedroom'),
+              ('sensor.0x00158d0002323856_temperature', 'master_bedroom'),
+              ('sensor.0x00158d000231f03e_temperature', 'hallway'),
+              ('sensor.0x00158d0002bfe958_temperature', 'living_room')
+            ] %}
+            {% set ns = namespace(src='none') %}
+            {% for entity, label in chain if ns.src == 'none' %}
+              {% if states(entity) not in ['unknown','unavailable','none','None'] %}
+                {% set ns.src = label %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.src }}
 
 sensor:
   - platform: rest

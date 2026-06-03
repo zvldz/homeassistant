@@ -1,14 +1,20 @@
-"""
-Setting up TTS entity with custom caching.
+"""TTS entity for the OpenAI TTS integration.
+
+The entity implements both the legacy ``async_get_tts_audio`` contract and
+the modern ``async_stream_tts_audio`` streaming contract introduced in
+HA 2025.7. Audio bytes are validated against magic-byte signatures before
+they are returned to Home Assistant, so a failed API call can never poison
+the HA TTS cache (issue #64).
 """
 from __future__ import annotations
-import logging
+
 import asyncio
+import logging
 import os
-from functools import partial
 from asyncio import CancelledError
 from datetime import datetime
-from typing import AsyncGenerator, Any
+from functools import partial
+from typing import Any, AsyncGenerator
 
 from homeassistant.components.tts import (
     TextToSpeechEntity,
@@ -17,428 +23,278 @@ from homeassistant.components.tts import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, MaxLengthExceeded
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.storage import Store
-from homeassistant.helpers import entity_registry as er
 
+from .api_health import OpenAITTSHealthTracker
+from .audio_metadata import embed_duration_in_audio
+from .cache import MessageDurationCache
 from .const import (
     CONF_API_KEY,
-    CONF_MODEL,
-    CONF_SPEED,
-    CONF_VOICE,
-    CONF_INSTRUCTIONS,
-    CONF_URL,
-    DOMAIN,
-    UNIQUE_ID,
+    CONF_AUDIO_FORMAT,
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
-    CONF_NORMALIZE_AUDIO,
     CONF_EXTRA_PAYLOAD,
-    VOICES,
-    MESSAGE_DURATIONS_KEY,
+    CONF_INSTRUCTIONS,
+    CONF_MODEL,
+    CONF_NORMALIZE_AUDIO,
     CONF_PROFILE_NAME,
+    CONF_SPEED,
+    CONF_URL,
+    CONF_VOICE,
+    DEFAULT_AUDIO_FORMAT,
+    DOMAIN,
     SUPPORTED_LANGUAGES,
+    UNIQUE_ID,
+    VOICES,
 )
-
-SUBENTRY_TYPE_PROFILE = "profile"
-from .openaitts_engine import OpenAITTSEngine, StreamingAudioResponse
-from .utils import get_media_duration, process_audio, detect_audio_format
-from homeassistant.exceptions import MaxLengthExceeded
+from .entity_helpers import is_subentry, sanitize_profile_name
+from .exceptions import (
+    OpenAIAuthError,
+    OpenAIInvalidResponseError,
+    OpenAIQuotaExceededError,
+    OpenAIRateLimitError,
+    OpenAITTSError,
+)
+from .openaitts_engine import OpenAITTSEngine
+from .utils import detect_audio_format, get_media_duration, is_valid_audio, process_audio
 
 _LOGGER = logging.getLogger(__name__)
 
-# Metadata key for duration stored in MP3 ID3 tags
-DURATION_METADATA_KEY = "tts_duration_ms"
-
-
-def embed_duration_in_audio(audio_data: bytes, duration_ms: int) -> bytes:
-    """Embed duration metadata in MP3 audio using mutagen.
-
-    This stores the duration in ID3 TXXX (user-defined text) frame,
-    allowing it to be read back from HA's cached audio files.
-    """
-    import tempfile
-
-    try:
-        from mutagen.mp3 import MP3
-        from mutagen.id3 import TXXX
-    except ImportError:
-        _LOGGER.warning("mutagen not available, skipping metadata embedding")
-        return audio_data
-
-    # Write audio to temp file
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
-        f.write(audio_data)
-        tmp_path = f.name
-
-    try:
-        # Open and add ID3 tags
-        try:
-            audio = MP3(tmp_path)
-        except Exception as e:
-            _LOGGER.debug("Failed to open MP3 for metadata: %s", e)
-            return audio_data
-
-        if audio.tags is None:
-            try:
-                audio.add_tags()
-            except Exception:
-                # Tags might already exist in a different format
-                pass
-
-        if audio.tags is not None:
-            # Remove existing duration tag if present
-            audio.tags.delall(f"TXXX:{DURATION_METADATA_KEY}")
-            # Add new duration tag
-            audio.tags.add(TXXX(encoding=3, desc=DURATION_METADATA_KEY, text=str(duration_ms)))
-            audio.save()
-            _LOGGER.debug("Embedded duration %d ms in audio metadata", duration_ms)
-
-        # Read back the modified file
-        with open(tmp_path, "rb") as f:
-            return f.read()
-
-    except Exception as e:
-        _LOGGER.warning("Failed to embed metadata: %s", e)
-        return audio_data
-    finally:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-
-
-def read_duration_from_audio(audio_data: bytes) -> int | None:
-    """Read duration metadata from MP3 audio using mutagen.
-
-    Returns duration in milliseconds, or None if not found.
-    """
-    import tempfile
-
-    try:
-        from mutagen.mp3 import MP3
-        from mutagen.id3 import TXXX
-    except ImportError:
-        return None
-
-    # Write audio to temp file
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
-        f.write(audio_data)
-        tmp_path = f.name
-
-    try:
-        audio = MP3(tmp_path)
-        if audio.tags is None:
-            return None
-
-        # Look for our custom TXXX frame
-        for tag in audio.tags.values():
-            if isinstance(tag, TXXX) and tag.desc == DURATION_METADATA_KEY:
-                try:
-                    duration_ms = int(tag.text[0])
-                    _LOGGER.debug("Read duration %d ms from audio metadata", duration_ms)
-                    return duration_ms
-                except (ValueError, IndexError):
-                    pass
-
-        return None
-
-    except Exception as e:
-        _LOGGER.debug("Failed to read metadata: %s", e)
-        return None
-    finally:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-
-# Storage version and key
+SUBENTRY_TYPE_PROFILE = "profile"
 STORAGE_VERSION = 1
 STORAGE_KEY = "openai_tts_state"
+HEALTH_TRACKER_KEY = "_health_tracker"
+
+# Stream as soon as we have anything to say. The previous 60-char floor
+# was meant to avoid streaming overhead for trivially short clips, but in
+# practice every TTS response (>= ~2s of audio) benefits from streaming -
+# atomic mode adds 5+ seconds of silence before playback starts. We keep
+# the threshold variable instead of removing the check so behaviour stays
+# easy to tune from one place.
+MIN_STREAMING_TEXT_LENGTH = 1
+
+
+def _resolve_health_tracker(
+    hass: HomeAssistant, parent_entry_id: str | None
+) -> OpenAITTSHealthTracker | None:
+    """Look up the parent entry's health tracker, if registered."""
+    if not parent_entry_id:
+        return None
+    return hass.data.get(DOMAIN, {}).get(
+        f"{parent_entry_id}{HEALTH_TRACKER_KEY}"
+    )
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up OpenAI TTS entities from a config entry."""
+    """Set up OpenAI TTS entities for a config entry."""
     _LOGGER.debug("Setting up OpenAI TTS for config entry %s", config_entry.entry_id)
-    
-    # Get entity registry to check for existing entities
+
     entity_registry = er.async_get(hass)
-    
-    # Check if this is a legacy entry (has model/voice data AND version < 2.1)
+
     is_legacy = (
-        (config_entry.data.get(CONF_MODEL) is not None or config_entry.data.get(CONF_VOICE) is not None) and
-        (config_entry.version < 2 or (config_entry.version == 2 and config_entry.minor_version < 1))
+        (config_entry.data.get(CONF_MODEL) is not None
+         or config_entry.data.get(CONF_VOICE) is not None)
+        and (config_entry.version < 2
+             or (config_entry.version == 2 and config_entry.minor_version < 1))
     )
-    has_subentries = hasattr(config_entry, 'subentries') and config_entry.subentries
-    
-    entities_added = []
-    
-    # Legacy entries (pre-migration) should create their own entity
+    has_subentries = bool(getattr(config_entry, "subentries", None))
+
     if is_legacy:
         _LOGGER.info("Creating TTS entity for legacy entry: %s", config_entry.title)
-        
         api_key = config_entry.data.get(CONF_API_KEY)
         url = config_entry.data.get(CONF_URL)
-        
-        # Use options if available, otherwise fall back to data
         model = config_entry.options.get(CONF_MODEL, config_entry.data.get(CONF_MODEL))
         voice = config_entry.options.get(CONF_VOICE, config_entry.data.get(CONF_VOICE))
         speed = config_entry.options.get(CONF_SPEED, config_entry.data.get(CONF_SPEED, 1.0))
-        
-        _LOGGER.debug("Creating legacy entity with model=%s, voice=%s, speed=%s", 
-                     model, voice, speed)
-        
-        engine = OpenAITTSEngine(api_key, voice, model, speed, url)
-        entity = OpenAITTSEntity(hass, config_entry, engine)
-        async_add_entities([entity])
-        entities_added.append(entity)
-    
-    # Process subentries if they exist (for both modern parents AND legacy entries with subentries)
-    if has_subentries:
-        _LOGGER.info("Processing %d subentries for %s entry %s", 
-                    len(config_entry.subentries), 
-                    "legacy" if is_legacy else "parent",
-                    config_entry.entry_id)
-        
-        entities = []
-        for subentry_id, subentry in config_entry.subentries.items():
-            # Only create entities for profile subentries
-            if getattr(subentry, 'subentry_type', None) != SUBENTRY_TYPE_PROFILE:
-                _LOGGER.debug("Skipping non-profile subentry: %s", subentry_id)
-                continue
-                
-            _LOGGER.info("Creating TTS entity for subentry: %s (%s)", 
-                        subentry.title, subentry_id)
-            
-            # Get API credentials from parent entry
-            api_key = config_entry.data.get(CONF_API_KEY)
-            url = config_entry.data.get(CONF_URL)
-            
-            # Get voice configuration from subentry
-            model = subentry.data.get(CONF_MODEL, "tts-1")
-            voice = subentry.data.get(CONF_VOICE, "shimmer")
-            speed = subentry.data.get(CONF_SPEED, 1.0)
-            
-            _LOGGER.debug("Creating entity with model=%s, voice=%s, speed=%s", 
-                         model, voice, speed)
-            
-            # Check if an entity with this unique_id already exists
-            unique_id = subentry.data.get(UNIQUE_ID)
-            if unique_id:
-                # Look for existing entities with this unique_id
-                existing_entities = [
-                    entity_id for entity_id, entity in entity_registry.entities.items()
-                    if entity.unique_id == unique_id and entity.platform == DOMAIN
-                ]
-                if existing_entities:
-                    _LOGGER.debug("Found %d existing entities with unique_id %s, will be replaced", 
-                                  len(existing_entities), unique_id)
-            
-            # Create engine and entity
-            engine = OpenAITTSEngine(api_key, voice, model, speed, url)
-            entity = OpenAITTSEntity(hass, subentry, engine, config_entry)
-            entities.append((entity, subentry_id))
-        
-        # Add all entities with their associated subentry IDs
-        for entity, subentry_id in entities:
-            async_add_entities([entity], config_subentry_id=subentry_id)
-            entities_added.append(entity)
-        
-        if not entities and not is_legacy:
-            _LOGGER.warning("No profile subentries found for parent entry %s", 
-                          config_entry.entry_id)
+
+        engine = OpenAITTSEngine(api_key, voice, model, speed, url, hass=hass)
+        async_add_entities([OpenAITTSEntity(hass, config_entry, engine)])
+
+    if not has_subentries:
+        if not is_legacy:
+            _LOGGER.info("Modern parent entry with no subentries; no entities created")
         return
-    
-    # If no entities were added, log a message
-    if not entities_added:
-        if not is_legacy and not has_subentries:
-            _LOGGER.info("Modern parent entry with no subentries - no entities created")
-        else:
-            _LOGGER.warning("No entities created for entry %s", config_entry.entry_id)
+
+    _LOGGER.info(
+        "Processing %d subentries for %s entry %s",
+        len(config_entry.subentries),
+        "legacy" if is_legacy else "parent",
+        config_entry.entry_id,
+    )
+
+    for subentry_id, subentry in config_entry.subentries.items():
+        if getattr(subentry, "subentry_type", None) != SUBENTRY_TYPE_PROFILE:
+            continue
+
+        api_key = config_entry.data.get(CONF_API_KEY)
+        url = config_entry.data.get(CONF_URL)
+        model = subentry.data.get(CONF_MODEL, "tts-1")
+        voice = subentry.data.get(CONF_VOICE, "shimmer")
+        speed = subentry.data.get(CONF_SPEED, 1.0)
+
+        unique_id = subentry.data.get(UNIQUE_ID)
+        if unique_id:
+            existing = [
+                eid for eid, entity in entity_registry.entities.items()
+                if entity.unique_id == unique_id and entity.platform == DOMAIN
+            ]
+            if existing:
+                _LOGGER.debug(
+                    "Found %d existing entities with unique_id %s, will be replaced",
+                    len(existing), unique_id,
+                )
+
+        engine = OpenAITTSEngine(api_key, voice, model, speed, url, hass=hass)
+        entity = OpenAITTSEntity(hass, subentry, engine, config_entry)
+        async_add_entities([entity], config_subentry_id=subentry_id)
 
 
 class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
+    """Home Assistant TTS entity backed by the OpenAI TTS API."""
+
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, hass: HomeAssistant, config: ConfigEntry, engine: OpenAITTSEngine, parent_entry: ConfigEntry = None) -> None:
-        _LOGGER.debug("OpenAITTSEntity.__init__ called")
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config: ConfigEntry,
+        engine: OpenAITTSEngine,
+        parent_entry: ConfigEntry | None = None,
+    ) -> None:
         self.hass = hass
         self._engine = engine
         self._config = config
-        self._parent_entry = parent_entry  # Store parent entry reference if this is a subentry
-        
-        # Ensure unique_id is set and consistent
+        self._parent_entry = parent_entry
+
         self._attr_unique_id = config.data.get(UNIQUE_ID)
         if not self._attr_unique_id:
-            # Generate a unique ID based on the configuration
             import hashlib
-            config_str = f"{config.data.get(CONF_URL)}_{config.data.get(CONF_MODEL)}_{config.data.get(CONF_VOICE)}"
-            self._attr_unique_id = hashlib.md5(config_str.encode()).hexdigest()
-        
-        _LOGGER.debug("Entity initialized with unique_id: %s", self._attr_unique_id)
-        
-        # Set the config entry ID for proper entity registry association
-        # For subentries, we need to use the subentry_id if available
-        if hasattr(config, 'subentry_id'):
+            config_str = (
+                f"{config.data.get(CONF_URL)}_{config.data.get(CONF_MODEL)}"
+                f"_{config.data.get(CONF_VOICE)}"
+            )
+            self._attr_unique_id = hashlib.sha256(config_str.encode()).hexdigest()[:32]
+
+        if hasattr(config, "subentry_id"):
             self._attr_config_entry_id = config.subentry_id
-            _LOGGER.debug("Entity %s associated with subentry_id: %s", self.entity_id, config.subentry_id)
-        elif hasattr(config, 'entry_id'):
+        elif hasattr(config, "entry_id"):
             self._attr_config_entry_id = config.entry_id
-            _LOGGER.debug("Entity %s associated with entry_id: %s", self.entity_id, config.entry_id)
         else:
             self._attr_config_entry_id = parent_entry.entry_id if parent_entry else None
-            _LOGGER.warning("Entity %s using parent entry_id: %s", self.entity_id, self._attr_config_entry_id)
-        
-        
-        # Generate entity_id based on whether this is a profile or main entry
-        # Check if this is a subentry (same logic as in async_setup_entry)
-        is_subentry = (
-            hasattr(config, 'subentry_type') and config.subentry_type == SUBENTRY_TYPE_PROFILE
-        ) or (
-            hasattr(config, 'parent_entry_id') and config.parent_entry_id is not None
-        ) or (
-            config.data.get(CONF_PROFILE_NAME) is not None
-        )
-        
-        if is_subentry:
-            # This is a profile subentry
-            profile_name = config.data.get(CONF_PROFILE_NAME, "profile")
-            # Sanitize profile name for entity_id
-            safe_profile_name = profile_name.lower().replace(" ", "_").replace("-", "_")
-            # Remove any non-alphanumeric characters (except underscore)
-            safe_profile_name = ''.join(c for c in safe_profile_name if c.isalnum() or c == '_')
-            self.entity_id = f"tts.openai_tts_{safe_profile_name}"
-            self._attr_name = f"OpenAI TTS {profile_name}"
-        else:
-            # This is the main entry or legacy entry
-            # For legacy entries with model in data, use model in entity_id to make them unique
-            if config.data.get(CONF_MODEL):
-                model_suffix = config.data.get(CONF_MODEL, "").replace("-", "_").replace(".", "_")
-                # Don't add unique suffix - keep entity_id stable for service calls
-                self.entity_id = f"tts.openai_tts_{model_suffix}"
-                self._attr_name = f"OpenAI TTS ({config.data.get(CONF_MODEL)})"
-            else:
-                # New-style main entry
-                self.entity_id = "tts.openai_tts"
-                self._attr_name = "OpenAI TTS"
-        
-        # No custom cache needed - using HA's cache with embedded metadata
-        
-        # Initialize state flags
-        self._engine_active = False
-        self._last_duration_ms = None
 
-        # Initialize storage for persistent state
+        self._configure_entity_id_and_name()
+
+        # Last computed audio duration in ms. No longer used for restore
+        # timing (volume_restore drives off speaker state events) but
+        # kept as an extra_state_attribute for UI/debug visibility.
+        self._last_duration_ms: int | None = None
         self._store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY}_{self.entity_id}")
-        self._stored_data = {}
+        self._stored_data: dict = {}
+        # Key the duration cache on ``unique_id`` (stable across user-initiated
+        # entity renames), NOT ``entity_id`` (which is whatever the user has
+        # in the registry and can drift from the profile-derived entity_id we
+        # compute internally). volume_restore looks up by unique_id for the
+        # same reason.
+        self._duration_cache = MessageDurationCache(hass, self._attr_unique_id)
 
-        # Cache for message-to-duration mapping (for cached audio)
-        self._message_duration_cache = {}  # message_hash -> duration_ms
-        self._max_cache_entries = 100  # Keep last 100 messages to match HA's TTS cache
-        
-        _LOGGER.debug("TTS entity initialized with ID: %s", self.entity_id)
-        _LOGGER.info("OpenAI TTS entity created: %s (engine speed: %s)", self.entity_id, self._engine._speed)
+        # The health tracker lives on the parent entry. Subentries inherit it
+        # via parent_entry; legacy entries are their own parent.
+        parent_entry_id = (
+            parent_entry.entry_id if parent_entry is not None
+            else getattr(config, "entry_id", None)
+        )
+        self._health_tracker = _resolve_health_tracker(hass, parent_entry_id)
 
-    async def _get_audio_duration(self, audio_data: bytes) -> int:
-        """Get duration of audio data in milliseconds."""
-        import tempfile
-        
-        # Create a temporary file to calculate duration
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
-            tmp_file.write(audio_data)
-            tmp_path = tmp_file.name
-        
+        _LOGGER.info(
+            "OpenAI TTS entity created: %s (engine speed: %s)",
+            self.entity_id, self._engine._speed,
+        )
+
+    def _configure_entity_id_and_name(self) -> None:
+        if is_subentry(self._config):
+            profile_name = self._config.data.get(CONF_PROFILE_NAME, "profile")
+            safe = sanitize_profile_name(profile_name)
+            self.entity_id = f"tts.openai_tts_{safe}"
+            self._attr_name = f"OpenAI TTS {profile_name}"
+            return
+
+        model = self._config.data.get(CONF_MODEL)
+        if model:
+            model_suffix = model.replace("-", "_").replace(".", "_")
+            self.entity_id = f"tts.openai_tts_{model_suffix}"
+            self._attr_name = f"OpenAI TTS ({model})"
+            return
+
+        self.entity_id = "tts.openai_tts"
+        self._attr_name = "OpenAI TTS"
+
+    # --- Persistent state --------------------------------------------------
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        await self._restore_persisted_state()
+        _LOGGER.info("TTS entity %s registered with Home Assistant", self.entity_id)
+
+    async def async_will_remove_from_hass(self) -> None:
+        _LOGGER.debug("TTS entity %s being removed from hass", self.entity_id)
+        await self._save_persisted_state()
+        await super().async_will_remove_from_hass()
+
+    async def _restore_persisted_state(self) -> None:
         try:
-            loop = asyncio.get_running_loop()
-            duration_seconds = await loop.run_in_executor(None, get_media_duration, tmp_path)
-            duration_ms = int(duration_seconds * 1000)
-            return duration_ms
-        finally:
-            # Clean up temp file
-            try:
-                os.unlink(tmp_path)
-            except OSError:
-                pass
+            stored = await self._store.async_load()
+            if not stored:
+                return
+            self._stored_data = stored
+            if "last_duration_ms" in stored:
+                self._last_duration_ms = stored["last_duration_ms"]
+                self.async_write_ha_state()
+            if "message_duration_cache" in stored:
+                self._duration_cache.restore(stored["message_duration_cache"])
+        except Exception as e:
+            _LOGGER.error("Failed to restore persisted state: %s", e)
 
-    def _get_message_hash(self, message: str) -> str:
-        """Get a hash for a message to use as cache key."""
-        import hashlib
-        # Create a simple hash of the message for lookup
-        return hashlib.md5(message.encode()).hexdigest()[:16]
+    async def _save_persisted_state(self) -> None:
+        try:
+            data = {
+                "last_duration_ms": self._last_duration_ms,
+                "last_updated": datetime.now().isoformat(),
+                "message_duration_cache": self._duration_cache.snapshot,
+            }
+            await self._store.async_save(data)
+        except Exception as e:
+            _LOGGER.error("Failed to save persisted state: %s", e)
 
-    def _store_message_duration(self, message: str, duration_ms: int) -> None:
-        """Store duration for a message in the local and shared cache."""
-        msg_hash = self._get_message_hash(message)
-        self._message_duration_cache[msg_hash] = duration_ms
-
-        # Limit cache size
-        if len(self._message_duration_cache) > self._max_cache_entries:
-            # Remove oldest entries (first in dict)
-            oldest_keys = list(self._message_duration_cache.keys())[:-self._max_cache_entries]
-            for key in oldest_keys:
-                del self._message_duration_cache[key]
-
-        # Also store in hass.data shared cache for volume_restore to access
-        self._store_in_shared_cache(msg_hash, duration_ms)
-
-        _LOGGER.debug("Stored duration %d ms for message hash %s", duration_ms, msg_hash)
-
-    def _store_in_shared_cache(self, msg_hash: str, duration_ms: int) -> None:
-        """Store duration in hass.data shared cache for cross-component access."""
-        if DOMAIN not in self.hass.data:
-            self.hass.data[DOMAIN] = {}
-        if MESSAGE_DURATIONS_KEY not in self.hass.data[DOMAIN]:
-            self.hass.data[DOMAIN][MESSAGE_DURATIONS_KEY] = {}
-
-        # Store duration keyed by message hash
-        self.hass.data[DOMAIN][MESSAGE_DURATIONS_KEY][msg_hash] = {
-            'duration_ms': duration_ms,
-            'timestamp': asyncio.get_running_loop().time(),
-            'entity_id': self.entity_id,
-        }
-
-        # Limit shared cache size (keep last 50 messages)
-        cache = self.hass.data[DOMAIN][MESSAGE_DURATIONS_KEY]
-        if len(cache) > 50:
-            # Remove oldest entries by timestamp
-            sorted_keys = sorted(cache.keys(), key=lambda k: cache[k].get('timestamp', 0))
-            for key in sorted_keys[:-50]:
-                del cache[key]
-
-        _LOGGER.info("Stored duration in shared cache: %d ms for hash %s", duration_ms, msg_hash)
-
-    def get_duration_for_message(self, message: str) -> int | None:
-        """Get cached duration for a message."""
-        msg_hash = self._get_message_hash(message)
-        duration = self._message_duration_cache.get(msg_hash)
-        if duration:
-            _LOGGER.debug("Found cached duration %d ms for message hash %s", duration, msg_hash)
-        return duration
+    # --- Entity properties -------------------------------------------------
 
     @property
-    def extra_state_attributes(self):
-        """Return entity specific state attributes."""
-        attrs = {}
-        if hasattr(self, '_last_duration_ms'):
-            attrs['media_duration'] = self._last_duration_ms  # Keep in milliseconds for volume_restore
-        if hasattr(self, '_engine_active'):
-            attrs['engine_active'] = self._engine_active
-        # Include message duration cache for debugging
-        if hasattr(self, '_message_duration_cache'):
-            attrs['message_cache_size'] = len(self._message_duration_cache)
-        # Include available voices
-        attrs['available_voices'] = VOICES
-        # Include current configuration
-        attrs['current_voice'] = self._get_config_value(CONF_VOICE) or self._engine._voice
-        attrs['current_model'] = self._get_config_value(CONF_MODEL) or self._engine._model
-        attrs['current_speed'] = self._get_config_value(CONF_SPEED) or self._engine._speed
-        return attrs
+    def extra_state_attributes(self) -> dict[str, Any]:
+        # NOTE: every ``current_*`` field below is part of the duration
+        # cache key. volume_restore reads them when an option is omitted
+        # from the service call so its lookup hash matches what tts.py
+        # used at store time. Removing one breaks cache lookups and
+        # forces fallback timing.
+        return {
+            "media_duration": self._last_duration_ms,
+            "failure_cache_size": self._duration_cache.size,
+            "available_voices": VOICES,
+            "current_voice": self._get_config_value(CONF_VOICE) or self._engine._voice,
+            "current_model": self._get_config_value(CONF_MODEL) or self._engine._model,
+            "current_speed": self._get_config_value(CONF_SPEED) or self._engine._speed,
+            "current_instructions": self._get_config_value(CONF_INSTRUCTIONS),
+            "current_chime_enable": self._get_config_value(CONF_CHIME_ENABLE) or False,
+            "current_chime_sound": self._get_config_value(CONF_CHIME_SOUND),
+            "current_extra_payload": self._get_config_value(CONF_EXTRA_PAYLOAD),
+        }
 
     @property
     def default_language(self) -> str:
@@ -450,7 +306,11 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
     @property
     def supported_options(self) -> list[str]:
-        """Return list of supported options."""
+        # ``preferred_format`` MUST be declared here even though we never
+        # read it from service options ourselves: HA core only honours it
+        # for URL extension and ffmpeg conversion when the entity claims
+        # support for it (otherwise it is popped from options and the URL
+        # defaults to .mp3, breaking opus/wav/etc. delivery to Cast).
         return [
             CONF_VOICE,
             CONF_MODEL,
@@ -460,15 +320,28 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             CONF_NORMALIZE_AUDIO,
             CONF_INSTRUCTIONS,
             CONF_EXTRA_PAYLOAD,
+            CONF_AUDIO_FORMAT,
+            "preferred_format",
         ]
 
     @property
     def default_options(self) -> dict[str, Any]:
-        """Return default options for TTS.
+        """Default option values that participate in the HA TTS cache key.
 
-        This is critical for HA's TTS cache - options are part of the cache key.
-        Without this, voice/model changes wouldn't invalidate cached audio.
+        Every key in here ends up in HA's TTS-cache hash, so anything
+        that materially changes the produced audio MUST be listed -
+        otherwise editing the profile (e.g. swapping
+        ``instructions`` or ``extra_payload``) leaves stale cached
+        audio playable for the same text.
+
+        ``preferred_format`` is HA's own key (``ATTR_PREFERRED_FORMAT``):
+        it controls both the proxy URL extension (``<token>.<ext>``) and
+        the optional ffmpeg conversion before the audio reaches the
+        media player. Without it the URL falls back to ``.mp3`` while
+        we may be streaming opus / wav / etc., and Cast targets reject
+        the content-type / extension mismatch.
         """
+        audio_format = self._get_config_value(CONF_AUDIO_FORMAT, DEFAULT_AUDIO_FORMAT)
         return {
             CONF_VOICE: self._get_config_value(CONF_VOICE) or self._engine._voice,
             CONF_MODEL: self._get_config_value(CONF_MODEL) or self._engine._model,
@@ -476,606 +349,618 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             CONF_CHIME_ENABLE: self._get_config_value(CONF_CHIME_ENABLE, False),
             CONF_CHIME_SOUND: self._get_config_value(CONF_CHIME_SOUND, "threetone.mp3"),
             CONF_NORMALIZE_AUDIO: self._get_config_value(CONF_NORMALIZE_AUDIO, False),
+            CONF_INSTRUCTIONS: self._get_config_value(CONF_INSTRUCTIONS),
+            CONF_EXTRA_PAYLOAD: self._get_config_value(CONF_EXTRA_PAYLOAD),
+            CONF_AUDIO_FORMAT: audio_format,
+            "preferred_format": audio_format,
         }
 
     @property
-    def device_info(self):
-        """Return device info for the entity."""
-        # Check if this is a subentry (same comprehensive check)
-        is_subentry = (
-            hasattr(self._config, 'subentry_type') and self._config.subentry_type == SUBENTRY_TYPE_PROFILE
-        ) or (
-            hasattr(self._config, 'parent_entry_id') and self._config.parent_entry_id is not None
-        ) or (
-            self._config.data.get(CONF_PROFILE_NAME) is not None
-        )
-        
-        # Get the unique ID for device grouping
-        if is_subentry:
-            # For subentries, use the subentry's unique ID to create a separate device
-            # This ensures the device is only associated with the subentry, not the parent
-            device_unique_id = self._config.data.get(UNIQUE_ID)
-            if not device_unique_id:
-                # Fallback: generate based on profile name
-                device_unique_id = f"{self._config.data.get(CONF_PROFILE_NAME, 'profile')}_{self._config.data.get(CONF_MODEL, 'tts-1')}"
+    def device_info(self) -> dict[str, Any]:
+        if is_subentry(self._config):
+            device_unique_id = (
+                self._config.data.get(UNIQUE_ID)
+                or f"{self._config.data.get(CONF_PROFILE_NAME, 'profile')}"
+                   f"_{self._config.data.get(CONF_MODEL, 'tts-1')}"
+            )
         else:
-            device_unique_id = self._config.data.get(UNIQUE_ID)
-        
-        if not device_unique_id:
-            # Fallback to URL-based unique ID
-            device_unique_id = self._config.data.get(CONF_URL, "openai_tts")
-        
-        # Create device info
-        device_info = {
+            device_unique_id = (
+                self._config.data.get(UNIQUE_ID)
+                or self._config.data.get(CONF_URL, "openai_tts")
+            )
+
+        info: dict[str, Any] = {
             "identifiers": {(DOMAIN, device_unique_id)},
             "manufacturer": "OpenAI",
             "sw_version": "1.0",
         }
-        
-        # Customize device info based on entry type
-        if is_subentry:
-            # Get agent name (profile name), model, and voice
+
+        if is_subentry(self._config):
             agent_name = self._config.data.get(CONF_PROFILE_NAME, "default")
             model = self._config.data.get(CONF_MODEL, "tts-1")
             voice = self._config.data.get(CONF_VOICE, "unknown")
-            # Format: "agentname (model-voice)"
-            device_info["name"] = f"{agent_name} ({model}-{voice})"
-            device_info["model"] = f"{model} ({voice})"
+            info["name"] = f"{agent_name} ({model}-{voice})"
+            info["model"] = f"{model} ({voice})"
         else:
-            device_info["name"] = "OpenAI TTS"
-            device_info["model"] = self._config.data.get(CONF_MODEL, "TTS API")
-        
-        return device_info
+            info["name"] = "OpenAI TTS"
+            info["model"] = self._config.data.get(CONF_MODEL, "TTS API")
 
-    def _get_config_value(self, key: str, default=None):
-        """Get config value from options or data, handling subentries."""
-        # For subentries, options don't exist, only use data
-        is_subentry = (
-            hasattr(self._config, 'subentry_type') and self._config.subentry_type == SUBENTRY_TYPE_PROFILE
-        ) or (
-            hasattr(self._config, 'parent_entry_id') and self._config.parent_entry_id is not None
-        ) or (
-            self._config.data.get(CONF_PROFILE_NAME) is not None
-        )
-        
-        if is_subentry:
-            value = self._config.data.get(key, default)
-            _LOGGER.debug("Getting config value for %s from subentry data: %s (entry_id: %s)", 
-                         key, value, getattr(self._config, 'entry_id', getattr(self._config, 'subentry_id', 'unknown')))
-            return value
-        # For regular entries, check options first, then data
-        if hasattr(self._config, 'options'):
+        return info
+
+    def _get_config_value(self, key: str, default: Any = None) -> Any:
+        if is_subentry(self._config):
+            return self._config.data.get(key, default)
+        if hasattr(self._config, "options"):
             options_value = self._config.options.get(key)
-            data_value = self._config.data.get(key)
-            value = options_value if options_value is not None else data_value
-            if value is None:
-                value = default
-            _LOGGER.debug("Getting config value for %s: options=%s, data=%s, final=%s (entry_id: %s)", 
-                         key, options_value, data_value, value, getattr(self._config, 'entry_id', 'unknown'))
-            return value
-        return self._config.data.get(key, default)
+            if options_value is not None:
+                return options_value
+        data_value = self._config.data.get(key)
+        return data_value if data_value is not None else default
 
-    async def async_added_to_hass(self) -> None:
-        """Handle entity which will be added."""
-        await super().async_added_to_hass()
-        
-        # Restore persisted state
-        await self._restore_persisted_state()
-        
-        # Check if entry has options set
-        _LOGGER.debug("Entity added to hass. Config data: %s", self._config.data)
-        if hasattr(self._config, 'options'):
-            _LOGGER.debug("Entity added to hass. Config options: %s", self._config.options)
-        
-        # Log entity registration
-        _LOGGER.info("TTS entity %s registered with Home Assistant", self.entity_id)
-    
-    async def _restore_persisted_state(self) -> None:
-        """Restore persisted state data including duration cache."""
+    # --- TTS generation ----------------------------------------------------
+
+    async def _get_audio_duration(self, audio_data: bytes) -> int:
+        """Return audio duration in milliseconds via ffprobe."""
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
+            tmp_file.write(audio_data)
+            tmp_path = tmp_file.name
         try:
-            stored = await self._store.async_load()
-            if stored:
-                self._stored_data = stored
-                # Restore last duration
-                if 'last_duration_ms' in stored:
-                    self._last_duration_ms = stored['last_duration_ms']
-                    _LOGGER.debug("Restored last duration: %d ms", self._last_duration_ms)
-                    # Update state immediately so it's available
-                    self.async_write_ha_state()
-
-                # Restore message duration cache
-                if 'message_duration_cache' in stored:
-                    self._message_duration_cache = stored['message_duration_cache']
-                    _LOGGER.info("Restored %d message durations from storage", len(self._message_duration_cache))
-
-                    # Also populate the shared hass.data cache
-                    if DOMAIN not in self.hass.data:
-                        self.hass.data[DOMAIN] = {}
-                    if MESSAGE_DURATIONS_KEY not in self.hass.data[DOMAIN]:
-                        self.hass.data[DOMAIN][MESSAGE_DURATIONS_KEY] = {}
-
-                    for msg_hash, duration_ms in self._message_duration_cache.items():
-                        self.hass.data[DOMAIN][MESSAGE_DURATIONS_KEY][msg_hash] = {
-                            'duration_ms': duration_ms,
-                            'timestamp': 0,  # Old timestamp, but still valid
-                            'entity_id': self.entity_id,
-                        }
-                    _LOGGER.info("Populated shared cache with %d message durations", len(self._message_duration_cache))
-        except Exception as e:
-            _LOGGER.error("Failed to restore persisted state: %s", e)
-    
-    async def _save_persisted_state(self) -> None:
-        """Save state data for persistence across restarts."""
-        try:
-            # Prepare data to save
-            data = {
-                'last_duration_ms': self._last_duration_ms,
-                'last_updated': datetime.now().isoformat(),
-                'message_duration_cache': self._message_duration_cache,
-            }
-            await self._store.async_save(data)
-            _LOGGER.debug("Saved TTS state with %d cached message durations", len(self._message_duration_cache))
-        except Exception as e:
-            _LOGGER.error("Failed to save persisted state: %s", e)
-    
-    async def async_will_remove_from_hass(self) -> None:
-        """Handle entity being removed from hass."""
-        _LOGGER.debug("TTS entity %s being removed from hass", self.entity_id)
-        # Save state before removal
-        await self._save_persisted_state()
-        await super().async_will_remove_from_hass()
+            loop = asyncio.get_running_loop()
+            duration_seconds = await loop.run_in_executor(
+                None, get_media_duration, tmp_path
+            )
+            return int(duration_seconds * 1000)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
 
     def _can_use_streaming(self, text: str, options: dict) -> bool:
-        """Determine if streaming should be used.
-
-        Streaming is beneficial for:
-        - Long text responses (>60 chars)
-        - When no audio processing is needed
-        - When lower latency is desired
-        """
-        # Don't stream if audio processing is needed
         if options.get(CONF_CHIME_ENABLE) or options.get(CONF_NORMALIZE_AUDIO):
-            _LOGGER.debug("Streaming disabled: audio processing required")
             return False
+        return len(text) >= MIN_STREAMING_TEXT_LENGTH
 
-        # Don't stream for very short messages
-        if len(text) < 60:
-            _LOGGER.debug("Streaming disabled: text too short (%d chars)", len(text))
-            return False
+    def _resolve_options(self, options: dict | None) -> dict[str, Any]:
+        """Merge service-call options with entity defaults."""
+        opts = options or {}
+        speed = opts.get(CONF_SPEED)
+        if speed is None:
+            speed = self._get_config_value(CONF_SPEED)
+        if speed is None:
+            speed = 1.0
 
-        _LOGGER.debug("Streaming enabled for text with %d chars", len(text))
-        return True
+        service_instructions = opts.get(CONF_INSTRUCTIONS)
+        config_instructions = self._get_config_value(CONF_INSTRUCTIONS)
+        instructions = (
+            service_instructions
+            if service_instructions is not None
+            else config_instructions
+        )
 
-    async def async_stream_tts_audio(
-        self,
-        request: TTSAudioRequest
-    ) -> TTSAudioResponse:
-        """Generate streaming TTS audio from incoming message stream.
+        # Booleans: only fall back to config when the option is *absent*,
+        # so an explicit `False` from the service call wins over an `True`
+        # in config (former bug: chime override was impossible to disable).
+        chime_enable = (
+            opts[CONF_CHIME_ENABLE]
+            if CONF_CHIME_ENABLE in opts
+            else (self._get_config_value(CONF_CHIME_ENABLE) or False)
+        )
+        normalize_audio = (
+            opts[CONF_NORMALIZE_AUDIO]
+            if CONF_NORMALIZE_AUDIO in opts
+            else (self._get_config_value(CONF_NORMALIZE_AUDIO) or False)
+        )
 
-        This method is called by Home Assistant when streaming is desired,
-        typically for long responses from language models.
-        """
-        _LOGGER.info("async_stream_tts_audio called for entity %s", self.entity_id)
+        return {
+            "voice": (
+                opts.get(CONF_VOICE)
+                or self._get_config_value(CONF_VOICE)
+                or self._engine._voice
+            ),
+            "model": (
+                opts.get(CONF_MODEL)
+                or self._get_config_value(CONF_MODEL)
+                or self._engine._model
+            ),
+            "speed": speed,
+            "instructions": instructions,
+            "extra_payload": (
+                opts.get(CONF_EXTRA_PAYLOAD)
+                or self._get_config_value(CONF_EXTRA_PAYLOAD)
+            ),
+            "chime_enable": chime_enable,
+            "chime_sound": (
+                opts.get(CONF_CHIME_SOUND)
+                or self._get_config_value(CONF_CHIME_SOUND)
+            ),
+            "normalize_audio": normalize_audio,
+            "audio_format": (
+                opts.get(CONF_AUDIO_FORMAT)
+                or self._get_config_value(CONF_AUDIO_FORMAT)
+                or DEFAULT_AUDIO_FORMAT
+            ),
+        }
 
-        # Set engine active flag
-        self._engine_active = True
-        self.async_write_ha_state()
-
-        try:
-            # Step 1: Accumulate text from the message generator
-            # OpenAI API doesn't support incremental text input, so we need to collect it all
-            full_text = ""
-            chunk_count = 0
-            async for text_chunk in request.message_gen:
-                full_text += text_chunk
-                chunk_count += 1
-                _LOGGER.debug("Received text chunk %d: %s...",
-                            chunk_count, text_chunk[:50] if len(text_chunk) > 50 else text_chunk)
-
-            _LOGGER.info("Accumulated %d text chunks, total length: %d chars",
-                        chunk_count, len(full_text))
-
-            # Step 2: Extract options and configuration
-            options = request.options or {}
-
-            # Apply configuration defaults
-            voice = options.get(CONF_VOICE) or self._get_config_value(CONF_VOICE) or self._engine._voice
-            model = options.get(CONF_MODEL) or self._get_config_value(CONF_MODEL) or self._engine._model
-
-            # Speed needs special handling
-            speed = options.get(CONF_SPEED)
-            if speed is None:
-                speed = self._get_config_value(CONF_SPEED)
-            if speed is None:
-                speed = 1.0
-
-            # Handle instructions
-            service_instructions = options.get(CONF_INSTRUCTIONS)
-            config_instructions = self._get_config_value(CONF_INSTRUCTIONS)
-            instructions = service_instructions if service_instructions is not None else config_instructions
-
-            # Handle extra_payload for custom backends (service call overrides config)
-            extra_payload = options.get(CONF_EXTRA_PAYLOAD) or self._get_config_value(CONF_EXTRA_PAYLOAD)
-
-            # Step 3: Determine if we can use streaming
-            can_stream = self._can_use_streaming(full_text, options)
-
-            # Choose audio format - using mp3 for now as opus might have compatibility issues
-            # TODO: Re-enable opus once streaming is working properly
-            audio_format = "mp3"  # Was: "opus" if can_stream else "mp3"
-
-            _LOGGER.info("Streaming TTS - voice: %s, model: %s, speed: %s, format: %s, streaming: %s",
-                        voice, model, speed, audio_format, can_stream)
-
-            # Step 4: Generate audio stream
-            async def audio_generator() -> AsyncGenerator[bytes, None]:
-                """Generate audio chunks."""
-                try:
-                    if can_stream:
-                        # Use streaming for low latency
-                        _LOGGER.debug("Using streaming mode with %s format", audio_format)
-
-                        # Collect all chunks to calculate duration
-                        all_chunks = []
-                        async for chunk in self._engine.async_get_tts_stream(
-                            text=full_text,
-                            response_format=audio_format,
-                            voice=voice,
-                            model=model,
-                            speed=speed,
-                            instructions=instructions,
-                            extra_payload=extra_payload
-                        ):
-                            all_chunks.append(chunk)
-                            yield chunk
-
-                        # Streaming is complete - calculate duration from complete audio
-                        if all_chunks:
-                            complete_audio = b''.join(all_chunks)
-                            total_bytes = len(complete_audio)
-                            _LOGGER.info("Streaming completed, %d bytes total", total_bytes)
-
-                            # Calculate duration from the complete audio
-                            duration_ms = await self._get_audio_duration(complete_audio)
-                            self._last_duration_ms = duration_ms
-                            _LOGGER.info("Calculated streaming audio duration: %d ms", duration_ms)
-
-                            # Store duration for this specific message
-                            self._store_message_duration(full_text, duration_ms)
-
-                            # Save to persistent storage for cache
-                            await self._save_persisted_state()
-
-                            # IMPORTANT: Clear engine active flag AFTER duration is set
-                            # This ensures volume_restore sees the new duration
-                            self._engine_active = False
-
-                            # Single state update with both duration and engine_active=False
-                            self.async_write_ha_state()
-
-                            _LOGGER.info("Engine flag cleared with duration %d ms", duration_ms)
-
-                            # Add metadata to the complete audio for caching
-                            # This ensures cached files have duration info
-                            # Note: This happens after streaming, so doesn't affect latency
-                    else:
-                        # Fall back to regular TTS for processed audio
-                        _LOGGER.debug("Using non-streaming mode for audio processing")
-
-                        # Get processed audio using the existing method
-                        audio_data = await self._get_processed_audio_for_streaming(
-                            full_text, request.language, options, voice, model, speed, instructions, extra_payload
-                        )
-
-                        # Calculate and store duration for non-streaming audio
-                        duration_ms = await self._get_audio_duration(audio_data)
-                        self._last_duration_ms = duration_ms
-                        _LOGGER.info("Calculated non-streaming audio duration: %d ms", duration_ms)
-
-                        # Store duration for this specific message
-                        self._store_message_duration(full_text, duration_ms)
-
-                        # Save to persistent storage
-                        await self._save_persisted_state()
-
-                        # Embed duration in audio metadata for HA cache
-                        audio_data = await self.hass.async_add_executor_job(
-                            embed_duration_in_audio, audio_data, duration_ms
-                        )
-
-                        # Yield in chunks for consistency
-                        chunk_size = 8192
-                        for i in range(0, len(audio_data), chunk_size):
-                            yield audio_data[i:i + chunk_size]
-
-                        # Non-streaming is complete - clear flag AFTER duration is set
-                        self._engine_active = False
-                        self.async_write_ha_state()
-                        _LOGGER.info("Engine flag cleared with duration %d ms (non-streaming)", duration_ms)
-
-                except Exception as e:
-                    _LOGGER.error("Error during audio generation: %s", e, exc_info=True)
-                    # Clear engine active flag on error
-                    self._engine_active = False
-                    self.async_write_ha_state()
-                    raise
-
-            # Return the streaming response
-            return TTSAudioResponse(
-                extension=audio_format,
-                data_gen=audio_generator()
-            )
-
-        except Exception as e:
-            _LOGGER.error("Error in async_stream_tts_audio: %s", e, exc_info=True)
-            self._engine_active = False
-            self.async_write_ha_state()
-            raise
-
-    async def _get_processed_audio_for_streaming(
-        self,
-        text: str,
-        language: str,
-        options: dict,
-        voice: str,
-        model: str,
-        speed: float,
-        instructions: str | None,
-        extra_payload: str | None = None
+    async def _engine_get_blocking(
+        self, text: str, resolved: dict[str, Any]
     ) -> bytes:
-        """Get processed audio for non-streaming cases.
+        """Run the blocking engine in an executor and return the raw audio.
 
-        This handles audio processing like chimes and normalization.
+        The whole HTTP body is read INSIDE the executor (the engine no
+        longer offers a lazy variant), so the event loop never blocks
+        on socket I/O.
         """
-        # Audio processing options
-        chime_enable = options.get(CONF_CHIME_ENABLE) or self._get_config_value(CONF_CHIME_ENABLE) or False
-        chime_sound = options.get(CONF_CHIME_SOUND) or self._get_config_value(CONF_CHIME_SOUND)
-        normalize_audio = options.get(CONF_NORMALIZE_AUDIO) or self._get_config_value(CONF_NORMALIZE_AUDIO) or False
-
-        # Use the regular engine to get audio (non-streaming)
         loop = asyncio.get_running_loop()
-
         audio_task = loop.run_in_executor(
             None,
             partial(
                 self._engine.get_tts,
                 text,
-                speed=speed,
-                voice=voice,
-                model=model,
-                instructions=instructions,
-                extra_payload=extra_payload,
-                stream=False  # Don't use streaming for processed audio
-            )
+                speed=resolved["speed"],
+                voice=resolved["voice"],
+                model=resolved["model"],
+                instructions=resolved["instructions"],
+                extra_payload=resolved["extra_payload"],
+                response_format=resolved.get("audio_format", DEFAULT_AUDIO_FORMAT),
+            ),
         )
-
-        # Set a timeout for the TTS generation
-        try:
-            audio_response = await asyncio.wait_for(audio_task, timeout=30.0)
-        except asyncio.TimeoutError:
-            _LOGGER.error("TTS generation timed out after 30 seconds")
-            raise
+        audio_response = await asyncio.wait_for(audio_task, timeout=30.0)
 
         if not audio_response or not audio_response.content:
-            _LOGGER.error("No audio response received from TTS engine")
-            raise ValueError("No audio data received")
+            raise OpenAIInvalidResponseError("Empty audio response")
+        return audio_response.content
 
-        audio_data = audio_response.content
+    async def _maybe_post_process(
+        self, audio_data: bytes, resolved: dict[str, Any]
+    ) -> bytes:
+        """Apply chime + normalization when requested.
 
-        # Check if audio is WAV (some custom TTS backends return WAV instead of MP3)
-        is_wav = detect_audio_format(audio_data) == "wav"
+        When chime/normalize are off, returns the engine bytes unchanged
+        regardless of format - the streaming path or HA's own
+        ``preferred_format`` ffmpeg layer handles delivery to the
+        media_player. Only chime/normalize need the heavy local
+        transcode (and that path always outputs mp3).
+        """
+        chime_enable = resolved["chime_enable"]
+        normalize_audio = resolved["normalize_audio"]
 
-        # Process audio if needed (chime, normalization, or WAV conversion)
-        if chime_enable or normalize_audio or is_wav:
-            _LOGGER.debug("Processing audio with chime=%s, normalize=%s, is_wav=%s", chime_enable, normalize_audio, is_wav)
+        if not (chime_enable or normalize_audio):
+            return audio_data
 
-            # Get chime file path
-            chime_path = None
-            if chime_enable and chime_sound:
-                chime_folder = os.path.join(os.path.dirname(__file__), "chime")
-                chime_path = os.path.join(chime_folder, chime_sound)
-                if not os.path.exists(chime_path):
-                    _LOGGER.warning("Chime file not found: %s", chime_path)
-                    chime_path = None
+        requested_format = resolved.get("audio_format", DEFAULT_AUDIO_FORMAT)
 
-            # Process audio
-            _, processed_audio, _ = await process_audio(
-                self.hass,
-                audio_data,
-                chime_enabled=chime_enable,
-                chime_path=chime_path,
-                normalize_audio=normalize_audio
-            )
-
-            if processed_audio:
-                audio_data = processed_audio
+        chime_path = None
+        if chime_enable and resolved["chime_sound"]:
+            chime_folder = os.path.join(os.path.dirname(__file__), "chime")
+            candidate = os.path.join(chime_folder, resolved["chime_sound"])
+            if os.path.exists(candidate):
+                chime_path = candidate
             else:
-                _LOGGER.warning("Audio processing failed, using original audio")
+                _LOGGER.warning("Chime file not found: %s", candidate)
 
-        return audio_data
+        _, processed_audio, _ = await process_audio(
+            self.hass,
+            audio_data,
+            chime_enabled=chime_enable,
+            chime_path=chime_path,
+            normalize_audio=normalize_audio,
+            input_format=requested_format,
+        )
+        if not processed_audio:
+            _LOGGER.warning("Audio processing failed, using original audio")
+            return audio_data
+        return processed_audio
+
+    async def _record_duration(
+        self,
+        message: str,
+        audio_data: bytes,
+        resolved: dict[str, Any] | None = None,
+    ) -> int:
+        duration_ms = await self._get_audio_duration(audio_data)
+        self._last_duration_ms = duration_ms
+        # Persist measured duration so volume_restore can look it up
+        # even on subsequent HA-cache hits where the engine doesn't run.
+        r = resolved or {}
+        self._duration_cache.store_duration(
+            message, duration_ms,
+            voice=r.get("voice"), model=r.get("model"), speed=r.get("speed"),
+            instructions=r.get("instructions"),
+            chime=r.get("chime_enable"), chime_sound=r.get("chime_sound"),
+            extra_payload=r.get("extra_payload"),
+        )
+        self.async_write_ha_state()
+        await self._save_persisted_state()
+        if self._health_tracker is not None:
+            self._health_tracker.record_success()
+        return duration_ms
+
+    def _mark_failed_with_resolved(
+        self,
+        message: str,
+        resolved: dict[str, Any] | None,
+    ) -> None:
+        """Stamp a failure sentinel on the cache key derived from ``resolved``."""
+        r = resolved or {}
+        self._duration_cache.mark_failed(
+            message,
+            voice=r.get("voice"), model=r.get("model"), speed=r.get("speed"),
+            instructions=r.get("instructions"),
+            chime=r.get("chime_enable"), chime_sound=r.get("chime_sound"),
+            extra_payload=r.get("extra_payload"),
+        )
+
+    def _clear_failure_sentinel(
+        self,
+        message: str,
+        resolved: dict[str, Any] | None,
+    ) -> None:
+        """Drop any stale failure sentinel for the given resolved key.
+
+        Called at the START of every engine invocation so a retry
+        doesn't inherit the previous attempt's failure flag.
+        """
+        r = resolved or {}
+        self._duration_cache.clear_failure(
+            message,
+            voice=r.get("voice"), model=r.get("model"), speed=r.get("speed"),
+            instructions=r.get("instructions"),
+            chime=r.get("chime_enable"), chime_sound=r.get("chime_sound"),
+            extra_payload=r.get("extra_payload"),
+        )
+
+    def _record_failure(
+        self,
+        message: str,
+        error: BaseException,
+        resolved: dict[str, Any] | None = None,
+    ) -> None:
+        """Centralised bookkeeping for any TTS failure path.
+
+        Marks the message as failed so volume_restore skips the playback
+        wait (no audio is coming) AND surfaces the error to the health
+        tracker so the API-status sensor reflects reality.
+        """
+        self._mark_failed_with_resolved(message, resolved)
+        if self._health_tracker is not None:
+            self._health_tracker.record_error(error)
+
+    async def _handle_engine_error(self, err: BaseException) -> None:
+        """Translate engine errors into the right HA-side reaction."""
+        if self._health_tracker is not None:
+            self._health_tracker.record_error(err)
+        if isinstance(err, OpenAIAuthError):
+            _LOGGER.error(
+                "OpenAI TTS auth failed for %s, raising reauth: %s",
+                self.entity_id, err,
+            )
+            raise ConfigEntryAuthFailed(str(err)) from err
+        if isinstance(err, OpenAIQuotaExceededError):
+            _LOGGER.error(
+                "OpenAI TTS quota exhausted for %s: %s. "
+                "Returning no audio so HA will NOT cache; cached entries are unaffected.",
+                self.entity_id, err,
+            )
+            return
+        if isinstance(err, OpenAIRateLimitError):
+            _LOGGER.warning(
+                "OpenAI TTS rate-limited for %s: %s", self.entity_id, err
+            )
+            return
+        if isinstance(err, OpenAITTSError):
+            _LOGGER.error("OpenAI TTS error for %s: %s", self.entity_id, err)
+            return
 
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any] | None = None
     ) -> tuple[str | None, bytes | None]:
-        _LOGGER.info("async_get_tts_audio called for entity %s with message: %s, language: %s, options: %s", 
-                     self.entity_id, message[:50], language, options)
-        _LOGGER.info("Engine state - voice: %s, model: %s, speed: %s", 
-                     self._engine._voice, self._engine._model, self._engine._speed)
-        _LOGGER.debug("Entity unique_id: %s, config id: %s", self._attr_unique_id, 
-                     getattr(self._config, 'entry_id', getattr(self._config, 'subentry_id', 'unknown')))
-        
-        # Set engine active flag
-        self._engine_active = True
-        self.async_write_ha_state()
-        
-        if options is None:
-            options = {}
-        
-        # Apply configuration defaults
-        # First check options, then fall back to data
-        voice = options.get(CONF_VOICE) or self._get_config_value(CONF_VOICE) or self._engine._voice
-        model = options.get(CONF_MODEL) or self._get_config_value(CONF_MODEL) or self._engine._model
-        
-        # Speed needs special handling because 0.5 is a valid value but evaluates to falsy in some contexts
-        speed = options.get(CONF_SPEED)
-        if speed is None:
-            speed = self._get_config_value(CONF_SPEED)
-        if speed is None:
-            speed = 1.0  # Default speed instead of engine's potentially outdated value
-        
-        # Debug logging to trace speed value
-        _LOGGER.debug("Speed value tracing:")
-        _LOGGER.debug("  - From options: %s", options.get(CONF_SPEED))
-        _LOGGER.debug("  - From config (options/data): %s", self._get_config_value(CONF_SPEED))
-        _LOGGER.debug("  - Final speed value: %s", speed)
-        
-        _LOGGER.debug("TTS parameters - voice: %s, model: %s, speed: %s", voice, model, speed)
-        
-        # Handle instructions - merge service-level with config-level
-        service_instructions = options.get(CONF_INSTRUCTIONS)
-        config_instructions = self._get_config_value(CONF_INSTRUCTIONS)
-        
-        _LOGGER.debug("Instructions - service: %s, config: %s", service_instructions, config_instructions)
-        
-        # If service provides instructions, use them; otherwise use config
-        instructions = service_instructions if service_instructions is not None else config_instructions
+        """Legacy non-streaming TTS contract.
 
-        # Handle extra_payload for custom backends
-        extra_payload = options.get(CONF_EXTRA_PAYLOAD)
+        Returns ``(None, None)`` whenever the result must NOT be cached
+        (auth failure, quota exhausted, invalid audio, etc.). HA only caches
+        when both elements of the tuple are non-None, so this is the safe
+        signal to refuse cache entry.
+        """
+        _LOGGER.info(
+            "async_get_tts_audio for %s (msg=%r, lang=%s)",
+            self.entity_id, message[:50], language,
+        )
 
-        # Audio processing options
-        chime_enable = options.get(CONF_CHIME_ENABLE) or self._get_config_value(CONF_CHIME_ENABLE) or False
-        chime_sound = options.get(CONF_CHIME_SOUND) or self._get_config_value(CONF_CHIME_SOUND)
-        normalize_audio = options.get(CONF_NORMALIZE_AUDIO) or self._get_config_value(CONF_NORMALIZE_AUDIO) or False
-        
-        # Note: HA handles caching - we just need to ensure metadata is embedded
-        
-        _LOGGER.info("TTS request - voice: %s, model: %s, speed: %s, instructions: %s, chime_enable: %s",
-                     voice, model, speed, instructions, chime_enable)
-        
+        # Default {} so the except blocks below can pass it to _record_failure
+        # even if _resolve_options() were to raise (it currently can't, but
+        # this future-proofs against that path).
+        resolved: dict[str, Any] = {}
+
         try:
-            # No custom cache - Home Assistant handles caching
-            
-            # Generate new audio
-            _LOGGER.debug("Generating new audio for message: %s", message[:50])
-            
-            # Determine if we can use streaming (no post-processing needed)
-            can_stream = not chime_enable and not normalize_audio
-            
-            # Use the OpenAI engine to get audio
-            loop = asyncio.get_running_loop()
-            
-            # Pass model parameter to the engine as well
-            audio_task = loop.run_in_executor(
-                None,
-                partial(
-                    self._engine.get_tts,
-                    message,
-                    speed=speed,
-                    voice=voice,
-                    model=model,  # Pass model parameter
-                    instructions=instructions,
-                    extra_payload=extra_payload,
-                    stream=can_stream
-                )
-            )
-            
-            # Set a timeout for the TTS generation
+            resolved = self._resolve_options(options)
+            # Drop stale failure sentinel from a previous run on the
+            # same key so volume_restore doesn't trigger an immediate
+            # restore against a now-recovering call.
+            self._clear_failure_sentinel(message, resolved)
+
             try:
-                audio_response = await asyncio.wait_for(audio_task, timeout=30.0)
-            except asyncio.TimeoutError:
+                audio_data = await self._engine_get_blocking(message, resolved)
+            except asyncio.TimeoutError as err:
                 _LOGGER.error("TTS generation timed out after 30 seconds")
+                self._record_failure(message, err, resolved)
                 return (None, None)
-            
-            if not audio_response:
-                _LOGGER.error("No audio response received from TTS engine")
-                return (None, None)
-            
-            # Handle streaming vs regular response
-            if hasattr(audio_response, 'read_all'):
-                # Streaming response
-                _LOGGER.debug("Using streaming response")
-                audio_data = audio_response.read_all()
-            else:
-                # Regular response
-                if not audio_response.content:
-                    _LOGGER.error("No audio data in response")
-                    return (None, None)
-                audio_data = audio_response.content
-            
-            # Calculate duration before any processing
-            total_duration_ms = await self._get_audio_duration(audio_data)
-            _LOGGER.debug("Generated audio duration: %d ms", total_duration_ms)
 
-            # Store duration in instance and shared cache
-            self._last_duration_ms = total_duration_ms
-            self._store_message_duration(message, total_duration_ms)
-            self.async_write_ha_state()
-            
-            # Save state to persistent storage
-            await self._save_persisted_state()
-
-            # Check if audio is WAV (some custom TTS backends return WAV instead of MP3)
-            is_wav = detect_audio_format(audio_data) == "wav"
-
-            # Process audio if needed (chime, normalization, or WAV conversion)
-            if chime_enable or normalize_audio or is_wav:
-                _LOGGER.debug("Processing audio with chime=%s, normalize=%s, is_wav=%s", chime_enable, normalize_audio, is_wav)
-                
-                # Get chime file path
-                chime_path = None
-                if chime_enable and chime_sound:
-                    chime_folder = os.path.join(os.path.dirname(__file__), "chime")
-                    chime_path = os.path.join(chime_folder, chime_sound)
-                    if not os.path.exists(chime_path):
-                        _LOGGER.warning("Chime file not found: %s", chime_path)
-                        chime_path = None
-                
-                # Process audio (it's already async)
-                _, processed_audio, _ = await process_audio(
-                    self.hass,
-                    audio_data,
-                    chime_enabled=chime_enable,
-                    chime_path=chime_path,
-                    normalize_audio=normalize_audio
+            requested_format = resolved.get("audio_format", DEFAULT_AUDIO_FORMAT)
+            if not is_valid_audio(audio_data, expected_format=requested_format):
+                _LOGGER.error(
+                    "TTS response failed audio validation (size=%d). "
+                    "Refusing cache to prevent corruption (issue #64).",
+                    len(audio_data) if audio_data else 0,
                 )
-                
-                if processed_audio:
-                    audio_data = processed_audio
-                    # Recalculate duration after processing and update cache
-                    total_duration_ms = await self._get_audio_duration(audio_data)
-                    self._last_duration_ms = total_duration_ms
-                    self._store_message_duration(message, total_duration_ms)
-                    self.async_write_ha_state()
-                    await self._save_persisted_state()
-                    _LOGGER.debug("Processed audio duration: %d ms", total_duration_ms)
-                else:
-                    _LOGGER.warning("Audio processing failed, using original audio")
+                err = OpenAIInvalidResponseError(
+                    f"Invalid audio response (size={len(audio_data) if audio_data else 0})"
+                )
+                self._record_failure(message, err, resolved)
+                return (None, None)
 
-            # Embed duration in MP3 metadata using mutagen (for HA cache retrieval)
-            # This allows reading duration from cached audio files
+            await self._record_duration(message, audio_data, resolved)
+
+            audio_data = await self._maybe_post_process(audio_data, resolved)
+
+            # Recalculate after post-processing changes the bytes.
+            if resolved["chime_enable"] or resolved["normalize_audio"] or (
+                detect_audio_format(audio_data) == "wav"
+            ):
+                await self._record_duration(message, audio_data, resolved)
+
             audio_with_metadata = await self.hass.async_add_executor_job(
-                embed_duration_in_audio, audio_data, total_duration_ms
+                embed_duration_in_audio, audio_data, self._last_duration_ms or 0
             )
+            actual_format = detect_audio_format(audio_data)
+            return (actual_format, audio_with_metadata)
 
-            # Clear engine active flag before returning
-            self._engine_active = False
-            self.async_write_ha_state()
-
-            return ("mp3", audio_with_metadata)
-            
         except MaxLengthExceeded as err:
             _LOGGER.error("Maximum message length exceeded: %s", err)
-            self._engine_active = False
-            self.async_write_ha_state()
+            self._record_failure(message, err, resolved)
             raise
         except CancelledError:
             _LOGGER.debug("TTS generation was cancelled")
-            self._engine_active = False
-            self.async_write_ha_state()
             raise
+        except OpenAITTSError as err:
+            # Mark the cache BEFORE _handle_engine_error: that helper
+            # raises ConfigEntryAuthFailed on auth errors and would
+            # otherwise skip the post-call mark_failed, leaving
+            # volume_restore without its immediate-restore signal.
+            self._mark_failed_with_resolved(message, resolved)
+            await self._handle_engine_error(err)
+            return (None, None)
         except Exception as err:
             _LOGGER.error("Error generating TTS: %s", err, exc_info=True)
-            self._engine_active = False
-            self.async_write_ha_state()
+            self._record_failure(message, err, resolved)
             return (None, None)
+
+    async def async_stream_tts_audio(
+        self, request: TTSAudioRequest
+    ) -> TTSAudioResponse:
+        """Modern streaming TTS contract.
+
+        Strategy depends on whether post-processing (chime / normalization)
+        is required:
+
+        * **No post-processing** -> stream-with-first-chunk-validation.
+          Chunks are yielded as they arrive from OpenAI for low first-byte
+          latency. The first ~1 KB is validated against MP3 magic bytes
+          BEFORE being yielded; if it fails (e.g. JSON error body served
+          with HTTP 200 by a misbehaving backend) we raise immediately so
+          HA discards the half-written cache file.
+
+        * **Post-processing required** -> atomic mode. Chime/normalize need
+          the complete audio anyway, so we collect-then-validate-then-yield.
+
+        On a true mid-stream network drop the engine raises and HA discards
+        the partial file (HA's TTS cache only commits after the generator
+        completes successfully).
+        """
+        _LOGGER.info("async_stream_tts_audio called for entity %s", self.entity_id)
+
+        full_text = ""
+        async for text_chunk in request.message_gen:
+            full_text += text_chunk
+
+        options = request.options or {}
+        resolved = self._resolve_options(options)
+        # Drop any failure sentinel from a previous attempt with the
+        # same key BEFORE volume_restore can read it. Otherwise a
+        # retry sees the stale 0 immediately after tts.speak returns
+        # and triggers an immediate-restore + raise even though the
+        # current stream is still in flight and may succeed.
+        self._clear_failure_sentinel(full_text, resolved)
+        audio_format = resolved.get("audio_format", DEFAULT_AUDIO_FORMAT)
+        can_stream = self._can_use_streaming(full_text, options)
+
+        _LOGGER.info(
+            "Streaming TTS - voice: %s, model: %s, speed: %s, format: %s, "
+            "mode: %s",
+            resolved["voice"], resolved["model"], resolved["speed"],
+            audio_format, "stream+validate" if can_stream else "atomic+postprocess",
+        )
+
+        if can_stream:
+            return TTSAudioResponse(
+                extension=audio_format,
+                data_gen=self._stream_with_validation(
+                    full_text, resolved, audio_format
+                ),
+            )
+
+        # Atomic path: chime / normalize need the complete audio first.
+        try:
+            audio_data = await self._engine_get_blocking(full_text, resolved)
+        except asyncio.TimeoutError as err:
+            _LOGGER.error("TTS atomic generation timed out")
+            self._record_failure(full_text, err, resolved)
+            return self._empty_response(audio_format)
+        except OpenAITTSError as err:
+            # See note in _stream_with_validation: mark_failed must
+            # run before _handle_engine_error or auth failures bypass
+            # the sentinel write.
+            self._mark_failed_with_resolved(full_text, resolved)
+            await self._handle_engine_error(err)
+            return self._empty_response(audio_format)
+        except Exception as err:
+            _LOGGER.error("Atomic TTS unexpected error: %s", err, exc_info=True)
+            self._record_failure(full_text, err, resolved)
+            return self._empty_response(audio_format)
+
+        # Validate the raw engine response BEFORE post-processing: the
+        # validator checks magic bytes against the requested format, but
+        # post-processing always emits mp3 regardless of input.
+        if not is_valid_audio(audio_data, expected_format=audio_format):
+            _LOGGER.error(
+                "Atomic TTS response failed audio validation (size=%d). "
+                "Refusing cache to prevent corruption (issue #64).",
+                len(audio_data),
+            )
+            err = OpenAIInvalidResponseError(
+                f"Invalid atomic audio (size={len(audio_data)})"
+            )
+            self._record_failure(full_text, err, resolved)
+            return self._empty_response(audio_format)
+
+        try:
+            audio_data = await self._maybe_post_process(audio_data, resolved)
+        except Exception as err:
+            _LOGGER.error("Atomic TTS post-processing failed: %s", err, exc_info=True)
+            self._record_failure(full_text, err, resolved)
+            return self._empty_response(audio_format)
+
+        # Post-processing now stays in the requested format end to end:
+        # ``ensure_chime_in_format`` transcodes the chime to match, and
+        # ``build_ffmpeg_command`` picks the right encoder for the
+        # output. The bytes that come out of ``_maybe_post_process``
+        # therefore match the requested ``audio_format`` regardless of
+        # whether chime/normalize ran. HA still has its
+        # ``preferred_format`` ffmpeg layer as a safety net if the
+        # downstream player needs a different container.
+        delivered_format = audio_format
+
+        duration_ms = await self._record_duration(full_text, audio_data, resolved)
+        _LOGGER.info(
+            "Atomic audio ready: %d bytes, %d ms (delivered as %s)",
+            len(audio_data), duration_ms, delivered_format,
+        )
+
+        return TTSAudioResponse(
+            extension=delivered_format,
+            data_gen=self._yield_in_chunks(audio_data),
+        )
+
+    async def _stream_with_validation(
+        self,
+        text: str,
+        resolved: dict[str, Any],
+        audio_format: str,
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream chunks as they arrive; validate the first chunk before yielding.
+
+        Engine guarantees the first yielded chunk is at least
+        ``INITIAL_BUFFER_BYTES`` (1 KB) of buffered data, which is plenty to
+        check magic bytes. Subsequent chunks pass through untouched.
+        """
+        all_chunks: list[bytes] = []
+        first_yielded = False
+
+        try:
+            async for chunk in self._engine.async_get_tts_stream(
+                text=text,
+                response_format=audio_format,
+                voice=resolved["voice"],
+                model=resolved["model"],
+                speed=resolved["speed"],
+                instructions=resolved["instructions"],
+                extra_payload=resolved["extra_payload"],
+            ):
+                all_chunks.append(chunk)
+
+                if not first_yielded:
+                    if not is_valid_audio(chunk, expected_format=audio_format):
+                        _LOGGER.error(
+                            "First streamed chunk failed audio validation "
+                            "(size=%d). Aborting to prevent cache poisoning "
+                            "(issue #64).",
+                            len(chunk),
+                        )
+                        raise OpenAIInvalidResponseError(
+                            "First chunk is not valid audio"
+                        )
+                    first_yielded = True
+                    _LOGGER.debug(
+                        "First chunk passed validation (%d bytes), streaming",
+                        len(chunk),
+                    )
+
+                yield chunk
+
+        except OpenAITTSError as err:
+            # Mark the cache BEFORE delegating to _handle_engine_error
+            # because that helper raises ConfigEntryAuthFailed on auth
+            # errors, which would skip the post-call mark_failed and
+            # leave volume_restore polling for 60s without the
+            # immediate-restore signal.
+            self._mark_failed_with_resolved(text, resolved)
+            await self._handle_engine_error(err)
+            raise
+        except Exception as err:
+            self._record_failure(text, err, resolved)
+            raise
+
+        # Stream completed cleanly: store the measured duration so
+        # volume_restore can use it on this AND on subsequent HA-cache
+        # hits, and tell the health tracker the API is responsive.
+        if all_chunks:
+            complete_audio = b"".join(all_chunks)
+            duration_ms = await self._get_audio_duration(complete_audio)
+            self._last_duration_ms = duration_ms
+            r = resolved or {}
+            self._duration_cache.store_duration(
+                text, duration_ms,
+                voice=r.get("voice"), model=r.get("model"), speed=r.get("speed"),
+                instructions=r.get("instructions"),
+                chime=r.get("chime_enable"), chime_sound=r.get("chime_sound"),
+                extra_payload=r.get("extra_payload"),
+            )
+            self.async_write_ha_state()
+            await self._save_persisted_state()
+            if self._health_tracker is not None:
+                self._health_tracker.record_success()
+            _LOGGER.info(
+                "Streaming complete: %d bytes, %d ms",
+                len(complete_audio), duration_ms,
+            )
+
+    @staticmethod
+    async def _yield_in_chunks(
+        audio_data: bytes, chunk_size: int = 8192
+    ) -> AsyncGenerator[bytes, None]:
+        for i in range(0, len(audio_data), chunk_size):
+            yield audio_data[i : i + chunk_size]
+
+    @staticmethod
+    def _empty_response(audio_format: str) -> TTSAudioResponse:
+        """Return a generator that raises so HA refuses to cache the failure.
+
+        HA persists the bytes from ``data_gen`` to disk under
+        ``<cache_key>.<extension>``. A previous version of this helper
+        returned an empty generator, which made HA happily store a
+        0-byte file - then on the next request with the same cache_key
+        HA served those 0 bytes and ffmpeg blew up with "Invalid data
+        found when processing input" (issue #64 cache poisoning, opus
+        edition). Raising inside the generator triggers HA's
+        ``_load_data_into_cache`` exception path, which discards the
+        mem-cache entry and skips the disk write.
+        """
+
+        async def _fail() -> AsyncGenerator[bytes, None]:
+            raise OpenAIInvalidResponseError(
+                "TTS engine returned no audio for this request"
+            )
+            yield b""  # pragma: no cover - keeps this an async generator
+
+        return TTSAudioResponse(extension=audio_format, data_gen=_fail())

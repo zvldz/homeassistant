@@ -1,0 +1,17 @@
+HassTurnOn:
+  speech:
+    text: >
+      {% set area = area_slots.area | default('') %}
+      {% set lights = area_entities(area) | select('match', 'light.') | list %}
+      {% if lights %}
+        Включаю свет в {{ area }}
+      {% else %}
+        В зоне {{ area }} нет управляемых светильников
+      {% endif %}
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: >
+          {% set area = area_slots.area | default('') %}
+          {{ area_entities(area) | select('match', 'light.') | list }}
+

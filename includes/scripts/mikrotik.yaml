@@ -1,0 +1,14 @@
+mikrotik1_reboot:
+  sequence:
+    - service: rest_command.mikrotik1_reboot
+      continue_on_error: true
+
+mikrotik2_reboot:
+  sequence:
+    - service: rest_command.mikrotik2_reboot
+      continue_on_error: true
+
+mikrotik3_reboot:
+  sequence:
+    - service: rest_command.mikrotik3_reboot
+      continue_on_error: true

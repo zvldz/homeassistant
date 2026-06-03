@@ -145,6 +145,130 @@ cards:
           - entity: sensor.zigbee2mqtt_bridge_coordinator_version
 
       - type: heading
+        heading: "Mikrotik"
+        icon: "mdi:router-network"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
+
+      - type: entities
+        title: Firmware
+        entities:
+          - entity: update.mikrotik_rb951g_2hnd_routeros_update
+            type: custom:multiple-entity-row
+            name: "MT1 hEX PoE"
+            show_state: false
+            card_mod:
+              style:
+                hui-generic-entity-row$: |
+                  state-badge {
+                    transform: scale(0.6);
+                    transform-origin: center;
+                    filter: brightness(0) invert(1);
+                  }
+            entities:
+              - entity: update.mikrotik_rb951g_2hnd_routerboard_firmware_update
+                attribute: latest_version
+                name: "RB↑"
+              - entity: update.mikrotik_rb951g_2hnd_routerboard_firmware_update
+                attribute: installed_version
+                name: "RB"
+              - entity: update.mikrotik_rb951g_2hnd_routeros_update
+                attribute: latest_version
+                name: "OS↑"
+              - entity: update.mikrotik_rb951g_2hnd_routeros_update
+                attribute: installed_version
+                name: "OS"
+          - entity: update.mikrotik2_hap_ax_3_routeros_update
+            type: custom:multiple-entity-row
+            name: "MT2 hAP ax3"
+            show_state: false
+            card_mod:
+              style:
+                hui-generic-entity-row$: |
+                  state-badge {
+                    transform: scale(0.6);
+                    transform-origin: center;
+                    filter: brightness(0) invert(1);
+                  }
+            entities:
+              - entity: update.mikrotik2_hap_ax_3_routerboard_firmware_update
+                attribute: latest_version
+                name: "RB↑"
+              - entity: update.mikrotik2_hap_ax_3_routerboard_firmware_update
+                attribute: installed_version
+                name: "RB"
+              - entity: update.mikrotik2_hap_ax_3_routeros_update
+                attribute: latest_version
+                name: "OS↑"
+              - entity: update.mikrotik2_hap_ax_3_routeros_update
+                attribute: installed_version
+                name: "OS"
+          - entity: update.mikrotik3_cap_ax_routeros_update
+            type: custom:multiple-entity-row
+            name: "MT3 cAP ax"
+            show_state: false
+            card_mod:
+              style:
+                hui-generic-entity-row$: |
+                  state-badge {
+                    transform: scale(0.6);
+                    transform-origin: center;
+                    filter: brightness(0) invert(1);
+                  }
+            entities:
+              - entity: update.mikrotik3_cap_ax_routerboard_firmware_update
+                attribute: latest_version
+                name: "RB↑"
+              - entity: update.mikrotik3_cap_ax_routerboard_firmware_update
+                attribute: installed_version
+                name: "RB"
+              - entity: update.mikrotik3_cap_ax_routeros_update
+                attribute: latest_version
+                name: "OS↑"
+              - entity: update.mikrotik3_cap_ax_routeros_update
+                attribute: installed_version
+                name: "OS"
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: script.mikrotik1_reboot
+            name: "Reboot MT1"
+            icon: "mdi:restart"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik1_reboot
+              confirmation:
+                text: Are you sure you want to reboot Mikrotik1?
+
+          - type: tile
+            entity: script.mikrotik2_reboot
+            name: "Reboot MT2"
+            icon: "mdi:restart"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik2_reboot
+              confirmation:
+                text: Are you sure you want to reboot Mikrotik2?
+
+          - type: tile
+            entity: script.mikrotik3_reboot
+            name: "Reboot MT3"
+            icon: "mdi:restart"
+            hide_state: true
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik3_reboot
+              confirmation:
+                text: Are you sure you want to reboot Mikrotik3?
+
+      - type: heading
         heading: "Maintenance"
         icon: "mdi:wrench-clock"
         card_mod:
@@ -158,7 +282,7 @@ cards:
         cards:
           - type: tile
             entity: script.ha1_restart
-            nscripts/purge_db.yamlame: "Restart HA1"
+            name: "Restart HA1"
             icon: "mdi:rotate-3d-variant"
             hide_state: true
             tap_action:

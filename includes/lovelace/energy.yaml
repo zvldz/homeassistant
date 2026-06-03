@@ -144,6 +144,7 @@ cards:
       - type: entities
         show_header_toggle: false
         entities:
+          - switch.0x385cfbfffe850ea4
           - sensor.delta_2_max_ac_in_volts
           - sensor.delta_2_max_solar_1_in_power
           - sensor.delta_2_max_solar_1_in_amps
@@ -189,6 +190,16 @@ cards:
             points_per_hour: 1
             entities:
               - entity: sensor.0xa46dd4fffe4f985d_power
+              - entity: sensor.0x385cfbfffe850ea4_power
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: "Current"
+            hour24: true
+            points_per_hour: 1
+            entities:
+              - entity: sensor.0x385cfbfffe850ea4_current
 
       - type: horizontal-stack
         cards:
@@ -203,6 +214,7 @@ cards:
               - entity: sensor.0xa46dd4fffe4f985d_voltage
                 color: blue
               - entity: sensor.delta_2_max_ac_in_volts
+              - entity: sensor.0x385cfbfffe850ea4_voltage
 
       - type: conditional
         conditions:

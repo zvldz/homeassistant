@@ -10,3 +10,28 @@ ha2_restart:
   headers:
     authorization: !secret ha2_token
 
+# --- Mikrotik reboot via RouterOS REST API (HTTP, www service) ---
+mikrotik1_reboot:
+  url: "http://192.168.1.1/rest/system/reboot"
+  method: POST
+  username: admin
+  password: !secret mikrotik_admin_pass
+  content_type: "application/json"
+  payload: "{}"
+
+mikrotik2_reboot:
+  url: "http://192.168.1.249/rest/system/reboot"
+  method: POST
+  username: admin
+  password: !secret mikrotik_admin_pass
+  content_type: "application/json"
+  payload: "{}"
+
+mikrotik3_reboot:
+  url: "http://192.168.1.254/rest/system/reboot"
+  method: POST
+  username: admin
+  password: !secret mikrotik_admin_pass
+  content_type: "application/json"
+  payload: "{}"
+

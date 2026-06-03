@@ -51,7 +51,7 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
-            entity: switch.0x00158d0002113ace
+            entity: switch.0x54ef441000d38876
             name: "Hallway 1"
             icon: "mdi:light-switch"
 

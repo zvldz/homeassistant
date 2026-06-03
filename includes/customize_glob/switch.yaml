@@ -10,7 +10,7 @@
 "*.0x00158d0002112b1e*":
   friendly_name: Hallway 2 Switch
 
-"*.0x00158d0002113ace*":
+"*.0x54ef441000d38876*":
   friendly_name: Hallway 1 Switch
 
 "*.0x00158d00022a8150*":
@@ -36,3 +36,6 @@
 
 "*.boiler_shelly*":
   friendly_name: Boiler Switch
+
+"*.0x385cfbfffe850ea4*":
+  friendly_name: Apartment Breaker

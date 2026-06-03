@@ -12,3 +12,30 @@ mikrotik3_reboot:
   sequence:
     - service: rest_command.mikrotik3_reboot
       continue_on_error: true
+
+mikrotik1_update:
+  mode: single
+  sequence:
+    - service: update.install
+      target:
+        entity_id: update.mikrotik_rb951g_2hnd_routeros_update
+      continue_on_error: true
+    - delay: "00:00:10"
+
+mikrotik2_update:
+  mode: single
+  sequence:
+    - service: update.install
+      target:
+        entity_id: update.mikrotik2_hap_ax_3_routeros_update
+      continue_on_error: true
+    - delay: "00:00:10"
+
+mikrotik3_update:
+  mode: single
+  sequence:
+    - service: update.install
+      target:
+        entity_id: update.mikrotik3_cap_ax_routeros_update
+      continue_on_error: true
+    - delay: "00:00:10"

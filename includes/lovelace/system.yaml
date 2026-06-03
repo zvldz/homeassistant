@@ -236,6 +236,65 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
+            entity: script.mikrotik1_update
+            name: "Update MT1"
+            icon: "mdi:package-up"
+            hide_state: true
+            card_mod:
+              style: |
+                ha-card {
+                  {% if is_state('update.mikrotik_rb951g_2hnd_routeros_update','off') %}
+                  opacity: 0.4;
+                  pointer-events: none;
+                  {% endif %}
+                }
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik1_update
+              confirmation:
+                text: Are you sure you want to update RouterOS on Mikrotik1? It will reboot.
+
+          - type: tile
+            entity: script.mikrotik2_update
+            name: "Update MT2"
+            icon: "mdi:package-up"
+            hide_state: true
+            card_mod:
+              style: |
+                ha-card {
+                  {% if is_state('update.mikrotik2_hap_ax_3_routeros_update','off') %}
+                  opacity: 0.4;
+                  pointer-events: none;
+                  {% endif %}
+                }
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik2_update
+              confirmation:
+                text: Are you sure you want to update RouterOS on Mikrotik2? It will reboot.
+
+          - type: tile
+            entity: script.mikrotik3_update
+            name: "Update MT3"
+            icon: "mdi:package-up"
+            hide_state: true
+            card_mod:
+              style: |
+                ha-card {
+                  {% if is_state('update.mikrotik3_cap_ax_routeros_update','off') %}
+                  opacity: 0.4;
+                  pointer-events: none;
+                  {% endif %}
+                }
+            tap_action:
+              action: perform-action
+              perform_action: script.mikrotik3_update
+              confirmation:
+                text: Are you sure you want to update RouterOS on Mikrotik3? It will reboot.
+
+      - type: horizontal-stack
+        cards:
+          - type: tile
             entity: script.mikrotik1_reboot
             name: "Reboot MT1"
             icon: "mdi:restart"

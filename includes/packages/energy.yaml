@@ -22,11 +22,13 @@ template:
     sensor:
       - name: "Power Outage Start Time"
         unique_id: power_outage_start_time
-        availability: >
-          {{ states('input_number.power_outage_timestamp') | float(0) > 0 }}
         state: >
-          {{ states('input_number.power_outage_timestamp') | float | timestamp_local }}
-        device_class: timestamp
+          {% set ts = states('input_number.power_outage_timestamp') | float(0) %}
+          {% if ts > 0 %}
+            {{ ts | timestamp_custom('%Y-%m-%d %H:%M') }}
+          {% else %}
+            -
+          {% endif %}
         icon: mdi:power-plug-off
 
       - name: "Power Outage Duration Formatted"

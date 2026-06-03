@@ -777,6 +777,7 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 {"name": "type", "value": "l2tp-in"},
                 {"name": "type", "value": "pppoe-in"},
                 {"name": "type", "value": "ovpn-in"},
+                {"name": "dynamic", "value": True},
             ],
         )
 

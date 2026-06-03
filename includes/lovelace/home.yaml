@@ -136,9 +136,30 @@ cards:
             showAzimuth: true
             showElevation: true
 
-      - entity: weather.openweathermap
-        type: weather-forecast
-        name: Weather
+      - type: horizontal-stack
+        cards:
+          - type: tile
+            entity: weather.openweathermap
+            name: Daily forecast
+            features_position: bottom
+            features:
+              - type: temperature-forecast
+                forecast_type: daily
+          - type: tile
+            entity: weather.openweathermap
+            name: Hourly forecast
+            features_position: bottom
+            features:
+              - type: temperature-forecast
+                forecast_type: hourly
+
+      - type: tile
+        entity: weather.openweathermap
+        name: Daily precipitation
+        features_position: bottom
+        features:
+          - type: precipitation-forecast
+            forecast_type: daily
 
   - type: vertical-stack
     cards:

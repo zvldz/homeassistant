@@ -6,3 +6,12 @@ script:
       - delay: '00:00:02'
 
 automation:
+
+# Host-specific (ha1 hardware): CPU temperature sensor.
+# ha1 CPU is on thermal_zone1 (ha2 uses thermal_zone0 in reserve_control.yaml).
+command_line:
+  - sensor:
+      name: "CPU Temperature"
+      command: 'cat /sys/class/thermal/thermal_zone1/temp'
+      unit_of_measurement: "°C"
+      value_template: "{{ value | multiply(0.001) | round(2) }}"

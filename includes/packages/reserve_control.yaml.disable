@@ -8,6 +8,7 @@ group:
       - automation.gas_counter
       - automation.system_entity_change
       - automation.system_database_purge
+      - automation.sync_power_outage_timestamp
 
   sync_input_boolean:
     entities:
@@ -59,6 +60,16 @@ sensor:
     headers:
       authorization: !secret ha1_token
     value_template: "{{ value_json.attributes.temperature }}"
+
+
+  # Sync power outage timestamp from ha1
+  - platform: rest
+    resource: "http://192.168.1.225:8123/api/states/input_number.power_outage_timestamp"
+    name: ha1_power_outage_timestamp
+    headers:
+      authorization: !secret ha1_token
+    value_template: "{{ value_json.state }}"
+    scan_interval: 30
 
 rest_command:
   ha1_set_input_boolean:
@@ -163,6 +174,21 @@ automation:
           entity_id: climate.gas_boiler
           temperature: "{{ states('sensor.ha1_thermostat_temperature') | float }}"
 
+  - alias: sync_power_outage_timestamp
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.ha1_power_outage_timestamp
+    condition:
+      - condition: template
+        value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.power_outage_timestamp
+        data:
+          value: "{{ states('sensor.ha1_power_outage_timestamp') | float(0) }}"
+
 script:
   sync_input_boolean_to_ha1:
     alias: "Sync input_boolean state to ha1"
@@ -197,3 +223,13 @@ script:
       - delay: '00:00:15'
       - service: switch.turn_on
         entity_id: switch.power_strip_1_relay2
+
+
+# Host-specific (ha2 hardware): CPU temperature sensor.
+# ha2 CPU is on thermal_zone0 (ha1 uses thermal_zone1 in main.yaml).
+command_line:
+  - sensor:
+      name: "CPU Temperature"
+      command: 'cat /sys/class/thermal/thermal_zone0/temp'
+      unit_of_measurement: "°C"
+      value_template: "{{ value | multiply(0.001) | round(2) }}"

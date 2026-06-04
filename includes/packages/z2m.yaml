@@ -19,9 +19,9 @@ automation:
             {%else%}{{"\U0000274C"}} Attention! Z2M is offline!
             {%endif%}
 
-sensor:
-  - platform: rest
-    name: "Z2M Latest"
-    resource: https://api.github.com/repos/Koenkk/zigbee2mqtt/releases/latest
-    value_template: "{{ value_json.tag_name }}"
+rest:
+  - resource: https://api.github.com/repos/Koenkk/zigbee2mqtt/releases/latest
     scan_interval: 1800
+    sensor:
+      - name: "Z2M Latest"
+        value_template: "{{ value_json.tag_name }}"

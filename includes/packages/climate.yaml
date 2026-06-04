@@ -77,26 +77,26 @@ template:
             {% endfor %}
             {{ ns.src }}
 
-sensor:
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_number.gas_counter"
-    name: ha1_gas_counter
+rest:
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_number.gas_counter"
     headers:
       authorization: !secret ha1_token
-    value_template: >
-      {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
-        {{ value_json.state }}
-      {% endif %}
+    sensor:
+      - name: ha1_gas_counter
+        value_template: >
+          {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
+            {{ value_json.state }}
+          {% endif %}
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha2_url') }}api/states/input_number.gas_counter"
-    name: ha2_gas_counter
+  - resource_template: "{{ states('input_text.ha2_url') }}api/states/input_number.gas_counter"
     headers:
       authorization: !secret ha2_token
-    value_template: >
-      {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
-        {{ value_json.state }}
-      {% endif %}
+    sensor:
+      - name: ha2_gas_counter
+        value_template: >
+          {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
+            {{ value_json.state }}
+          {% endif %}
 
 script:
   turn_on_all_ac:

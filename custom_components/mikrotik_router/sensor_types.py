@@ -136,6 +136,19 @@ class MikrotikSensorEntityDescription(SensorEntityDescription):
 
 SENSOR_TYPES: tuple[MikrotikSensorEntityDescription, ...] = (
     MikrotikSensorEntityDescription(
+        key="lte_firmware",
+        name="Modem firmware",
+        icon="mdi:radio-tower",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        ha_group="System",
+        data_path="lte_firmware",
+        data_attribute="installed",
+        data_name="",
+        data_uid="",
+        data_reference="",
+        data_attributes_list=["latest", "status", "available"],
+    ),
+    MikrotikSensorEntityDescription(
         key="system_temperature",
         name="Temperature",
         icon="mdi:thermometer",

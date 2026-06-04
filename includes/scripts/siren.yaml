@@ -1,0 +1,6 @@
+siren_off:
+  alias: "Turn off siren"
+  sequence:
+    - service: siren.turn_off
+      target:
+        entity_id: siren.hallway_siren

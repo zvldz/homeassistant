@@ -246,6 +246,7 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
             "ppp_secret": {},
             "ppp_active": {},
             "fw-update": {},
+            "lte_firmware": {},
             "script": {},
             "queue": {},
             "dns": {},
@@ -571,6 +572,9 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
 
             if self.api.connected():
                 await self.hass.async_add_executor_job(self.get_firmware_update)
+
+            if self.api.connected():
+                await self.hass.async_add_executor_job(self.get_lte_firmware)
 
             if self.api.connected():
                 await self.hass.async_add_executor_job(self.get_system_resource)
@@ -1617,6 +1621,43 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                     self.host,
                     full_version,
                 )
+
+    # ---------------------------
+    #   get_lte_firmware
+    # ---------------------------
+    def get_lte_firmware(self) -> None:
+        """Check LTE modem firmware (read-only). No-op if no LTE interface."""
+        lte = self.api.query("/interface/lte")
+        if not lte:
+            return
+
+        lte_id = lte[0].get(".id")
+        if not lte_id:
+            return
+
+        # firmware-upgrade without upgrade param = read-only check (installed/latest)
+        result = self.api.query(
+            "/interface/lte", "firmware-upgrade", {".id": lte_id}
+        )
+        if not result:
+            return
+
+        # response has sections; the one with 'latest' is the final check result
+        info = None
+        for row in result:
+            if "latest" in row:
+                info = row
+        if info is None:
+            info = result[-1]
+
+        installed = info.get("installed", "unknown")
+        latest = info.get("latest", installed)
+        self.ds["lte_firmware"] = {
+            "installed": installed,
+            "latest": latest,
+            "status": info.get("status", ""),
+            "available": bool(latest and installed and latest != installed),
+        }
 
     # ---------------------------
     #   get_ups

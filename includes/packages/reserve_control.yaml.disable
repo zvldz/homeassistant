@@ -18,58 +18,57 @@ group:
       - sensor.ha1_vacuum_schedule
       - sensor.ha1_vacuum_notification
 
-sensor:
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
-    name: ha1_gas_boiler_schedule
+rest:
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.gas_boiler_schedule"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    sensor:
+      - name: ha1_gas_boiler_schedule
+        value_template: "{{ value_json.state }}"
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_turn_off_lights"
-    name: ha1_auto_turn_off_lights
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_turn_off_lights"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    sensor:
+      - name: ha1_auto_turn_off_lights
+        value_template: "{{ value_json.state }}"
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_fan"
-    name: ha1_auto_fan
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.auto_fan"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    sensor:
+      - name: ha1_auto_fan
+        value_template: "{{ value_json.state }}"
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_schedule"
-    name: ha1_vacuum_schedule
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_schedule"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    sensor:
+      - name: ha1_vacuum_schedule
+        value_template: "{{ value_json.state }}"
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_notification"
-    name: ha1_vacuum_notification
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_boolean.vacuum_notification"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
+    sensor:
+      - name: ha1_vacuum_notification
+        value_template: "{{ value_json.state }}"
 
-  - platform: rest
-    resource_template: "{{ states('input_text.ha1_url') }}api/states/climate.gas_boiler"
-    name: ha1_thermostat_temperature
+  - resource_template: "{{ states('input_text.ha1_url') }}api/states/climate.gas_boiler"
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.attributes.temperature }}"
-
+    sensor:
+      - name: ha1_thermostat_temperature
+        value_template: "{{ value_json.attributes.temperature }}"
 
   # Sync power outage timestamp from ha1
-  - platform: rest
-    resource: "http://192.168.1.225:8123/api/states/input_number.power_outage_timestamp"
-    name: ha1_power_outage_timestamp
+  - resource: "http://192.168.1.225:8123/api/states/input_number.power_outage_timestamp"
+    scan_interval: 30
     headers:
       authorization: !secret ha1_token
-    value_template: "{{ value_json.state }}"
-    scan_interval: 30
+    sensor:
+      - name: ha1_power_outage_timestamp
+        value_template: "{{ value_json.state }}"
 
 rest_command:
   ha1_set_input_boolean:

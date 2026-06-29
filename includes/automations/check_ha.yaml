@@ -1,7 +1,7 @@
 - alias: ha1_server_off
   # blackout
-  #initial_state: true
-  initial_state: false
+  initial_state: true
+  #initial_state: false
   mode: parallel
   trigger:
     - platform: state
@@ -32,8 +32,8 @@
 
 - alias: ha1_server_on
   # blackout
-  #initial_state: true
-  initial_state: false
+  initial_state: true
+  #initial_state: false
   mode: parallel
   trigger:
     - platform: state

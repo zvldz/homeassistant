@@ -12,6 +12,9 @@ from homeassistant.components.binary_sensor import (
 )
 
 from .const import DOMAIN
+from .iface_attributes import (
+    DEVICE_ATTRIBUTES_IFACE,
+)
 
 DEVICE_ATTRIBUTES_PPP_SECRET = [
     "connected",
@@ -20,76 +23,6 @@ DEVICE_ATTRIBUTES_PPP_SECRET = [
     "comment",
     "caller-id",
     "encoding",
-]
-
-DEVICE_ATTRIBUTES_IFACE = [
-    "running",
-    "enabled",
-    "comment",
-    "client-ip-address",
-    "client-mac-address",
-    "port-mac-address",
-    "last-link-down-time",
-    "last-link-up-time",
-    "link-downs",
-    "actual-mtu",
-    "type",
-    "name",
-]
-
-DEVICE_ATTRIBUTES_IFACE_ETHER = [
-    "status",
-    "auto-negotiation",
-    "rate",
-    "full-duplex",
-    "default-name",
-    "poe-out",
-]
-
-DEVICE_ATTRIBUTES_IFACE_SFP = [
-    "status",
-    "auto-negotiation",
-    "advertising",
-    "link-partner-advertising",
-    "sfp-temperature",
-    "sfp-supply-voltage",
-    "sfp-module-present",
-    "sfp-tx-bias-current",
-    "sfp-tx-power",
-    "sfp-rx-power",
-    "sfp-rx-loss",
-    "sfp-tx-fault",
-    "sfp-type",
-    "sfp-connector-type",
-    "sfp-vendor-name",
-    "sfp-vendor-part-number",
-    "sfp-vendor-revision",
-    "sfp-vendor-serial",
-    "sfp-manufacturing-date",
-    "eeprom-checksum",
-]
-
-DEVICE_ATTRIBUTES_IFACE_WIRELESS = [
-    "ssid",
-    "mode",
-    "radio-name",
-    "interface-type",
-    "country",
-    "installation",
-    "antenna-gain",
-    "frequency",
-    "band",
-    "channel-width",
-    "secondary-frequency",
-    "wireless-protocol",
-    "rate-set",
-    "distance",
-    "tx-power-mode",
-    "vlan-id",
-    "wds-mode",
-    "wds-default-bridge",
-    "bridge-mode",
-    "hide-ssid",
 ]
 
 DEVICE_ATTRIBUTES_UPS = [
@@ -111,6 +44,7 @@ DEVICE_ATTRIBUTES_UPS = [
 
 DEVICE_ATTRIBUTES_NETWATCH = [
     "host",
+    "name",
     "type",
     "interval",
     "port",
@@ -133,6 +67,12 @@ class MikrotikBinarySensorEntityDescription(BinarySensorEntityDescription):
     data_attribute: str = "available"
     data_name: str | None = None
     data_name_comment: bool = False
+    # When True, custom_name prefers a non-empty data_name over the comment,
+    # then falls back to comment, then the static name. Used by netwatch so
+    # entries sharing a comment are disambiguated by their distinct name.
+    # Other platforms' descriptions lack the field, so custom_name reads it
+    # defensively. See ADR-018.
+    data_name_prefer: bool = False
     data_uid: str | None = None
     data_reference: str | None = None
     data_attributes_list: List = field(default_factory=lambda: [])
@@ -140,6 +80,19 @@ class MikrotikBinarySensorEntityDescription(BinarySensorEntityDescription):
 
 
 SENSOR_TYPES: tuple[BinarySensorEntityDescription, ...] = (
+    MikrotikBinarySensorEntityDescription(
+        key="lte_connection",
+        name="Connection",
+        icon_enabled="mdi:signal",
+        icon_disabled="mdi:signal-off",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        ha_group="LTE",
+        data_path="lte",
+        data_attribute="connected",
+        data_uid="",
+        data_reference="",
+    ),
     MikrotikBinarySensorEntityDescription(
         key="system_ups",
         name="UPS",
@@ -199,8 +152,8 @@ SENSOR_TYPES: tuple[BinarySensorEntityDescription, ...] = (
         ha_connection_value="Netwatch",
         data_path="netwatch",
         data_attribute="status",
-        data_name="host",
-        data_name_comment=True,
+        data_name="name",
+        data_name_prefer=True,
         data_uid="host",
         data_reference="host",
         data_attributes_list=DEVICE_ATTRIBUTES_NETWATCH,

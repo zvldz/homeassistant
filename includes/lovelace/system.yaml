@@ -57,6 +57,13 @@ cards:
                   sort: name
                   options:
                     secondary_info: last-changed
+              exclude:
+                - entity_id: "media_player.*"
+                  state: 'unavailable'
+                - entity_id: "remote.*"
+                  state: 'unavailable'
+                - entity_id: "device_tracker.*"
+                  state: 'unavailable'
 
   - type: vertical-stack
     cards:
@@ -155,7 +162,6 @@ cards:
             }
 
       - type: entities
-        title: Firmware
         entities:
           - entity: update.mikrotik_rb951g_2hnd_routeros_update
             type: custom:multiple-entity-row
@@ -232,6 +238,36 @@ cards:
               - entity: update.mikrotik3_cap_ax_routeros_update
                 attribute: installed_version
                 name: "OS"
+
+      - type: entities
+        entities:
+          - entity: switch.mikrotik_ether1_port
+            type: custom:multiple-entity-row
+            name: "MT1 ether1"
+            show_state: false
+            card_mod:
+              style:
+                hui-generic-entity-row$: |
+                  state-badge {
+                    transform: scale(0.6);
+                    transform-origin: center;
+                    filter: brightness(0) invert(1);
+                  }
+                  .info {
+                    {% if state_attr('switch.mikrotik_ether1_port','rate') not in ['1Gbps','2.5Gbps','10Gbps'] %}
+                    color: #ff5252;
+                    {% endif %}
+                  }
+            entities:
+              - entity: switch.mikrotik_ether1_port
+                attribute: rate
+                name: "Rate"
+              - entity: switch.mikrotik_ether1_port
+                attribute: status
+                name: "Link"
+              - entity: switch.mikrotik_ether1_port
+                attribute: link_downs
+                name: "Downs"
 
       - type: horizontal-stack
         cards:

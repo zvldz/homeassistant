@@ -1,5 +1,7 @@
 """Helper functions for Mikrotik Router."""
 
+from __future__ import annotations
+
 
 # ---------------------------
 #   format_attribute

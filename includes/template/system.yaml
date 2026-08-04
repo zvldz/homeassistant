@@ -18,5 +18,5 @@
 
     - name: "Total Entities Unavailable"
       unit_of_measurement: 'ea'
-      state: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | list | count }}"
+      state: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | rejectattr('domain', 'in', ['media_player', 'remote', 'device_tracker']) | list | count }}"
       icon: mdi:counter

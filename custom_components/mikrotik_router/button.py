@@ -10,13 +10,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .entity import MikrotikEntity, async_add_entities
-from .button_types import (
-    SENSOR_TYPES,
-    SENSOR_SERVICES,
-)
+from .button_types import SENSOR_TYPES, SENSOR_SERVICES  # noqa: F401
 from .exceptions import ApiEntryNotFound
 
 _LOGGER = getLogger(__name__)
+
+# Buttons send commands to the router; serialise them to avoid simultaneous
+# writes the device may mishandle.
+PARALLEL_UPDATES = 1
 
 
 # ---------------------------
@@ -57,6 +58,7 @@ class MikrotikScriptButton(MikrotikButton):
     async def async_press(self) -> None:
         """Run script using Mikrotik API"""
         try:
-            self.coordinator.api.run_script(self._data["name"])
+            await self.hass.async_add_executor_job(self.coordinator.api.run_script, self._data["name"])
         except ApiEntryNotFound as error:
             _LOGGER.error("Failed to run script: %s", error)
+        await self.coordinator.async_refresh()

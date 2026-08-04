@@ -1,0 +1,202 @@
+# WC
+- alias: "Turn on switch in WC (decoupled mode)"
+  initial_state: true
+  trigger:
+#   - platform: time_pattern
+#     minutes: "/5"
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id: switch.0x54ef4410001aab8c
+      from: 'unavailable'
+    - platform: state
+      entity_id: switch.0x54ef4410001aab8c
+      to: 'off'
+  condition:
+    - condition: state
+      entity_id: switch.0x54ef4410001aab8c
+      state: 'off'
+  action:
+    - service: switch.turn_on
+      entity_id: switch.0x54ef4410001aab8c
+
+# Light
+- alias: "Toggle light in WC"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.0x54ef4410001aab8c_action
+      to: 'single'
+  action:
+    - service: light.toggle
+      entity_id: light.wc_spots
+
+- alias: "Turn on light in WC on conditions"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.0x00158d00024de627_contact
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+      from: 'off'
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: light.wc_spots
+      state: 'off'
+  action:
+    - service: light.turn_on
+      entity_id: light.wc_spots
+
+- alias: "Turn on WC timer"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.wc_spots
+      to: 'on'
+  action:
+    - service: timer.cancel
+      entity_id: timer.wc_light
+    - service: timer.start
+      entity_id: timer.wc_light
+
+- alias: "Reset WC timer on conditions"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.0x00158d00024de627_contact
+      to: 'off'
+    - platform: state
+      entity_id: binary_sensor.0x00158d0004466f8f_occupancy
+      from: 'off'
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: light.wc_spots
+      state: 'on'
+  action:
+    - service: timer.cancel
+      entity_id: timer.wc_light
+    - service: timer.start
+      entity_id: timer.wc_light
+
+- alias: "Turn off light in WC on conditions"
+  initial_state: true
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.wc_light
+  condition:
+    - condition: state
+      entity_id: input_boolean.auto_turn_off_lights
+      state: 'on'
+    - condition: state
+      entity_id: light.wc_spots
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.0x00158d00024de627_contact
+      state: 'off'
+  action:
+    - service: light.turn_off
+      entity_id: light.wc_spots
+
+- alias: "Turn off wc timer if light is off"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: light.wc_spots
+      to: 'off'
+  action:
+    - service: timer.cancel
+      entity_id: timer.wc_light
+
+# FAN
+- alias: "Turn off WC fan"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0x54ef4410001f5dd8
+      to: 'off'
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.wc_fan
+  action:
+    - service: switch.turn_off
+      entity_id: switch.0x54ef4410001f5dd8
+    - service: timer.cancel
+      entity_id: timer.wc_fan
+
+- alias: "Turn on WC fan"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.0x54ef4410001f5dd8
+      to: 'on'
+  action:
+    - service: timer.cancel
+      entity_id: timer.wc_fan
+    - service: timer.start
+      entity_id: timer.wc_fan
+
+- alias: "Turn on WC fan if door opened 60 sec"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.0x00158d00024de627_contact
+      to: 'on'
+      for: "00:01:00"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.0x54ef4410001f5dd8
+
+- alias: "Turn on WC fan on schedule"
+  initial_state: true
+  trigger:
+    - platform: time
+      at:
+        - '07:45'
+        - '13:00'
+        - '18:00'
+  condition:
+    - condition: state
+      entity_id: input_boolean.auto_fan
+      state: 'on'
+  action:
+    - service: switch.turn_on
+      entity_id: switch.0x54ef4410001f5dd8
+    - service: timer.cancel
+      entity_id: timer.wc_fan
+    - service: timer.start
+      entity_id: timer.wc_fan
+      data:
+        duration: 00:05:00
+
+# Start HA
+- alias: "Start WC timer if not starting"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition:
+    - condition: state
+      entity_id: light.wc_spots
+      state: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.wc_light
+
+- alias: "Start WC fan timer if not starting"
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition:
+    - condition: state
+      entity_id: switch.0x54ef4410001f5dd8
+      state: 'on'
+  action:
+    - service: timer.start
+      entity_id: timer.wc_fan

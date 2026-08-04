@@ -1,0 +1,115 @@
+- alias: 'Set theme at startup'
+  initial_state: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - service: frontend.set_theme
+      data:
+        name: "slate"
+
+- alias: system_entity_change
+  initial_state: true
+  mode: queued
+  trigger:
+    - platform: event
+      event_type: entity_registry_updated
+  condition:
+    - |
+        {% set patterns = ['battery', 'device_tracker', 'akkumuliatora', 'charg', 'm2007j20cg', 'media_player', 'select.']  -%}
+        {% set result = namespace(bool=True) -%}
+        {% if trigger.event is defined and trigger.event.data.action == 'update' -%}
+          {% for pattern in patterns -%}
+            {% if pattern in trigger.event.data.entity_id -%}
+              {% set result.bool = False -%}
+            {% endif -%}
+          {% endfor -%}
+        {% elif trigger.event is not defined -%}
+          {% set result.bool = True -%}
+        {% endif -%}
+        {{ result.bool }}
+  action:
+    - service: notify.send_message
+      data:
+        entity_id: notify.telegram_vtel
+        message: >-
+          {% if trigger.event is defined -%}
+          ❇ {{ trigger.event.data.action | capitalize }}: {{ trigger.event.data.old_entity_id+'->' if trigger.event.data.old_entity_id is defined }}{{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }}
+          {%- else -%}
+          ❇ Entity registry changed (test mode)
+          {%- endif -%}
+
+- alias: system_device_entity_deletion
+  id:  system_device_entity_deletion
+  initial_state: true
+  mode: queued
+  trigger:
+    - platform: event
+      event_type: device_registry_updated
+  action:
+    - service: python_script.exec
+      data:
+        device_id: "{{ trigger.event.data.device_id if trigger.event is defined else 'test_device_id' }}"
+        source: |
+          registry = hass.data['device_registry']
+          device = registry.async_get(data['device_id'])
+          if device and device.name_by_user == 'delete':
+              registry.async_remove_device(data['device_id'])
+
+- alias: system_database_purge
+  initial_state: true
+  trigger:
+    - platform: time
+      at: '03:00:00'
+  action:
+    - service: recorder.purge
+      data:
+        keep_days: 3
+        repack: true
+
+- alias: notify unavailable entities
+  initial_state: true
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.total_entities_unavailable
+      above: 10
+      for:
+        minutes: 5
+  action:
+    - service: telegram_bot.send_message
+      data:
+        disable_notification: true
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U00002620" }} {{ states('sensor.total_entities_unavailable') }} entities are unavailable:
+          {{ states | selectattr('state', 'equalto', 'unavailable') | rejectattr('domain', 'in', ['media_player', 'remote', 'device_tracker']) | map(attribute='name') | list | join('\n')}}
+          </pre>
+
+- alias: Good morning
+  initial_state: true
+  trigger:
+    - platform: time
+      at: '08:01:00'
+  action:
+    - service: telegram_bot.send_message
+      data:
+        disable_notification: true
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U0001F305" }} Good morning!
+          Hallway:     {{ states('sensor.0x00158d000231f03e_temperature') }}°C
+          Kitchen:     {{ states('sensor.0x00158d0002ca0395_temperature') }}°C
+          Living Room: {{ states('sensor.0x00158d0002bfe958_temperature') }}°C
+          Bedroom1:    {{ states('sensor.0x00158d0002323856_temperature') }}°C
+          Bedroom2:    {{ states('sensor.0x00158d0001ab2a27_temperature') }}°C
+          Bathroom:    {{ states('sensor.0x00158d000273011f_temperature') }}°C
+          Balcony:     {{ states('sensor.0x00158d00027300cc_temperature') }}°C
+          Outdoor:     {{ states('sensor.0x00158d0008c99223_temperature') }}°C
+          Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
+          Weather:     {{ states('sensor.openweathermap_temperature') }}°C, {{ states('sensor.openweathermap_condition') }}
+          {{ states('sensor.total_entities_unavailable') }} entities are unavailable
+          </pre>

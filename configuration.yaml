@@ -89,6 +89,6 @@ person:             !include includes/persons.yaml
 
 # custom integration
 python_script:
-xiaomi_gateway3:    !include includes/gateway3.yaml
+#xiaomi_gateway3:    !include includes/gateway3.yaml
 go2rtc:
 

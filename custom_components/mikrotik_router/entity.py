@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from logging import getLogger
 from typing import Any, Callable, TypeVar
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION, CONF_NAME, CONF_HOST
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import (
@@ -29,71 +28,227 @@ from .const import (
     DEFAULT_SENSOR_PORT_TRACKER,
     CONF_SENSOR_NETWATCH_TRACKER,
     DEFAULT_SENSOR_NETWATCH_TRACKER,
+    CONF_SENSOR_POE,
+    DEFAULT_SENSOR_POE,
 )
-from .coordinator import MikrotikCoordinator, MikrotikTrackerCoordinator
+from .coordinator import MikrotikConfigEntry, MikrotikCoordinator, MikrotikTrackerCoordinator
 from .helper import format_attribute
+from .iface_attributes import (
+    DEVICE_ATTRIBUTES_IFACE_CLIENT,
+    DEVICE_ATTRIBUTES_IFACE_ETHER,
+    DEVICE_ATTRIBUTES_IFACE_SFP,
+    DEVICE_ATTRIBUTES_IFACE_WIRELESS,
+)
 
 _LOGGER = getLogger(__name__)
 
 
+_JUNK_DEFAULTS = frozenset({"unknown", "none", "N/A"})
+
+
+def copy_attrs(attributes: dict, data: dict, variables: list, *, skip_junk: bool = False) -> None:
+    """Copy data values for each variable in the list into attributes.
+
+    When *skip_junk* is True, values that are meaningless defaults
+    ("unknown", "none", "N/A", or None) are omitted so that entities
+    only expose attributes that carry real information.
+    """
+    for variable in variables:
+        if variable in data:
+            value = data[variable]
+            if skip_junk and (value is None or (isinstance(value, str) and value in _JUNK_DEFAULTS)):
+                continue
+            attributes[format_attribute(variable)] = value
+
+
+class MikrotikInterfaceEntityMixin:
+    """Mixin providing interface-type-aware extra state attributes.
+
+    Used by both MikrotikPortBinarySensor and MikrotikInterfaceTrafficSensor
+    to avoid duplicating the ether/SFP/wlan attribute logic.
+    """
+
+    @property
+    def extra_state_attributes(self):
+        """Return type-specific interface state attributes."""
+        attributes = super().extra_state_attributes
+
+        # Client IP/MAC — only when values are meaningful
+        copy_attrs(
+            attributes,
+            self._data,
+            DEVICE_ATTRIBUTES_IFACE_CLIENT,
+            skip_junk=True,
+        )
+
+        if self._data.get("type") == "ether":
+            has_sfp = self._data.get("sfp-shutdown-temperature") not in (
+                0,
+                "",
+                None,
+            )
+            if has_sfp:
+                copy_attrs(
+                    attributes,
+                    self._data,
+                    DEVICE_ATTRIBUTES_IFACE_SFP,
+                    skip_junk=True,
+                )
+            else:
+                copy_attrs(attributes, self._data, DEVICE_ATTRIBUTES_IFACE_ETHER)
+            # PoE — only when the port actually supports it
+            poe_out = self._data.get("poe-out")
+            if poe_out not in (None, "N/A", ""):
+                attributes[format_attribute("poe-out")] = poe_out
+        elif self._data.get("type") == "wlan":
+            copy_attrs(attributes, self._data, DEVICE_ATTRIBUTES_IFACE_WIRELESS)
+
+        return attributes
+
+
 def _skip_sensor(config_entry, entity_description, data, uid) -> bool:
-    # Sensors
-    if (
-        entity_description.func == "MikrotikInterfaceTrafficSensor"
-        and not config_entry.options.get(
-            CONF_SENSOR_PORT_TRAFFIC, DEFAULT_SENSOR_PORT_TRAFFIC
-        )
-    ):
-        return True
+    return (
+        _skip_interface_traffic(config_entry, entity_description, data, uid)
+        or _skip_binary_sensor(config_entry, entity_description, data, uid)
+        or _skip_device_tracker(config_entry, entity_description)
+        or _skip_poe_sensor(config_entry, entity_description, data, uid)
+        or _skip_environment_sensor(entity_description, data, uid)
+    )
 
-    if (
-        entity_description.func == "MikrotikInterfaceTrafficSensor"
-        and data[uid]["type"] == "bridge"
-    ):
-        return True
 
-    if (
-        entity_description.data_path == "client_traffic"
-        and entity_description.data_attribute not in data[uid].keys()
-    ):
-        return True
+def _skip_interface_traffic(config_entry, entity_description, data, uid) -> bool:
+    """Skip traffic sensors when disabled or on bridge interfaces."""
+    if entity_description.func == "MikrotikInterfaceTrafficSensor":
+        if not config_entry.options.get(CONF_SENSOR_PORT_TRAFFIC, DEFAULT_SENSOR_PORT_TRAFFIC):
+            return True
+        if data[uid]["type"] == "bridge":
+            return True
 
-    # Binary sensors
-    if (
-        entity_description.func == "MikrotikPortBinarySensor"
-        and data[uid]["type"] == "wlan"
-    ):
-        return True
-
-    if (
-        entity_description.func == "MikrotikPortBinarySensor"
-        and not config_entry.options.get(
-            CONF_SENSOR_PORT_TRACKER, DEFAULT_SENSOR_PORT_TRACKER
-        )
-    ):
-        return True
-
-    if entity_description.data_path == "netwatch" and not config_entry.options.get(
-        CONF_SENSOR_NETWATCH_TRACKER, DEFAULT_SENSOR_NETWATCH_TRACKER
-    ):
-        return True
-
-    # Device Tracker
-    if (
-        # Skip if host tracking is disabled
-        entity_description.func == "MikrotikHostDeviceTracker"
-        and not config_entry.options.get(CONF_TRACK_HOSTS, DEFAULT_TRACK_HOSTS)
-    ):
+    if entity_description.data_path == "client_traffic" and entity_description.data_attribute not in data[uid]:
         return True
 
     return False
 
 
+def _skip_binary_sensor(config_entry, entity_description, data, uid) -> bool:
+    """Skip port binary sensors on wlan or when tracker disabled."""
+    if entity_description.func == "MikrotikPortBinarySensor":
+        if data[uid]["type"] == "wlan":
+            return True
+        if not config_entry.options.get(CONF_SENSOR_PORT_TRACKER, DEFAULT_SENSOR_PORT_TRACKER):
+            return True
+
+    if entity_description.data_path == "netwatch" and not config_entry.options.get(CONF_SENSOR_NETWATCH_TRACKER, DEFAULT_SENSOR_NETWATCH_TRACKER):
+        return True
+
+    return False
+
+
+def _skip_device_tracker(config_entry, entity_description) -> bool:
+    """Skip host tracker when host tracking is disabled."""
+    return entity_description.func == "MikrotikHostDeviceTracker" and not config_entry.options.get(CONF_TRACK_HOSTS, DEFAULT_TRACK_HOSTS)
+
+
+_POE_ATTRIBUTES = (
+    "poe-out-status",
+    "poe-out-voltage",
+    "poe-out-current",
+    "poe-out-power",
+)
+_POE_MEASUREMENT_ATTRIBUTES = ("poe-out-voltage", "poe-out-current", "poe-out-power")
+_POE_ENERGY_ATTRIBUTE = "poe-out-energy-delta-wh"
+
+
+def _skip_poe_sensor(config_entry, entity_description, data, uid) -> bool:
+    """Skip PoE sensors when disabled or unsupported by hardware."""
+    attr = entity_description.data_attribute
+    if attr not in _POE_ATTRIBUTES and attr != _POE_ENERGY_ATTRIBUTE:
+        return False
+
+    if not config_entry.options.get(CONF_SENSOR_POE, DEFAULT_SENSOR_POE):
+        return True
+
+    if attr == _POE_ENERGY_ATTRIBUTE:
+        # Per-port energy persists through transient power flaps, so it is gated
+        # on an attributable source (measured or estimated) rather than on a
+        # live power reading. See ADR-017.
+        return uid not in data or data[uid].get("poe-out-energy-source") is None
+
+    if uid not in data or data[uid].get("poe-out-status") is None:
+        return True
+    if attr in _POE_MEASUREMENT_ATTRIBUTES and data[uid].get(attr) is None:
+        return True
+
+    return False
+
+
+def _skip_environment_sensor(entity_description, data, uid) -> bool:
+    """Skip environment sensors whose RouterOS variable carries no value.
+
+    `/system/script/environment` lists global script variables, some of which are
+    transient (e.g. ``defconfMode`` set by the default-config script, then cleared)
+    and RAM-only — wiped on reboot. A value-less variable yields a sensor that is
+    empty now and orphaned/unavailable once the variable disappears, so only expose
+    variables that actually hold a value. (get_environment already coerces empty
+    values to None; the string check guards direct/legacy data.)
+    See ISS-260608-env-sensor-empty-state.
+    """
+    if entity_description.data_path != "environment":
+        return False
+    value = data[uid].get(entity_description.data_attribute)
+    return value is None or (isinstance(value, str) and value.strip() == "")
+
+
+# ---------------------------
+#   _check_entity_exists
+# ---------------------------
+async def _check_entity_exists(hass, platform, obj, uid) -> None:  # pragma: no cover
+    """Add obj to HA if it is not yet registered or has been removed."""
+    entity_reg = er.async_get(hass)
+    if uid:
+        unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}-{slugify(str(obj._data[obj.entity_description.data_reference]).lower())}"
+    else:
+        unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}"
+
+    entity_id = entity_reg.async_get_entity_id(platform.domain, DOMAIN, unique_id)
+
+    # Already loaded in this platform instance — skip to avoid duplicate registration
+    if entity_id and entity_id in platform.entities:
+        return
+
+    entity = entity_reg.async_get(entity_id)
+    if entity is None or entity.disabled is False:
+        _LOGGER.debug("Add entity %s (unique_id=%s)", entity_id, unique_id)
+        await platform.async_add_entities([obj])
+
+
+# ---------------------------
+#   _run_entity_setup_loop
+# ---------------------------
+async def _run_entity_setup_loop(  # pragma: no cover
+    hass, platform, config_entry, dispatcher, descriptions, coordinator
+) -> None:
+    """Iterate entity descriptions and add any missing entities to HA."""
+    for entity_description in descriptions:
+        data = coordinator.data[entity_description.data_path]
+        if not entity_description.data_reference:
+            if data.get(entity_description.data_attribute) is None:
+                continue
+            obj = dispatcher[entity_description.func](coordinator, entity_description)
+            await _check_entity_exists(hass, platform, obj, None)
+        else:
+            for uid in data:
+                if _skip_sensor(config_entry, entity_description, data, uid):
+                    continue
+                obj = dispatcher[entity_description.func](coordinator, entity_description, uid)
+                await _check_entity_exists(hass, platform, obj, uid)
+
+
 # ---------------------------
 #   async_add_entities
 # ---------------------------
-async def async_add_entities(
-    hass: HomeAssistant, config_entry: ConfigEntry, dispatcher: dict[str, Callable]
+async def async_add_entities(  # pragma: no cover
+    hass: HomeAssistant, config_entry: MikrotikConfigEntry, dispatcher: dict[str, Callable]
 ):
     """Add entities."""
     platform = ep.async_get_current_platform()
@@ -106,46 +261,9 @@ async def async_add_entities(
     @callback
     async def async_update_controller(coordinator):
         """Update the values of the controller."""
+        await _run_entity_setup_loop(hass, platform, config_entry, dispatcher, descriptions, coordinator)
 
-        async def async_check_exist(obj, coordinator, uid: None) -> None:
-            """Check entity exists."""
-            entity_registry = er.async_get(hass)
-            if uid:
-                unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}-{slugify(str(obj._data[obj.entity_description.data_reference]).lower())}"
-            else:
-                unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}"
-
-            entity_id = entity_registry.async_get_entity_id(
-                platform.domain, DOMAIN, unique_id
-            )
-            entity = entity_registry.async_get(entity_id)
-            if entity is None or (
-                (entity_id not in platform.entities) and (entity.disabled is False)
-            ):
-                _LOGGER.debug("Add entity %s", entity_id)
-                await platform.async_add_entities([obj])
-
-        for entity_description in descriptions:
-            data = coordinator.data[entity_description.data_path]
-            if not entity_description.data_reference:
-                if data.get(entity_description.data_attribute) is None:
-                    continue
-                obj = dispatcher[entity_description.func](
-                    coordinator, entity_description
-                )
-                await async_check_exist(obj, coordinator, None)
-            else:
-                for uid in data:
-                    if _skip_sensor(config_entry, entity_description, data, uid):
-                        continue
-                    obj = dispatcher[entity_description.func](
-                        coordinator, entity_description, uid
-                    )
-                    await async_check_exist(obj, coordinator, uid)
-
-    await async_update_controller(
-        hass.data[DOMAIN][config_entry.entry_id].data_coordinator
-    )
+    await async_update_controller(config_entry.runtime_data.data_coordinator)
 
     unsub = async_dispatcher_connect(hass, "update_sensors", async_update_controller)
     config_entry.async_on_unload(unsub)
@@ -186,30 +304,55 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
 
     @callback
     def _handle_coordinator_update(self) -> None:
-        self._data = self.coordinator.data[self.entity_description.data_path]
-        if self._uid:
-            self._data = self.coordinator.data[self.entity_description.data_path][
-                self._uid
-            ]
+        try:
+            self._data = self.coordinator.data[self.entity_description.data_path]
+            if self._uid:
+                self._data = self._data[self._uid]
+        except KeyError:
+            _LOGGER.debug(
+                "Data path %s uid=%s not found, skipping update",
+                self.entity_description.data_path,
+                self._uid,
+            )
+            return
         super()._handle_coordinator_update()
 
     @property
     def custom_name(self) -> str:
         """Return the name for this entity"""
         if not self._uid:
-            if self.entity_description.data_name_comment and self._data["comment"]:
+            if self.entity_description.data_name_comment and self._data.get("comment"):
                 return f"{self._data['comment']}"
 
             return f"{self.entity_description.name}"
 
-        if self.entity_description.data_name_comment and self._data["comment"]:
+        return self._compose_uid_name()
+
+    def _compose_uid_name(self) -> str:
+        """Resolve the display name for a uid-keyed entity (ADR-007 extraction)."""
+        # data_name_prefer surfaces a distinct per-entry data_name over a
+        # (possibly shared) comment, falling back comment -> static name. Used
+        # by netwatch so entries sharing a comment are disambiguated. Other
+        # platforms' descriptions lack the field, so read it defensively.
+        # See ADR-018.
+        if getattr(self.entity_description, "data_name_prefer", False):
+            value = self._data.get(self.entity_description.data_name)
+            if value and value.strip():
+                return f"{value}"
+            if self._data.get("comment"):
+                return f"{self._data['comment']}"
+            return f"{self.entity_description.name}"
+
+        if self.entity_description.data_name_comment and self._data.get("comment"):
             return f"{self._data['comment']}"
 
         if self.entity_description.name:
-            if (
-                self._data[self.entity_description.data_reference]
-                == self._data[self.entity_description.data_name]
-            ):
+            # data_name_compose forces composition where data_name == data_reference
+            # would otherwise collapse to the static name (e.g. per-VLAN DHCP servers
+            # on the one System device). Other platforms' descriptions lack the field,
+            # so read it defensively. See ADR-013.
+            compose = getattr(self.entity_description, "data_name_compose", False)
+            if not compose and self._data[self.entity_description.data_reference] == self._data[self.entity_description.data_name]:
                 return f"{self.entity_description.name}"
 
             return f"{self._data[self.entity_description.data_name]} {self.entity_description.name}"
@@ -221,13 +364,7 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
         """Return a unique id for this entity"""
         if self._uid:
             return f"{self._inst.lower()}-{self.entity_description.key}-{slugify(str(self._data[self.entity_description.data_reference]).lower())}"
-        else:
-            return f"{self._inst.lower()}-{self.entity_description.key}"
-
-    # @property
-    # def available(self) -> bool:
-    #     """Return if controller is available"""
-    #     return self.coordinator.connected()
+        return f"{self._inst.lower()}-{self.entity_description.key}"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -252,7 +389,7 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
             dev_connection_value = self.entity_description.ha_connection_value
             if dev_connection_value.startswith("data__"):
                 dev_connection_value = dev_connection_value[6:]
-                dev_connection_value = self._data[dev_connection_value]
+                dev_connection_value = self._data.get(dev_connection_value, dev_connection_value)
 
         if self.entity_description.ha_group == "System":
             return DeviceInfo(
@@ -268,17 +405,13 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
             dev_group = self._data[self.entity_description.data_name]
             dev_manufacturer = ""
             if dev_connection_value in self.coordinator.data["host"]:
-                dev_group = self.coordinator.data["host"][dev_connection_value][
-                    "host-name"
-                ]
-                dev_manufacturer = self.coordinator.data["host"][dev_connection_value][
-                    "manufacturer"
-                ]
+                dev_group = self.coordinator.data["host"][dev_connection_value]["host-name"]
+                dev_manufacturer = self.coordinator.data["host"][dev_connection_value]["manufacturer"]
 
             return DeviceInfo(
                 connections={(dev_connection, f"{dev_connection_value}")},
-                default_name=f"{dev_group}",
-                default_manufacturer=f"{dev_manufacturer}",
+                name=f"{dev_group}",
+                manufacturer=f"{dev_manufacturer}",
                 via_device=(
                     DOMAIN,
                     f"{self.coordinator.data['routerboard']['serial-number']}",
@@ -287,9 +420,9 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
         else:
             return DeviceInfo(
                 connections={(dev_connection, f"{dev_connection_value}")},
-                default_name=f"{self._inst} {dev_group}",
-                default_model=f"{self.coordinator.data['resource']['board-name']}",
-                default_manufacturer=f"{self.coordinator.data['resource']['platform']}",
+                name=f"{self._inst} {dev_group}",
+                model=f"{self.coordinator.data['resource']['board-name']}",
+                manufacturer=f"{self.coordinator.data['resource']['platform']}",
                 via_device=(
                     DOMAIN,
                     f"{self.coordinator.data['routerboard']['serial-number']}",
@@ -300,24 +433,21 @@ class MikrotikEntity(CoordinatorEntity[_MikrotikCoordinatorT], Entity):
     def extra_state_attributes(self) -> Mapping[str, Any]:
         """Return the state attributes."""
         attributes = super().extra_state_attributes
-        for variable in self.entity_description.data_attributes_list:
-            if variable in self._data:
-                attributes[format_attribute(variable)] = self._data[variable]
-
+        copy_attrs(attributes, self._data, self.entity_description.data_attributes_list)
         return attributes
 
-    async def start(self):
+    async def start(self):  # pragma: no cover
         """Dummy run function"""
         raise NotImplementedError()
 
-    async def stop(self):
+    async def stop(self):  # pragma: no cover
         """Dummy stop function"""
         raise NotImplementedError()
 
-    async def restart(self):
+    async def restart(self):  # pragma: no cover
         """Dummy restart function"""
         raise NotImplementedError()
 
-    async def reload(self):
+    async def reload(self):  # pragma: no cover
         """Dummy reload function"""
         raise NotImplementedError()

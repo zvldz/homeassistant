@@ -84,4 +84,5 @@ cards:
           - input_boolean.vacuum_schedule
           - input_boolean.vacuum_notification
           - input_boolean.gas_boiler_schedule
+          - input_boolean.wc_door_triggers
 

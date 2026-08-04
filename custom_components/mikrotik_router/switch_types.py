@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
+
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.components.switch import (
     SwitchDeviceClass,
@@ -11,76 +11,7 @@ from homeassistant.components.switch import (
 )
 
 from .const import DOMAIN
-
-DEVICE_ATTRIBUTES_IFACE = [
-    "running",
-    "enabled",
-    "comment",
-    "client-ip-address",
-    "client-mac-address",
-    "port-mac-address",
-    "last-link-down-time",
-    "last-link-up-time",
-    "link-downs",
-    "actual-mtu",
-    "type",
-    "name",
-]
-
-DEVICE_ATTRIBUTES_IFACE_ETHER = [
-    "status",
-    "auto-negotiation",
-    "rate",
-    "full-duplex",
-    "default-name",
-    "poe-out",
-]
-
-DEVICE_ATTRIBUTES_IFACE_SFP = [
-    "status",
-    "auto-negotiation",
-    "advertising",
-    "link-partner-advertising",
-    "sfp-temperature",
-    "sfp-supply-voltage",
-    "sfp-module-present",
-    "sfp-tx-bias-current",
-    "sfp-tx-power",
-    "sfp-rx-power",
-    "sfp-rx-loss",
-    "sfp-tx-fault",
-    "sfp-type",
-    "sfp-connector-type",
-    "sfp-vendor-name",
-    "sfp-vendor-part-number",
-    "sfp-vendor-revision",
-    "sfp-vendor-serial",
-    "sfp-manufacturing-date",
-    "eeprom-checksum",
-]
-
-DEVICE_ATTRIBUTES_IFACE_WIRELESS = [
-    "ssid",
-    "mode",
-    "radio-name",
-    "interface-type",
-    "country",
-    "installation",
-    "antenna-gain",
-    "frequency",
-    "band",
-    "channel-width",
-    "secondary-frequency",
-    "wireless-protocol",
-    "rate-set",
-    "distance",
-    "tx-power-mode",
-    "vlan-id",
-    "wds-mode",
-    "wds-default-bridge",
-    "bridge-mode",
-    "hide-ssid",
-]
+from .iface_attributes import DEVICE_ATTRIBUTES_IFACE
 
 DEVICE_ATTRIBUTES_NAT = [
     "protocol",
@@ -100,6 +31,8 @@ DEVICE_ATTRIBUTES_MANGLE = [
     "src-port",
     "dst-address",
     "dst-port",
+    "in-interface",
+    "out-interface",
     "comment",
 ]
 
@@ -127,6 +60,29 @@ DEVICE_ATTRIBUTES_PPP_SECRET = [
     "comment",
     "caller-id",
     "encoding",
+]
+
+DEVICE_ATTRIBUTES_CONTAINER = [
+    "tag",
+    "os",
+    "arch",
+    "interface",
+    "root-dir",
+    "status",
+    "comment",
+]
+
+DEVICE_ATTRIBUTES_RAW = [
+    "chain",
+    "action",
+    "protocol",
+    "in-interface",
+    "src-address",
+    "src-port",
+    "out-interface",
+    "dst-address",
+    "dst-port",
+    "comment",
 ]
 
 DEVICE_ATTRIBUTES_KIDCONTROL = [
@@ -180,7 +136,7 @@ class MikrotikSwitchEntityDescription(SwitchEntityDescription):
     data_name_comment: bool = False
     data_uid: str | None = None
     data_reference: str | None = None
-    data_attributes_list: List = field(default_factory=lambda: [])
+    data_attributes_list: list = field(default_factory=lambda: [])
     func: str = "MikrotikSwitch"
 
 
@@ -257,6 +213,24 @@ SENSOR_TYPES: tuple[MikrotikSwitchEntityDescription, ...] = (
         func="MikrotikFilterSwitch",
     ),
     MikrotikSwitchEntityDescription(
+        key="raw",
+        name="",
+        icon_enabled="mdi:fire",
+        icon_disabled="mdi:fire-off",
+        entity_category=None,
+        ha_group="RAW",
+        ha_connection=DOMAIN,
+        ha_connection_value="RAW",
+        data_path="raw",
+        data_switch_path="/ip/firewall/raw",
+        data_name="name",
+        data_name_comment=True,
+        data_uid="uniq-id",
+        data_reference="uniq-id",
+        data_attributes_list=DEVICE_ATTRIBUTES_RAW,
+        func="MikrotikRawSwitch",
+    ),
+    MikrotikSwitchEntityDescription(
         key="ppp_secret",
         name="PPP Secret",
         icon_enabled="mdi:account-outline",
@@ -322,6 +296,26 @@ SENSOR_TYPES: tuple[MikrotikSwitchEntityDescription, ...] = (
         data_reference="name",
         data_attributes_list=DEVICE_ATTRIBUTES_KIDCONTROL,
         func="MikrotikKidcontrolPauseSwitch",
+    ),
+    MikrotikSwitchEntityDescription(
+        key="container",
+        name="",
+        icon_enabled="mdi:docker",
+        icon_disabled="mdi:checkbox-blank-circle-outline",
+        entity_category=None,
+        ha_group="Container",
+        ha_connection=DOMAIN,
+        ha_connection_value="Container",
+        data_path="container",
+        data_attribute="running",
+        data_switch_path="/container",
+        data_switch_parameter=".id",
+        data_name="name",
+        data_name_comment=True,
+        data_uid=".id",
+        data_reference=".id",
+        data_attributes_list=DEVICE_ATTRIBUTES_CONTAINER,
+        func="MikrotikContainerSwitch",
     ),
 )
 

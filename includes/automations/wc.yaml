@@ -45,6 +45,9 @@
     - condition: state
       entity_id: light.wc_spots
       state: 'off'
+    - condition: state
+      entity_id: input_boolean.wc_door_triggers
+      state: 'on'
   action:
     - service: light.turn_on
       entity_id: light.wc_spots
@@ -93,6 +96,9 @@
       entity_id: input_boolean.auto_turn_off_lights
       state: 'on'
     - condition: state
+      entity_id: input_boolean.wc_door_triggers
+      state: 'on'
+    - condition: state
       entity_id: light.wc_spots
       state: 'on'
     - condition: state
@@ -119,13 +125,24 @@
     - platform: state
       entity_id: switch.0x54ef4410001f5dd8
       to: 'off'
+      id: switch_off
     - platform: event
       event_type: timer.finished
       event_data:
         entity_id: timer.wc_fan
+      id: timer_finished
   action:
-    - service: switch.turn_off
-      entity_id: switch.0x54ef4410001f5dd8
+    # по таймеру гасим только если автоматика включена; сброс таймера — всегда
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: timer_finished
+            - condition: state
+              entity_id: input_boolean.wc_door_triggers
+              state: 'on'
+          sequence:
+            - service: switch.turn_off
+              entity_id: switch.0x54ef4410001f5dd8
     - service: timer.cancel
       entity_id: timer.wc_fan
 
@@ -148,6 +165,10 @@
       entity_id: binary_sensor.0x00158d00024de627_contact
       to: 'on'
       for: "00:01:00"
+  condition:
+    - condition: state
+      entity_id: input_boolean.wc_door_triggers
+      state: 'on'
   action:
     - service: switch.turn_on
       entity_id: switch.0x54ef4410001f5dd8

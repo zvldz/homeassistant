@@ -7,27 +7,24 @@ from collections.abc import Mapping
 from datetime import timedelta
 from typing import Any, Callable
 
-from homeassistant.components.device_tracker.config_entry import ScannerEntity
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.components.device_tracker import ScannerEntity, SourceType
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import STATE_NOT_HOME
-from homeassistant.helpers import (
-    entity_platform as ep,
-    entity_registry as er,
-)
+from homeassistant.helpers import entity_platform as ep
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util import slugify
 from homeassistant.util.dt import utcnow
 
-from homeassistant.components.device_tracker.const import SourceType
 
-from .device_tracker_types import SENSOR_TYPES, SENSOR_SERVICES
-from .coordinator import MikrotikCoordinator
-from .entity import _skip_sensor, MikrotikEntity
+from .coordinator import MikrotikConfigEntry, MikrotikCoordinator
+from .device_tracker_types import (
+    SENSOR_TYPES,  # noqa: F401
+    SENSOR_SERVICES,  # noqa: F401
+    DEVICE_ATTRIBUTES_HOST_WIRELESS,
+)
+from .entity import _run_entity_setup_loop, MikrotikEntity, copy_attrs
 from .helper import format_attribute
 from .const import (
-    DOMAIN,
     CONF_TRACK_HOSTS,
     DEFAULT_TRACK_HOSTS,
     CONF_TRACK_HOSTS_TIMEOUT,
@@ -36,10 +33,12 @@ from .const import (
 
 _LOGGER = getLogger(__name__)
 
+# The coordinator centralises all polling; tracker updates perform no per-entity
+# device I/O, so no parallelism limit is needed.
+PARALLEL_UPDATES = 0
 
-async def async_add_entities(
-    hass: HomeAssistant, config_entry: ConfigEntry, dispatcher: dict[str, Callable]
-):
+
+async def async_add_entities(hass: HomeAssistant, config_entry: MikrotikConfigEntry, dispatcher: dict[str, Callable]):
     """Add entities."""
     platform = ep.async_get_current_platform()
     services = platform.platform.SENSOR_SERVICES
@@ -48,51 +47,18 @@ async def async_add_entities(
     for service in services:
         platform.async_register_entity_service(service[0], service[1], service[2])
 
+    tracker_coord = config_entry.runtime_data.tracker_coordinator
+
     @callback
     async def async_update_controller(coordinator):
         """Update the values of the controller."""
+        if coordinator is not tracker_coord:
+            return
         if coordinator.data is None:
             return
+        await _run_entity_setup_loop(hass, platform, config_entry, dispatcher, descriptions, coordinator)
 
-        async def async_check_exist(obj, coordinator, uid: None) -> None:
-            """Check entity exists."""
-            entity_registry = er.async_get(hass)
-            if uid:
-                unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}-{slugify(str(obj._data[obj.entity_description.data_reference]).lower())}"
-            else:
-                unique_id = f"{obj._inst.lower()}-{obj.entity_description.key}"
-
-            entity_id = entity_registry.async_get_entity_id(
-                platform.domain, DOMAIN, unique_id
-            )
-            entity = entity_registry.async_get(entity_id)
-            if entity is None or (
-                (entity_id not in platform.entities) and (entity.disabled is False)
-            ):
-                _LOGGER.debug("Add entity %s", entity_id)
-                await platform.async_add_entities([obj])
-
-        for entity_description in descriptions:
-            data = coordinator.data[entity_description.data_path]
-            if not entity_description.data_reference:
-                if data.get(entity_description.data_attribute) is None:
-                    continue
-                obj = dispatcher[entity_description.func](
-                    coordinator, entity_description
-                )
-                await async_check_exist(obj, coordinator, None)
-            else:
-                for uid in data:
-                    if _skip_sensor(config_entry, entity_description, data, uid):
-                        continue
-                    obj = dispatcher[entity_description.func](
-                        coordinator, entity_description, uid
-                    )
-                    await async_check_exist(obj, coordinator, uid)
-
-    await async_update_controller(
-        hass.data[DOMAIN][config_entry.entry_id].tracker_coordinator
-    )
+    await async_update_controller(tracker_coord)
 
     unsub = async_dispatcher_connect(hass, "update_sensors", async_update_controller)
     config_entry.async_on_unload(unsub)
@@ -103,7 +69,7 @@ async def async_add_entities(
 # ---------------------------
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: MikrotikConfigEntry,
     _async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up entry for component"""
@@ -176,9 +142,7 @@ class MikrotikHostDeviceTracker(MikrotikDeviceTracker):
     @property
     def option_track_network_hosts_timeout(self):
         """Config entry option scan interval."""
-        track_network_hosts_timeout = self._config_entry.options.get(
-            CONF_TRACK_HOSTS_TIMEOUT, DEFAULT_TRACK_HOST_TIMEOUT
-        )
+        track_network_hosts_timeout = self._config_entry.options.get(CONF_TRACK_HOSTS_TIMEOUT, DEFAULT_TRACK_HOST_TIMEOUT)
         return timedelta(seconds=track_network_hosts_timeout)
 
     @property
@@ -187,29 +151,21 @@ class MikrotikHostDeviceTracker(MikrotikDeviceTracker):
         if not self.option_track_network_hosts:
             return False
 
-        if self._data["source"] in ["capsman", "wireless"]:
+        if self._data.get("is_wireless", False):
             return self._data[self.entity_description.data_attribute]
 
-        return bool(
-            self._data["last-seen"]
-            and utcnow() - self._data["last-seen"]
-            < self.option_track_network_hosts_timeout
-        )
+        return bool(self._data["last-seen"] and utcnow() - self._data["last-seen"] < self.option_track_network_hosts_timeout)
 
     @property
     def icon(self) -> str:
         """Return the icon."""
-        if self._data["source"] in ["capsman", "wireless"]:
+        if self._data.get("is_wireless", False):
             if self._data[self.entity_description.data_attribute]:
                 return self.entity_description.icon_enabled
             else:
                 return self.entity_description.icon_disabled
 
-        if (
-            self._data["last-seen"]
-            and (utcnow() - self._data["last-seen"])
-            < self.option_track_network_hosts_timeout
-        ):
+        if self._data["last-seen"] and (utcnow() - self._data["last-seen"]) < self.option_track_network_hosts_timeout:
             return self.entity_description.icon_enabled
         return self.entity_description.icon_disabled
 
@@ -227,5 +183,9 @@ class MikrotikHostDeviceTracker(MikrotikDeviceTracker):
 
         if not attributes[format_attribute("last-seen")]:
             attributes[format_attribute("last-seen")] = "Unknown"
+
+        # Wireless metrics only for wireless hosts
+        if self._data.get("is_wireless", False):
+            copy_attrs(attributes, self._data, DEVICE_ATTRIBUTES_HOST_WIRELESS)
 
         return attributes

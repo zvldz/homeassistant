@@ -1,0 +1,30 @@
+# При ошибке пылесоса: обновить позицию (REST), затем сохранить координаты+ошибку+день недели.
+# История копится в атрибуте 'history' (последние 60 записей) — переживает purge recorder (3 дня).
+- trigger:
+    - platform: state
+      entity_id: vacuum.valetudo_rockrobo
+      to: "error"
+  action:
+    - service: homeassistant.update_entity
+      target:
+        entity_id: sensor.vacuum_robot_position
+    - delay: "00:00:03"
+  sensor:
+    - name: "Vacuum Error Log"
+      unique_id: vacuum_error_log
+      icon: mdi:map-marker-alert
+      state: >
+        {{ states('sensor.valetudo_rockrobo_error') }} @ {{ states('sensor.vacuum_robot_position') }}
+      attributes:
+        last_error: "{{ states('sensor.valetudo_rockrobo_error') }}"
+        last_position: "{{ states('sensor.vacuum_robot_position') }}"
+        last_weekday: "{{ now().strftime('%A') }}"
+        last_time: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+        history: >
+          {% set prev = this.attributes.get('history', []) if this is defined and this.attributes is mapping else [] %}
+          {% set entry = {
+            't': now().strftime('%Y-%m-%d %H:%M'),
+            'wd': now().strftime('%a'),
+            'pos': states('sensor.vacuum_robot_position'),
+            'err': states('sensor.valetudo_rockrobo_error') } %}
+          {{ (prev + [entry])[-60:] }}

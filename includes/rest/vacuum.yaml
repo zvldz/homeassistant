@@ -1,0 +1,13 @@
+# Позиция робота-пылесоса из Valetudo REST (по запросу; сам почти не поллит)
+- resource: "http://192.168.1.25/api/v2/robot/state/map"
+  scan_interval: 86400
+  timeout: 15
+  sensor:
+    - name: "Vacuum Robot Position"
+      icon: mdi:crosshairs-gps
+      value_template: >
+        {% set p = value_json.entities | selectattr('type','equalto','robot_position') | map(attribute='points') | list %}
+        {{ (p[0][0] ~ ',' ~ p[0][1]) if p else 'unknown' }}
+      json_attributes_path: "$"
+      json_attributes:
+        - pixelSize

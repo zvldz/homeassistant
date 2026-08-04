@@ -19,13 +19,14 @@ from homeassistant.components.update import (
 
 from .coordinator import MikrotikCoordinator
 from .entity import MikrotikEntity, async_add_entities
-from .update_types import (
-    SENSOR_TYPES,
-    SENSOR_SERVICES,
-)
+from .update_types import SENSOR_TYPES, SENSOR_SERVICES  # noqa: F401
 from packaging.version import Version
 
 _LOGGER = getLogger(__name__)
+
+# This platform exposes an install action (firmware update); serialise commands
+# so concurrent installs can't be issued to the router at once.
+PARALLEL_UPDATES = 1
 DEVICE_UPDATE = "device_update"
 
 
@@ -86,18 +87,16 @@ class MikrotikRouterOSUpdate(MikrotikEntity, UpdateEntity):
     async def async_install(self, version: str, backup: bool, **kwargs: Any) -> None:
         """Install an update."""
         if backup:
-            self.coordinator.execute("/system/backup", "save", None, None)
+            await self.hass.async_add_executor_job(self.coordinator.execute, "/system/backup", "save", None, None)
 
-        self.coordinator.execute("/system/package/update", "install", None, None)
+        await self.hass.async_add_executor_job(self.coordinator.execute, "/system/package/update", "install", None, None)
 
     async def async_release_notes(self) -> str:
         """Return the release notes."""
         try:
             session = async_get_clientsession(self.hass)
             """Get concatenated changelogs from installed_version to latest_version in reverse order."""
-            versions_to_fetch = generate_version_list(
-                self._data["installed-version"], self._data["latest-version"]
-            )
+            versions_to_fetch = generate_version_list(self._data["installed-version"], self._data["latest-version"])
 
             tasks = [fetch_changelog(session, version) for version in versions_to_fetch]
             changelogs = await asyncio.gather(*tasks)
@@ -141,10 +140,7 @@ class MikrotikRouterBoardFWUpdate(MikrotikEntity, UpdateEntity):
     @property
     def is_on(self) -> bool:
         """Return true if device is on."""
-        return (
-            self.data["routerboard"]["current-firmware"]
-            != self.data["routerboard"]["upgrade-firmware"]
-        )
+        return self.data["routerboard"]["current-firmware"] != self.data["routerboard"]["upgrade-firmware"]
 
     @property
     def installed_version(self) -> str:
@@ -161,8 +157,8 @@ class MikrotikRouterBoardFWUpdate(MikrotikEntity, UpdateEntity):
 
     async def async_install(self, version: str, backup: bool, **kwargs: Any) -> None:
         """Install an update."""
-        self.coordinator.execute("/system/routerboard", "upgrade", None, None)
-        self.coordinator.execute("/system", "reboot", None, None)
+        await self.hass.async_add_executor_job(self.coordinator.execute, "/system/routerboard", "upgrade", None, None)
+        await self.hass.async_add_executor_job(self.coordinator.execute, "/system", "reboot", None, None)
 
 
 async def fetch_changelog(session, version: str) -> str:
@@ -173,8 +169,8 @@ async def fetch_changelog(session, version: str) -> str:
             if response.status == 200:
                 text = await response.text()
                 return text.replace("*) ", "- ")
-    except Exception as e:
-        pass
+    except Exception:
+        _LOGGER.debug("Failed to fetch changelog for version %s", version)
     return ""
 
 
@@ -187,6 +183,8 @@ def generate_version_list(start_version: str, end_version: str) -> list:
     current = end
     while current >= start:
         versions.append(str(current))
+        if current == start:
+            break
         current = decrement_version(current, start)
 
     return versions
@@ -194,16 +192,14 @@ def generate_version_list(start_version: str, end_version: str) -> list:
 
 def decrement_version(version: Version, start_version: Version) -> Version:
     """Decrement version by the smallest possible step without going below start_version."""
+    if version <= start_version:
+        return start_version
     if version.micro > 0:
         next_patch = version.micro - 1
         return Version(f"{version.major}.{version.minor}.{next_patch}")
     elif version.minor > 0:
         next_minor = version.minor - 1
-        return Version(
-            f"{version.major}.{next_minor}.999"
-        )  # Assuming .999 as max patch version
+        return Version(f"{version.major}.{next_minor}.999")  # Assuming .999 as max patch version
     else:
         next_major = version.major - 1
-        return Version(
-            f"{next_major}.999.999"
-        )  # Assuming .999 as max minor and patch version
+        return Version(f"{next_major}.999.999")  # Assuming .999 as max minor and patch version

@@ -84,7 +84,7 @@
         message: |
           <pre>
           {{ "\U00002620" }} {{ states('sensor.total_entities_unavailable') }} entities are unavailable:
-          {{ states | selectattr('state', 'equalto', 'unavailable') |  map(attribute='name') | list | join('\n')}}
+          {{ states | selectattr('state', 'equalto', 'unavailable') | rejectattr('domain', 'in', ['media_player', 'remote', 'device_tracker']) | map(attribute='name') | list | join('\n')}}
           </pre>
 
 - alias: Good morning
@@ -112,4 +112,115 @@
           Fazenda:     {{ states('sensor.fazenda_outdoor_temperature') }}°C
           Weather:     {{ states('sensor.openweathermap_temperature') }}°C, {{ states('sensor.openweathermap_condition') }}
           {{ states('sensor.total_entities_unavailable') }} entities are unavailable
+          </pre>
+
+# WAN link speed (ether1 on the main router). Gigabit is expected;
+# 100Mbps means the link renegotiated badly - re-plug the cable to the ONU.
+- alias: "WAN link speed degraded"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: switch.mikrotik_ether1_port
+      attribute: rate
+  condition:
+    - condition: template
+      value_template: "{{ trigger.to_state.attributes.get('rate') in ['10Mbps', '100Mbps'] }}"
+  action:
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U000026A0" }} WAN link degraded
+          Rate: {{ state_attr('switch.mikrotik_ether1_port', 'rate') }} (expected 1Gbps)
+          Re-plug the cable between ONU and ether1
+          </pre>
+
+- alias: "WAN link speed degraded (daily reminder)"
+  initial_state: true
+  trigger:
+    - platform: time
+      at: '08:05:00'
+  condition:
+    - condition: template
+      value_template: "{{ state_attr('switch.mikrotik_ether1_port', 'rate') in ['10Mbps', '100Mbps'] }}"
+  action:
+    - service: telegram_bot.send_message
+      data:
+        disable_notification: true
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U000026A0" }} WAN link is still {{ state_attr('switch.mikrotik_ether1_port', 'rate') }}
+          Expected 1Gbps, internet is capped
+          </pre>
+
+# Xiaomi Aqara Gateway 1 is used as an alarm indicator light, so it must not stay dead.
+# The integration listens on a multicast socket (224.0.0.50:9898); when the stream breaks
+# (network/router restart) it goes silent without any error - reloading recreates the socket.
+- alias: "Recover Xiaomi Aqara gateway"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.illumination_7811dcb245b2
+      to: "unavailable"
+      for: "00:10:00"
+      id: first
+    - platform: time_pattern
+      minutes: "/30"
+      id: retry
+  condition:
+    - condition: state
+      entity_id: sensor.illumination_7811dcb245b2
+      state: "unavailable"
+  action:
+    - service: homeassistant.reload_config_entry
+      target:
+        entity_id: sensor.illumination_7811dcb245b2
+    - delay: "00:00:30"
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: first
+          sequence:
+            - service: telegram_bot.send_message
+              data:
+                disable_notification: true
+                chat_id: !secret telegram_bot_allowed_chat_id1
+                parse_mode: html
+                message: |
+                  <pre>
+                  {{ "\U0001F504" }} Aqara gateway was unavailable - integration reloaded
+                  Illumination now: {{ states('sensor.illumination_7811dcb245b2') }}
+                  </pre>
+
+# ============================================================
+# TEMPORARY (added 2026-08-04) - delete together with the vacuum no-go zone
+# around the cat bowls (x 3375..3480, y 1800..1872 on the Valetudo map, units = cm).
+# Rollback: curl -X PUT http://192.168.1.25/api/v2/robot/capabilities/CombinedVirtualRestrictionsCapability \
+#           -H "content-type: application/json" -d @/root/backup/valetudo/restrictions_LATEST.json
+# ============================================================
+- alias: "TEMP: remove vacuum no-go zone (cat bowls)"
+  initial_state: true
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  condition:
+    - condition: template
+      value_template: "{{ now().strftime('%Y-%m-%d') >= '2026-08-20' }}"
+  action:
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U0001F5D3" }} ВРЕМЕННОЕ напоминание
+          Пора снять запретную зону пылесоса (миски кота)
+          Зона: x 3375..3480, y 1800..1872 (105x72 см)
+
+          Снять: PUT restrictions_LATEST.json на 192.168.1.25
+          Потом удалить эту автоматизацию (TEMP в system.yaml)
           </pre>

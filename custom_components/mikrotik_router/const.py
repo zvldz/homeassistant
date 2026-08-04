@@ -1,5 +1,7 @@
 """Constants used by the Mikrotik Router component and platforms."""
 
+from __future__ import annotations
+
 from homeassistant.const import Platform
 
 PLATFORMS = [
@@ -60,6 +62,12 @@ CONF_SENSOR_ENVIRONMENT = "sensor_environment"
 DEFAULT_SENSOR_ENVIRONMENT = False
 CONF_SENSOR_NETWATCH_TRACKER = "sensor_netwatch_tracker"
 DEFAULT_SENSOR_NETWATCH_TRACKER = False
+CONF_SENSOR_POE = "sensor_poe"
+DEFAULT_SENSOR_POE = False
+CONF_SENSOR_RAW = "sensor_raw"
+DEFAULT_SENSOR_RAW = False
+CONF_SENSOR_CONTAINER = "sensor_container"
+DEFAULT_SENSOR_CONTAINER = False
 
 TO_REDACT = {
     "ip-address",
@@ -91,4 +99,7 @@ TO_REDACT = {
     "caller-id",
     "target",
     "ssid",
+    "imei",
+    "imsi",
+    "iccid",
 }

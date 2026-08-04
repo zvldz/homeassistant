@@ -1,10 +1,9 @@
 """API parser for JSON APIs."""
 
-from datetime import datetime
-from logging import getLogger
+from __future__ import annotations
 
-from pytz import utc
-from voluptuous import Optional
+from datetime import datetime, timezone
+from logging import getLogger
 
 from homeassistant.components.diagnostics import async_redact_data
 
@@ -13,65 +12,57 @@ from .const import TO_REDACT
 _LOGGER = getLogger(__name__)
 
 
-# ---------------------------
-#   utc_from_timestamp
-# ---------------------------
 def utc_from_timestamp(timestamp: float) -> datetime:
     """Return a UTC time from a timestamp."""
-    return utc.localize(datetime.utcfromtimestamp(timestamp))
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
 
-# ---------------------------
-#   from_entry
-# ---------------------------
-def from_entry(entry, param, default="") -> str:
-    """Validate and return str value an API dict."""
+_NOT_FOUND = object()
+
+
+def _traverse_entry(entry, param):
+    """Walk a '/' separated path through nested dicts. Returns _NOT_FOUND if not found."""
     if "/" in param:
-        for tmp_param in param.split("/"):
-            if isinstance(entry, dict) and tmp_param in entry:
-                entry = entry[tmp_param]
+        for part in param.split("/"):
+            if isinstance(entry, dict) and part in entry:
+                entry = entry[part]
             else:
-                return default
+                return _NOT_FOUND
+        return entry
 
-        ret = entry
-    elif param in entry:
-        ret = entry[param]
-    else:
+    if param in entry:
+        return entry[param]
+
+    return _NOT_FOUND
+
+
+def from_entry(entry, param, default="") -> str:
+    """Validate and return str value from an API dict."""
+    ret = _traverse_entry(entry, param)
+    if ret is _NOT_FOUND:
         return default
 
-    if default != "":
-        if isinstance(ret, str):
-            ret = str(ret)
-        elif isinstance(ret, int):
-            ret = int(ret)
-        elif isinstance(ret, float):
-            ret = round(float(ret), 2)
+    if default != "" and isinstance(ret, float):
+        ret = round(ret, 2)
 
     return ret[:255] if isinstance(ret, str) and len(ret) > 255 else ret
 
 
-# ---------------------------
-#   from_entry_bool
-# ---------------------------
+_TRUTHY_STRINGS = frozenset({"on", "yes", "up"})
+_FALSY_STRINGS = frozenset({"off", "no", "down"})
+
+
 def from_entry_bool(entry, param, default=False, reverse=False) -> bool:
     """Validate and return a bool value from an API dict."""
-    if "/" in param:
-        for tmp_param in param.split("/"):
-            if isinstance(entry, dict) and tmp_param in entry:
-                entry = entry[tmp_param]
-            else:
-                return default
-
-        ret = entry
-    elif param in entry:
-        ret = entry[param]
-    else:
-        return default
+    ret = _traverse_entry(entry, param)
+    if ret is _NOT_FOUND:
+        return not default if reverse else default
 
     if isinstance(ret, str):
-        if ret in ("on", "On", "ON", "yes", "Yes", "YES", "up", "Up", "UP"):
+        lowered = ret.lower()
+        if lowered in _TRUTHY_STRINGS:
             ret = True
-        elif ret in ("off", "Off", "OFF", "no", "No", "NO", "down", "Down", "DOWN"):
+        elif lowered in _FALSY_STRINGS:
             ret = False
 
     if not isinstance(ret, bool):
@@ -80,9 +71,19 @@ def from_entry_bool(entry, param, default=False, reverse=False) -> bool:
     return not ret if reverse else ret
 
 
-# ---------------------------
-#   parse_api
-# ---------------------------
+def _set_data(data, uid, name, value):
+    """Set a value in data dict, handling uid-keyed or flat dicts."""
+    if uid:
+        data[uid][name] = value
+    else:
+        data[name] = value
+
+
+def _get_data(data, uid, name):
+    """Get a value from data dict, handling uid-keyed or flat dicts."""
+    return data[uid][name] if uid else data[name]
+
+
 def parse_api(
     data=None,
     source=None,
@@ -96,258 +97,228 @@ def parse_api(
     skip=None,
 ) -> dict:
     """Get data from API."""
-    debug = _LOGGER.getEffectiveLevel() == 10
-    if type(source) == dict:
-        tmp = source
-        source = [tmp]
+    if isinstance(source, dict):
+        source = [source]
 
     if not source:
         if not key and not key_search:
             data = fill_defaults(data, vals)
         return data
 
+    debug = _LOGGER.getEffectiveLevel() == 10
     if debug:
         _LOGGER.debug("Processing source %s", async_redact_data(source, TO_REDACT))
 
     keymap = generate_keymap(data, key_search)
     for entry in source:
-        if only and not matches_only(entry, only):
+        uid = _process_source_entry(data, entry, key, key_secondary, key_search, keymap, only, skip, debug)
+        if uid is _NOT_FOUND:
             continue
-
-        if skip and can_skip(entry, skip):
-            continue
-
-        uid = None
-        if key or key_search:
-            uid = get_uid(entry, key, key_secondary, key_search, keymap)
-            if not uid:
-                continue
-
-            if uid not in data:
-                data[uid] = {}
-
-        if debug:
-            _LOGGER.debug("Processing entry %s", async_redact_data(entry, TO_REDACT))
 
         if vals:
-            data = fill_vals(data, entry, uid, vals)
+            fill_vals(data, entry, uid, vals)
 
         if ensure_vals:
-            data = fill_ensure_vals(data, uid, ensure_vals)
+            fill_ensure_vals(data, uid, ensure_vals)
 
         if val_proc:
-            data = fill_vals_proc(data, uid, val_proc)
+            fill_vals_proc(data, uid, val_proc)
 
     return data
 
 
-# ---------------------------
-#   get_uid
-# ---------------------------
-def get_uid(entry, key, key_secondary, key_search, keymap) -> Optional(str):
-    """Get UID for data list."""
+def _process_source_entry(data, entry, key, key_secondary, key_search, keymap, only, skip, debug):
+    """Process a single source entry. Returns uid (or None for flat) or _NOT_FOUND to skip."""
+    if only and not matches_only(entry, only):
+        return _NOT_FOUND
+
+    if skip and can_skip(entry, skip):
+        return _NOT_FOUND
+
     uid = None
+    if key or key_search:
+        uid = get_uid(entry, key, key_secondary, key_search, keymap)
+        if not uid:
+            return _NOT_FOUND
+        if uid not in data:
+            data[uid] = {}
+
+    if debug:
+        _LOGGER.debug("Processing entry %s", async_redact_data(entry, TO_REDACT))
+
+    return uid
+
+
+def get_uid(entry, key, key_secondary, key_search, keymap) -> str | None:
+    """Get UID for data list."""
     if not key_search:
-        key_primary_found = key in entry
-        if key_primary_found and key not in entry and not entry[key]:
-            return None
+        return _get_uid_from_keys(entry, key, key_secondary)
 
-        if key_primary_found:
-            uid = entry[key]
-        elif key_secondary:
-            if key_secondary not in entry:
-                return None
+    if keymap and key_search in entry and entry[key_search] in keymap:
+        return keymap[entry[key_search]]
 
-            if not entry[key_secondary]:
-                return None
-
-            uid = entry[key_secondary]
-    elif keymap and key_search in entry and entry[key_search] in keymap:
-        uid = keymap[entry[key_search]]
-    else:
-        return None
-
-    return uid or None
+    return None
 
 
-# ---------------------------
-#   generate_keymap
-# ---------------------------
-def generate_keymap(data, key_search) -> Optional(dict):
+def _get_uid_from_keys(entry, key, key_secondary) -> str | None:
+    """Resolve UID from primary or secondary key."""
+    if key in entry:
+        return entry[key] or None
+
+    if key_secondary and key_secondary in entry:
+        return entry[key_secondary] or None
+
+    return None
+
+
+def generate_keymap(data, key_search) -> dict | None:
     """Generate keymap."""
-    return (
-        {data[uid][key_search]: uid for uid in data if key_search in data[uid]}
-        if key_search
-        else None
-    )
+    return {data[uid][key_search]: uid for uid in data if key_search in data[uid]} if key_search else None
 
 
-# ---------------------------
-#   matches_only
-# ---------------------------
 def matches_only(entry, only) -> bool:
     """Return True if all variables are matched."""
-    ret = False
-    for val in only:
-        if val["key"] in entry and entry[val["key"]] == val["value"]:
-            ret = True
-        else:
-            ret = False
-            break
-
-    return ret
+    return all(val["key"] in entry and entry[val["key"]] == val["value"] for val in only)
 
 
-# ---------------------------
-#   can_skip
-# ---------------------------
 def can_skip(entry, skip) -> bool:
     """Return True if at least one variable matches."""
-    ret = False
     for val in skip:
         if val["name"] in entry and entry[val["name"]] == val["value"]:
-            ret = True
-            break
-
+            return True
         if val["value"] == "" and val["name"] not in entry:
-            ret = True
-            break
-
-    return ret
+            return True
+    return False
 
 
-# ---------------------------
-#   fill_defaults
-# ---------------------------
+def _resolve_str_default(val) -> str:
+    """Get string default from a val descriptor."""
+    default = val.get("default", "")
+    if "default_val" in val and val["default_val"] in val:
+        default = val[val["default_val"]]
+    return default
+
+
 def fill_defaults(data, vals) -> dict:
     """Fill defaults if source is not present."""
     for val in vals:
-        _name = val["name"]
-        _type = val["type"] if "type" in val else "str"
-        _source = val["source"] if "source" in val else _name
+        name = val["name"]
+        if name in data:
+            continue
 
-        if _type == "str":
-            _default = val["default"] if "default" in val else ""
-            if "default_val" in val and val["default_val"] in val:
-                _default = val[val["default_val"]]
-
-            if _name not in data:
-                data[_name] = from_entry([], _source, default=_default)
-
-        elif _type == "bool":
-            _default = val["default"] if "default" in val else False
-            _reverse = val["reverse"] if "reverse" in val else False
-            if _name not in data:
-                data[_name] = from_entry_bool(
-                    [], _source, default=_default, reverse=_reverse
-                )
+        vtype = val.get("type", "str")
+        if vtype == "str":
+            data[name] = from_entry([], val.get("source", name), default=_resolve_str_default(val))
+        elif vtype == "bool":
+            data[name] = from_entry_bool(
+                [],
+                val.get("source", name),
+                default=val.get("default", False),
+                reverse=val.get("reverse", False),
+            )
 
     return data
 
 
-# ---------------------------
-#   fill_vals
-# ---------------------------
+def _fill_val_str(data, entry, uid, val) -> None:
+    """Fill a single string-typed value."""
+    source = val.get("source", val["name"])
+    default = _resolve_str_default(val)
+    _set_data(data, uid, val["name"], from_entry(entry, source, default=default))
+
+
+def _fill_val_bool(data, entry, uid, val) -> None:
+    """Fill a single bool-typed value."""
+    source = val.get("source", val["name"])
+    _set_data(
+        data,
+        uid,
+        val["name"],
+        from_entry_bool(
+            entry,
+            source,
+            default=val.get("default", False),
+            reverse=val.get("reverse", False),
+        ),
+    )
+
+
+def _convert_timestamp(data, uid, name) -> None:
+    """Convert an integer value to UTC datetime if applicable."""
+    value = _get_data(data, uid, name)
+    if not isinstance(value, int) or value <= 0:
+        return
+    if value > 100000000000:
+        value = value / 1000
+    _set_data(data, uid, name, utc_from_timestamp(value))
+
+
 def fill_vals(data, entry, uid, vals) -> dict:
-    """Fill all data."""
+    """Fill all data from a source entry."""
     for val in vals:
-        _name = val["name"]
-        _type = val["type"] if "type" in val else "str"
-        _source = val["source"] if "source" in val else _name
-        _convert = val["convert"] if "convert" in val else None
+        vtype = val.get("type", "str")
+        if vtype == "str":
+            _fill_val_str(data, entry, uid, val)
+        elif vtype == "bool":
+            _fill_val_bool(data, entry, uid, val)
 
-        if _type == "str":
-            _default = val["default"] if "default" in val else ""
-            if "default_val" in val and val["default_val"] in val:
-                _default = val[val["default_val"]]
-
-            if uid:
-                data[uid][_name] = from_entry(entry, _source, default=_default)
-            else:
-                data[_name] = from_entry(entry, _source, default=_default)
-
-        elif _type == "bool":
-            _default = val["default"] if "default" in val else False
-            _reverse = val["reverse"] if "reverse" in val else False
-
-            if uid:
-                data[uid][_name] = from_entry_bool(
-                    entry, _source, default=_default, reverse=_reverse
-                )
-            else:
-                data[_name] = from_entry_bool(
-                    entry, _source, default=_default, reverse=_reverse
-                )
-
-        if _convert == "utc_from_timestamp":
-            if uid:
-                if isinstance(data[uid][_name], int) and data[uid][_name] > 0:
-                    if data[uid][_name] > 100000000000:
-                        data[uid][_name] = data[uid][_name] / 1000
-
-                    data[uid][_name] = utc_from_timestamp(data[uid][_name])
-            elif isinstance(data[_name], int) and data[_name] > 0:
-                if data[_name] > 100000000000:
-                    data[_name] = data[_name] / 1000
-
-                data[_name] = utc_from_timestamp(data[_name])
+        if val.get("convert") == "utc_from_timestamp":
+            _convert_timestamp(data, uid, val["name"])
 
     return data
 
 
-# ---------------------------
-#   fill_ensure_vals
-# ---------------------------
 def fill_ensure_vals(data, uid, ensure_vals) -> dict:
     """Add required keys which are not available in data."""
     for val in ensure_vals:
-        if uid:
-            if val["name"] not in data[uid]:
-                _default = val["default"] if "default" in val else ""
-                data[uid][val["name"]] = _default
-
-        elif val["name"] not in data:
-            _default = val["default"] if "default" in val else ""
-            data[val["name"]] = _default
+        target = data[uid] if uid else data
+        if val["name"] not in target:
+            target[val["name"]] = val.get("default", "")
 
     return data
 
 
-# ---------------------------
-#   fill_vals_proc
-# ---------------------------
+def _process_val_sub(val_sub, _data) -> tuple[str | None, str | None]:
+    """Process a single val_proc sub-entry and return (name, computed_value)."""
+    name = None
+    action = None
+    value = None
+
+    for val in val_sub:
+        if "name" in val:
+            name = val["name"]
+            continue
+        if "action" in val:
+            action = val["action"]
+            continue
+        if not name or not action:  # need both before processing value entries
+            break
+
+        if action == "combine":
+            value = _apply_combine(val, _data, value)
+
+    return name, value
+
+
+def _apply_combine(val, _data, current_value) -> str | None:
+    """Apply a combine action step to build a string value."""
+    if "key" in val:
+        tmp = _data.get(val["key"], "unknown")
+        return f"{current_value}{tmp}" if current_value else tmp
+
+    if "text" in val:
+        tmp = val["text"]
+        return f"{current_value}{tmp}" if current_value else tmp
+
+    return current_value
+
+
 def fill_vals_proc(data, uid, vals_proc) -> dict:
-    """Add custom keys."""
+    """Add custom keys built from val_proc descriptors."""
     _data = data[uid] if uid else data
     for val_sub in vals_proc:
-        _name = None
-        _action = None
-        _value = None
-        for val in val_sub:
-            if "name" in val:
-                _name = val["name"]
-                continue
-
-            if "action" in val:
-                _action = val["action"]
-                continue
-
-            if not _name and not _action:
-                break
-
-            if _action == "combine":
-                if "key" in val:
-                    tmp = _data[val["key"]] if val["key"] in _data else "unknown"
-                    _value = f"{_value}{tmp}" if _value else tmp
-
-                if "text" in val:
-                    tmp = val["text"]
-                    _value = f"{_value}{tmp}" if _value else tmp
-
-        if _name and _value:
-            if uid:
-                data[uid][_name] = _value
-            else:
-                data[_name] = _value
+        name, value = _process_val_sub(val_sub, _data)
+        if name and value:
+            _set_data(data, uid, name, value)
 
     return data

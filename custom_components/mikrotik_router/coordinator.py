@@ -676,10 +676,36 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
         raise UpdateFailed("Mikrotik Disconnected")
 
     # ---------------------------
+    #   _async_ensure_connected
+    # ---------------------------
+    async def _async_ensure_connected(self) -> None:
+        """Reconnect the API when a poll finds it disconnected.
+
+        Without this the poll makes no reconnect attempt at all: _run_if_enabled
+        gates every fetch on api.connected(), and _async_update_hwinfo early-returns
+        inside its 4h window, so the get_access -> query -> connection_check chain
+        that would reconnect is never reached (ISS-260813).
+
+        connection_check() rate-limits attempts internally via _connection_retry_sec
+        (~58s), so this stays cheap per poll. Raises via _raise_disconnected() when
+        the reconnect does not take, which routes invalid credentials to reauth
+        rather than an endless retry.
+        """
+        if self.api.connected():
+            return
+
+        await self.hass.async_add_executor_job(self.api.connection_check)
+
+        if not self.api.connected():
+            self._raise_disconnected()
+
+    # ---------------------------
     #   _async_update_data
     # ---------------------------
     async def _async_update_data(self):
         """Update Mikrotik data"""
+        await self._async_ensure_connected()
+
         hwinfo_ran = await self._async_update_hwinfo()
 
         # get_system_resource already ran inside _async_update_hwinfo;

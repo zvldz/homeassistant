@@ -132,7 +132,7 @@
         entity_id: timer.wc_fan
       id: timer_finished
   action:
-    # по таймеру гасим только если автоматика включена; сброс таймера — всегда
+    # turn off on timer only while the automation is enabled; always reset the timer
     - choose:
         - conditions:
             - condition: trigger

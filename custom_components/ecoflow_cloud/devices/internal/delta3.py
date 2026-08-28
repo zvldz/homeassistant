@@ -1,24 +1,22 @@
-from homeassistant.components.select import SelectEntity
-from homeassistant.components.switch import SwitchEntity
-from homeassistant.components.number import NumberEntity
-from custom_components.ecoflow_cloud.entities import BaseSensorEntity
-from homeassistant.components.sensor import SensorEntity
-from custom_components.ecoflow_cloud.devices.data_holder import PreparedData
-from custom_components.ecoflow_cloud.api.message import Message
-from custom_components.ecoflow_cloud.api.message import PrivateAPIMessageProtocol
 import logging
 import time
 from typing import Any, override
 
 from google.protobuf.json_format import MessageToDict
-from homeassistant.helpers.entity import EntityCategory  # pyright: ignore[reportMissingImports]
+from homeassistant.components.number import NumberEntity
+from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
+from custom_components.ecoflow_cloud.api.message import Message, PrivateAPIMessageProtocol
 from custom_components.ecoflow_cloud.devices import BaseInternalDevice, const
+from custom_components.ecoflow_cloud.devices.data_holder import PreparedData
 from custom_components.ecoflow_cloud.devices.internal.proto import (
     ef_delta3_pb2 as delta3_pb2,
 )
-
+from custom_components.ecoflow_cloud.entities import BaseSensorEntity
 from custom_components.ecoflow_cloud.number import (
     BatteryBackupLevel,
     ChargingPowerEntity,
@@ -42,10 +40,15 @@ from custom_components.ecoflow_cloud.sensor import (
     OutWattsSensorEntity,
     QuotaStatusSensorEntity,
     RemainSensorEntity,
+    StateOfHealthSensorEntity,
     TempSensorEntity,
     VoltSensorEntity,
 )
-from custom_components.ecoflow_cloud.switch import BeeperEntity, EnabledEntity
+from custom_components.ecoflow_cloud.switch import (
+    BeeperEntity,
+    BypassBanScalarSwitch,
+    EnabledEntity,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,6 +111,96 @@ def _create_delta3_proto_command(field_name: str, value: int, device_sn: str, da
     return Delta3CommandMessage(payload, packet)
 
 
+def _create_delta3_ac_charging_power_command(value: int, device_sn: str) -> Delta3CommandMessage:
+    """Create a protobuf command for AC charging power on DELTA 3.
+
+    The EcoFlow DELTA 3 firmware silently ignores SET commands that only
+    carry field 54 (``plug_in_info_ac_in_chg_pow_max``), even though the
+    proto declares field 54 as the standalone attribute for this setting.
+    Capturing traffic from the mobile app shows the app always sends
+    field 54 together with ``field 125 = 0`` — an undeclared companion
+    field that appears to act as a commit/apply flag. Without it, the
+    device ACKs the command but does not actually update its internal
+    setpoint, so tolwi's generic ``_create_delta3_proto_command`` path
+    is read-only for this entity.
+
+    Field 125 is not declared in the generated ``ef_delta3_pb2`` schema,
+    so pdata is crafted manually. The resulting wire bytes match the
+    app's captured packets exactly: ``b0 03 <value_varint> e8 07 00``.
+    """
+    def _encode_varint(v: int) -> bytes:
+        out = bytearray()
+        while True:
+            byte = v & 0x7F
+            v >>= 7
+            if v:
+                out.append(byte | 0x80)
+            else:
+                out.append(byte)
+                break
+        return bytes(out)
+
+    # Field 54 varint tag: (54 << 3) | 0 = 432 -> varint "b0 03"
+    # Field 125 varint tag: (125 << 3) | 0 = 1000 -> varint "e8 07"
+    pdata = bytes([0xB0, 0x03]) + _encode_varint(int(value)) + bytes([0xE8, 0x07, 0x00])
+
+    packet = delta3_pb2.Delta3SendHeaderMsg()
+    message = packet.msg.add()
+    message.src = 32
+    message.dest = 2
+    message.d_src = 1
+    message.d_dest = 1
+    message.cmd_func = 254
+    message.cmd_id = 17
+    message.need_ack = 1
+    message.seq = Message.gen_seq()
+    message.product_id = 1
+    message.version = 19
+    message.payload_ver = 1
+    message.device_sn = device_sn
+    message.data_len = len(pdata)
+    message.pdata = pdata
+
+    # Empty Delta3SetCommand as placeholder payload for logging.
+    dummy_payload = delta3_pb2.Delta3SetCommand()
+    return Delta3CommandMessage(dummy_payload, packet)
+
+
+def _create_delta3_get_quota_command() -> Delta3CommandMessage:
+    """Build a protobuf 'get all' request that fetches the full device snapshot.
+
+    Mirrors the EcoFlow mobile app behavior when opening the device page:
+    publishes a ``Delta3SendHeaderMsg`` containing a single empty
+    ``Delta3Header`` with only ``src``/``dest``/``seq``/``from`` set. The
+    device firmware interprets this as "send everything you have" and
+    replies on the ``thing/property/get_reply`` topic with a multi-header
+    snapshot (Display + Runtime + BMS + CMS reports).
+
+    This is the only path that delivers sparse-delta-only fields like
+    ``ban_bypass_en`` (Display field 146) at HA startup, without waiting
+    for the user to toggle the bypass from the app or from HA.
+
+    Tolwi's ``PrivateAPIClient.quota_all`` calls
+    :meth:`Delta3.get_quota_message` during integration setup
+    (``custom_components/ecoflow_cloud/__init__.py``), so the snapshot is
+    fetched automatically on every HA restart.
+    """
+    packet = delta3_pb2.Delta3SendHeaderMsg()
+    header = packet.msg.add()
+    header.src = 32
+    header.dest = 32
+    header.seq = Message.gen_seq()
+    # ``from`` is a Python reserved word; Delta3Header field 23 is named
+    # "from" in the proto, so we set it via setattr.
+    setattr(header, "from", "HomeAssistant")
+
+    # Empty Delta3SetCommand acts as a placeholder payload for
+    # Delta3CommandMessage.to_dict() diagnostics. The wire payload is
+    # the serialized packet, which contains no pdata for this request.
+    dummy_payload = delta3_pb2.Delta3SetCommand()
+    return Delta3CommandMessage(dummy_payload, packet)
+
+
 def _create_delta3_energy_backup_command(energy_backup_en: int | None, energy_backup_start_soc: int, device_sn: str):
     """Create a protobuf command for Delta 3 energy backup settings."""
     # Build the command using the generated protobuf classes
@@ -137,6 +230,65 @@ def _create_delta3_energy_backup_command(energy_backup_en: int | None, energy_ba
     message.pdata = pdata
 
     return Delta3CommandMessage(payload, packet)
+
+
+def _create_delta3_energy_strategy_command(mode: int, device_sn: str) -> Delta3CommandMessage:
+    """Create a protobuf command that selects the energy strategy mode.
+
+    mode: 0 = standard (no strategy, grid passthrough), 1 = self-powered,
+    2 = scheduled, 3 = TOU. The firmware treats the three flags as
+    mutually exclusive, so all three are written explicitly on every
+    change to switch the previously active strategy off in the same
+    command.
+    """
+    payload = delta3_pb2.Delta3SetCommand()
+    payload.energy_strategy_operate_mode.operate_self_powered_open = 1 if mode == 1 else 0
+    payload.energy_strategy_operate_mode.operate_scheduled_open = 1 if mode == 2 else 0
+    payload.energy_strategy_operate_mode.operate_tou_mode_open = 1 if mode == 3 else 0
+
+    pdata = payload.SerializeToString()
+
+    packet = delta3_pb2.Delta3SendHeaderMsg()
+    message = packet.msg.add()
+
+    message.src = 32
+    message.dest = 2
+    message.d_src = 1
+    message.d_dest = 1
+    message.cmd_func = 254
+    message.cmd_id = 17
+    message.need_ack = 1
+    message.seq = int(time.time() * 1000) % 2147483647
+    message.product_id = 1
+    message.version = 19
+    message.payload_ver = 1
+    message.device_sn = device_sn
+    message.data_len = len(pdata)
+    message.pdata = pdata
+
+    return Delta3CommandMessage(payload, packet)
+
+
+def _derive_energy_strategy_mode(result: dict[str, Any]) -> None:
+    """Collapse the nested energy strategy flags into one scalar key.
+
+    The device reports the active strategy as three mutually exclusive
+    booleans nested under ``energy_strategy_operate_mode``; a select
+    entity needs a single value, so ``energy_strategy_mode`` is set to
+    0 = standard, 1 = self-powered, 2 = scheduled, 3 = TOU. A message
+    with all flags absent or zero means no strategy is active.
+    """
+    strategy = result.get("energy_strategy_operate_mode")
+    if not isinstance(strategy, dict):
+        return
+    if strategy.get("operate_tou_mode_open") == 1:
+        result["energy_strategy_mode"] = 3
+    elif strategy.get("operate_scheduled_open") == 1:
+        result["energy_strategy_mode"] = 2
+    elif strategy.get("operate_self_powered_open") == 1:
+        result["energy_strategy_mode"] = 1
+    else:
+        result["energy_strategy_mode"] = 0
 
 
 BMS_HEARTBEAT_COMMANDS: set[tuple[int, int]] = {
@@ -200,7 +352,7 @@ class Delta3(BaseInternalDevice):
             CapacitySensorEntity(client, self, "bms_design_cap", const.MAIN_DESIGN_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_full_cap", const.MAIN_FULL_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_remain_cap", const.MAIN_REMAIN_CAPACITY, False),
-            LevelSensorEntity(client, self, "bms_batt_soh", const.SOH),
+            StateOfHealthSensorEntity(client, self, "bms_batt_soh", const.SOH),
             LevelSensorEntity(client, self, "cms_batt_soc", const.COMBINED_BATTERY_LEVEL),
             Delta3ChargingStateSensorEntity(client, self, "bms_chg_dsg_state", const.BATTERY_CHARGING_STATE),
             InWattsSensorEntity(client, self, "pow_in_sum_w", const.TOTAL_IN_POWER).with_energy(),
@@ -261,10 +413,10 @@ class Delta3(BaseInternalDevice):
                 self,
                 "plug_in_info_ac_in_chg_pow_max",
                 const.AC_CHARGING_POWER,
-                50,
-                305,
-                lambda value: _create_delta3_proto_command(
-                    "plug_in_info_ac_in_chg_pow_max", int(value), device.device_data.sn
+                100,
+                1500,
+                lambda value: _create_delta3_ac_charging_power_command(
+                    int(value), device.device_data.sn
                 ),
             ),
             BatteryBackupLevel(
@@ -278,6 +430,23 @@ class Delta3(BaseInternalDevice):
                 "cms_max_chg_soc",
                 5,
                 lambda value: _create_delta3_energy_backup_command(1, int(value), device.device_data.sn),
+            ),
+            BatteryBackupLevel(
+                client,
+                self,
+                "backup_reverse_soc",
+                const.BACKUP_RESERVE_SOC,
+                5,
+                100,
+                "cms_min_dsg_soc",
+                "cms_max_chg_soc",
+                5,
+                # backup_reverse_soc is the operating-mode partition floor
+                # shown as "Backup reserve" in the app energy strategy
+                # screen; distinct from the legacy energy_backup_* pair.
+                lambda value: _create_delta3_proto_command(
+                    "backup_reverse_soc", int(value), device.device_data.sn
+                ),
             ),
         ]
 
@@ -293,6 +462,10 @@ class Delta3(BaseInternalDevice):
                 lambda value: _create_delta3_proto_command(
                     "en_beep", 1 if value else 0, device.device_data.sn, data_len=2
                 ),
+                # en_beep is 1 = beeper enabled, unlike the legacy quiet-mode
+                # keys (beepState) that BeeperEntity inverts by default
+                enableValue=1,
+                disableValue=0,
             ),
             EnabledEntity(
                 client,
@@ -324,6 +497,15 @@ class Delta3(BaseInternalDevice):
             EnabledEntity(
                 client,
                 self,
+                "cfg_usb_open",
+                const.USB_ENABLED,
+                lambda value, params=None: _create_delta3_proto_command(
+                    "cfg_usb_open", 1 if value else 0, device.device_data.sn
+                ),
+            ),
+            EnabledEntity(
+                client,
+                self,
                 "output_power_off_memory",
                 const.AC_ALWAYS_ENABLED,
                 lambda value, params=None: _create_delta3_proto_command(
@@ -341,6 +523,17 @@ class Delta3(BaseInternalDevice):
                     device.device_data.sn,
                 ),
             ),
+            BypassBanScalarSwitch(
+                client,
+                self,
+                "ban_bypass_en",
+                const.GRID_BYPASS,
+                lambda value, params=None: _create_delta3_proto_command(
+                    "ban_bypass_en", int(value), device.device_data.sn
+                ),
+                enableValue=1,
+                disableValue=0,
+            ),
         ]
 
     @override
@@ -356,6 +549,28 @@ class Delta3(BaseInternalDevice):
                 dc_charge_current_options,
                 lambda value: _create_delta3_proto_command(
                     "plug_in_info_pv_dc_amp_max", int(value), device.device_data.sn
+                ),
+            ),
+            DictSelectEntity(
+                client,
+                self,
+                "energy_strategy_mode",
+                const.ENERGY_STRATEGY,
+                const.ENERGY_STRATEGY_OPTIONS,
+                lambda value: _create_delta3_energy_strategy_command(int(value), device.device_data.sn),
+            ),
+            DictSelectEntity(
+                client,
+                self,
+                "plug_in_info_ac_in_chg_mode",
+                const.AC_CHARGE_MODE,
+                const.AC_CHARGE_MODE_OPTIONS,
+                # Selecting Custom (0) makes the device apply the wattage
+                # from the AC Charging Power entity (field 54); Auto (1)
+                # lets the firmware pick a battery-optimal power, Silent (2)
+                # caps it at the silence_chg_watt value.
+                lambda value: _create_delta3_proto_command(
+                    "plug_in_info_ac_in_chg_mode", int(value), device.device_data.sn
                 ),
             ),
             TimeoutDictSelectEntity(
@@ -421,6 +636,76 @@ class Delta3(BaseInternalDevice):
             "all_fields": decoded_data or {},
         }
 
+    @override
+    def get_quota_message(self) -> Delta3CommandMessage:
+        """Return the protobuf 'get all' request used by quota_all().
+
+        The base ``BaseInternalDevice`` returns a JSON ``latestQuotas``
+        message which the protobuf-only DELTA 3 firmware silently ignores.
+        Overriding here lets HA proactively fetch the full device snapshot
+        at integration setup (and on every quota refresh), populating
+        sparse-delta-only fields such as ``ban_bypass_en`` before the
+        first user interaction.
+        """
+        return _create_delta3_get_quota_command()
+
+    @override
+    def _prepare_data_get_reply_topic(self, raw_data: bytes) -> PreparedData:
+        """Decode a multi-header ``thing/property/get_reply`` snapshot.
+
+        EcoFlow's get_reply contains a full state dump as a
+        ``Delta3HeaderMessage`` with several headers (Display, Runtime,
+        BMS heartbeat, CMS heartbeat). The base class ``_prepare_data``
+        path only handles a single header, so this override iterates
+        every header, decodes it via :meth:`_decode_message_by_type`,
+        and merges the resulting dicts.
+
+        This is the path that delivers ``ban_bypass_en`` (Display field
+        146) right after HA setup, without requiring the user to open
+        the EcoFlow mobile app or toggle anything.
+        """
+        try:
+            import base64
+
+            try:
+                raw_data = base64.b64decode(raw_data, validate=True)
+            except Exception as e:
+                # Most payloads are raw protobuf, not base64; silent fall-through.
+                _LOGGER.debug("[Delta3] b64decode failed: %s", e)
+
+            header_msg = delta3_pb2.Delta3HeaderMessage()
+            header_msg.ParseFromString(raw_data)
+        except Exception as e:
+            _LOGGER.debug("[Delta3] get_reply parse failed: %s", e)
+            return PreparedData(None, None, {"proto": raw_data.hex()})
+
+        merged: dict[str, Any] = {}
+        for header in header_msg.header:
+            try:
+                header_info = {
+                    "src": getattr(header, "src", 0),
+                    "encType": getattr(header, "enc_type", 0),
+                    "seq": getattr(header, "seq", 0),
+                    "cmdFunc": getattr(header, "cmd_func", 0),
+                    "cmdId": getattr(header, "cmd_id", 0),
+                }
+                pdata = getattr(header, "pdata", b"")
+                if not pdata:
+                    continue
+                decoded_pdata = self._perform_xor_decode(pdata, header_info)
+                decoded = self._decode_message_by_type(decoded_pdata, header_info)
+                if decoded:
+                    merged.update(decoded)
+            except Exception as e:
+                _LOGGER.debug("[Delta3] get_reply header decode failed: %s", e)
+                continue
+
+        if not merged:
+            return PreparedData(None, None, {"proto": raw_data.hex()})
+
+        flat = self._flatten_dict(merged)
+        return PreparedData(None, {"params": flat, "all_fields": merged}, {"proto": raw_data.hex()})
+
     def _decode_header_message(self, raw_data: bytes) -> dict[str, Any] | None:
         """Decode HeaderMessage and extract header info."""
         try:
@@ -430,8 +715,8 @@ class Delta3(BaseInternalDevice):
                 decoded_payload = base64.b64decode(raw_data, validate=True)
                 raw_data = decoded_payload
             except Exception as e:
-                # If base64 decoding fails, proceed with the original raw_data (it may not be base64 encoded)
-                _LOGGER.debug("[Delta3] base64 decode failed: %s", e)
+                # Most payloads are raw protobuf, not base64; silent fall-through.
+                _LOGGER.debug("[Delta3] b64decode failed: %s", e)
 
             try:
                 header_msg = delta3_pb2.Delta3HeaderMessage()
@@ -508,7 +793,46 @@ class Delta3(BaseInternalDevice):
             if cmd_func == 254 and cmd_id == 21:
                 msg_display_upload = delta3_pb2.Delta3DisplayPropertyUpload()
                 msg_display_upload.ParseFromString(pdata)
-                return self._protobuf_to_dict(msg_display_upload)
+                result = self._protobuf_to_dict(msg_display_upload)
+                # Derive AC / DC / USB output enable state from flow_info_*
+                # fields. The DELTA 3 firmware never sends cfg_ac_out_open,
+                # cfg_dc12v_out_open or cfg_usb_open in telemetry or get_reply
+                # snapshots, so without this derivation the corresponding HA
+                # switches stay "unknown" until the user toggles them.
+                # MQTT sniffing confirmed that flow_info_* == 14 iff the
+                # output is enabled (even with no load attached), and == 4
+                # iff disabled. Any other value (transient) is ignored so we
+                # don't overwrite a previously known state with a bad guess.
+                # The authoritative source remains the SetReply from the
+                # device (parsed via _prepare_data_set_reply_topic), which
+                # always wins because both updates merge into the same dict.
+                dc_flow = result.get("flow_info_12v")
+                if dc_flow == 14:
+                    result["cfg_dc12v_out_open"] = 1
+                elif dc_flow == 4:
+                    result["cfg_dc12v_out_open"] = 0
+
+                ac_flow = result.get("flow_info_ac_out")
+                if ac_flow == 14:
+                    result["cfg_ac_out_open"] = 1
+                elif ac_flow == 4:
+                    result["cfg_ac_out_open"] = 0
+
+                usb_flow_keys = (
+                    "flow_info_qcusb1",
+                    "flow_info_qcusb2",
+                    "flow_info_typec1",
+                    "flow_info_typec2",
+                )
+                usb_values = [result.get(k) for k in usb_flow_keys if k in result]
+                if usb_values:
+                    if any(v == 14 for v in usb_values):
+                        result["cfg_usb_open"] = 1
+                    elif all(v == 4 for v in usb_values):
+                        result["cfg_usb_open"] = 0
+
+                _derive_energy_strategy_mode(result)
+                return result
 
             elif cmd_func == 254 and cmd_id == 22:
                 msg_runtime_upload = delta3_pb2.Delta3RuntimePropertyUpload()
@@ -519,7 +843,9 @@ class Delta3(BaseInternalDevice):
                 try:
                     msg_set_command = delta3_pb2.Delta3SetCommand()
                     msg_set_command.ParseFromString(pdata)
-                    return self._protobuf_to_dict(msg_set_command)
+                    result = self._protobuf_to_dict(msg_set_command)
+                    _derive_energy_strategy_mode(result)
+                    return result
                 except Exception as e:
                     _LOGGER.debug("Failed to decode as Delta3SetCommand: %s", e)
                     return {}
@@ -529,7 +855,10 @@ class Delta3(BaseInternalDevice):
                     msg_set_reply = delta3_pb2.Delta3SetReply()
                     msg_set_reply.ParseFromString(pdata)
                     result = self._protobuf_to_dict(msg_set_reply)
-                    return result if result.get("config_ok", False) else {}
+                    if not result.get("config_ok", False):
+                        return {}
+                    _derive_energy_strategy_mode(result)
+                    return result
                 except Exception as e:
                     _LOGGER.debug(f"Failed to decode as setReply_dp3: {e}")
                     return {}
@@ -613,8 +942,8 @@ class Delta3(BaseInternalDevice):
                 decoded_payload = base64.b64decode(raw_data, validate=True)
                 raw_data = decoded_payload
             except Exception as e:
-                # If base64 decoding fails, proceed with the original raw_data (it may not be base64 encoded)
-                _LOGGER.debug("[Delta3] base64 decode failed: %s", e)
+                # Most payloads are raw protobuf, not base64; silent fall-through.
+                _LOGGER.debug("[Delta3] b64decode failed: %s", e)
 
             header_msg = delta3_pb2.Delta3SendHeaderMsg()
             header_msg.ParseFromString(raw_data)

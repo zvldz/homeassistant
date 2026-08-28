@@ -5,3 +5,24 @@
     command: 'grep -m 1 -o "initialized[[:space:]]in[[:space:]][0-9]\+.[0-9]\+" /config/home-assistant.log | grep -o "[0-9]\+.[0-9]\+$" || echo -1'
     scan_interval: 120
     unit_of_measurement: "sec"
+
+# Protocol-level liveness probes. The built-in `tcp` binary_sensor cannot be
+# used here: it keeps its last state when the host is unreachable, so a dead
+# device still reads "alive" and power would never be cut.
+- binary_sensor:
+    name: "Balcony Strip Alive"
+    unique_id: balcony_strip_alive
+    command: "python3 /config/bin/device_probe.py yeelight 192.168.1.55"
+    payload_on: "ON"
+    payload_off: "OFF"
+    device_class: connectivity
+    scan_interval: 60
+
+- binary_sensor:
+    name: "Bedside Lamp Alive"
+    unique_id: bedside_lamp_alive
+    command: "python3 /config/bin/device_probe.py yeelight 192.168.1.30"
+    payload_on: "ON"
+    payload_off: "OFF"
+    device_class: connectivity
+    scan_interval: 60

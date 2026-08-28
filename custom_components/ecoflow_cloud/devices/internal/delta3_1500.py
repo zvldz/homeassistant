@@ -1,3 +1,5 @@
+from typing import Any
+
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorEntity
@@ -24,10 +26,66 @@ from custom_components.ecoflow_cloud.sensor import (
     OutWattsSensorEntity,
     QuotaStatusSensorEntity,
     RemainSensorEntity,
+    StateOfHealthSensorEntity,
     StatusSensorEntity,
     TempSensorEntity,
 )
-from custom_components.ecoflow_cloud.switch import BeeperEntity, EnabledEntity
+from custom_components.ecoflow_cloud.switch import (
+    BeeperEntity,
+    EnabledEntity,
+)
+
+
+class Delta31500ChargingStateSensorEntity(ChargingStateSensorEntity):
+    """Charging state for DELTA 3 1500.
+
+    The firmware does not send ``bms_emsStatus.chgState`` (the field the
+    generic :class:`ChargingStateSensorEntity` reads), and the values it
+    does emit on ``bms_emsStatus.sysChgDsgState`` use a different mapping
+    than the generic class assumes. MQTT sniffing (bypass toggle test)
+    confirmed:
+
+    * 0 -> discharging (battery supplying loads — this is the normal
+        "bypass ON" state for DELTA 3 1500: the grid is disconnected and
+        loads are fed by the battery)
+    * 1 -> unused (assumed idle; not observed on the wire because the
+        1500 is rarely truly idle — mapping follows the EcoFlow JSON API
+        convention where "1" is the leftover state)
+    * 2 -> charging (AC-IN feeding the battery, verified during bypass
+        OFF test with BMS amp going from -3 A to +3.4 A)
+    """
+
+    def _update_value(self, val: Any) -> bool:
+        if val == 0:
+            return super(ChargingStateSensorEntity, self)._update_value("discharging")
+        elif val == 1:
+            return super(ChargingStateSensorEntity, self)._update_value("unused")
+        elif val == 2:
+            return super(ChargingStateSensorEntity, self)._update_value("charging")
+        return False
+
+class BypassBanSwitch(EnabledEntity):
+    """Grid-bypass switch controlled by the EcoFlow ``bypassBan`` command.
+
+    DELTA 3 1500 does not publish the bypass flag as a scalar in push
+    telemetry; instead it mirrors it as index ``[1]`` of the
+    ``pd.reserved`` array-valued quota field. The second element of
+    the array is interpreted as the bypass state:
+
+      0 -> grid bypass enabled  (battery charges from AC input)
+      1 -> grid bypass disabled (battery runs standalone, no charging)
+
+    When the switch is ON, the grid bypass is disabled (matching the
+    "Disable grid bypass" toggle in the EcoFlow mobile app).
+    """
+
+    def _update_value(self, val: Any) -> bool:
+        if isinstance(val, list) and len(val) >= 2:
+            new_state = val[1] == 1
+            if self._attr_is_on != new_state:
+                self._attr_is_on = new_state
+                return True
+        return False
 
 
 class Delta31500(BaseInternalDevice):
@@ -40,9 +98,11 @@ class Delta31500(BaseInternalDevice):
             CapacitySensorEntity(client, self, "bms_bmsStatus.designCap", const.MAIN_DESIGN_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_bmsStatus.fullCap", const.MAIN_FULL_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_bmsStatus.remainCap", const.MAIN_REMAIN_CAPACITY, False),
-            LevelSensorEntity(client, self, "bms_bmsStatus.soh", const.SOH),
+            StateOfHealthSensorEntity(client, self, "bms_bmsStatus.soh", const.SOH),
             LevelSensorEntity(client, self, "bms_emsStatus.lcdShowSoc", const.COMBINED_BATTERY_LEVEL),
-            ChargingStateSensorEntity(client, self, "bms_emsStatus.chgState", const.BATTERY_CHARGING_STATE),
+            Delta31500ChargingStateSensorEntity(
+                client, self, "bms_emsStatus.sysChgDsgState", const.BATTERY_CHARGING_STATE
+            ),
             InWattsSensorEntity(client, self, "pd.wattsInSum", const.TOTAL_IN_POWER).with_energy(),
             OutWattsSensorEntity(client, self, "pd.wattsOutSum", const.TOTAL_OUT_POWER).with_energy(),
             InWattsSensorEntity(client, self, "inv.inputWatts", const.AC_IN_POWER).with_energy(),
@@ -77,7 +137,7 @@ class Delta31500(BaseInternalDevice):
             CapacitySensorEntity(client, self, "bms_slave.designCap", const.SLAVE_DESIGN_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_slave.fullCap", const.SLAVE_FULL_CAPACITY, False),
             CapacitySensorEntity(client, self, "bms_slave.remainCap", const.SLAVE_REMAIN_CAPACITY, False),
-            LevelSensorEntity(client, self, "bms_slave.soh", const.SLAVE_SOH),
+            StateOfHealthSensorEntity(client, self, "bms_slave.soh", const.SLAVE_SOH),
             TempSensorEntity(client, self, "bms_slave.temp", const.SLAVE_BATTERY_TEMP, False, True)
             .attr("bms_slave.minCellTemp", const.ATTR_MIN_CELL_TEMP, 0)
             .attr("bms_slave.maxCellTemp", const.ATTR_MAX_CELL_TEMP, 0),
@@ -221,6 +281,19 @@ class Delta31500(BaseInternalDevice):
                     "operateType": "watthConfig",
                     "params": {"bpPowerSoc": value * 50, "minChgSoc": 0, "isConfig": value, "minDsgSoc": 0},
                 },
+            ),
+            BypassBanSwitch(
+                client,
+                self,
+                "pd.reserved",
+                const.GRID_BYPASS,
+                lambda value: {
+                    "moduleType": 1,
+                    "operateType": "bypassBan",
+                    "params": {"banBypassEn": int(value)},
+                },
+                enableValue=1,
+                disableValue=0,
             ),
         ]
 

@@ -32,13 +32,7 @@ frontend:
   themes: !include_dir_merge_named themes
   extra_module_url: !include includes/extra_module_url.yaml
 
-http:
-  ip_ban_enabled: true
-  login_attempts_threshold: 5
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 127.0.0.1
-    - ::1
+# http: is configured in the UI (Settings -> System -> Network), YAML removed 2026-08-06
 
 system_log:
   fire_event: true

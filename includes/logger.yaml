@@ -6,6 +6,14 @@ logs:
   homeassistant.components.conversation: debug
   aioesphomeapi.reconnect_logic: warning
   homeassistant.components.esphome: warning
+# Own recovery logic: info = actions, debug = why nothing happened.
+# devices: proved itself 2026-08-27 (balcony strip recovered in 10 attempts),
+# info alone tells the whole story - debug was only a per-pass "all fine" line.
+  recovery.devices: info
+# wifi: still at debug - the per-pass client/AP/signal table is the only record
+# of where clients sit, and the behaviour around a Mikrotik firmware update
+# (two reboots) has not been observed yet. Drop to info after that.
+  recovery.wifi: debug
 # TEMPORARY: Voice assistant debugging
   homeassistant.components.stt: debug
   homeassistant.components.tts: debug

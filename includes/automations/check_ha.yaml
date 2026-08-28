@@ -51,6 +51,15 @@
 #    - platform: state
 #      entity_id: sensor.ha_off_uptime
 #      from: "unavailable"
+  # report a recovery only for outages long enough to be reported as such.
+  # a plain `for:` cannot be used: force_update changes the state on every poll,
+  # so the hold timer would restart forever.
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.from_state is not defined
+           or (as_timestamp(trigger.to_state.last_changed)
+               - as_timestamp(trigger.from_state.last_changed)) > 120 }}
   action:
     - service: notify.send_message
       data:

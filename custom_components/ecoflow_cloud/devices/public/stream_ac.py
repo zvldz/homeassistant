@@ -10,6 +10,8 @@ from custom_components.ecoflow_cloud.devices import BaseDevice, const
 from custom_components.ecoflow_cloud.devices.public.data_bridge import to_plain
 from custom_components.ecoflow_cloud.number import BatteryBackupLevel
 from custom_components.ecoflow_cloud.sensor import (
+    AmpSensorEntity,
+    BatteryLimitSensorEntity,
     CapacitySensorEntity,
     CumulativeCapacitySensorEntity,
     CyclesSensorEntity,
@@ -19,10 +21,15 @@ from custom_components.ecoflow_cloud.sensor import (
     MilliVoltSensorEntity,
     OutWattsSensorEntity,
     RemainSensorEntity,
+    StateOfHealthSensorEntity,
     StatusSensorEntity,
+    StoredEnergyFromSocSensorEntity,
     TempSensorEntity,
     VoltSensorEntity,
     WattsSensorEntity,
+)
+from custom_components.ecoflow_cloud.devices.public.stream_pv_helpers import (
+    StreamPvWattsSensorEntity,
 )
 from custom_components.ecoflow_cloud.switch import EnabledEntity
 
@@ -82,6 +89,14 @@ class StreamAC(BaseDevice):
             # "cmsBattPowInMax": 2114,
             # "cmsBattPowOutMax": 2400,
             # "cmsBattSoc": 43.0,
+            # Actual battery state-of-charge. Stream Ultra / Ultra X report SoC
+            # via cmsBattSoc rather than soc/f32ShowSoc, so expose it directly
+            # as a battery-level sensor (auto_enable so it only activates on
+            # firmware that actually sends the field).
+            LevelSensorEntity(client, self, "cmsBattSoc", const.STREAM_BATTERY_LEVEL, False, True),
+            StoredEnergyFromSocSensorEntity(
+                client, self, "cmsBattFullEnergy", "cmsBattSoc", const.STREAM_STORED_ENERGY
+            ),
             # "cmsBattSoh": 100.0,
             # "cmsBmsRunState": 1,
             # "cmsChgDsgState": 2,
@@ -89,8 +104,8 @@ class StreamAC(BaseDevice):
             # "cmsDsgRemTime": 5939,
             # "cmsMaxChgSoc": 100,
             # "cmsMinDsgSoc": 5,
-            LevelSensorEntity(client, self, "cmsMaxChgSoc", const.MAX_CHARGE_LEVEL),
-            LevelSensorEntity(client, self, "cmsMinDsgSoc", const.MIN_DISCHARGE_LEVEL),
+            BatteryLimitSensorEntity(client, self, "cmsMaxChgSoc", const.MAX_CHARGE_LEVEL),
+            BatteryLimitSensorEntity(client, self, "cmsMinDsgSoc", const.MIN_DISCHARGE_LEVEL),
             # "curSensorNtcNum": 0,
             # "curSensorTemp": [],
             # "cycleSoh": 100.0,
@@ -178,6 +193,22 @@ class StreamAC(BaseDevice):
             # "powConsumptionMeasurement": 2,
             # "powGetBpCms": 1915.0862,
             WattsSensorEntity(client, self, "powGetBpCms", const.STREAM_POWER_BATTERY),
+            # Per-PV power, voltage, current (Stream Ultra / Ultra X / AC Pro).
+            # Per-PV reporting depends on the firmware version installed:
+            #   - Firmware <  1.0.1.88: powGetPv / powGetPv2..4 emitted, per-PV
+            #     watts are correct, plugInInfoPv*Amp returns 0.
+            #   - Firmware >= 1.0.1.88: powGetPv* returns 0, per-PV data lives
+            #     in plugInInfoPv{,2,3,4}Amp + plugInInfoPv{,2,3,4}Vol instead.
+            # See issues #582, #584. To stay firmware-agnostic we register BOTH
+            # mapping variants with auto_enable=True. HA enables whichever set
+            # first sees a non-zero value.
+            #
+            # New-firmware path (computed amp x vol via StreamPvWattsSensorEntity)
+            StreamPvWattsSensorEntity(client, self, "plugInInfoPvAmp", const.STREAM_POWER_PV_1, False, True),
+            StreamPvWattsSensorEntity(client, self, "plugInInfoPv2Amp", const.STREAM_POWER_PV_2, False, True),
+            StreamPvWattsSensorEntity(client, self, "plugInInfoPv3Amp", const.STREAM_POWER_PV_3, False, True),
+            StreamPvWattsSensorEntity(client, self, "plugInInfoPv4Amp", const.STREAM_POWER_PV_4, False, True),
+            # Legacy-firmware path (powGetPv* keys)
             # "powGetPv": 0.0,
             WattsSensorEntity(client, self, "powGetPv", const.STREAM_POWER_PV_1, False, True),
             # "powGetPv2": 0.0,
@@ -186,6 +217,15 @@ class StreamAC(BaseDevice):
             WattsSensorEntity(client, self, "powGetPv3", const.STREAM_POWER_PV_3, False, True),
             # "powGetPv4": 0.0,
             WattsSensorEntity(client, self, "powGetPv4", const.STREAM_POWER_PV_4, False, True),
+            # Per-PV voltage + current (emitted by all Stream firmware versions)
+            VoltSensorEntity(client, self, "plugInInfoPvVol", const.STREAM_IN_VOL_PV_1, False, True),
+            VoltSensorEntity(client, self, "plugInInfoPv2Vol", const.STREAM_IN_VOL_PV_2, False, True),
+            VoltSensorEntity(client, self, "plugInInfoPv3Vol", const.STREAM_IN_VOL_PV_3, False, True),
+            VoltSensorEntity(client, self, "plugInInfoPv4Vol", const.STREAM_IN_VOL_PV_4, False, True),
+            AmpSensorEntity(client, self, "plugInInfoPvAmp", const.STREAM_IN_AMPS_PV_1, False, True),
+            AmpSensorEntity(client, self, "plugInInfoPv2Amp", const.STREAM_IN_AMPS_PV_2, False, True),
+            AmpSensorEntity(client, self, "plugInInfoPv3Amp", const.STREAM_IN_AMPS_PV_3, False, True),
+            AmpSensorEntity(client, self, "plugInInfoPv4Amp", const.STREAM_IN_AMPS_PV_4, False, True),
             # "powGetPvSum": 2051.3975,
             WattsSensorEntity(client, self, "powGetPvSum", const.STREAM_POWER_PV_SUM),
             # "powGetSchuko1": 0.0,
@@ -207,7 +247,7 @@ class StreamAC(BaseDevice):
             # "productDetail": 5,
             # "productType": 58,
             # "realSoh": 100.0,
-            LevelSensorEntity(client, self, "realSoh", const.REAL_SOH, False),
+            StateOfHealthSensorEntity(client, self, "realSoh", const.REAL_SOH, False),
             # "relay1Onoff": true,
             # "relay2Onoff": true,
             # "relay3Onoff": true,
@@ -227,7 +267,7 @@ class StreamAC(BaseDevice):
             .attr("remainCap", const.ATTR_REMAIN_CAPACITY, 0),
             # "socketMeasurePower": 0.0,
             # "soh": 100,
-            LevelSensorEntity(client, self, "soh", const.SOH),
+            StateOfHealthSensorEntity(client, self, "soh", const.SOH),
             # "stormPatternEnable": false,
             # "stormPatternEndTime": 0,
             # "stormPatternOpenFlag": false,

@@ -34,6 +34,11 @@ automation:
     trigger:
       - platform: template
         value_template: "{{ is_state_attr('sensor.front_door_last_activity', 'recording_status', 'ready') }}"
+    condition:
+      # at HA start the camera has no attributes yet -> video_url is empty,
+      # downloader failed with "invalid url for dictionary value @ data['url']"
+      - condition: template
+        value_template: "{{ (state_attr('camera.front_door', 'video_url') or '') | regex_match('^https?://') }}"
     action:
       - action: downloader.download_file
         data:

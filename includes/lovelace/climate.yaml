@@ -126,7 +126,7 @@ cards:
 
 
       - type: tile
-        entity: climate.0x0cae5ffffeb0a9de
+        entity: climate.sonoff_living_room_trv
         features:
           - type: "target-temperature"
           - type: "climate-hvac-modes"
@@ -141,7 +141,7 @@ cards:
                }
                .secondary:before {
                  visibility: visible;
-                 content: "{{ states('climate.0x0cae5ffffeb0a9de') | title + ' - ' + state_attr('climate.0x0cae5ffffeb0a9de', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | float(default='N/A') | round(1, default='N/A') | string  + '°C' | title}}"
+                 content: "{{ states('climate.sonoff_living_room_trv') | title + ' - ' + state_attr('climate.sonoff_living_room_trv', 'current_temperature') | title + '°C/' + states('sensor.0x00158d0002bfe958_temperature') | float(default='N/A') | round(1, default='N/A') | string  + '°C' | title}}"
                }
 
 

@@ -1,4 +1,5 @@
 import logging
+import time
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -31,6 +32,8 @@ class EcoflowApiClient(ABC):
         self.mqtt_info: EcoflowMqttInfo
         self.devices: dict[str, Any] = {}
         self.mqtt_client: EcoflowMQTTClient
+        self._mqtt_reconnect_last_attempt = 0.0
+        self._mqtt_reconnect_count = 0
 
     @abstractmethod
     async def login(self):
@@ -45,8 +48,38 @@ class EcoflowApiClient(ABC):
         pass
 
     @abstractmethod
-    def configure_device(self, device_data: DeviceData):
+    def _create_device_info(
+        self, device_sn: str, device_name: str, device_type: str, status: int = -1
+    ) -> Any:
         pass
+
+    @abstractmethod
+    def _device_registry(self) -> dict[str, Any]:
+        pass
+
+    def configure_device(self, device_data: DeviceData, api_devices_info: dict[str, Any] | None = None):
+        sn = device_data.parent.sn if device_data.parent is not None else device_data.sn
+        status = -1
+        if api_devices_info and sn in api_devices_info:
+            status = api_devices_info[sn].status
+
+        if device_data.parent is not None:
+            info = self._create_device_info(device_data.parent.sn, device_data.name, device_data.parent.device_type, status)
+        else:
+            info = self._create_device_info(device_data.sn, device_data.name, device_data.device_type, status)
+
+        from ..devices import DiagnosticDevice
+
+        registry = self._device_registry()
+        if device_data.device_type in registry:
+            device = registry[device_data.device_type](info, device_data)
+        elif device_data.parent is not None and device_data.parent.device_type in registry:
+            device = registry[device_data.parent.device_type](info, device_data)
+        else:
+            device = DiagnosticDevice(info, device_data)
+
+        self.add_device(device)
+        return device
 
     def add_device(self, device):
         self.devices[device.device_data.sn] = device
@@ -102,6 +135,22 @@ class EcoflowApiClient(ABC):
         from custom_components.ecoflow_cloud.api.ecoflow_mqtt import EcoflowMQTTClient
 
         self.mqtt_client = EcoflowMQTTClient(self.mqtt_info, self.devices)
+
+    def schedule_mqtt_reconnect(self, cooldown_sec: int = 60) -> int | None:
+        if self.mqtt_client.is_connected():
+            return None
+
+        now = time.monotonic()
+        if now - self._mqtt_reconnect_last_attempt < cooldown_sec:
+            return None
+
+        self._mqtt_reconnect_last_attempt = now
+        self._mqtt_reconnect_count += 1
+        return self._mqtt_reconnect_count
+
+    @property
+    def mqtt_reconnect_count(self) -> int:
+        return self._mqtt_reconnect_count
 
     def stop(self):
         _LOGGER.debug("Stopping MQTT client for %s", self.mqtt_info.client_id)

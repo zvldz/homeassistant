@@ -1,0 +1,85 @@
+# Recovery: integrations that discover a device only at startup and never retry.
+# Logic lives in python_scripts/device_recovery.py; this file only lists devices.
+- alias: "Recover unavailable devices"
+  id: recover_unavailable_devices
+  initial_state: true
+  max_exceeded: silent
+  trigger:
+    - platform: time_pattern
+      minutes: "/2"
+  action:
+    - service: python_script.exec
+      data:
+        file: python_scripts/device_recovery.py
+        devices:
+          # multicast socket dies silently, only a reload recreates it
+          - name: Aqara gateway
+            entity: sensor.illumination_7811dcb245b2
+          - name: Balcony LED strip
+            entity: light.balcony_strip
+            probe: binary_sensor.balcony_strip_alive
+            socket: switch.power_strip_1_relay1
+            restore: true
+          # no socket here, so a reload is the only step available
+          - name: Bedside lamp
+            entity: light.bedside
+            probe: binary_sensor.bedside_lamp_alive
+            restore: true
+
+- alias: "Recover sticky WiFi clients"
+  id: recover_sticky_wifi
+  initial_state: true
+  max_exceeded: silent
+  trigger:
+    - platform: time_pattern
+      minutes: "/15"
+      id: periodic
+    # Router reboot. RouterOS and RouterBOARD are flashed separately, so an
+    # update means two reboots with an arbitrary gap - each fires this trigger.
+    # hEX is also the CAPsMAN master: its reboot re-provisions both APs.
+    - platform: state
+      entity_id:
+        - sensor.mikrotik_rb951g_2hnd_uptime
+        - sensor.mikrotik2_hap_ax_3_uptime
+        - sensor.mikrotik3_cap_ax_uptime
+      not_to:
+        - unavailable
+        - unknown
+      not_from:
+        - unknown
+      id: reboot
+  condition:
+    # skip while any router is still missing - likely mid-update
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id:
+            - sensor.mikrotik_rb951g_2hnd_uptime
+            - sensor.mikrotik2_hap_ax_3_uptime
+            - sensor.mikrotik3_cap_ax_uptime
+          state:
+            - unavailable
+            - unknown
+          match: any
+  action:
+    # only after a reboot: hEX needs ~2 min to boot, then clients must settle
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: reboot
+          sequence:
+            - delay: "00:03:00"
+    - service: python_script.exec
+      data:
+        file: python_scripts/sticky_wifi.py
+        # a reboot changes the picture - drop the "best AP" marks
+        ap_rebooted: "{{ trigger.platform == 'state' }}"
+        watch:
+          "04:CF:8C:78:38:A9": living_room_lamp
+          "78:11:DC:A3:90:B4": bedside
+          "78:11:DC:A3:96:33": master_bedroom_lamp
+          "78:11:DC:ED:94:8F": bedroom_lamp
+          "78:11:DC:91:33:22": kitchen_lamp
+          "50:EC:50:88:73:F3": balcony_strip
+          "7C:49:EB:46:7A:59": wc_spot_1
+          "7C:49:EB:4E:90:BD": wc_spot_2

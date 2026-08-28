@@ -21,6 +21,7 @@ from custom_components.ecoflow_cloud.sensor import (
     QuotaScheduledStatusSensorEntity,
     SolarAmpSensorEntity,
     SolarPowerSensorEntity,
+    StateOfHealthSensorEntity,
     TempSensorEntity,
     VoltSensorEntity,
     WattsSensorEntity,
@@ -81,6 +82,11 @@ class PowerOcean(BaseDevice):
             WattsSensorEntity(client, self, "96_1.pcsCPhase.actPwr", "pcsCPhase.actPwr"),
             WattsSensorEntity(client, self, "96_1.pcsCPhase.reactPwr", "pcsCPhase.reactPwr"),
             WattsSensorEntity(client, self, "96_1.pcsCPhase.apparentPwr", "pcsCPhase.apparentPwr"),
+            # System-level power meters (from EcoFlow MQTT quota, previously unmapped):
+            # grid exchange, whole-house load and system battery power.
+            WattsSensorEntity(client, self, "sysGridPwr", "sysGridPwr"),
+            WattsSensorEntity(client, self, "sysLoadPwr", "sysLoadPwr"),
+            WattsSensorEntity(client, self, "bpPwr", "bpPwr"),
         ]
 
         mppt_prefix, string_count = self._determine_mppt_metadata()
@@ -159,7 +165,7 @@ class PowerOcean(BaseDevice):
 
         return [
             LevelSensorEntity(client, self, f"{prefix}.bpSoc", f"{prefix}Soc"),
-            LevelSensorEntity(client, self, f"{prefix}.bpSoh", f"{prefix}Soh"),
+            StateOfHealthSensorEntity(client, self, f"{prefix}.bpSoh", f"{prefix}Soh"),
             WattsSensorEntity(client, self, f"{prefix}.bpPwr", f"{prefix}Pwr"),
             AmpSensorEntity(client, self, f"{prefix}.bpAmp", f"{prefix}Amp"),
             VoltSensorEntity(client, self, f"{prefix}.bpVol", f"{prefix}Vol"),
@@ -226,7 +232,7 @@ class PowerOcean(BaseDevice):
 
     def _status_sensor(self, client: EcoflowApiClient) -> QuotaScheduledStatusSensorEntity:
         # Keep quota fallback active even while MQTT stream is sparse.
-        return QuotaScheduledStatusSensorEntity(client, self, 60)
+        return QuotaScheduledStatusSensorEntity(client, self, 60, "Status", "status")
 
     def _flatten_param_branch(self, prefix: str, value: Any, target: dict[str, Any]) -> None:
         if isinstance(value, dict):

@@ -157,53 +157,15 @@
           Expected 1Gbps, internet is capped
           </pre>
 
-# Xiaomi Aqara Gateway 1 is used as an alarm indicator light, so it must not stay dead.
-# The integration listens on a multicast socket (224.0.0.50:9898); when the stream breaks
-# (network/router restart) it goes silent without any error - reloading recreates the socket.
-- alias: "Recover Xiaomi Aqara gateway"
-  initial_state: true
-  trigger:
-    - platform: state
-      entity_id: sensor.illumination_7811dcb245b2
-      to: "unavailable"
-      for: "00:10:00"
-      id: first
-    - platform: time_pattern
-      minutes: "/30"
-      id: retry
-  condition:
-    - condition: state
-      entity_id: sensor.illumination_7811dcb245b2
-      state: "unavailable"
-  action:
-    - service: homeassistant.reload_config_entry
-      target:
-        entity_id: sensor.illumination_7811dcb245b2
-    - delay: "00:00:30"
-    - choose:
-        - conditions:
-            - condition: trigger
-              id: first
-          sequence:
-            - service: telegram_bot.send_message
-              data:
-                disable_notification: true
-                chat_id: !secret telegram_bot_allowed_chat_id1
-                parse_mode: html
-                message: |
-                  <pre>
-                  {{ "\U0001F504" }} Aqara gateway was unavailable - integration reloaded
-                  Illumination now: {{ states('sensor.illumination_7811dcb245b2') }}
-                  </pre>
-
+# Device recovery automations live in includes/automations/recovery.yaml
 # ============================================================
-# TEMPORARY (added 2026-08-04) - delete together with the vacuum no-go zone
-# around the cat bowls (x 3375..3480, y 1800..1872 on the Valetudo map, units = cm).
-# Rollback: curl -X PUT http://192.168.1.25/api/v2/robot/capabilities/CombinedVirtualRestrictionsCapability \
-#           -H "content-type: application/json" -d @/root/backup/valetudo/restrictions_LATEST.json
+# DONE 2026-08-21 - the vacuum no-go zone around the cat bowls was removed and
+# this reminder is switched off. Not deleted on purpose: the zone may be needed
+# again, and re-creating it means only flipping initial_state back to true.
+# Zone: x 3390..3470, y 1820..1855 on the Valetudo map, units = cm.
 # ============================================================
 - alias: "TEMP: remove vacuum no-go zone (cat bowls)"
-  initial_state: true
+  initial_state: false
   trigger:
     - platform: time
       at: "09:00:00"
@@ -217,10 +179,38 @@
         parse_mode: html
         message: |
           <pre>
-          {{ "\U0001F5D3" }} ВРЕМЕННОЕ напоминание
-          Пора снять запретную зону пылесоса (миски кота)
-          Зона: x 3375..3480, y 1800..1872 (105x72 см)
+          {{ "\U0001F5D3" }} TEMPORARY reminder
+          Time to drop the vacuum no-go zone (cat bowls)
+          Zone: x 3390..3470, y 1820..1855 (80x35 cm)
 
-          Снять: PUT restrictions_LATEST.json на 192.168.1.25
-          Потом удалить эту автоматизацию (TEMP в system.yaml)
+          Remove: PUT restrictions_LATEST.json to 192.168.1.25
+          Then set initial_state: false here (TEMP in system.yaml)
+          </pre>
+
+# DONE 2026-08-21 - pump notifications on haf are back on and this reminder is
+# switched off. Kept as a template: the notifications get muted for weeks at a
+# time, so the next mute only needs the dates below updated and a flip to true.
+- alias: "TEMP: re-enable pump notifications on haf"
+  initial_state: false
+  trigger:
+    - platform: time
+      at: "12:00:00"
+  condition:
+    - condition: template
+      value_template: "{{ now().strftime('%Y-%m-%d') >= '2026-08-21' }}"
+  action:
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_bot_allowed_chat_id1
+        parse_mode: html
+        message: |
+          <pre>
+          {{ "\U0001F5D3" }} TEMPORARY reminder
+          Time to re-enable pump notifications on haf (off since 2026-08-11)
+
+          Automations: Pump Alert / Pump Shutdown Alert
+          File: haf includes/automations/notify.yaml (top of the file)
+          Recipients: telegram_vtel + telegram_kateryna
+
+          Then set initial_state: false here (TEMP in system.yaml on ha1)
           </pre>

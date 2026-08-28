@@ -114,7 +114,9 @@
       to: 'on'
     - platform: numeric_state
       entity_id: sensor.0x00158d000273011f_humidity
-      above: 68
+#     above: 68   # until 2026-08-08: overlapped the idle level of a closed
+#                 # bathroom (63-68), ~6 false starts a day. A shower reaches 78.
+      above: 73
   action:
     - service: switch.turn_on
       entity_id: switch.0x54ef4410001ad4c2_right

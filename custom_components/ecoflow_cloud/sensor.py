@@ -1,9 +1,11 @@
-import enum
+import inspect
 import logging
 import re
 import struct
-from datetime import timedelta
-from typing import Any, Mapping, OrderedDict, override
+from collections import OrderedDict
+from collections.abc import Mapping
+from datetime import datetime, timedelta
+from typing import Any, override
 
 from homeassistant.components.integration.sensor import IntegrationSensor  # pyright: ignore[reportMissingImports]
 from homeassistant.components.sensor import (  # pyright: ignore[reportMissingImports]
@@ -36,10 +38,14 @@ from homeassistant.helpers.event import async_track_state_change_event  # pyrigh
 from homeassistant.util import dt  # pyright: ignore[reportMissingImports]
 
 from . import (
+    ATTR_DATA_UPDATES,
     ATTR_MQTT_CONNECTED,
     ATTR_QUOTA_REQUESTS,
     ATTR_STATUS_DATA_LAST_UPDATE,
+    ATTR_STATUS_LAST_UPDATE,
+    ATTR_STATUS_RECONNECTS,
     ATTR_STATUS_SN,
+    ATTR_STATUS_UPDATES,
     ECOFLOW_DOMAIN,
 )
 from .api import EcoflowApiClient
@@ -51,10 +57,13 @@ from .entities import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# HA 2025.8 added a `hass` argument to IntegrationSensor.__init__ and 2026.8 removed it again
+_INTEGRATION_SENSOR_TAKES_HASS = "hass" in inspect.signature(IntegrationSensor.__init__).parameters
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     client: EcoflowApiClient = hass.data[ECOFLOW_DOMAIN][entry.entry_id]
-    for sn, device in client.devices.items():
+    for device in client.devices.values():
         sensors = device.sensors(client)
         # Add regular sensors
         async_add_entities(sensors)
@@ -124,8 +133,171 @@ class MiscSensorEntity(BaseSensorEntity):
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
 
+class DcModeStateSensorEntity(MiscSensorEntity):
+    """Expose the live DC input mode without duplicating the config select."""
+
+    _attr_icon = "mdi:tune-variant"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._raw_code: int | None = None
+
+    def _runtime_mode(self) -> tuple[int | None, str | None]:
+        params = self._device.data.params
+        runtime_code = params.get("mppt.chgType")
+        if runtime_code is None:
+            return None, None
+        runtime_code = int(runtime_code)
+        if runtime_code == 255:
+            return runtime_code, "No active DC input"
+        return runtime_code, const.DC_MODE_LABELS.get(runtime_code, f"Unknown ({runtime_code})")
+
+    @property
+    def icon(self) -> str | None:
+        if self._raw_code == 255:
+            return "mdi:power-plug-off-outline"
+        if self._raw_code == const.DC_MODE_OPTIONS["Solar Recharging"]:
+            return "mdi:solar-power"
+        if self._raw_code == const.DC_MODE_OPTIONS["Car Recharging"]:
+            return "mdi:car-electric"
+        if self._raw_code == const.DC_MODE_OPTIONS["Auto"]:
+            return "mdi:tune-variant"
+        return "mdi:help-circle-outline"
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        attrs = dict(super().extra_state_attributes or {})
+        attrs["raw_code"] = self._raw_code
+        configured_code = self._device.data.params.get("mppt.cfgChgType")
+        if configured_code is not None:
+            configured_code = int(configured_code)
+        attrs["configured_code"] = configured_code
+        attrs["configured_mode"] = (
+            const.DC_MODE_LABELS.get(configured_code, f"Unknown ({configured_code})")
+            if configured_code is not None
+            else None
+        )
+        runtime_code, runtime_mode = self._runtime_mode()
+        attrs["runtime_code"] = runtime_code
+        attrs["runtime_mode"] = runtime_mode
+        return attrs
+
+    def _update_value(self, val: Any) -> bool:
+        runtime_code = int(val)
+        runtime_mode = self._runtime_mode()[1]
+        self._raw_code = runtime_code
+        label = runtime_mode or f"Unknown ({runtime_code})"
+        return super()._update_value(label)
+
+    def _updated(self, data: dict[str, Any]):
+        params = self._device.data.params
+        runtime_code = params.get("mppt.chgType")
+        if runtime_code is None:
+            return
+
+        self._attr_available = True
+        if self._update_value(runtime_code):
+            self.schedule_update_ha_state()
+
+
+class Ft307FaultCodeSensorEntity(MiscSensorEntity):
+    """Decode the FT307 MPPT/DC fault bitmask into readable diagnostics."""
+
+    _attr_icon = "mdi:check-circle-outline"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._raw_code: int | None = None
+        self._active_faults: list[dict[str, Any]] = []
+        self._unknown_bits: int = 0
+        self._suppressed_faults: list[dict[str, Any]] = []
+
+    def _dc_input_is_effectively_idle(self) -> bool:
+        params = self._device.data.params
+        in_watts = int(params.get("mppt.inWatts", 0) or 0)
+        in_vol = int(params.get("mppt.inVol", 0) or 0)
+        in_amp = int(params.get("mppt.inAmp", 0) or 0)
+        return in_watts == 0 and in_vol < 5000 and in_amp < 100
+
+    @property
+    def icon(self) -> str | None:
+        if self._active_faults:
+            return "mdi:alert-octagon-outline"
+        if self._suppressed_faults:
+            return "mdi:minus-circle-outline"
+        return self._attr_icon
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        attrs = dict(super().extra_state_attributes or {})
+        attrs["raw_code"] = self._raw_code
+        attrs["active_faults"] = self._active_faults
+        if self._suppressed_faults:
+            attrs["suppressed_faults"] = self._suppressed_faults
+        if self._unknown_bits:
+            attrs["unknown_bits"] = self._unknown_bits
+        return attrs
+
+    def _update_value(self, val: Any) -> bool:
+        code = int(val)
+        self._raw_code = code
+        self._active_faults = []
+        self._unknown_bits = 0
+        self._suppressed_faults = []
+
+        if code == 0:
+            return super()._update_value("No fault")
+
+        known_mask = 0
+        for bit, meta in sorted(const.FT307_FAULTS.items()):
+            known_mask |= bit
+            if not (code & bit):
+                continue
+            fault = {"bit": bit, "title": meta["title"], "hint": meta["hint"]}
+            if bit == 4096 and self._dc_input_is_effectively_idle():
+                self._suppressed_faults.append(fault)
+                continue
+            self._active_faults.append(fault)
+
+        self._unknown_bits = code & ~known_mask
+        if self._unknown_bits:
+            self._active_faults.append(
+                {
+                    "bit": self._unknown_bits,
+                    "title": f"Unknown fault bits (0x{self._unknown_bits:X})",
+                    "hint": None,
+                }
+            )
+
+        if not self._active_faults and self._suppressed_faults:
+            return super()._update_value("No active DC fault")
+        if len(self._active_faults) == 1:
+            label = self._active_faults[0]["title"]
+        else:
+            label = "; ".join(fault["title"] for fault in self._active_faults)
+
+        return super()._update_value(label)
+
+
 class LevelSensorEntity(BaseSensorEntity):
     _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 2
+
+
+class BatteryLimitSensorEntity(BaseSensorEntity):
+    # Charge/discharge SoC limits are configuration thresholds, not the amount of
+    # charge left, so they must not use the BATTERY device class (HA defines that
+    # as "percentage of battery that is left").
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+
+class StateOfHealthSensorEntity(BaseSensorEntity):
+    # State of health is a battery wear/health percentage, not the amount of
+    # charge left, so it must not use the BATTERY device class (HA defines that
+    # as "percentage of battery that is left").
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
 
@@ -319,6 +491,62 @@ class EnergySensorEntity(BaseSensorEntity):
             return False
 
 
+class EnergyStorageSensorEntity(BaseSensorEntity):
+    _attr_device_class = SensorDeviceClass.ENERGY_STORAGE
+    _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 0
+
+
+class StoredEnergyFromSocSensorEntity(EnergyStorageSensorEntity):
+    """Stored energy (Wh) computed as full-pack-energy x SoC%.
+
+    Some devices (e.g. the EcoFlow Stream family) report total pack energy in
+    watt-hours (``cmsBattFullEnergy``) but not the currently stored energy.
+    This derives it as ``full_energy_key x soc_key / 100`` from a single payload
+    tick, giving a spec-correct ENERGY_STORAGE sensor while the percentage SoC
+    keeps its own BATTERY entity.
+
+    A synthetic ``mqtt_key`` is used so the computed entity's ``unique_id``
+    cannot collide with any entity subscribing to the raw source keys (mirrors
+    ``StreamPvWattsSensorEntity``).
+    """
+
+    _SYNTHETIC_KEY_PREFIX = "storedEnergy"
+
+    def __init__(
+        self,
+        client,
+        device,
+        full_energy_key: str,
+        soc_key: str,
+        title: str,
+        enabled: bool = True,
+        auto_enable: bool = False,
+    ) -> None:
+        self._full_energy_key = full_energy_key
+        self._soc_key = soc_key
+        synthetic_key = f"{self._SYNTHETIC_KEY_PREFIX}_{full_energy_key}"
+        super().__init__(client, device, synthetic_key, title, enabled, auto_enable)
+
+    def _updated(self, data: dict[str, Any]) -> None:
+        full_energy = data.get(self._full_energy_key)
+        soc = data.get(self._soc_key)
+        if full_energy is None or soc is None:
+            # Let the upstream pipeline handle offline / default-value reset.
+            super()._updated(data)
+            return
+        try:
+            stored = float(full_energy) * float(soc) / 100.0
+        except (TypeError, ValueError):
+            return
+        # Inject the computed value under our synthetic mqtt_key and let the
+        # upstream _updated() do attribute mapping, auto-enable, _update_value
+        # and the HA state write. Shallow-copy so sibling sensors reading the
+        # same payload tick are unaffected.
+        super()._updated({**data, self.mqtt_key: stored})
+
+
 class CapacitySensorEntity(BaseSensorEntity):
     _attr_native_unit_of_measurement = "mAh"
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -473,14 +701,7 @@ class DecihertzSensorEntity(FrequencySensorEntity):
         return super()._update_value(int(val) / 10)
 
 
-class _OnlineStatus(enum.Enum):
-    UNKNOWN = enum.auto()
-    ASSUME_OFFLINE = enum.auto()
-    OFFLINE = enum.auto()
-    ONLINE = enum.auto()
-
-
-class StatusSensorEntity(SensorEntity, EcoFlowAbstractDataEntity):
+class StatusSensorEntity(SensorEntity, EcoFlowAbstractDataEntity):  # type: ignore[misc]
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
@@ -489,80 +710,100 @@ class StatusSensorEntity(SensorEntity, EcoFlowAbstractDataEntity):
         device: BaseDevice,
         title: str = "Status",
         key: str = "status",
+        poll_when_silent: bool = False,
+        scheduled_refresh_sec: int | None = None,
     ):
+        from .devices.status_tracker import OnlineStatus
+
         super().__init__(client, device, title, key)
         self._attr_force_update = False
-        self.assume_offline_period_sec = device.device_data.options.assume_offline_sec
-        self.force_offline_period_sec = self.assume_offline_period_sec * 3
+        self._tracker = device.status_tracker
+        self._prev_status: OnlineStatus | None = None
+        self._poll_when_silent = poll_when_silent
+        self._scheduled_refresh_sec = scheduled_refresh_sec
+        self._last_poll = dt.utcnow().replace(year=2000, month=1, day=1, hour=0, minute=0, second=0)
+        self._last_scheduled = dt.utcnow()
+        self._poll_count = 0
 
-        self._online = _OnlineStatus.UNKNOWN
-        self._last_update = dt.utcnow().replace(year=2000, month=1, day=1, hour=0, minute=0, second=0)
         self._attrs = OrderedDict[str, Any]()
         self._attrs[ATTR_STATUS_SN] = self._device.device_info.sn
         self._attrs[ATTR_STATUS_DATA_LAST_UPDATE] = None
         self._attrs[ATTR_MQTT_CONNECTED] = None
+        self._attrs[ATTR_STATUS_RECONNECTS] = 0
+        if poll_when_silent or scheduled_refresh_sec is not None:
+            self._attrs[ATTR_QUOTA_REQUESTS] = 0
 
     def _handle_coordinator_update(self) -> None:
-        changed = False
-        update_time = self.coordinator.data.data_holder.last_received_time()
-        if self._last_update < update_time:
-            self._last_update = max(update_time, self._last_update)
-            self._actualize_attributes()
+        from .devices.status_tracker import OnlineStatus
+
+        status = self._tracker.status
+        changed = status != self._prev_status
+
+        if self._schedule_mqtt_reconnect():
             changed = True
 
-        changed = self._actualize_status() or changed
+        # Active polling when device goes silent
+        if self._poll_when_silent and status == OnlineStatus.ASSUME_OFFLINE:  # noqa: SIM102
+            if (dt.utcnow() - self._last_poll).total_seconds() >= self._tracker.assume_offline_sec:
+                self.hass.async_create_background_task(
+                    self._client.quota_all(self._device.device_info.sn),
+                    f"get quota {self._device.device_info.sn}",
+                )
+                self._last_poll = dt.utcnow()
+                self._poll_count += 1
+                self._attrs[ATTR_QUOTA_REQUESTS] = self._poll_count
+                changed = True
+
+        # Scheduled periodic refresh regardless of status
+        if self._scheduled_refresh_sec is not None:  # noqa: SIM102
+            if (dt.utcnow() - self._last_scheduled).total_seconds() > self._scheduled_refresh_sec:
+                self.hass.async_create_background_task(
+                    self._client.quota_all(self._device.device_info.sn), "get quota"
+                )
+                self._last_scheduled = dt.utcnow()
+                self._poll_count += 1
+                self._attrs[ATTR_QUOTA_REQUESTS] = self._poll_count
+                _LOGGER.debug("Reload quota for device %s", self._device.device_info.sn)
+                changed = True
 
         if changed:
-            self.coordinator.data.data_holder.online = self._online == _OnlineStatus.ONLINE
-
-            if self._device.device_data.options.verbose_status_mode or self._online in {
-                _OnlineStatus.ONLINE,
-                _OnlineStatus.OFFLINE,
-            }:
+            self._prev_status = status
+            if status.online is not None or self._device.device_data.options.verbose_status_mode:
+                self._attr_native_value = status.label
+                self._actualize_attributes()
                 self.schedule_update_ha_state()
 
-    def _actualize_status(self) -> bool:
-        changed = False
-        time_since_update = (dt.utcnow() - self._last_update).total_seconds()
-        is_fresh = time_since_update < self.assume_offline_period_sec
-        # some device does not produce explicit offline status to data_holder.online
-        # so need to consider forcing online = False after some attempts while ASSUME_OFFLINE
-        is_disconnected = time_since_update > self.force_offline_period_sec
-        online_data = self.coordinator.data.data_holder.online
+    def _schedule_mqtt_reconnect(self) -> bool:
+        reconnect_count = self._client.schedule_mqtt_reconnect()
+        if reconnect_count is None:
+            return False
 
-        target_status = self._online
-        target_value = self._attr_native_value
+        self._attrs[ATTR_STATUS_RECONNECTS] = reconnect_count
+        self.hass.async_create_background_task(
+            self._async_reconnect_mqtt(),
+            f"reconnect ecoflow mqtt {self._device.device_info.sn}",
+        )
+        return True
 
-        if not online_data:
-            target_status = _OnlineStatus.OFFLINE
-            target_value = "offline"
-        elif is_disconnected:
-            target_status = _OnlineStatus.OFFLINE
-            target_value = "offline"
-        elif not is_fresh:
-            target_status = _OnlineStatus.ASSUME_OFFLINE
-            target_value = "assume_offline"
-        else:
-            target_status = _OnlineStatus.ONLINE
-            target_value = "online"
+    async def _async_reconnect_mqtt(self) -> None:
+        await self.hass.async_add_executor_job(self._client.mqtt_client.reconnect)
 
-        if self._online != target_status:
-            self._online = target_status
-            self._attr_native_value = target_value
-            self._actualize_attributes()
-            changed = True
-
-        return changed
+    def _format_age(self, timestamp: datetime | None) -> str | None:
+        if timestamp is None:
+            return None
+        age = (dt.utcnow() - timestamp).total_seconds()
+        if age < self._tracker.assume_offline_sec:
+            return f"< {self._tracker.assume_offline_sec} sec"
+        return str(timestamp)
 
     def _actualize_attributes(self):
-        if self._online == _OnlineStatus.ONLINE:
-            self._attrs[ATTR_STATUS_DATA_LAST_UPDATE] = f"< {self.assume_offline_period_sec} sec"
-        elif self._online == _OnlineStatus.ASSUME_OFFLINE:
-            self._attrs[ATTR_STATUS_DATA_LAST_UPDATE] = f"< {self.force_offline_period_sec} sec"
-        else:
-            self._attrs[ATTR_STATUS_DATA_LAST_UPDATE] = self._last_update
-
+        self._attrs[ATTR_STATUS_DATA_LAST_UPDATE] = self._format_age(self._tracker.last_data_time)
+        self._attrs[ATTR_STATUS_LAST_UPDATE] = self._format_age(self._tracker._explicit_status_last_time)
+        if self._device.device_data.options.verbose_status_mode:
+            self._attrs[ATTR_STATUS_UPDATES] = self._tracker._explicit_status_count
+            self._attrs[ATTR_DATA_UPDATES] = self._tracker._data_received_count
         self._attrs[ATTR_MQTT_CONNECTED] = self._client.mqtt_client.is_connected()
+        self._attrs[ATTR_STATUS_RECONNECTS] = self._client.mqtt_reconnect_count
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
@@ -570,7 +811,7 @@ class StatusSensorEntity(SensorEntity, EcoFlowAbstractDataEntity):
 
 
 class QuotaStatusSensorEntity(StatusSensorEntity):
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    """StatusSensorEntity that polls quota when device goes silent."""
 
     def __init__(
         self,
@@ -579,49 +820,28 @@ class QuotaStatusSensorEntity(StatusSensorEntity):
         title: str = "Status",
         key: str = "status",
     ):
-        super().__init__(client, device, title, key)
-        self._attrs[ATTR_QUOTA_REQUESTS] = 0
-        self._last_quota_req = dt.utcnow().replace(year=2000, month=1, day=1, hour=0, minute=0, second=0)
-
-    @override
-    def _actualize_status(self) -> bool:
-        changed = False
-
-        # 1. Update status via parent using time-based logic
-        status_changed = super()._actualize_status()
-        changed = changed or status_changed
-
-        # 2. Handle Quota Requests (only if silent / assume offline)
-        if self._online == _OnlineStatus.ASSUME_OFFLINE:
-            time_since_req = (dt.utcnow() - self._last_quota_req).total_seconds()
-            if time_since_req >= self.assume_offline_period_sec:
-                self.hass.async_create_background_task(
-                    self._client.quota_all(self._device.device_info.sn), f"get quota {self._device.device_info.sn}"
-                )
-                self._last_quota_req = dt.utcnow()
-                self._attrs[ATTR_QUOTA_REQUESTS] += 1
-                changed = True
-
-        return changed
+        super().__init__(client, device, title, key, poll_when_silent=True)
 
 
 class QuotaScheduledStatusSensorEntity(QuotaStatusSensorEntity):
-    def __init__(self, client: EcoflowApiClient, device: BaseDevice, reload_delay: int = 3600):
-        super().__init__(client, device, "Status (Scheduled)", "status.scheduled")
-        self.assume_offline_period_sec: int = reload_delay
-        self._quota_last_update = dt.utcnow()
+    """QuotaStatusSensorEntity with additional periodic scheduled refresh.
 
-    def _actualize_status(self) -> bool:
-        changed = super()._actualize_status()
-        quota_diff = dt.as_timestamp(dt.utcnow()) - dt.as_timestamp(self._quota_last_update)
-        # if delay passed, reload quota
-        if quota_diff > (self.assume_offline_period_sec):
-            self._quota_last_update = dt.utcnow()
-            self.hass.async_create_background_task(self._client.quota_all(self._device.device_info.sn), "get quota")
-            self._attrs[ATTR_QUOTA_REQUESTS] = self._attrs[ATTR_QUOTA_REQUESTS] + 1
-            _LOGGER.debug("Reload quota for device %s", self._device.device_info.sn)
-            changed = True
-        return changed
+    Caveat: the scheduled refresh fetches values via a periodic HTTP (quota)
+    call. The quota endpoint keeps returning the last known values even when
+    the device is offline, so a successful poll does not prove the device is
+    actually online — the data may be stale/cached server-side.
+    """
+
+    def __init__(
+        self,
+        client: EcoflowApiClient,
+        device: BaseDevice,
+        reload_delay: int = 3600,
+        title: str = "Status (Scheduled)",
+        key: str = "status.scheduled",
+    ):
+        super().__init__(client, device, title, key)
+        self._scheduled_refresh_sec = reload_delay
 
 
 class IntegralEnergySensorEntity(IntegrationSensor):
@@ -632,8 +852,9 @@ class IntegralEnergySensorEntity(IntegrationSensor):
     _attr_entity_registry_visible_default = False
 
     def __init__(self, base: WattsSensorEntity, enabled_default: bool = True):
+        version_kwargs: dict[str, Any] = {"hass": base.coordinator.hass} if _INTEGRATION_SENSOR_TAKES_HASS else {}
         super().__init__(
-            base.coordinator.hass,
+            **version_kwargs,
             integration_method="left",
             name=f"{base._device.device_info.name} {base.title().replace(f'{const.POWER}', f' {const.ENERGY}')}",
             round_digits=4,

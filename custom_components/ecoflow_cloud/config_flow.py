@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import Any, Dict
+from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import (
@@ -33,11 +33,13 @@ from custom_components.ecoflow_cloud import (
     CONFIG_VERSION,
     DEFAULT_ASSUME_OFFLINE_SEC,
     DEFAULT_REFRESH_PERIOD_SEC,
+    DEFAULT_RESET_SENSORS_ON_OFFLINE,
     ECOFLOW_DOMAIN,
     OPTS_ASSUME_OFFLINE_SEC,
     OPTS_DIAGNOSTIC_MODE,
     OPTS_POWER_STEP,
     OPTS_REFRESH_PERIOD_SEC,
+    OPTS_RESET_SENSORS_ON_OFFLINE,
     OPTS_VERBOSE_STATUS_MODE,
     DeviceData,
     DeviceOptions,
@@ -104,7 +106,8 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
 
             from .devices.registry import device_support_sub_devices
 
-            for sn, device_data in self.new_data[CONF_DEVICE_LIST].items():
+            # iterate over a snapshot: the loop mutates new_data[CONF_DEVICE_LIST]
+            for sn, device_data in list(self.new_data[CONF_DEVICE_LIST].items()):
                 if device_data[CONF_DEVICE_TYPE] not in device_support_sub_devices:
                     # skip here all devices that do not support sub devices
                     continue
@@ -113,19 +116,35 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
                 if not isinstance(self.auth, EcoflowPublicApiClient):
                     raise TypeError("Only public api is supported for devices with sub devices")
                 all_device_info = await self.auth.call_api("/device/quota/all", {"sn": sn})
-                for sub_device_type, sub_devices in all_device_info["data"].items():
-                    if not isinstance(sub_devices, dict):
+
+                # The "/device/quota/all" response for a Power Kit is a FLAT dict whose
+                # keys look like "<moduleType>.<moduleSn>.<field>"
+                # (e.g. "bp5000.M101Z3B4ZE5A0737.soc"), with scalar values. Aggregate
+                # keys such as "bmsTotal.<field>" carry no module serial. Older
+                # firmware/API returned a nested dict ({type: {sn: {...}}}); support both.
+                discovered: dict[str, str] = {}  # sub_device_sn -> sub_device_type
+                for key, value in all_device_info["data"].items():
+                    parts = key.split(".")
+                    if len(parts) >= 3:
+                        sub_device_type, sub_device_sn = parts[0], parts[1]
+                        discovered.setdefault(sub_device_sn, sub_device_type)
+                    elif isinstance(value, dict):
+                        # legacy nested shape: {sub_device_type: {sub_device_sn: {...}}}
+                        for sub_device_sn, item in value.items():
+                            if isinstance(item, (dict, list)):
+                                discovered.setdefault(sub_device_sn, key)
+
+                for sub_device_sn, sub_device_type in discovered.items():
+                    if sub_device_sn == sn:
+                        # some modules (e.g. "wireless") report under the parent's
+                        # serial; skip to avoid overwriting the parent device entry
                         continue
-                    for sub_device_sn, item in sub_devices.items():
-                        if not isinstance(item, (dict, list)):
-                            # skip all element that are simple
-                            continue
-                        self.new_data[CONF_DEVICE_LIST][sub_device_sn] = {
-                            CONF_DEVICE_NAME: f"{device_data[CONF_DEVICE_NAME]}.{sub_device_type}.{sub_device_sn}",
-                            CONF_DEVICE_TYPE: sub_device_type,
-                            CONF_PARENT_SN: sn,
-                        }
-                        self.new_options[CONF_DEVICE_LIST][sub_device_sn] = self.new_options[CONF_DEVICE_LIST][sn]
+                    self.new_data[CONF_DEVICE_LIST][sub_device_sn] = {
+                        CONF_DEVICE_NAME: f"{device_data[CONF_DEVICE_NAME]}.{sub_device_type}.{sub_device_sn}",
+                        CONF_DEVICE_TYPE: sub_device_type,
+                        CONF_PARENT_SN: sn,
+                    }
+                    self.new_options[CONF_DEVICE_LIST][sub_device_sn] = self.new_options[CONF_DEVICE_LIST][sn]
 
             return self.async_create_entry(
                 title=self.new_data[CONF_GROUP],
@@ -213,7 +232,7 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
             self.new_data[CONF_GROUP],
         )
 
-        errors: Dict[str, str] = {}
+        errors: dict[str, str] = {}
         try:
             await self.auth.login()
         except EcoflowException as e:  # pylint: disable=broad-except
@@ -278,6 +297,7 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
             OPTS_DIAGNOSTIC_MODE: False,
             OPTS_VERBOSE_STATUS_MODE: False,
             OPTS_ASSUME_OFFLINE_SEC: DEFAULT_ASSUME_OFFLINE_SEC,
+            OPTS_RESET_SENSORS_ON_OFFLINE: DEFAULT_RESET_SENSORS_ON_OFFLINE,
         }
 
         return await self.update_or_create()
@@ -314,7 +334,7 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
             self.new_data[CONF_GROUP],
         )
 
-        errors: Dict[str, str] = {}
+        errors: dict[str, str] = {}
         try:
             await self.auth.login()
         except EcoflowException as e:  # pylint: disable=broad-except
@@ -421,6 +441,7 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
             OPTS_DIAGNOSTIC_MODE: ("Diagnostic".lower() == user_input[CONF_DEVICE_TYPE].lower()),
             OPTS_VERBOSE_STATUS_MODE: False,
             OPTS_ASSUME_OFFLINE_SEC: DEFAULT_ASSUME_OFFLINE_SEC,
+            OPTS_RESET_SENSORS_ON_OFFLINE: DEFAULT_RESET_SENSORS_ON_OFFLINE,
         }
 
         return await self.update_or_create()
@@ -442,7 +463,7 @@ class EcoflowOptionsFlow(OptionsFlow):
     def _ensure_devices_loaded(self) -> None:
         if not self.device_selector:
             self.devices = extract_devices(self.config_entry)
-            for _, device in self.devices.items():
+            for device in self.devices.values():
                 self.device_selector[f"{device.name} ({device.sn})"] = device
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
@@ -475,6 +496,10 @@ class EcoflowOptionsFlow(OptionsFlow):
                         vol.Required(OPTS_DIAGNOSTIC_MODE, default=device_options.diagnostic_mode): bool,
                         vol.Required(OPTS_VERBOSE_STATUS_MODE, default=device_options.verbose_status_mode): bool,
                         vol.Required(OPTS_ASSUME_OFFLINE_SEC, default=device_options.assume_offline_sec): int,
+                        vol.Required(
+                            OPTS_RESET_SENSORS_ON_OFFLINE,
+                            default=device_options.reset_sensors_on_offline,
+                        ): bool,
                     }
                 ),
             )
@@ -486,6 +511,7 @@ class EcoflowOptionsFlow(OptionsFlow):
             OPTS_DIAGNOSTIC_MODE: user_input[OPTS_DIAGNOSTIC_MODE],
             OPTS_VERBOSE_STATUS_MODE: user_input[OPTS_VERBOSE_STATUS_MODE],
             OPTS_ASSUME_OFFLINE_SEC: user_input[OPTS_ASSUME_OFFLINE_SEC],
+            OPTS_RESET_SENSORS_ON_OFFLINE: user_input[OPTS_RESET_SENSORS_ON_OFFLINE],
         }
 
         return self.async_create_entry(title="", data=new_options)

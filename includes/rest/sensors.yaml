@@ -11,6 +11,8 @@
       value_template: "{{ value_json.homeassistant.default }}"
 
 - resource_template: "{{ states('input_text.ha1_url') }}api/states/sensor.ha_uptime"
+  # default is 10s, too tight when the link is congested
+  timeout: 25
   headers:
     authorization: !secret ha1_token
   sensor:
@@ -23,6 +25,8 @@
         {% endif %}
 
 - resource_template: "{{ states('input_text.ha2_url') }}api/states/sensor.ha_uptime"
+  # default is 10s, too tight when the link is congested
+  timeout: 25
   headers:
     authorization: !secret ha2_token
   sensor:
@@ -35,6 +39,8 @@
         {% endif %}
 
 - resource_template: "{{ states('input_text.has_url') }}api/states/sensor.ha_uptime"
+  # default is 10s, too tight when the link is congested
+  timeout: 25
   headers:
     authorization: !secret has_token
   sensor:
@@ -47,6 +53,8 @@
         {% endif %}
 
 - resource_template: "{{ states('input_text.ha_fazenda_url') }}api/states/sensor.ha_uptime"
+  # default is 10s, too tight when the link is congested
+  timeout: 25
   headers:
     authorization: !secret ha_fazenda_token
   sensor:

@@ -1,4 +1,4 @@
-# Позиция робота-пылесоса из Valetudo REST (по запросу; сам почти не поллит)
+# Vacuum position from the Valetudo REST API (on demand; almost never polls itself)
 - resource: "http://192.168.1.25/api/v2/robot/state/map"
   scan_interval: 86400
   timeout: 15

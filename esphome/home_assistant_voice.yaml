@@ -1,0 +1,74 @@
+# Home Assistant Voice PE, adopted into the local ESPHome builder.
+#
+# The firmware itself stays official: it is pulled as a remote package from
+# upstream, so nothing but the WiFi network changes. `dev` is that project's
+# main branch and tracks releases closely - pin a tag (e.g. @26.6.0) instead if
+# it ever ships something broken. A new upstream commit only shows up as an
+# available update; nothing is flashed until Install is pressed.
+#
+# Why adopted at all: the stock firmware offers no way to change the WiFi
+# network short of a factory reset, which would also wipe the wake words.
+# Moving the device from `amplifi` to `aiot` lets the two `amplifi` bands be
+# given matching security settings (see TODO.md).
+#
+# Everything below the packages block mirrors upstream's factory config, minus
+# its OTA channel - firmware comes from here now, so pointing the device at
+# their manifest would overwrite this config. The BLE/improv parts are NOT
+# optional: without them a device that fails to join the network has no way
+# back except a USB cable.
+
+packages:
+  # Inline package first, so its on_client_connected runs before the one the
+  # main package appends - speech must wait until BLE is off. Upstream does the
+  # same in home-assistant-voice.factory.yaml.
+  va_connected_wait_for_ble:
+    voice_assistant:
+      on_client_connected:
+        - wait_until:
+            not: ble.enabled
+        - delay: 2s
+    wifi:
+      on_disconnect:
+        - ble.enable:
+  Nabu Casa.Home Assistant Voice PE: github://esphome/home-assistant-voice-pe/home-assistant-voice.yaml@dev
+
+esphome:
+  # keeps the device identity Home Assistant already knows, so no second
+  # device entry appears in the registry
+  project:
+    name: Nabu Casa.Home Assistant Voice PE
+    version: dev
+
+wifi:
+  # aiot - the WPA2 network the rest of the ESP devices live on
+  ssid: !secret wifi_ssid_3
+  password: !secret wifi_pass_3
+  # both SSIDs bridge to the same LAN, so the DHCP lease stays the same
+  use_address: 192.168.1.18
+  on_connect:
+    - delay: 5s  # gives time for improv results to be transmitted
+    - ble.disable:
+    - script.execute: control_leds
+
+api:
+  # the key Home Assistant already has, so the integration survives the reflash
+  encryption:
+    key: !secret voice_pe_api_key
+
+# Recovery path: provisioning over Bluetooth, gated by the centre button
+improv_serial:
+
+esp32_ble:
+  name: ha-voice-pe
+
+esp32_improv:
+  authorizer: center_button
+  on_start:
+    - lambda: id(improv_ble_in_progress) = true;
+    - script.execute: control_leds
+  on_provisioned:
+    - lambda: id(improv_ble_in_progress) = false;
+    - script.execute: control_leds
+  on_stop:
+    - lambda: id(improv_ble_in_progress) = false;
+    - script.execute: control_leds

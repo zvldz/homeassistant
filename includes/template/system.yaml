@@ -20,3 +20,47 @@
       unit_of_measurement: 'ea'
       state: "{{ states('sensor.time') and states | selectattr('state', 'equalto', 'unavailable') | rejectattr('domain', 'in', ['media_player', 'remote', 'device_tracker']) | list | count }}"
       icon: mdi:counter
+
+# Version of the SMLIGHT config our AC modules were actually built from, read
+# from the device instead of being typed into the dashboard next to the
+# upstream one - a hardcoded label would quietly go stale after every merge.
+# All three ACs share the same config, so one of them stands for the lot.
+- sensor:
+    - name: "SLWF Our Version"
+      unique_id: slwf_our_version
+      icon: mdi:air-conditioner
+      state: >
+        {# touching the entity makes the template re-render when the device
+           reconnects - device_attr alone is not tracked, so the value would
+           otherwise stay frozen until a restart #}
+        {% set _ = states('climate.ac_living_room_climate') %}
+        {{ (device_attr('climate.ac_living_room_climate', 'sw_version') or '?').split(' ')[0] }}
+
+# Oldest ESPHome version among the ESP devices, to sit next to the latest
+# release on the dashboard: if the two match, nothing needs reflashing.
+# Versions are YYYY.M.P and are compared numerically - a plain string sort
+# would put 2026.10 before 2026.8.
+- sensor:
+    - name: "ESPHome Devices"
+      unique_id: esphome_devices_version
+      icon: "mdi:car-esp"
+      state: >
+        {% set vs = states.sensor
+             | selectattr('entity_id', 'match', 'sensor\..*_esphome_version$')
+             | map(attribute='state') | reject('in', ['unknown', 'unavailable']) | list %}
+        {% set ns = namespace(low=None, val='unknown') %}
+        {% for v in vs %}
+          {% set p = v.split(' ')[0].split('.') | map('int') | list %}
+          {% set n = p[0] * 10000 + p[1] * 100 + (p[2] if p | length > 2 else 0) %}
+          {% if ns.low is none or n < ns.low %}
+            {% set ns.low = n %}
+            {% set ns.val = v %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.val.split(' ')[0] if ns.val != 'unknown' else ns.val }}
+      attributes:
+        devices: >
+          {% set vs = states.sensor
+               | selectattr('entity_id', 'match', 'sensor\..*_esphome_version$')
+               | map(attribute='state') | reject('in', ['unknown', 'unavailable']) | list %}
+          {{ vs | map('regex_findall', '^\\S+') | map('first') | unique | list | sort | join(', ') }}

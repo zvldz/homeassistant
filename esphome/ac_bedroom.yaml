@@ -17,9 +17,19 @@ esphome:
 
   # This will allow for (future) project identification,
   # configuration and updates.
+  # Vendor config version this file has been reconciled with - not everything
+  # from it is adopted, and that is deliberate. Skipped from 2.4:
+  #   - http_request/update (their GitHub OTA) - would overwrite this build
+  #   - wifi.ap + captive_portal - device can park in AP mode and `reboot_timeout`
+  #     stops working there (esphome/issues#7222); for a module inside an AC the
+  #     automatic reboot is the only recovery path we have
+  #   - name_add_mac_suffix and their ${friendly_name}-prefixed entity names -
+  #     both change entity_ids, which dashboards and automations depend on
+  #   - use_fahrenheit in follow_me - would change behaviour, left alone
+  # Bump this when their next version has been reviewed the same way.
   project:
     name: SMLIGHT.SLWF-01Pro
-    version: "2.1"
+    version: "2.4"
 
 esp8266:
   board: esp12e
@@ -45,8 +55,15 @@ logger:
 
 # Enable Home Assistant API
 api:
-  services:
-    - service: follow_me
+  # Noise encryption for the link to Home Assistant. ESPHome removed password
+  # auth in 2026.1 - it proved identity but left the traffic in the clear.
+  encryption:
+    key: !secret ac_bedroom_api_key
+  # `services:`/`service:` were renamed to `actions:`/`action:` in ESPHome 2024.8;
+  # both keys have to change, renaming only the block leaves the hint in place.
+  # Upstream's own config still uses the old spelling inside the list.
+  actions:
+    - action: follow_me
       variables:
         temperature: float
       then:

@@ -34,6 +34,10 @@ time:
     id: homeassistant_time
 
 api:
+  # Noise encryption for the link to Home Assistant. ESPHome removed password
+  # auth in 2026.1 - it proved identity but left the traffic in the clear.
+  encryption:
+    key: !secret bw_plug_2_api_key
 # captive_portal:
 
 logger:

@@ -74,10 +74,14 @@
       unit_of_measurement: "°C"
       device_class: temperature
       force_update: true
-      value_template: >
-        {% if states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None, ''] %}
-          {{ value_json.state | float | round(2) }}
-        {% endif %}
+      # when haf is unreachable the source has no value; go unavailable instead
+      # of rendering an empty state - a temperature sensor cannot parse "" and
+      # HA logged a ValueError on every poll
+      availability: >
+        {{ states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable']
+           and value_json is defined
+           and value_json.state not in ['unknown', 'unavailable', None, ''] }}
+      value_template: "{{ value_json.state | float | round(2) }}"
       json_attributes:
         - state
 
@@ -87,3 +91,20 @@
     - name: "ESPHome Latest"
       icon: "mdi:car-esp"
       value_template: "{{ value_json.tag_name }}"
+
+# Upstream config version for the SLWF-01Pro modules inside the air conditioners.
+# Their YAML is not adopted as a package on purpose - it renames entities, which
+# would break every dashboard and automation referring to them. So nothing here
+# updates by itself; this only says when they publish something new and worth
+# merging by hand. Our files carry the version we merged from (`project.version`).
+- resource: https://raw.githubusercontent.com/smlight-tech/slwf-01pro-esphome/main/manifest.json
+  scan_interval: 21600
+  timeout: 25
+  sensor:
+    - name: "SLWF Upstream Version"
+      icon: "mdi:air-conditioner"
+      value_template: "{{ value_json.version }}"
+      json_attributes_path: "$.builds[0].ota"
+      json_attributes:
+        - release_url
+        - summary

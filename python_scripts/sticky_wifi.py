@@ -31,8 +31,15 @@ st = hass.data.setdefault("wifi_kick", {})
 now = time.time()
 
 if str(data.get("ap_rebooted")).lower() == "true":
+    # A reboot re-shuffles every association, so both reasons to hold back are
+    # about a layout that no longer exists: "nowhere better to go" was judged
+    # against the old picture, and the cooldown guards against nagging a client
+    # in a settled network - which this is not. Observed 2026-08-28: after the
+    # routers were updated, kitchen_lamp sat at -69 dBm on the far AP for the
+    # rest of its hour because it had been kicked before an earlier reboot.
     for rec in st.values():
         rec.pop("stuck_until", None)
+        rec.pop("last", None)
 
 
 def capsman_master():

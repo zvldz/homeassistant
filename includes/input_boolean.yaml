@@ -10,3 +10,20 @@ wc_door_triggers:
   name: "Auto light & fan in WC"
   icon: "mdi:toilet"
 
+
+# One per monitored instance, set when it goes down and cleared when it comes
+# back. They survive a restart, which the uptime sensors do not: those are REST
+# sensors and are not created at all while their host is unreachable, so a
+# restart during an outage used to swallow the recovery message.
+ha1_down:
+  name: "HA1 is down"
+  icon: "mdi:server-off"
+ha2_down:
+  name: "HA2 is down"
+  icon: "mdi:server-off"
+has_down:
+  name: "HAS is down"
+  icon: "mdi:server-off"
+ha_fazenda_down:
+  name: "HAF is down"
+  icon: "mdi:server-off"

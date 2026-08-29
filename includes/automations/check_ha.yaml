@@ -25,6 +25,10 @@
 #      to: "unavailable"
 #      for: "00:02:00"
   action:
+    # remember the outage in a flag that survives a restart
+    - service: input_boolean.turn_on
+      target:
+        entity_id: "input_boolean.{{ trigger.entity_id.split('.')[1] | replace('_uptime', '') }}_down"
     - service: notify.send_message
       data:
         entity_id: notify.telegram_vtel
@@ -61,8 +65,61 @@
            or (as_timestamp(trigger.to_state.last_changed)
                - as_timestamp(trigger.from_state.last_changed)) > 120 }}
   action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: "input_boolean.{{ trigger.entity_id.split('.')[1] | replace('_uptime', '') }}_down"
     - service: notify.send_message
       data:
         entity_id: notify.telegram_vtel
         message: "\U00002705 {{ states.sensor.date_time.state }} | {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Uptime', '') if trigger.entity_id is defined else 'Test' }} is now working"
 
+
+# Recovery that the pair above cannot catch. Their "is now working" trigger
+# waits for a transition out of `unavailable`, but the uptime sensors are REST
+# sensors: while their host is unreachable the platform fails to set up and the
+# entity is not created at all. After a restart during an outage the host comes
+# back as a brand new entity - no transition, no message. This checks the flags
+# instead, which do survive a restart.
+- alias: ha1_server_on_missed
+  initial_state: true
+  mode: single
+  trigger:
+    # periodic, not just on start: the sensor of a host that comes back is
+    # created from scratch, so the transition-based automation above misses
+    # that case too - whether or not a restart happened
+    - platform: time_pattern
+      minutes: "/5"
+  action:
+    - repeat:
+        for_each:
+          - ha1
+          - ha2
+          - has
+          - ha_fazenda
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    # not the value but its freshness: these sensors have
+                    # force_update, so last_updated advances on every successful
+                    # poll and freezes while the host is unreachable. Checking
+                    # the value was wrong - it survives the outage unchanged and
+                    # cleared the flags for hosts that were still down.
+                    value_template: >
+                      {% set s = states['sensor.' ~ repeat.item ~ '_uptime'] %}
+                      {{ is_state('input_boolean.' ~ repeat.item ~ '_down', 'on')
+                         and s is not none
+                         and s.state not in ['unknown', 'unavailable']
+                         and (as_timestamp(now()) - as_timestamp(s.last_updated)) < 180 }}
+                sequence:
+                  - service: input_boolean.turn_off
+                    target:
+                      entity_id: "input_boolean.{{ repeat.item }}_down"
+                  - service: notify.send_message
+                    data:
+                      entity_id: notify.telegram_vtel
+                      message: >-
+                        {{ "\U00002705" }} {{ states.sensor.date_time.state }} |
+                        {{ state_attr('sensor.' ~ repeat.item ~ '_uptime', 'friendly_name')
+                           | replace(' Uptime', '') if state_attr('sensor.' ~ repeat.item ~ '_uptime', 'friendly_name')
+                           else repeat.item | upper }} is now working

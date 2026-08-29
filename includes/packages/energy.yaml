@@ -279,31 +279,72 @@ automation:
   - alias: "Turn off lights after power event (safety)"
     id: turn_off_lights_after_power_event_safety
     initial_state: true
-    mode: single
+    # two independent sources now, and they can arrive almost together
+    mode: queued
+    max: 5
     trigger:
+      # the lamp switched itself on - the original case
       - platform: state
         entity_id:
           - light.balcony_strip
           - light.kitchen_lamp
         to: "on"
-    condition:
-      - condition: or
-        conditions:
-          # Within 5 min after power restore
-          - condition: template
-            value_template: >
-              {{ states.automation.stop_power_outage_timer.last_triggered is not none
-                 and (as_timestamp(now()) - as_timestamp(states.automation.stop_power_outage_timer.last_triggered)) < 300 }}
-          # Within 5 min after power outage started
-          - condition: template
-            value_template: >
-              {{ states.automation.start_power_outage_timer.last_triggered is not none
-                 and (as_timestamp(now()) - as_timestamp(states.automation.start_power_outage_timer.last_triggered)) < 300 }}
+        id: light_on
+      # the power event got registered, by which time the lamps may already be
+      # on. Yeelight reacts to a flicker instantly while HA learns of the outage
+      # from the EcoFlow readings a minute or two later: on 2026-08-29 the lamps
+      # came on at 08:41:37 and the outage was recorded at 08:43:00, so the
+      # window below had not opened yet and nothing was turned off.
+      - platform: state
+        entity_id:
+          - automation.start_power_outage_timer
+          - automation.stop_power_outage_timer
+        attribute: last_triggered
+        id: power_event
     action:
-      - delay: "00:00:05"
-      - service: light.turn_off
-        target:
-          entity_id: "{{ trigger.entity_id }}"
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: light_on
+              - condition: or
+                conditions:
+                  # Within 5 min after power restore
+                  - condition: template
+                    value_template: >
+                      {{ states.automation.stop_power_outage_timer.last_triggered is not none
+                         and (as_timestamp(now()) - as_timestamp(states.automation.stop_power_outage_timer.last_triggered)) < 300 }}
+                  # Within 5 min after power outage started
+                  - condition: template
+                    value_template: >
+                      {{ states.automation.start_power_outage_timer.last_triggered is not none
+                         and (as_timestamp(now()) - as_timestamp(states.automation.start_power_outage_timer.last_triggered)) < 300 }}
+            sequence:
+              - delay: "00:00:05"
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ trigger.entity_id }}"
+          - conditions:
+              - condition: trigger
+                id: power_event
+            sequence:
+              - delay: "00:00:05"
+              # only lamps that came on around the event - one burning for an
+              # hour was meant to be on and must not be touched
+              - variables:
+                  recent_on: >
+                    {% set ns = namespace(l=[]) %}
+                    {% for e in ['light.balcony_strip', 'light.kitchen_lamp'] %}
+                      {% if is_state(e, 'on')
+                            and (as_timestamp(now()) - as_timestamp(states[e].last_changed)) < 180 %}
+                        {% set ns.l = ns.l + [e] %}
+                      {% endif %}
+                    {% endfor %}
+                    {{ ns.l }}
+              - condition: template
+                value_template: "{{ recent_on | count > 0 }}"
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ recent_on }}"
 
 group:
   power_restore_targets:

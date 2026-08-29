@@ -45,7 +45,21 @@ cards:
       - type: entities
         show_header_toggle: false
         entities:
-          - sensor.esphome_latest
+          # same shape as the Zigbee2MQTT row on the System tab: what we run on
+          # the left, what is published on the right
+          - entity: sensor.esphome_devices
+            name: ESPHome
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.esphome_latest
+                name: false
+          # our AC files are merged from the vendor's by hand, so watch both
+          - entity: sensor.slwf_our_version
+            name: SLWF config
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.slwf_upstream_version
+                name: false
 
   - type: vertical-stack
     cards:

@@ -5,6 +5,10 @@ input_boolean:
   vacuum_notification:
     name: "Messages from the robot"
     icon: "mdi:bell"
+  # one automatic restart per cleaning run - see "Vacuum Retry After Error"
+  vacuum_retry_used:
+    name: "Vacuum retry already used"
+    icon: "mdi:restart-alert"
 
 template:
   - sensor:
@@ -155,6 +159,60 @@ automation:
             {%- else -%}
             {{ error or 'Vacuum error (test mode)' }}
             {%- endif -%}
+
+  # The main brush jams in one corner of the living room: 15 errors recorded
+  # since 2026-07-25, all inside x 3208..3755 / y 1743..2175, and half of them
+  # literally "Main brush jammed" / "Clean main brush". A manual restart has
+  # always cleared it, so do that automatically - but only once per run, so a
+  # real jam still stops the robot instead of looping.
+  - alias: "Vacuum Retry After Error"
+    initial_state: true
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: vacuum.valetudo_rockrobo
+        to: "error"
+    condition:
+      - condition: state
+        entity_id: input_boolean.vacuum_retry_used
+        state: "off"
+    action:
+      # the error text lands ~50 ms after the state, so read it after a pause
+      - delay: "00:00:05"
+      # only the brush jam is known to clear on restart; LDS jammed, bumper etc.
+      # come straight back (2026-09-08: five restarts in five minutes on the dock)
+      - condition: template
+        value_template: "{{ 'brush' in states('sensor.vacuum_error_text') | lower }}"
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.vacuum_retry_used
+      # let the position sensor refresh and the robot settle
+      - delay: "00:00:15"
+      - service: vacuum.start
+        target:
+          entity_id: vacuum.valetudo_rockrobo
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >-
+            Vacuum restarted after error at {{ states('sensor.vacuum_robot_position') }}
+            ({{ states('sensor.vacuum_error_text') }})
+
+  # "once per run" lives here: resuming after the error must NOT clear the flag,
+  # only a real return to the dock does. An error on the dock itself flips
+  # error -> docked within a second, hence the hold time.
+  - alias: "Vacuum Retry Reset"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: vacuum.valetudo_rockrobo
+        to: "docked"
+        for:
+          minutes: 10
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.vacuum_retry_used
 
   - alias: "Vacuum Cleaner Error Solved"
     initial_state: true

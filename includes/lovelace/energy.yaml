@@ -140,15 +140,34 @@ cards:
               icon: mdi:air-conditioner
               display_zero: true
               color_icon: true
+            - entity: sensor.0xa4c138a4cf6c4c5c_power
+              name: Fridge
+              icon: mdi:fridge
+              display_zero: true
+              color_icon: true
 
       - type: entities
         show_header_toggle: false
         entities:
           - switch.0x385cfbfffe850ea4
           - sensor.delta_2_max_ac_in_volts
-          - sensor.delta_2_max_solar_1_in_power
-          - sensor.delta_2_max_solar_1_in_amps
-          - sensor.delta_2_max_solar_1_in_volts
+          # one row per panel: power, then volts and amps alongside
+          - entity: sensor.delta_2_max_solar_1_in_power
+            name: Solar 1
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.delta_2_max_solar_1_in_volts
+                name: false
+              - entity: sensor.delta_2_max_solar_1_in_amps
+                name: false
+          - entity: sensor.delta_2_max_solar_2_in_power
+            name: Solar 2
+            type: custom:multiple-entity-row
+            entities:
+              - entity: sensor.delta_2_max_solar_2_in_volts
+                name: false
+              - entity: sensor.delta_2_max_solar_2_in_amps
+                name: false
 
       - type: history-graph
 #        title: "Mains Power History"

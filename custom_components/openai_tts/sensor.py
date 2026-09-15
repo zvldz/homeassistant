@@ -35,26 +35,31 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import (
+    AddConfigEntryEntitiesCallback,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api_health import (
     ALL_STATUSES,
     API_STATUS_OK,
-    OpenAITTSHealthTracker,
     STATUS_DESCRIPTIONS,
+    OpenAITTSHealthTracker,
+    health_tracker_for,
 )
-from .const import DOMAIN
+from .const import CONF_PROVIDER, DOMAIN, preset_for
 
 _LOGGER = logging.getLogger(__name__)
 
-HEALTH_TRACKER_KEY = "_health_tracker"
+# The sensor is push-driven by the health tracker and never polls.
+PARALLEL_UPDATES = 0
+
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create the API status sensor for ``entry``.
 
@@ -62,15 +67,14 @@ async def async_setup_entry(
     parent's health state since the API key (billing scope) lives on the
     parent.
     """
-    domain_data = hass.data.get(DOMAIN, {})
-    tracker = domain_data.get(f"{entry.entry_id}{HEALTH_TRACKER_KEY}")
+    tracker = health_tracker_for(entry)
     if tracker is None:
         _LOGGER.debug(
             "No health tracker for %s; skipping API status sensor",
             entry.entry_id,
         )
         return
-    async_add_entities([OpenAITTSAPIStatusSensor(tracker)])
+    async_add_entities([OpenAITTSAPIStatusSensor(tracker, entry)])
 
 
 class OpenAITTSAPIStatusSensor(
@@ -80,20 +84,32 @@ class OpenAITTSAPIStatusSensor(
 
     _attr_has_entity_name = True
     _attr_should_poll = False
-    _attr_name = "Status"
+    # No ``_attr_name``. ``Entity._name_internal`` returns it before it
+    # ever consults the translation key, so setting it here made the
+    # entity.sensor.api_status.name strings in cs, de and el dead
+    # weight: every installation saw the English "Status".
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = list(ALL_STATUSES)
     _attr_translation_key = "api_status"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:cloud-check"
-
-    def __init__(self, tracker: OpenAITTSHealthTracker) -> None:
+    def __init__(
+        self,
+        tracker: OpenAITTSHealthTracker,
+        entry: ConfigEntry,
+    ) -> None:
         super().__init__(tracker)
         self._attr_unique_id = f"{tracker.entry_id}_api_status"
+        # Provider-aware device labels: a Mistral entry shouldn't
+        # introduce itself as "OpenAI TTS API" in Devices & Services.
+        # Falls back to the OpenAI preset for entries with no
+        # CONF_PROVIDER (created before the wizard) so the historical
+        # name stays put for those.
+        preset = preset_for(entry.data.get(CONF_PROVIDER))
+        provider_label = preset["label"]
         self._attr_device_info = {
             "identifiers": {(DOMAIN, f"{tracker.entry_id}_health")},
-            "name": "OpenAI TTS API",
-            "manufacturer": "OpenAI",
+            "name": f"{provider_label} TTS API",
+            "manufacturer": provider_label,
             "model": "TTS Health Tracker",
             "entry_type": "service",
         }
@@ -102,15 +118,6 @@ class OpenAITTSAPIStatusSensor(
     def native_value(self) -> str:
         """Return the current API status as the sensor's state."""
         return self.coordinator.data.get("status", API_STATUS_OK)
-
-    @property
-    def icon(self) -> str:
-        """Cloud-check when healthy; cloud-alert otherwise."""
-        return (
-            "mdi:cloud-check"
-            if self.coordinator.data.get("status") == API_STATUS_OK
-            else "mdi:cloud-alert"
-        )
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

@@ -36,7 +36,16 @@ from .const import DOMAIN, MESSAGE_DURATIONS_KEY
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_MAX_LOCAL_ENTRIES = 100
-DEFAULT_MAX_SHARED_ENTRIES = 50
+
+# Counted per owning entity, not across the whole dictionary. The shared
+# dictionary is where every lookup actually reads, while each entity
+# persists up to ``DEFAULT_MAX_LOCAL_ENTRIES`` of its own. A global limit
+# smaller than that made the two disagree: five profiles restoring 248
+# durations between them left 50 in the dictionary and silently dropped
+# the rest, so a message whose audio Home Assistant still had cached
+# found no duration and the caller waited the full sixty seconds with the
+# volume down. Matching the local limit keeps everything an entity
+# persisted readable.
 
 # Sentinel value indicating the last TTS attempt for this message
 # failed. Keeps the value space simple: the only thing the cache ever
@@ -98,7 +107,7 @@ class MessageDurationCache:
         hass: HomeAssistant,
         entity_id: str,
         max_local_entries: int = DEFAULT_MAX_LOCAL_ENTRIES,
-        max_shared_entries: int = DEFAULT_MAX_SHARED_ENTRIES,
+        max_shared_entries: int = DEFAULT_MAX_LOCAL_ENTRIES,
     ) -> None:
         self._hass = hass
         self._entity_id = entity_id
@@ -120,13 +129,15 @@ class MessageDurationCache:
             return
         self._local = {k: int(v) for k, v in stored.items()
                        if isinstance(v, (int, float))}
-        shared = self._ensure_shared_dict()
+        # Publish through the same path a fresh measurement takes, which
+        # stamps a real timestamp and applies the shared-dict limit.
+        # Writing ``timestamp: 0`` directly, as this used to, made every
+        # restored entry the oldest thing in the dict, so the first new
+        # announcement after a restart evicted the whole restored set and
+        # persisting durations across restarts achieved nothing. Skipping
+        # the limit also let the dict grow past it until the next write.
         for msg_hash, dur in self._local.items():
-            shared[msg_hash] = {
-                "duration_ms": dur,
-                "timestamp": 0,
-                "entity_id": self._entity_id,
-            }
+            self._publish_shared(msg_hash, dur)
         if self._local:
             _LOGGER.info(
                 "Restored %d cached entries (durations + sentinels)",
@@ -156,32 +167,9 @@ class MessageDurationCache:
             message, voice, model, speed, instructions,
             chime, chime_sound, extra_payload,
         )
-        self._local[msg_hash] = duration_ms
+        self._remember_local(msg_hash, duration_ms)
         self._evict_local()
         self._publish_shared(msg_hash, duration_ms)
-
-    def get_duration(
-        self,
-        message: str,
-        *,
-        voice: str | None = None,
-        model: str | None = None,
-        speed: float | None = None,
-        instructions: str | None = None,
-        chime: bool | None = None,
-        chime_sound: str | None = None,
-        extra_payload: str | None = None,
-    ) -> int | None:
-        """Return cached duration for the request, or None if absent.
-
-        Returns ``DURATION_FAILED_SENTINEL`` (0) when the last attempt
-        failed; callers should treat that as "skip the playback wait".
-        """
-        msg_hash = self._hash(
-            message, voice, model, speed, instructions,
-            chime, chime_sound, extra_payload,
-        )
-        return self._local.get(msg_hash)
 
     def clear_failure(self, message: str, **render_args) -> None:
         """Drop a failure sentinel after a successful run.
@@ -199,7 +187,7 @@ class MessageDurationCache:
     def mark_failed(self, message: str, **render_args) -> None:
         """Record that the last TTS attempt for ``message`` failed."""
         msg_hash = self._hash_kwargs(message, render_args)
-        self._local[msg_hash] = DURATION_FAILED_SENTINEL
+        self._remember_local(msg_hash, DURATION_FAILED_SENTINEL)
         self._evict_local()
         self._publish_shared(msg_hash, DURATION_FAILED_SENTINEL)
         _LOGGER.debug("Marked TTS as failed for hash %s", msg_hash)
@@ -220,6 +208,19 @@ class MessageDurationCache:
             kw.get("chime_sound"), kw.get("extra_payload"),
         )
 
+    def _remember_local(self, msg_hash: str, value: int) -> None:
+        """Write an entry and move it to the end of the eviction order.
+
+        Reassigning an existing key leaves it where it was first
+        inserted, so the local dictionary evicted by original insertion
+        order while the shared one evicts by a timestamp refreshed on
+        every write. The two then disagreed about which entry was least
+        recently used, and the local dictionary is the one that survives
+        a restart.
+        """
+        self._local.pop(msg_hash, None)
+        self._local[msg_hash] = value
+
     def _evict_local(self) -> None:
         if len(self._local) > self._max_local:
             keep = list(self._local.items())[-self._max_local:]
@@ -232,11 +233,18 @@ class MessageDurationCache:
             "timestamp": asyncio.get_running_loop().time(),
             "entity_id": self._entity_id,
         }
-        if len(shared) > self._max_shared:
-            sorted_keys = sorted(
-                shared.keys(), key=lambda k: shared[k].get("timestamp", 0)
-            )
-            for key in sorted_keys[: -self._max_shared]:
+        # Evict only among this entity's own entries. Trimming the whole
+        # dictionary let one profile throw away another's measurements,
+        # which is how a restart discarded most of what had been
+        # persisted: every profile restored into the same dictionary and
+        # the last one to finish evicted the rest.
+        mine = [
+            key for key, entry in shared.items()
+            if entry.get("entity_id") == self._entity_id
+        ]
+        if len(mine) > self._max_shared:
+            mine.sort(key=lambda k: shared[k].get("timestamp", 0))
+            for key in mine[: -self._max_shared]:
                 del shared[key]
 
     def _ensure_shared_dict(self) -> dict:

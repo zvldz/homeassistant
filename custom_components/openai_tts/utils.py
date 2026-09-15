@@ -3,22 +3,99 @@ Utility functions for OpenAI TTS integration.
 """
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import subprocess
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+from homeassistant.components.media_player import (
+    ATTR_MEDIA_VOLUME_LEVEL,
+)
+from homeassistant.components.media_player import (
+    DOMAIN as MP_DOMAIN,
+)
+from homeassistant.const import ATTR_ENTITY_ID, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.typing import StateType
-from homeassistant.const import ATTR_ENTITY_ID, STATE_UNAVAILABLE, STATE_UNKNOWN
-from homeassistant.components.media_player import (
-    ATTR_MEDIA_VOLUME_LEVEL,
-    DOMAIN as MP_DOMAIN,
-)
+
+from .const import AUDIO_FORMAT_ENCODER
 
 _LOGGER = logging.getLogger(__name__)
+
+# Loudness correction for speech.
+#
+# Two filters in series, and both are needed for different reasons.
+#
+# ``dynaudnorm`` replaced ``loudnorm=I=-16:TP=-1:LRA=5``. Measured
+# against three engines on 2026-08-29, loudnorm made a short OpenAI clip
+# six decibels QUIETER than it started (-24.25 LUFS in, -30.20 out): it
+# is designed to run in two passes, and given only one it has not
+# converged before a two second announcement ends. dynaudnorm corrects
+# continuously instead, so it needs neither a second pass nor a complete
+# file, which is also what lets normalisation run on a stream.
+#
+# ``acompressor`` in front of it answers a separate complaint: the clip
+# was loud enough on average while individual words were still swallowed.
+# Levelling the average does not lift a quiet syllable, and a fast
+# compressor does. Measured on a thirteen second announcement, the
+# quiet passages rose from -17.4 to -14.8 LUFS with the loudness range
+# unchanged at 1.9 LU.
+#
+# The peak target is 0.85 rather than the filter's own 0.95 default.
+# At 0.95 two of the three engines came out above -0.5 dBTP once the mp3
+# encoder had added its overshoot, which clips. At 0.85 the worst of the
+# three sits at -1.29 dBTP with the quiet passages only half a decibel
+# lower, which is a good trade.
+# Containers whose header states a total length that a streaming
+# producer cannot know, so it writes a placeholder instead: wav writes
+# 0xFFFFFFFF, flac writes zero samples. Decoders that honour the field
+# then read the clip as hours long, or as empty. Re-encoding to a file
+# is what fixes it, because ffmpeg can seek back and write the real
+# figure once the audio has been written.
+_REWRITE_HEADER_FORMATS = frozenset({"wav", "flac"})
+
+LOUDNESS_FILTER = (
+    "acompressor=threshold=-28dB:ratio=4:attack=3:release=60,"
+    "dynaudnorm=p=0.85:m=20:f=40:g=5"
+)
+
+
+def resolve_ffmpeg_paths(hass: HomeAssistant) -> Tuple[str, str]:
+    """Return the ffmpeg and ffprobe commands to use.
+
+    Home Assistant lets the user configure where ffmpeg lives, through
+    the ``ffmpeg`` integration, and installations that keep it outside
+    the search path rely on that. Calling the bare names, as this module
+    used to, ignored the setting.
+
+    ffprobe has no equivalent setting, so it is taken from the same
+    directory as ffmpeg. A bare ``ffmpeg`` means the search path is in
+    use, so ``ffprobe`` is left bare too.
+    """
+    binary = "ffmpeg"
+    try:
+        from homeassistant.components.ffmpeg import get_ffmpeg_manager
+
+        binary = get_ffmpeg_manager(hass).binary or "ffmpeg"
+    except (ImportError, KeyError, RuntimeError, ValueError) as err:
+        # ValueError is what get_ffmpeg_manager raises when the ffmpeg
+        # integration has not been set up. The manifest declares it as a
+        # dependency, so that should not happen, but a helper that
+        # decides where a binary lives has no business raising.
+        _LOGGER.debug("Falling back to ffmpeg on the search path: %s", err)
+
+    directory = os.path.dirname(binary)
+    if not directory:
+        return binary, "ffprobe"
+    # Same directory, plain name. Deriving the name from ffmpeg's own
+    # would turn "ffmpeg-static" into "ffprobe-static", which is a
+    # guess about someone else's file naming; "ffprobe" beside it is the
+    # convention every distribution and static build follows.
+    suffix = ".exe" if binary.lower().endswith(".exe") else ""
+    return binary, os.path.join(directory, f"ffprobe{suffix}")
 
 
 def detect_audio_format(audio_data: bytes) -> str:
@@ -109,177 +186,99 @@ def is_valid_audio(
 
     # Unknown format: reject obvious text/JSON/HTML payloads.
     first = audio_data[:1]
-    if first in (b"{", b"<", b"["):
-        return False
-    return True
+    return first not in (b"{", b"<", b"[")
 
 
-def ensure_wav_chimes(chime_dir: str) -> None:
-    """
-    Ensure WAV versions of all MP3 chimes exist.
-    Converts MP3 chimes to WAV if the WAV version doesn't exist.
+def get_media_duration(file_path: str, ffprobe: str = "ffprobe") -> float:
+    """Return the duration of a media file in seconds, or 0.0 on failure.
+
+    One ffprobe invocation. There used to be two: the first looked for a
+    ``tts_duration_ms`` tag this integration wrote into its own mp3
+    output, and the second asked for the real duration when no tag was
+    found. The tag was only ever written on the legacy TTS path, which
+    Home Assistant stopped reaching once the entity implemented the
+    streaming contract, so the first probe could never succeed and every
+    measurement paid for two process spawns instead of one.
 
     Args:
-        chime_dir: Path to the chime directory
+        file_path: Path to the media file.
+        ffprobe: The ffprobe command, from ``resolve_ffmpeg_paths``.
     """
-    if not os.path.isdir(chime_dir):
-        _LOGGER.warning("Chime directory not found: %s", chime_dir)
-        return
-
-    for filename in os.listdir(chime_dir):
-        if filename.endswith(".mp3"):
-            mp3_path = os.path.join(chime_dir, filename)
-            wav_path = os.path.join(chime_dir, filename[:-4] + ".wav")
-
-            if not os.path.exists(wav_path):
-                _LOGGER.info("Converting chime to WAV: %s", filename)
-                try:
-                    cmd = [
-                        "ffmpeg", "-y",
-                        "-i", mp3_path,
-                        "-ac", "1",
-                        "-ar", "24000",
-                        wav_path
-                    ]
-                    subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    _LOGGER.debug("Created WAV chime: %s", wav_path)
-                except Exception as e:
-                    _LOGGER.error("Failed to convert chime %s to WAV: %s", filename, e)
-
-
-def ensure_chime_in_format(mp3_chime_path: str, target_format: str) -> str:
-    """Return a chime file path matching ``target_format``, transcoding on demand.
-
-    Sibling files are cached next to the source MP3 (``threetone.mp3`` →
-    ``threetone.opus`` / ``.aac`` / ``.flac`` / ``.wav``). PCM uses ``.pcm``
-    raw bytes. Falls back to the original mp3 when ffmpeg fails so the
-    caller still has *some* chime to mix in.
-    """
-    if target_format == "mp3" or not mp3_chime_path:
-        return mp3_chime_path
-    base, _ = os.path.splitext(mp3_chime_path)
-    target_path = f"{base}.{target_format}"
-    if os.path.exists(target_path):
-        return target_path
-
-    from .const import AUDIO_FORMAT_ENCODER
-
-    encoder = AUDIO_FORMAT_ENCODER.get(target_format)
-    if encoder is None:
-        _LOGGER.warning(
-            "No encoder mapping for chime target format %s, using mp3 source",
-            target_format,
-        )
-        return mp3_chime_path
-
-    cmd = ["ffmpeg", "-y", "-i", mp3_chime_path, "-ac", "1", "-ar", "24000"]
-    cmd.extend(encoder["codec_args"])
-    cmd.extend(encoder["container_args"])
-    cmd.append(target_path)
+    cmd = [
+        ffprobe,
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        file_path,
+    ]
     try:
-        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        _LOGGER.info("Transcoded chime to %s: %s", target_format, target_path)
-        return target_path
-    except Exception as exc:
-        _LOGGER.warning(
-            "Failed to transcode chime %s to %s (%s); falling back to mp3 source",
-            mp3_chime_path, target_format, exc,
+        result = subprocess.run(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, check=True,
         )
-        return mp3_chime_path
-
-
-def get_media_duration(file_path: str) -> float:
-    """
-    Get the duration of a media file in seconds.
-    First tries to read from metadata, then falls back to ffprobe.
-    
-    Args:
-        file_path: Path to the media file
-        
-    Returns:
-        Duration in seconds as float
-    """
+    except (subprocess.CalledProcessError, OSError) as err:
+        _LOGGER.error("ffprobe failed for %s: %s", file_path, err)
+        return 0.0
+    duration_str = result.stdout.strip()
+    if not duration_str:
+        _LOGGER.error("ffprobe returned no duration for %s", file_path)
+        return 0.0
     try:
-        # First try to get duration from metadata
-        cmd_metadata = [
-            "ffprobe",
-            "-v", "quiet",
-            "-print_format", "json",
-            "-show_format",
-            file_path
-        ]
-        result = subprocess.run(cmd_metadata, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        
-        if result.stdout:
-            import json
-            data = json.loads(result.stdout)
-            # Check for our custom metadata
-            if "format" in data and "tags" in data["format"]:
-                tags = data["format"]["tags"]
-                # Look for our duration metadata
-                for key, value in tags.items():
-                    if "tts_duration_ms" in key:
-                        _LOGGER.debug("Found duration in metadata: %s ms", value)
-                        return float(value) / 1000.0
-        
-        # Fallback to standard duration detection
-        cmd = [
-            "ffprobe",
-            "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            file_path,
-        ]
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        duration_str = result.stdout.strip()
-        return float(duration_str) if duration_str else 0.0
-    except Exception as e:
-        _LOGGER.error("Error getting media duration: %s", e)
+        return float(duration_str)
+    except ValueError:
+        _LOGGER.error("ffprobe gave a non-numeric duration: %r", duration_str)
         return 0.0
 
-async def safe_execute(func: Callable, *args, log_prefix: str = "", **kwargs) -> Any:
-    """
-    Execute a function safely with standardized error handling.
-    
-    Args:
-        func: Function to execute
-        log_prefix: Prefix for error log messages
-        *args: Arguments to pass to function
-        **kwargs: Keyword arguments to pass to function
-        
-    Returns:
-        Result of the function
-        
-    Raises:
-        HomeAssistantError: On any error to standardize exception handling
-    """
-    try:
-        return await func(*args, **kwargs) if asyncio_function(func) else func(*args, **kwargs)
-    except Exception as err:
-        error_msg = f"{log_prefix} error: {err}"
-        _LOGGER.error(error_msg)
-        raise HomeAssistantError(error_msg) from err
 
-def asyncio_function(func: Callable) -> bool:
-    """
-    Check if a function is a coroutine function.
-    
+def measure_audio_duration(
+    audio_data: bytes, suffix: str = ".mp3", ffprobe: str = "ffprobe"
+) -> float:
+    """Return the duration of an in-memory clip in seconds, or 0.0.
+
+    ffprobe needs a seekable input to read a container's real duration,
+    so the bytes go to a temporary file first. Writing that file,
+    probing it and deleting it are all blocking, which is why they live
+    together in one synchronous function: the caller hands the whole
+    sequence to an executor with a single call instead of leaving the
+    write and the unlink on the event loop.
+
     Args:
-        func: Function to check
-        
-    Returns:
-        True if coroutine function, False otherwise
+        audio_data: The encoded clip.
+        suffix: Extension for the temporary file. ffprobe identifies the
+            format by probing the content, so this only affects the file
+            name.
+        ffprobe: The ffprobe command, from ``resolve_ffmpeg_paths``.
     """
-    return hasattr(func, "__await__") or hasattr(func, "__aenter__")
+    tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
+            tmp_file.write(audio_data)
+            tmp_path = tmp_file.name
+    except OSError as err:
+        _LOGGER.error("Cannot write temporary file for duration probe: %s", err)
+        if tmp_path is not None:
+            _remove_quietly(tmp_path)
+        return 0.0
+
+    try:
+        return get_media_duration(tmp_path, ffprobe)
+    finally:
+        _remove_quietly(tmp_path)
+
+
+def _remove_quietly(path: str) -> None:
+    """Delete a path, ignoring the case where it is already gone."""
+    with contextlib.suppress(OSError):
+        os.unlink(path)
+
 
 def build_ffmpeg_command(
     output_path: str,
     input_paths: List[str],
     normalize_audio: bool = False,
-    is_concat: bool = False,
-    concat_list_path: Optional[str] = None,
     tts_input_format: Optional[str] = None,
     output_format: str = "mp3",
+    ffmpeg: str = "ffmpeg",
 ) -> List[str]:
     """
     Build ffmpeg command for audio processing.
@@ -288,8 +287,6 @@ def build_ffmpeg_command(
         output_path: Path to output file
         input_paths: List of input file paths
         normalize_audio: Whether to apply audio normalization
-        is_concat: Whether to use concat demuxer
-        concat_list_path: Path to concat list file (only used if is_concat=True)
         tts_input_format: Explicit format hint for the LAST input path (the
             TTS audio). Only meaningful for headerless formats like ``pcm``;
             for everything else ffmpeg auto-detects from the file header
@@ -297,27 +294,23 @@ def build_ffmpeg_command(
             ffmpeg the layout matches OpenAI's documented raw output
             (24kHz signed 16-bit little-endian mono).
     """
-    from .const import AUDIO_FORMAT_ENCODER
 
-    cmd = ["ffmpeg", "-y"]
+    cmd = [ffmpeg, "-y"]
 
     # Add inputs
-    if is_concat and concat_list_path:
-        cmd.extend(["-f", "concat", "-safe", "0", "-i", concat_list_path])
-    else:
-        last_idx = len(input_paths) - 1
-        for idx, input_path in enumerate(input_paths):
-            if idx == last_idx and tts_input_format == "pcm":
-                cmd.extend([
-                    "-f", "s16le", "-ar", "24000", "-ac", "1",
-                ])
-            cmd.extend(["-i", input_path])
+    last_idx = len(input_paths) - 1
+    for idx, input_path in enumerate(input_paths):
+        if idx == last_idx and tts_input_format == "pcm":
+            cmd.extend([
+                "-f", "s16le", "-ar", "24000", "-ac", "1",
+            ])
+        cmd.extend(["-i", input_path])
     
     # Filter graph for chime+TTS mixing or single-input normalization.
     # Both streams are forced to a common PCM layout before concat so
     # the operation is codec-agnostic.
-    if len(input_paths) > 1 and not is_concat:
-        norm_step = ",loudnorm=I=-16:TP=-1:LRA=5" if normalize_audio else ""
+    if len(input_paths) > 1:
+        norm_step = f",{LOUDNESS_FILTER}" if normalize_audio else ""
         common = "aresample=24000:async=1,aformat=sample_fmts=fltp:channel_layouts=mono"
         cmd.extend([
             "-filter_complex",
@@ -329,29 +322,29 @@ def build_ffmpeg_command(
             "-map", "[out]",
         ])
     elif normalize_audio:
-        cmd.extend(["-af", "loudnorm=I=-16:TP=-1:LRA=5"])
+        cmd.extend(["-af", LOUDNESS_FILTER])
 
-    # Output side: pick codec / muxer for the requested format. The
-    # ``is_concat`` branch is the chime-only fast path (concat demuxer):
-    # we use ``-c copy`` so the TTS payload is remuxed without a decode
-    # /encode roundtrip, since the chime was pre-converted to match the
-    # TTS codec via ``ensure_chime_in_format``.
+    # Output side: pick codec and muxer for the requested format. Always a
+    # real re-encode. There used to be a ``-c copy`` remux path here for a
+    # concat-demuxer input, but nothing has passed that input since the
+    # chime pre-conversion it depended on was removed.
     encoder = AUDIO_FORMAT_ENCODER.get(output_format, AUDIO_FORMAT_ENCODER["mp3"])
-    if is_concat:
-        cmd.extend(["-c", "copy"])
-        cmd.extend(encoder["container_args"])
-    else:
-        cmd.extend(["-ac", "1", "-ar", "24000"])
-        cmd.extend(encoder["codec_args"])
-        cmd.extend(encoder["container_args"])
+    cmd.extend(["-ac", "1", "-ar", "24000"])
+    cmd.extend(encoder["codec_args"])
+    cmd.extend(encoder["container_args"])
     cmd.append(output_path)
 
     return cmd
 
+def _remove_quietly(path: str) -> None:
+    """Delete ``path``, ignoring a file that is already gone."""
+    with contextlib.suppress(FileNotFoundError, OSError):
+        os.remove(path)
+
+
 async def process_audio(
     hass: HomeAssistant,
     audio_content: bytes,
-    output_path: Optional[str] = None,
     chime_enabled: bool = False,
     chime_path: Optional[str] = None,
     normalize_audio: bool = False,
@@ -363,7 +356,6 @@ async def process_audio(
     Args:
         hass: HomeAssistant instance
         audio_content: Raw audio content bytes
-        output_path: Optional output path
         chime_enabled: Whether to add chime
         chime_path: Path to chime file (MP3)
         normalize_audio: Whether to normalize audio
@@ -372,28 +364,27 @@ async def process_audio(
             Falls back to magic-byte detection when omitted.
 
     Returns:
-        Tuple of (format, processed_audio, processing_time_ms). Output
-        is always re-encoded to ``mp3`` so the result mixes cleanly
-        with mp3 chimes and HA's ``preferred_format`` ffmpeg conversion
-        can re-encode it to the user-selected delivery format.
+        Tuple of (format, processed_audio, processing_time_ms). Output is
+        encoded in the format the caller asked for, via
+        ``output_format``, so a profile set to wav or opus keeps that
+        format through post-processing. HA's ``preferred_format`` ffmpeg
+        layer still sits downstream if the media_player needs another.
     """
     import time
 
     start_time = time.monotonic()
+    ffmpeg, _ = resolve_ffmpeg_paths(hass)
 
     # Trust the caller's hint when given, fall back to magic-byte detection
     audio_format = input_format or detect_audio_format(audio_content)
     _LOGGER.debug("TTS audio format: %s (hint=%s)", audio_format, input_format)
 
-    # When chime is enabled, transcode it on-demand into the same codec
-    # the TTS came in as. Cheap (chime files are tiny) and unlocks the
-    # ``-c copy`` fast path for chime-only requests, which skips the
-    # decode/encode roundtrip on the much larger TTS payload.
-    actual_chime_path = chime_path
-    if chime_enabled and chime_path:
-        actual_chime_path = await hass.async_add_executor_job(
-            ensure_chime_in_format, chime_path, audio_format,
-        )
+    # The chime path is passed straight through to ffmpeg. The
+    # ``filter_complex`` graph in ``build_ffmpeg_command`` runs an
+    # ``aresample`` + ``aformat`` step on every input before concat, so
+    # any sample rate / channel layout / codec combination on the chime
+    # is normalised against the TTS audio in a single re-encode pass.
+    actual_chime_path = chime_path if chime_enabled else None
 
     # Pick a temp-file suffix ffmpeg can use to auto-identify the input.
     # ``pcm`` has no header, so we strip the suffix and rely on the
@@ -408,51 +399,41 @@ async def process_audio(
     tts_path = await hass.async_add_executor_job(write_temp_file)
     
     try:
-        # Determine final output path. ``caller_owns_output`` tracks whether
-        # the path came from the caller; if so, we must NOT delete it during
-        # cleanup (the caller is responsible for its own file).
-        # Output path keeps the requested format extension so ffmpeg
-        # picks the matching muxer automatically. PCM has no container,
-        # so we still use ``.pcm`` and rely on the explicit ``-f s16le``
-        # in the encoder's container_args.
-        out_suffix = f".{audio_format}"
-        final_output_path = output_path
-        caller_owns_output = output_path is not None
-        if not final_output_path:
-            def create_temp_output():
-                with tempfile.NamedTemporaryFile(suffix=out_suffix, delete=False) as out_file:
-                    return out_file.name
-            final_output_path = await hass.async_add_executor_job(create_temp_output)
+        # Always a temp file: no caller passes an output path, so this
+        # function owns the file it creates and removes it below.
+        def create_temp_output() -> str:
+            with tempfile.NamedTemporaryFile(
+                suffix=f".{audio_format}", delete=False
+            ) as tmp:
+                return tmp.name
+
+        final_output_path = await hass.async_add_executor_job(create_temp_output)
 
         # Decide which ffmpeg pipeline to run:
-        #   chime-only  → concat demuxer + ``-c copy`` (no TTS transcode)
-        #   chime+norm  → filter_complex (loudnorm forces decode/encode)
-        #   norm-only   → single-input loudnorm (decode/encode)
-        #   neither     → caller already returned native bytes; we
-        #                 shouldn't be here, but bail safely.
-        if chime_enabled and actual_chime_path and not normalize_audio:
-            def write_concat_list():
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as list_file:
-                    list_file.write(f"file '{actual_chime_path}'\n")
-                    list_file.write(f"file '{tts_path}'\n")
-                    return list_file.name
-            list_path = await hass.async_add_executor_job(write_concat_list)
+        #   chime (any)  → filter_complex re-encode of both streams. The
+        #                  concat-demuxer + ``-c copy`` shortcut produced
+        #                  byte-valid mp3s that miniaudio (HomePod /
+        #                  Apple TV via pyatv) refused to decode because
+        #                  the Xing/Info header from the chime no longer
+        #                  matched the combined frame layout. A single
+        #                  fresh encode keeps the bitstream consistent.
+        #   norm-only    → single-input loudnorm (decode/encode)
+        #   neither      → a plain re-encode, which is not a no-op for
+        #                  the formats that declare a total length in
+        #                  their header. A provider streaming wav or
+        #                  flac cannot know that length and writes a
+        #                  placeholder; writing to a file here lets
+        #                  ffmpeg seek back and put the real one in.
+        #                  For every other format the caller returns
+        #                  the native bytes and never reaches this.
+        if chime_enabled and actual_chime_path:
             cmd = build_ffmpeg_command(
                 final_output_path,
                 [actual_chime_path, tts_path],
-                normalize_audio=False,
-                is_concat=True,
-                concat_list_path=list_path,
+                normalize_audio=normalize_audio,
                 tts_input_format=audio_format,
                 output_format=audio_format,
-            )
-        elif chime_enabled and actual_chime_path and normalize_audio:
-            cmd = build_ffmpeg_command(
-                final_output_path,
-                [actual_chime_path, tts_path],
-                normalize_audio=True,
-                tts_input_format=audio_format,
-                output_format=audio_format,
+                ffmpeg=ffmpeg,
             )
         elif normalize_audio:
             cmd = build_ffmpeg_command(
@@ -461,17 +442,34 @@ async def process_audio(
                 normalize_audio=True,
                 tts_input_format=audio_format,
                 output_format=audio_format,
+                ffmpeg=ffmpeg,
+            )
+        elif audio_format in _REWRITE_HEADER_FORMATS:
+            cmd = build_ffmpeg_command(
+                final_output_path,
+                [tts_path],
+                normalize_audio=False,
+                tts_input_format=audio_format,
+                output_format=audio_format,
+                ffmpeg=ffmpeg,
             )
         else:
-            # Caller invoked us with neither chime nor normalize; just
-            # return the native bytes unchanged. Faster than a no-op
-            # ffmpeg roundtrip and keeps the original encoder output.
+            # Neither chime nor normalize, and a format that carries no
+            # total length to correct: return the native bytes. Faster
+            # than a no-op ffmpeg roundtrip and it keeps the original
+            # encoder output byte for byte.
             def read_original():
                 with open(tts_path, "rb") as f:
                     return f.read()
 
             final_audio = await hass.async_add_executor_job(read_original)
             await hass.async_add_executor_job(os.remove, tts_path)
+            # This branch never runs ffmpeg, so the output file created
+            # above is still the empty placeholder. Returning without
+            # removing it left one zero byte file behind per call, on
+            # what is the default configuration: no chime, no loudness
+            # correction, mp3.
+            await hass.async_add_executor_job(_remove_quietly, final_output_path)
             total_time = (time.monotonic() - start_time) * 1000
             return audio_format, final_audio, total_time
 
@@ -480,8 +478,14 @@ async def process_audio(
 
         try:
             _LOGGER.debug("Running ffmpeg in executor")
+            # ASYNC221 reads the ``subprocess.run`` lexically and takes it
+            # for a blocking call on the event loop. It is not: the lambda
+            # is handed to the executor, which is the pattern the rule
+            # exists to ask for.
             await hass.async_add_executor_job(
-                lambda: subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                lambda: subprocess.run(  # noqa: ASYNC221
+                    cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
             )
         except Exception as exc:
             _LOGGER.error("Error executing ffmpeg: %s", exc)
@@ -495,16 +499,13 @@ async def process_audio(
         final_audio = await hass.async_add_executor_job(read_file)
         
         # Final clean up of temporary files. We only own the output file
-        # when the caller did not provide ``output_path``; otherwise the
+        # Remove the temp file we created; the
         # caller is responsible for it (issue: previous code unconditionally
         # deleted it, which silently broke any caller that passed a path).
         def cleanup_files():
             try:
                 os.remove(tts_path)
-                if not caller_owns_output:
-                    os.remove(final_output_path)
-                if 'list_path' in locals():
-                    os.remove(list_path)
+                os.remove(final_output_path)
             except Exception as e:
                 _LOGGER.debug("Error cleaning up temporary files: %s", e)
 
@@ -518,10 +519,8 @@ async def process_audio(
         def error_cleanup():
             try:
                 os.remove(tts_path)
-                if 'final_output_path' in locals() and not caller_owns_output:
+                if 'final_output_path' in locals():
                     os.remove(final_output_path)
-                if 'list_path' in locals():
-                    os.remove(list_path)
             except OSError:
                 pass
 
@@ -529,24 +528,6 @@ async def process_audio(
 
         _LOGGER.error("Error processing audio: %s", e)
         raise HomeAssistantError(f"Error processing audio: {e}") from e
-
-def check_ffmpeg_installed() -> bool:
-    """
-    Check if ffmpeg is installed and available.
-    
-    Returns:
-        True if ffmpeg is available, False otherwise
-    """
-    try:
-        subprocess.run(
-            ["ffmpeg", "-version"], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            check=True
-        )
-        return True
-    except (subprocess.SubprocessError, FileNotFoundError):
-        return False
 
 def normalize_entity_ids(entity_ids: Union[str, List[str]]) -> List[str]:
     """
@@ -585,32 +566,11 @@ async def get_media_player_state(
         return None, None
     return state.state, state.attributes
 
-def get_speaker_status(state: Optional[str]) -> str:
-    """
-    Get speaker status based on state.
-    
-    Args:
-        state: Speaker state
-        
-    Returns:
-        "inactive" if state is "off" or "idle" or "paused", "active" otherwise
-    """
-    # Hardcode state values instead of importing constants to avoid import issues
-    if not state:
-        return "inactive"
-    
-    state_lower = state.lower()
-    
-    # Check for the three inactive states
-    if state_lower == "idle" or state_lower == "off" or state_lower == "paused":
-        return "inactive"
-        
-    return "active"
-
 async def set_media_player_volume(
     hass: HomeAssistant,
     entity_id: str,
     volume_level: float,
+    force: bool = False,
 ) -> bool:
     """Fire-and-forget volume change.
 
@@ -625,6 +585,15 @@ async def set_media_player_volume(
     know HA dispatched it) and return immediately. ``announce()``
     already includes a brief settle window before ``tts.speak`` runs,
     which is plenty for the device to apply the change.
+
+    ``force`` skips the "already at target" shortcut. That shortcut
+    trusts the reported level, and reported levels are not always
+    current: a DLNA renderer whose event subscription never reached
+    Home Assistant kept reporting the level it had before the
+    announcement while the speaker itself sat at the announcement
+    volume, so the restore decided there was nothing to do and left it
+    there. A caller that knows it changed the volume passes ``force``
+    and the shortcut is not consulted.
     """
     state, attributes = await get_media_player_state(hass, entity_id)
     if state is None or attributes is None:
@@ -633,7 +602,8 @@ async def set_media_player_volume(
 
     current_volume = attributes.get(ATTR_MEDIA_VOLUME_LEVEL)
     if (
-        current_volume is not None
+        not force
+        and current_volume is not None
         and abs(float(current_volume) - volume_level) < 0.01
     ):
         return True  # already at target
@@ -663,35 +633,6 @@ async def set_media_player_volume(
     except Exception as err:
         _LOGGER.error("Failed to set volume for %s: %s", entity_id, err)
         return False
-
-def get_cascaded_config_value(
-    options: Dict[str, Any], 
-    data: Dict[str, Any], 
-    service_data: Dict[str, Any],
-    key: str, 
-    default: Any = None
-) -> Any:
-    """
-    Get a configuration value with proper cascade priority:
-    service_data > options > data > default
-    
-    Args:
-        options: Component options
-        data: Component data
-        service_data: Service call data
-        key: Key to retrieve
-        default: Default value if not found
-        
-    Returns:
-        The value with proper priority
-    """
-    return service_data.get(
-        key, 
-        options.get(
-            key, 
-            data.get(key, default)
-        )
-    )
 
 async def call_media_player_service(
     hass: HomeAssistant,

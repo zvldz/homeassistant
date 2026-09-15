@@ -2,12 +2,19 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add OpenAI TTS Service",
-        "description": "Set up OpenAI TTS integration to create TTS agents. API key is required for OpenAI, optional for custom endpoints.",
+        "title": "Add TTS Service (Step 1 of 2)",
+        "description": "Pick the TTS provider.",
+        "data": {
+          "provider": "Provider"
+        }
+      },
+      "credentials": {
+        "title": "Add TTS Service (Step 2 of 2)",
+        "description": "API credentials for {provider}.",
         "data": {
           "name": "Account name (optional, e.g. Personal / Work)",
-          "api_key": "API Key (required for OpenAI, optional for custom endpoints)",
-          "url": "API Endpoint (optional)"
+          "api_key": "API Key",
+          "url": "API Endpoint"
         }
       },
       "reconfigure": {
@@ -30,13 +37,17 @@
     "abort": {
       "already_configured": "This instance is already configured",
       "reconfigure_successful": "Configuration updated successfully",
-      "reauth_successful": "Re-authentication successful"
+      "reauth_successful": "Re-authentication successful",
+      "unknown_error": "Something went wrong and the entry could not be found. Check the Home Assistant log."
     },
     "error": {
       "wrong_api_key": "Invalid API key. Please enter a valid API key.",
       "invalid_api_key": "Invalid API key. Please check your API key and try again.",
       "cannot_connect": "Cannot connect to OpenAI API. Please check your network and API endpoint.",
-      "duplicate_api_key": "An entry with this API key already exists. Each integration entry must have a unique API key."
+      "duplicate_api_key": "An entry with this API key already exists. Each integration entry must have a unique API key.",
+      "url_required": "API endpoint URL is required for this provider. Enter the full URL of your TTS server.",
+      "unknown_error": "Something went wrong. Check the Home Assistant log for the details.",
+      "api_key_required": "An API key is required for OpenAI's own endpoint. Leave it empty only when pointing at a self-hosted backend that does not need one."
     }
   },
   "config_subentries": {
@@ -57,16 +68,25 @@
         },
         "voice_audio": {
           "title": "Add TTS Agent (Step 2 of 2)",
-          "description": "Voice and audio options for model {model}. Note: enabling chime or normalize_audio disables streaming (post-processing required).",
+          "description": "Voice and audio options for model {model}. Note: enabling chime disables streaming, because the chime has to be attached to the finished audio.",
           "data": {
             "voice": "Voice",
             "speed": "Speed (0.25 to 4.0)",
             "chime": "Enable chime sound",
             "chime_sound": "Chime sound",
             "normalize_audio": "Normalize audio volume",
-            "instructions": "Custom instructions (gpt-4o-mini-tts only)",
+            "instructions": "Voice instructions",
             "extra_payload": "Extra JSON payload (for custom TTS backends)",
-            "audio_format": "Audio format (mp3 is the safe default; switch only if your backend needs another)"
+            "audio_format": "Audio format",
+            "stream_pipelining": "Sentence streaming",
+            "send_voice": "Send the voice name",
+            "stream_audio": "Stream the audio"
+          },
+          "data_description": {
+            "stream_pipelining": "Starts speaking as soon as the first sentence is ready, instead of waiting for the whole reply to be written. Only affects the voice assistant, and needs MP3 or PCM.",
+            "audio_format": "MP3 is the safe default. Change it only if your backend requires another format.",
+            "send_voice": "On by default. Turn it off for a backend that rejects the voice field, such as audio.cpp serving Chatterbox or VoxCPM2.",
+            "stream_audio": "Plays the audio as it arrives instead of waiting for the whole clip. Turn it off for a backend that answers a streamed read with audio that will not decode, while the same request read in one go is fine."
           }
         },
         "reconfigure": {
@@ -78,33 +98,46 @@
         },
         "reconfigure_voice": {
           "title": "Update TTS Agent (Step 2 of 2)",
-          "description": "Voice and audio options for model {model}. Note: enabling chime or normalize_audio disables streaming (post-processing required).",
+          "description": "Voice and audio options for model {model}. Note: enabling chime disables streaming, because the chime has to be attached to the finished audio.",
           "data": {
             "voice": "Voice",
             "speed": "Speed (0.25 to 4.0)",
             "chime": "Enable chime sound",
             "chime_sound": "Chime sound",
             "normalize_audio": "Normalize audio volume",
-            "instructions": "Custom instructions (gpt-4o-mini-tts only)",
+            "instructions": "Voice instructions",
             "extra_payload": "Extra JSON payload (for custom TTS backends)",
-            "audio_format": "Audio format (mp3 is the safe default; switch only if your backend needs another)"
+            "audio_format": "Audio format",
+            "stream_pipelining": "Sentence streaming",
+            "send_voice": "Send the voice name",
+            "stream_audio": "Stream the audio"
+          },
+          "data_description": {
+            "stream_pipelining": "Starts speaking as soon as the first sentence is ready, instead of waiting for the whole reply to be written. Only affects the voice assistant, and needs MP3 or PCM.",
+            "audio_format": "MP3 is the safe default. Change it only if your backend requires another format.",
+            "send_voice": "On by default. Turn it off for a backend that rejects the voice field, such as audio.cpp serving Chatterbox or VoxCPM2.",
+            "stream_audio": "Plays the audio as it arrives instead of waiting for the whole clip. Turn it off for a backend that answers a streamed read with audio that will not decode, while the same request read in one go is fine."
           }
         }
       },
       "error": {
-        "already_exists": "A profile with this name already exists"
+        "already_exists": "A profile with this name already exists",
+        "pipelining_needs_no_chime": "Turn the chime off to stream. A chime has to be attached to the finished audio, so speech cannot start before the reply is complete.",
+        "pipelining_needs_joinable_format": "Pick MP3 or PCM to stream. The other formats either cannot be joined end to end, or state a total length in their header that is not known until the audio ends.",
+        "unknown_error": "Something went wrong. Check the Home Assistant log for the details.",
+        "profile_name_required": "Give the TTS agent a name."
       },
       "abort": {
         "already_configured": "Profile already configured",
         "reconfigure_successful": "TTS agent reconfigured successfully",
-        "subentry_not_found": "TTS agent not found"
+        "subentry_not_found": "This TTS agent no longer exists. It may have been deleted in another window."
       }
     }
   },
   "options": {
     "abort": {
       "no_options_available": "This integration entry has no configurable options. Use the subentries to configure individual TTS agents.",
-      "not_supported": "Options flow is not supported for this entry"
+      "not_supported": "This entry uses the newer profile setup. Use Reconfigure, or Add TTS agent, instead."
     },
     "step": {
       "init": {
@@ -120,7 +153,8 @@
           "instructions": "Instructions (leave empty to disable)",
           "normalize_audio": "Enable loudness for generated audio (uses more CPU)",
           "volume_restore": "Restore speaker volumes after TTS playback",
-          "pause_playback": "Pause media during TTS (Sonos only)"
+          "announce_mode": "Announcement mode (speakers duck or pause instead of replacing what is playing)",
+          "pause_playback": "Always pause current media before speaking"
         }
       }
     }
@@ -138,6 +172,109 @@
           "network_error": "Network error",
           "unknown_error": "Unknown error"
         }
+      }
+    }
+  },
+  "issues": {
+    "voice_deleted": {
+      "title": "TTS voice was deleted upstream",
+      "description": "The voice `{voice}` used by TTS agent `{profile}` no longer exists on the provider. Open the agent's Reconfigure dialog and pick a current voice."
+    }
+  },
+  "services": {
+    "say": {
+      "name": "OpenAI TTS Speak",
+      "description": "Uses the OpenAI TTS engine to speak a message, with optional chime, normalisation and volume control.",
+      "fields": {
+        "tts_entity": {
+          "name": "TTS entity",
+          "description": "The TTS entity to speak with."
+        },
+        "message": {
+          "name": "Message",
+          "description": "The text to be spoken."
+        },
+        "voice": {
+          "name": "Voice",
+          "description": "Voice to use instead of the one the profile is configured with. Voices marked as gpt-4o-mini-tts only are rejected by tts-1 and tts-1-hd. Any name can be typed for a custom backend."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "Speed of the speech, from 0.25 to 4.0, where 1.0 is normal."
+        },
+        "instructions": {
+          "name": "Instructions",
+          "description": "Speaking style for the gpt-4o-mini-tts model, for example \"speak like a pirate\". Custom backends may ignore it."
+        },
+        "extra_payload": {
+          "name": "Extra payload",
+          "description": "Additional JSON merged into the API request, for custom backends that take extra parameters."
+        },
+        "language": {
+          "name": "Language",
+          "description": "Language code for the speech."
+        },
+        "chime": {
+          "name": "Play chime",
+          "description": "Plays a chime before the message. Falls back to the profile setting when omitted. Turns streaming off, because the chime has to be joined to the audio first."
+        },
+        "chime_sound": {
+          "name": "Chime sound",
+          "description": "Filename of the chime to play. Turns streaming off, as above."
+        },
+        "normalize_audio": {
+          "name": "Normalise audio",
+          "description": "Applies loudness normalisation, which is on by default. Falls back to the profile setting when omitted. Works with streaming."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume for this announcement only, 0.0 to 1.0, restored afterwards. Setting it pauses the music instead of ducking it."
+        },
+        "announce": {
+          "name": "Announcement mode",
+          "description": "On by default: speakers that support announcements duck the music, the rest are paused and resumed. Off sends the audio as ordinary media."
+        }
+      }
+    },
+    "set_api_key": {
+      "name": "Set API key",
+      "description": "Stores a new API key on an OpenAI TTS entry and reloads it. Meant for providers that issue short-lived keys, so an automation can refresh the key without anyone opening the settings. The key is written to Home Assistant's own storage, not to an entity, but note that automation traces keep the data a service was called with.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entry",
+          "description": "The OpenAI TTS entry that holds the key."
+        },
+        "tts_entity": {
+          "name": "TTS entity",
+          "description": "Any TTS entity of the entry, if you would rather name one of those than the entry itself."
+        },
+        "api_key": {
+          "name": "API key",
+          "description": "The new key."
+        },
+        "validate": {
+          "name": "Check the key first",
+          "description": "Try the key against the endpoint before storing it, so a bad one is refused instead of breaking the next announcement. Costs one very short request."
+        }
+      }
+    }
+  },
+  "selector": {
+    "voice": {
+      "options": {
+        "alloy": "Alloy (neutral)",
+        "ash": "Ash (calm)",
+        "ballad": "Ballad (warm), gpt-4o-mini-tts only",
+        "cedar": "Cedar (recommended), gpt-4o-mini-tts only",
+        "coral": "Coral (friendly)",
+        "echo": "Echo (smooth)",
+        "fable": "Fable (expressive)",
+        "marin": "Marin (recommended), gpt-4o-mini-tts only",
+        "nova": "Nova (energetic)",
+        "onyx": "Onyx (authoritative)",
+        "sage": "Sage (thoughtful)",
+        "shimmer": "Shimmer (gentle)",
+        "verse": "Verse (versatile), gpt-4o-mini-tts only"
       }
     }
   }

@@ -2,12 +2,19 @@
   "config": {
     "step": {
       "user": {
-        "title": "Přidat OpenAI TTS službu",
-        "description": "Nastavte OpenAI TTS integration pro vytvoření TTS agents. API key je vyžadován pro OpenAI, volitelný pro custom endpoints.",
+        "title": "Přidat TTS službu (Krok 1 z 2)",
+        "description": "Vyberte TTS provider.",
+        "data": {
+          "provider": "Provider"
+        }
+      },
+      "credentials": {
+        "title": "Přidat TTS službu (Krok 2 z 2)",
+        "description": "Přihlašovací údaje API pro {provider}.",
         "data": {
           "name": "Název účtu (volitelné, např. Osobní / Pracovní)",
-          "api_key": "API key (vyžadován pro OpenAI, volitelný pro custom endpoints)",
-          "url": "API endpoint (volitelné)"
+          "api_key": "API key",
+          "url": "API endpoint"
         }
       },
       "reconfigure": {
@@ -30,13 +37,17 @@
     "abort": {
       "already_configured": "Tato instance je již nakonfigurována",
       "reconfigure_successful": "Konfigurace byla úspěšně aktualizována",
-      "reauth_successful": "Opětovné ověření bylo úspěšné"
+      "reauth_successful": "Opětovné ověření bylo úspěšné",
+      "unknown_error": "Něco se pokazilo a záznam nebyl nalezen. Zkontrolujte protokol Home Assistant."
     },
     "error": {
       "wrong_api_key": "Neplatný API key. Zadejte prosím platný API key.",
       "invalid_api_key": "Neplatný API key. Zkontrolujte prosím svůj API key a zkuste to znovu.",
       "cannot_connect": "Nelze se připojit k OpenAI API. Zkontrolujte prosím síť a API endpoint.",
-      "duplicate_api_key": "Záznam s tímto API key již existuje. Každý integration musí mít jedinečný API key."
+      "duplicate_api_key": "Záznam s tímto API key již existuje. Každý integration musí mít jedinečný API key.",
+      "url_required": "Pro tohoto poskytovatele je vyžadováno API endpoint URL. Zadejte úplnou adresu vašeho TTS serveru.",
+      "unknown_error": "Něco se pokazilo. Podrobnosti najdete v protokolu Home Assistant.",
+      "api_key_required": "Pro vlastní endpoint OpenAI je vyžadován API klíč. Ponechte prázdné jen u self-hosted backendu, který jej nepotřebuje."
     }
   },
   "config_subentries": {
@@ -57,16 +68,25 @@
         },
         "voice_audio": {
           "title": "Přidat TTS agent (krok 2 z 2)",
-          "description": "Hlas a možnosti zvuku pro model {model}. Poznámka: povolení chime nebo normalize_audio vypne streaming (vyžaduje post-processing).",
+          "description": "Hlas a možnosti zvuku pro model {model}. Poznámka: povolení zvuku signálu vypne streaming, protože zvuk signálu musí být spojen s hotovým zvukem.",
           "data": {
             "voice": "Hlas",
             "speed": "Rychlost (0,25 až 4,0)",
             "chime": "Povolit zvukový signál",
             "chime_sound": "Zvuk signálu",
             "normalize_audio": "Normalizovat hlasitost audia",
-            "instructions": "Vlastní pokyny (pouze gpt-4o-mini-tts)",
+            "instructions": "Pokyny pro hlas",
             "extra_payload": "Extra JSON payload (pro custom TTS backends)",
-            "audio_format": "Audio format (mp3 je bezpečný default, změňte pouze pokud váš backend potřebuje jiný)"
+            "audio_format": "Formát zvuku",
+            "stream_pipelining": "Streamování po větách",
+            "send_voice": "Odesílat název hlasu",
+            "stream_audio": "Streamovat zvuk"
+          },
+          "data_description": {
+            "stream_pipelining": "Začne mluvit hned, jak je hotová první věta, místo čekání na dokončení celé odpovědi. Ovlivňuje pouze hlasového asistenta a vyžaduje MP3 nebo PCM.",
+            "audio_format": "MP3 je bezpečná výchozí volba. Změňte ji jen pokud váš backend vyžaduje jiný formát.",
+            "send_voice": "Ve výchozím nastavení zapnuto. Vypněte pro backend, který pole hlasu odmítá, například audio.cpp s Chatterbox nebo VoxCPM2.",
+            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje."
           }
         },
         "reconfigure": {
@@ -78,33 +98,46 @@
         },
         "reconfigure_voice": {
           "title": "Aktualizovat TTS agent (krok 2 z 2)",
-          "description": "Hlas a možnosti zvuku pro model {model}. Poznámka: povolení chime nebo normalize_audio vypne streaming (vyžaduje post-processing).",
+          "description": "Hlas a možnosti zvuku pro model {model}. Poznámka: povolení zvuku signálu vypne streaming, protože zvuk signálu musí být spojen s hotovým zvukem.",
           "data": {
             "voice": "Hlas",
             "speed": "Rychlost (0,25 až 4,0)",
             "chime": "Povolit zvukový signál",
             "chime_sound": "Zvuk signálu",
             "normalize_audio": "Normalizovat hlasitost audia",
-            "instructions": "Vlastní pokyny (pouze gpt-4o-mini-tts)",
+            "instructions": "Pokyny pro hlas",
             "extra_payload": "Extra JSON payload (pro custom TTS backends)",
-            "audio_format": "Audio format (mp3 je bezpečný default, změňte pouze pokud váš backend potřebuje jiný)"
+            "audio_format": "Formát zvuku",
+            "stream_pipelining": "Streamování po větách",
+            "send_voice": "Odesílat název hlasu",
+            "stream_audio": "Streamovat zvuk"
+          },
+          "data_description": {
+            "stream_pipelining": "Začne mluvit hned, jak je hotová první věta, místo čekání na dokončení celé odpovědi. Ovlivňuje pouze hlasového asistenta a vyžaduje MP3 nebo PCM.",
+            "audio_format": "MP3 je bezpečná výchozí volba. Změňte ji jen pokud váš backend vyžaduje jiný formát.",
+            "send_voice": "Ve výchozím nastavení zapnuto. Vypněte pro backend, který pole hlasu odmítá, například audio.cpp s Chatterbox nebo VoxCPM2.",
+            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje."
           }
         }
       },
       "error": {
-        "already_exists": "Profil s tímto názvem již existuje"
+        "already_exists": "Profil s tímto názvem již existuje",
+        "pipelining_needs_no_chime": "Pro streamování vypněte zvukový signál. Signál se připojuje k hotovému zvuku, takže řeč nemůže začít před dokončením odpovědi.",
+        "pipelining_needs_joinable_format": "Pro streamování zvolte MP3 nebo PCM. Ostatní formáty buď nelze spojovat za sebe, nebo v hlavičce uvádějí celkovou délku, která není známa, dokud zvuk neskončí.",
+        "unknown_error": "Něco se pokazilo. Podrobnosti najdete v protokolu Home Assistant.",
+        "profile_name_required": "Zadejte název TTS agenta."
       },
       "abort": {
         "already_configured": "Profil je již nakonfigurován",
         "reconfigure_successful": "TTS agent byl úspěšně překonfigurován",
-        "subentry_not_found": "TTS agent nebyl nalezen"
+        "subentry_not_found": "Tento TTS agent již neexistuje. Mohl být smazán v jiném okně."
       }
     }
   },
   "options": {
     "abort": {
       "no_options_available": "Tento integration nemá konfigurovatelné možnosti. Pro konfiguraci jednotlivých TTS agents použijte podpoložky.",
-      "not_supported": "Tok možností není pro tuto položku podporován"
+      "not_supported": "Tento záznam používá novější nastavení profilů. Použijte Překonfigurovat nebo Přidat TTS agenta."
     },
     "step": {
       "init": {
@@ -120,7 +153,8 @@
           "instructions": "Pokyny (ponechte prázdné pro deaktivaci)",
           "normalize_audio": "Povolit zvýšení hlasitosti generovaného audia (vyžaduje více CPU)",
           "volume_restore": "Obnovit hlasitost reproduktorů po přehrávání TTS",
-          "pause_playback": "Pozastavit média během TTS (pouze Sonos)"
+          "announce_mode": "Režim oznámení (reproduktory zeslabí nebo pozastaví přehrávání místo jeho nahrazení)",
+          "pause_playback": "Vždy pozastavit aktuální média před řečí"
         }
       }
     }
@@ -137,6 +171,109 @@
           "server_error": "Chyba serveru",
           "network_error": "Chyba sítě",
           "unknown_error": "Neznámá chyba"
+        }
+      }
+    }
+  },
+  "issues": {
+    "voice_deleted": {
+      "title": "TTS hlas byl smazán u poskytovatele",
+      "description": "Hlas `{voice}` používaný TTS agentem `{profile}` již u poskytovatele neexistuje. Otevřete dialog Reconfigure tohoto agenta a vyberte aktuální hlas."
+    }
+  },
+  "selector": {
+    "voice": {
+      "options": {
+        "alloy": "Alloy (neutrální)",
+        "ash": "Ash (klidný)",
+        "ballad": "Ballad (teplý), pouze gpt-4o-mini-tts",
+        "cedar": "Cedar (doporučený), pouze gpt-4o-mini-tts",
+        "coral": "Coral (přátelský)",
+        "echo": "Echo (hladký)",
+        "fable": "Fable (výrazný)",
+        "marin": "Marin (doporučený), pouze gpt-4o-mini-tts",
+        "nova": "Nova (energický)",
+        "onyx": "Onyx (autoritativní)",
+        "sage": "Sage (promyšlený)",
+        "shimmer": "Shimmer (jemný)",
+        "verse": "Verse (všestranný), pouze gpt-4o-mini-tts"
+      }
+    }
+  },
+  "services": {
+    "say": {
+      "name": "OpenAI TTS Přehrát řeč",
+      "description": "Použije OpenAI TTS engine k vyslovení zprávy, s volitelným zvukem signálu, normalizací a ovládáním hlasitosti.",
+      "fields": {
+        "tts_entity": {
+          "name": "Entita TTS",
+          "description": "Entita TTS, která bude mluvit."
+        },
+        "message": {
+          "name": "Zpráva",
+          "description": "Text k vyslovení."
+        },
+        "voice": {
+          "name": "Hlas",
+          "description": "Hlas použitý místo toho nastaveného v profile. Hlasy označené jako pouze gpt-4o-mini-tts jsou modely tts-1 a tts-1-hd odmítnuty. Pro custom backend lze zadat libovolný název."
+        },
+        "speed": {
+          "name": "Rychlost",
+          "description": "Rychlost řeči, od 0.25 do 4.0, kde 1.0 je normální."
+        },
+        "instructions": {
+          "name": "Pokyny",
+          "description": "Styl řeči pro model gpt-4o-mini-tts, například \"mluv jako pirát\". Custom backends jej mohou ignorovat."
+        },
+        "extra_payload": {
+          "name": "Další payload",
+          "description": "Doplňkový JSON sloučený do požadavku na API, pro custom backends přijímající další parametry."
+        },
+        "language": {
+          "name": "Jazyk",
+          "description": "Kód jazyka pro řeč."
+        },
+        "chime": {
+          "name": "Přehrát zvuk signálu",
+          "description": "Před zprávou přehraje zvuk signálu. Pokud není uvedeno, použije se nastavení profile. Vypíná streaming, protože zvuk signálu musí být nejprve spojen se zvukem."
+        },
+        "chime_sound": {
+          "name": "Zvuk signálu",
+          "description": "Název souboru se zvukem signálu. Vypíná streaming, jako výše."
+        },
+        "normalize_audio": {
+          "name": "Normalizovat zvuk",
+          "description": "Použije normalizaci hlasitosti, která je ve výchozím nastavení zapnutá. Pokud není uvedeno, použije se nastavení profile. Funguje společně se streamingem."
+        },
+        "volume": {
+          "name": "Hlasitost",
+          "description": "Hlasitost pouze pro toto hlášení, 0.0 až 1.0, poté obnovena. Pokud ji nastavíte, hudba se pozastaví místo ztlumení."
+        },
+        "announce": {
+          "name": "Režim hlášení",
+          "description": "Ve výchozím nastavení zapnuto: reproduktory s podporou hlášení hudbu ztlumí, ostatní se pozastaví a poté pokračují. Vypnuto odešle zvuk jako běžné přehrávání."
+        }
+      }
+    },
+    "set_api_key": {
+      "name": "Nastavit klíč API",
+      "description": "Uloží nový klíč API do záznamu OpenAI TTS a znovu jej načte. Je určeno pro poskytovatele, kteří vydávají krátkodobé klíče, aby automatizace mohla klíč obnovit, aniž by někdo otevíral nastavení. Klíč se zapisuje do úložiště Home Assistant, nikoli do entity, ale pozor: záznamy průběhu automatizací uchovávají data, se kterými byla akce zavolána.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam",
+          "description": "Záznam OpenAI TTS, který klíč obsahuje."
+        },
+        "tts_entity": {
+          "name": "Entita TTS",
+          "description": "Libovolná entita TTS daného záznamu, pokud chcete uvést raději ji než samotný záznam."
+        },
+        "api_key": {
+          "name": "Klíč API",
+          "description": "Nový klíč."
+        },
+        "validate": {
+          "name": "Nejprve klíč ověřit",
+          "description": "Vyzkoušet klíč proti koncovému bodu před uložením, aby byl chybný odmítnut a nerozbil další hlášení. Stojí jeden velmi krátký požadavek."
         }
       }
     }

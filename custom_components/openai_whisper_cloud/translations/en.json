@@ -1,79 +1,88 @@
 {
     "config": {
-        "abort": {
-            "already_configured": "Device is already configured",
-            "reconfigure_successful": "Reconfigured",
-            "reconfigure_failed": "Reconfiguration failed"
-        },
-        "error": {
-            "invalid_api_key": "Invalid API Key",
-            "unauthorized": "Make sure your api key has READ permission to 'Models' and WRITE permission to 'Model capabilities'",
-            "whisper_not_found":  "Whisper model not found"
-        },
         "step": {
             "user": {
+                "title": "Whisper Cloud",
+                "description": "Select the speech-to-text API provider.",
                 "data": {
-                    "source": "API Provider"
+                    "provider_type": "API Provider"
                 }
             },
             "whisper": {
+                "title": "Provider setup",
                 "data": {
                     "name": "Name",
-                    "url": "Url",
                     "api_key": "API key",
                     "model": "Model",
                     "temperature": "Temperature",
-                    "prompt": "Prompt (Optional)",
-                    "reduce_noise": "Reduce noise"
+                    "prompt": "Prompt (Optional)"
                 },
                 "data_description": {
-                    "url": "Full OpenAI compatible api url",
-                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
-                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                    "api_key": "API key for the selected provider.",
+                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`"
                 }
             },
-            "reconfigure": {
+            "custom": {
+                "title": "Custom endpoint",
                 "data": {
                     "name": "Name",
-                    "url": "Url",
+                    "url": "URL",
                     "api_key": "API key (Optional)",
                     "model": "Model",
                     "temperature": "Temperature",
                     "prompt": "Prompt (Optional)",
-                    "reduce_noise": "Reduce noise"
+                    "file_field": "Audio file field name"
                 },
                 "data_description": {
-                    "url": "Full OpenAI compatible api url",
+                    "url": "Your server URL. A URL without a path gets the standard endpoint appended (`https://host` and `https://host/v1` both become `https://host/v1/audio/transcriptions`); any URL that already includes a path is used as-is, e.g. `http://host:8000/asr` (whisper-asr-webservice).",
+                    "api_key": "Leave empty if your server does not require an API key.",
+                    "model": "Model name accepted by your server (e.g. `whisper-1`, `Systran/faster-whisper-large-v3`).",
                     "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
-                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                    "file_field": "Multipart field used to upload the audio. Most OpenAI-compatible servers use `file`; whisper-asr-webservice needs `audio_file`. If unsure, keep `file`: the integration detects and retries automatically on a 422 response."
                 }
-            }
-        }
-    },
-    "options": {
-        "abort": {
-            "already_configured": "Device is already configured",
-            "reconfigure_successful": "Reconfigured",
-            "reconfigure_failed": "Reconfiguration failed"
-        },
-        "error": {
-            "invalid_api_key": "Invalid API Key",
-            "unauthorized": "Make sure your api key has READ permission to 'Models' and WRITE permission to 'Model capabilities'",
-            "whisper_not_found":  "Whisper model not found"
-        },
-        "step": {
-            "init": {
+            },
+            "reconfigure": {
+                "title": "Reconfigure",
                 "data": {
                     "name": "Name",
-                    "api_key": "API key (leave blank to keep existing)",
+                    "url": "URL",
+                    "api_key": "API key (leave blank to keep the current one)",
                     "model": "Model",
                     "temperature": "Temperature",
                     "prompt": "Prompt (Optional)",
-                    "reduce_noise": "Reduce noise"
+                    "file_field": "Audio file field name"
                 },
                 "data_description": {
+                    "url": "Your server URL. A URL without a path gets the standard endpoint appended (`https://host` and `https://host/v1` both become `https://host/v1/audio/transcriptions`); any URL that already includes a path is used as-is, e.g. `http://host:8000/asr` (whisper-asr-webservice).",
+                    "api_key": "Leave blank to keep the current API key.",
                     "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`",
-                    "reduce_noise": "Noise reduction will remove background noise.\nAudio processing will take a bit longer."
+                    "file_field": "Multipart field used to upload the audio. Most OpenAI-compatible servers use `file`; whisper-asr-webservice needs `audio_file`. If unsure, keep `file`: the integration detects and retries automatically on a 422 response."
+                }
+            }
+        },
+        "abort": {
+            "reconfigure_successful": "Configuration updated, the integration is reloading."
+        },
+        "error": {
+            "invalid_api_key": "Invalid API key",
+            "unauthorized": "The API key does not have permission to use this model",
+            "whisper_not_found": "Whisper model not found",
+            "connection_error": "Cannot connect to the provider, check the URL and your network",
+            "invalid_url": "Invalid URL",
+            "unknown": "Unexpected error"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Whisper Cloud options",
+                "data": {
+                    "model": "Model",
+                    "temperature": "Temperature",
+                    "prompt": "Prompt (Optional)"
+                },
+                "data_description": {
+                    "prompt": "Prompt can be used to improve speech recognition of words or even names.\nYou have to provide a list of words or names separated by a comma \", \".\nExample: `open, close, Chat GPT-3, DALL·E`"
                 }
             }
         }

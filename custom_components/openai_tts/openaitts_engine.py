@@ -3,7 +3,7 @@
 The engine provides two parallel call paths:
 
 - ``get_tts()``: blocking, called via an executor by the legacy
-  ``async_get_tts_audio()`` HA TTS contract. Always reads the full
+  HA TTS entity's blocking path. Always reads the full
   audio body inside the executor so the event loop never blocks on
   socket I/O.
 - ``async_get_tts_stream()``: native async generator used by HA 2025.7+
@@ -17,6 +17,8 @@ so error handling stays consistent across them.
 from __future__ import annotations
 
 import asyncio
+import base64
+import contextlib
 import json
 import logging
 import time
@@ -29,6 +31,7 @@ import aiohttp
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .const import model_may_accept_instructions
 from .exceptions import (
     OpenAIAuthError,
     OpenAINetworkError,
@@ -36,6 +39,7 @@ from .exceptions import (
     OpenAIRateLimitError,
     OpenAIServerError,
     OpenAITTSError,
+    OpenAIVoiceDeletedError,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,26 +48,163 @@ DEFAULT_TIMEOUT_SECONDS = 30
 STREAMING_TIMEOUT_SECONDS = 60
 INITIAL_BUFFER_BYTES = 1024
 
+# Retry knobs for transient failures (5xx, 429, network blips). Auth /
+# quota / voice-deleted errors are skipped by ``_is_retryable`` so this
+# only applies to errors that have a real chance of clearing on the
+# next attempt. ``MAX_RETRIES`` is the number of *retries* on top of
+# the initial attempt, so the total request count is bounded at
+# ``1 + MAX_RETRIES`` (2 by default).
+#
+# Deliberately kept at a single retry. The per-attempt timeout is what
+# dominates the worst case: with ``STREAMING_TIMEOUT_SECONDS`` at 60 a
+# hanging provider already costs 2 x 60 + 1 = 121 s, and Home
+# Assistant's own TTS / service timeouts fire well before that. A
+# second retry only pushes the user-visible failure further out
+# without ever getting a chance to succeed. Flat (non-exponential) by
+# design - the user is waiting on the speaker, exponential backoff
+# would just turn dropped audio into longer silence.
+MAX_RETRIES = 1
+RETRY_DELAY_SECONDS = 1
 
-def _classify_http_error(status: int, body_snippet: str = "") -> OpenAITTSError:
-    """Map an HTTP status (and optional body) to a typed exception."""
+
+_VOICE_DELETED_PATTERNS = (
+    # Free-text fallback for backends that don't expose a structured
+    # error code. Each entry is matched case-insensitively against
+    # the body. Kept narrow so generic 400s like
+    # "voice argument is required" don't false-positive.
+    "voice does not exist",
+    "voice has been deleted",
+    "voice_not_found",
+    "voice_deleted",
+    "invalid voice",
+    "unknown voice",
+    # Groq's response when the voice slug is unknown / typo'd.
+    "voice must be",
+    "voice should be",
+)
+
+# Structured error codes / types that mean "this voice can't be used".
+# Matched against ``error.code`` and ``error.type`` from the JSON body.
+# Mistral uses ``type=invalid_voice`` (numeric ``code=1902``); the OpenAI
+# pattern is ``code=invalid_voice`` / ``code=voice_not_found``.
+_VOICE_DELETED_JSON_TOKENS = frozenset({
+    "invalid_voice",
+    "voice_not_found",
+    "voice_deleted",
+    "voice_does_not_exist",
+})
+
+
+def _voice_deletion_via_json(body_snippet: str) -> bool:
+    """Return True when the JSON envelope flags a voice-level error.
+
+    Looks at the typed fields first because they're stable across
+    provider releases - free-form messages can change wording from
+    one model rev to the next, codes generally don't.
+    """
+    body_snippet = body_snippet.strip()
+    if not body_snippet or not body_snippet.startswith("{"):
+        return False
+    try:
+        envelope = json.loads(body_snippet)
+    except (json.JSONDecodeError, ValueError):
+        return False
+    # OpenAI-style nests under ``error``; Mistral keeps the fields at
+    # the top level. Try both.
+    candidates = []
+    if isinstance(envelope, dict):
+        candidates.append(envelope)
+        nested = envelope.get("error")
+        if isinstance(nested, dict):
+            candidates.append(nested)
+    for cand in candidates:
+        type_ = str(cand.get("type", "")).lower()
+        code = str(cand.get("code", "")).lower()
+        if type_ in _VOICE_DELETED_JSON_TOKENS:
+            return True
+        if code in _VOICE_DELETED_JSON_TOKENS:
+            return True
+    return False
+
+
+def _looks_like_voice_deletion(body_snippet: str) -> bool:
+    """Detect a 4xx body that says 'this voice no longer exists'.
+
+    Two-tier check: structured JSON tokens first (Mistral
+    ``type=invalid_voice``, OpenAI ``code=invalid_voice``), free-text
+    pattern matching second (Groq, custom backends without a code).
+    The JSON tier is the authoritative source whenever it's present
+    so a future wording change in the message text doesn't silently
+    break detection.
+    """
+    if not body_snippet:
+        return False
+    if _voice_deletion_via_json(body_snippet):
+        return True
+    haystack = body_snippet.lower()
+    return any(p in haystack for p in _VOICE_DELETED_PATTERNS)
+
+
+def _classify_http_error(
+    status: int, body_snippet: str = "", voice: str | None = None
+) -> OpenAITTSError:
+    """Map an HTTP status (and optional body) to a typed exception.
+
+    The body snippet is appended to the message for 4xx responses so the
+    user (or issue tracker) can see what the upstream server actually
+    complained about. We trim to 200 chars to keep logs readable; the
+    full body remains visible at DEBUG via the existing read-2048 path.
+
+    ``voice`` lets the engine pass the voice slug it was trying to use
+    so a downstream Repairs issue can name the missing voice.
+    """
+    # An auth failure is the one 4xx whose body can echo the credential
+    # back, as OpenAI does with "Incorrect API key provided: sk-...".
+    # This message travels further than a log line: the health tracker
+    # keeps it as ``last_error_message`` and the API status sensor
+    # exposes it as an attribute, which the recorder then stores. The
+    # full body is still visible at DEBUG through the read-2048 path.
+    detail = (
+        f" - {body_snippet[:200]}"
+        if body_snippet and 400 <= status < 500 and status not in (401, 403)
+        else ""
+    )
     if status in (401, 403):
-        return OpenAIAuthError(f"Authentication failed (HTTP {status})")
+        return OpenAIAuthError(
+            f"TTS authentication failed (HTTP {status}). Check your API key.{detail}"
+        )
     if status == 402:
         return OpenAIQuotaExceededError(
-            f"OpenAI account balance/quota exhausted (HTTP {status})"
+            f"TTS account balance/quota exhausted (HTTP {status}).{detail}"
         )
     if status == 429:
         # OpenAI returns 429 for BOTH true rate limits and out-of-credits.
         # The body's `insufficient_quota` marker disambiguates them.
         if "insufficient_quota" in body_snippet:
             return OpenAIQuotaExceededError(
-                "OpenAI account quota exhausted (HTTP 429 insufficient_quota)"
+                "TTS account quota exhausted (HTTP 429 insufficient_quota). "
+                "Top up your account."
             )
-        return OpenAIRateLimitError(f"Rate limit hit (HTTP {status})")
+        return OpenAIRateLimitError(
+            f"TTS rate limit hit (HTTP {status}). Slow down requests.{detail}"
+        )
     if status >= 500:
-        return OpenAIServerError(f"OpenAI server error (HTTP {status})")
-    return OpenAITTSError(f"OpenAI API error (HTTP {status})")
+        return OpenAIServerError(
+            f"TTS provider server error (HTTP {status}). Usually temporary; "
+            "the integration retries once before giving up."
+        )
+    # 4xx that mentions the voice is gone: surface a dedicated error
+    # so the TTS layer can raise a Repairs issue instead of letting
+    # this look like a generic bad request.
+    if 400 <= status < 500 and _looks_like_voice_deletion(body_snippet):
+        return OpenAIVoiceDeletedError(
+            f"Configured voice {voice or '?'} no longer exists on the "
+            f"provider (HTTP {status}).{detail}",
+            voice=voice,
+        )
+    return OpenAITTSError(
+        f"TTS provider rejected the request (HTTP {status}).{detail}"
+    )
 
 
 def _is_retryable(exc: BaseException) -> bool:
@@ -72,9 +213,47 @@ def _is_retryable(exc: BaseException) -> bool:
         return False
     if isinstance(exc, (OpenAIRateLimitError, OpenAIServerError, OpenAINetworkError)):
         return True
-    if isinstance(exc, (URLError, aiohttp.ClientError)):
-        return True
-    return False
+    return isinstance(exc, (URLError, aiohttp.ClientError))
+
+
+def _decode_json_audio_blob(body: bytes) -> bytes:
+    """Pull base64 audio out of a JSON-wrapped speech response.
+
+    Mistral Voxtral and similar OpenAI-compatible providers return a
+    JSON envelope with the audio under ``audio_data`` (or ``audio`` /
+    ``data``) instead of raw bytes. We unwrap and base64-decode in one
+    place so both the sync ``get_tts`` and the async streaming path can
+    reuse it. Raises ``OpenAITTSError`` when the body is JSON but the
+    audio field is missing or unreadable.
+    """
+    try:
+        envelope = json.loads(body)
+    except json.JSONDecodeError as exc:
+        preview = body[:120].decode("utf-8", errors="replace")
+        raise OpenAITTSError(
+            f"Could not parse JSON audio response: {exc}. Body starts with: {preview!r}"
+        ) from exc
+
+    if not isinstance(envelope, dict):
+        raise OpenAITTSError(
+            f"JSON audio response was not an object: {type(envelope).__name__}"
+        )
+
+    for key in ("audio_data", "audio", "data"):
+        value = envelope.get(key)
+        if isinstance(value, str) and value:
+            try:
+                return base64.b64decode(value)
+            except (ValueError, base64.binascii.Error) as exc:
+                raise OpenAITTSError(
+                    f"Could not base64-decode {key!r} in audio response: {exc}"
+                ) from exc
+
+    snippet = json.dumps(envelope)[:200]
+    raise OpenAITTSError(
+        "JSON audio response did not include a recognised audio field "
+        f"(audio_data / audio / data). Body: {snippet}"
+    )
 
 
 class _RequestBuilder:
@@ -105,8 +284,14 @@ class _RequestBuilder:
         speed: Optional[float] = None,
         instructions: Optional[str] = None,
         extra_payload: Optional[str] = None,
+        send_voice: bool = True,
     ) -> tuple[dict[str, str], dict[str, object]]:
-        """Return (headers, payload) for an OpenAI TTS request."""
+        """Return (headers, payload) for an OpenAI TTS request.
+
+        ``send_voice`` false leaves the ``voice`` key out entirely, for
+        backends that reject it. This is the only place the payload is
+        built, so one check covers the streaming and blocking paths.
+        """
         headers: dict[str, str] = {
             "Content-Type": "application/json",
             "User-Agent": "HomeAssistant-OpenAI-TTS",
@@ -117,32 +302,72 @@ class _RequestBuilder:
         payload: dict[str, object] = {
             "model": model or self._default_model,
             "input": text,
-            "voice": voice or self._default_voice,
             "response_format": response_format,
-            "speed": speed if speed is not None else self._default_speed,
         }
+        # Omitted rather than sent empty: a backend that refuses the key
+        # refuses a null value just the same. Same treatment, and for the
+        # same class of reason, as ``speed`` below.
+        if send_voice:
+            payload["voice"] = voice or self._default_voice
+        # Only send ``speed`` when the user has actually changed it from
+        # the API default of 1.0. Some compatible backends (Mistral
+        # Voxtral) reject any unrecognised body field with HTTP 422
+        # ``extra_forbidden``, which would otherwise block requests
+        # that are still using the default 1.0.
+        effective_speed = speed if speed is not None else self._default_speed
+        if effective_speed is not None and abs(float(effective_speed) - 1.0) > 1e-9:
+            payload["speed"] = effective_speed
+        # Keep ``instructions`` out of the body when the model is a known
+        # OpenAI one that rejects it. The profile may still hold a value
+        # from when it was pointed at ``gpt-4o-mini-tts``; that value is
+        # preserved on purpose, but sending it to ``tts-1`` fails the
+        # whole request. Custom backends under unrecognised model names
+        # still get it.
         if instructions is not None:
-            payload["instructions"] = instructions
+            effective_model = payload["model"]
+            if model_may_accept_instructions(
+                effective_model if isinstance(effective_model, str) else None
+            ):
+                payload["instructions"] = instructions
+            else:
+                _LOGGER.debug(
+                    "Dropping instructions for model %s, which does not "
+                    "accept the field", effective_model,
+                )
 
         if extra_payload:
+            # Be lenient with whitespace and the common ```json fenced
+            # code-block wrapping, then try to parse. If the payload is
+            # still invalid we log a single actionable warning and drop
+            # the payload rather than fail the whole request - blocking
+            # otherwise-working TTS over a malformed optional field is a
+            # worse user experience than skipping it (issue #65).
+            cleaned = extra_payload.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.lstrip("`")
+                if cleaned.lower().startswith("json"):
+                    cleaned = cleaned[4:]
+                cleaned = cleaned.rstrip("`").strip()
             try:
-                extra = json.loads(extra_payload)
+                extra = json.loads(cleaned)
             except json.JSONDecodeError as e:
-                # Surface configuration errors as typed exceptions so the
-                # caller sees a real failure (HomeAssistantError + sensor
-                # update) instead of a quiet warning that the user might
-                # never notice. Silent fallback hid bugs in custom-backend
-                # configs where the user thought their params were sent.
-                raise OpenAITTSError(
-                    f"Invalid extra_payload JSON: {e}"
-                ) from e
-            if not isinstance(extra, dict):
-                raise OpenAITTSError(
-                    "extra_payload must be a JSON object, "
-                    f"got {type(extra).__name__}"
+                _LOGGER.warning(
+                    "Ignoring invalid extra_payload JSON (%s). "
+                    "Expected a JSON object like {\"temperature\": 0.7}. "
+                    "Received: %r",
+                    e, extra_payload[:120],
                 )
-            payload.update(extra)
-            _LOGGER.debug("Merged extra payload keys: %s", list(extra.keys()))
+                extra = None
+            if extra is not None and not isinstance(extra, dict):
+                _LOGGER.warning(
+                    "Ignoring extra_payload: must be a JSON object, "
+                    "got %s. Received: %r",
+                    type(extra).__name__, extra_payload[:120],
+                )
+                extra = None
+            if extra:
+                payload.update(extra)
+                _LOGGER.debug("Merged extra payload keys: %s", list(extra.keys()))
 
         return headers, payload
 
@@ -193,6 +418,7 @@ class OpenAITTSEngine:
         instructions: str | None = None,
         extra_payload: str | None = None,
         response_format: str = "mp3",
+        send_voice: bool = True,
     ) -> AudioResponse:
         """Blocking TTS request. Must be invoked via an executor.
 
@@ -217,13 +443,13 @@ class OpenAITTSEngine:
             model=model,
             instructions=instructions,
             extra_payload=extra_payload,
+            send_voice=send_voice,
         )
         _LOGGER.debug(
             "TTS API request: model=%s, voice=%s, speed=%s",
-            payload["model"], payload["voice"], payload["speed"],
+            payload["model"], payload.get("voice"), payload.get("speed", 1.0),
         )
 
-        max_retries = 1
         attempt = 0
         while True:
             try:
@@ -234,7 +460,11 @@ class OpenAITTSEngine:
                     method="POST",
                 )
                 with urlopen(req, timeout=DEFAULT_TIMEOUT_SECONDS) as resp:
-                    return AudioResponse(resp.read())
+                    body = resp.read()
+                    content_type = resp.headers.get("Content-Type", "")
+                    if "application/json" in content_type.lower():
+                        body = _decode_json_audio_blob(body)
+                    return AudioResponse(body)
 
             except CancelledError:
                 _LOGGER.debug("TTS request cancelled")
@@ -242,32 +472,32 @@ class OpenAITTSEngine:
 
             except HTTPError as http_err:
                 body_snippet = ""
-                try:
+                with contextlib.suppress(Exception):
                     body_snippet = http_err.read(2048).decode("utf-8", errors="replace")
-                except Exception:
-                    pass
-                classified = _classify_http_error(http_err.code, body_snippet)
-                _LOGGER.error(
-                    "OpenAI TTS HTTP %s on attempt %d: %s",
-                    http_err.code, attempt + 1, classified,
+                classified = _classify_http_error(
+                    http_err.code, body_snippet, voice=voice
                 )
-                if not _is_retryable(classified) or attempt >= max_retries:
+                _LOGGER.error(
+                    "OpenAI TTS HTTP %s on attempt %d/%d: %s",
+                    http_err.code, attempt + 1, MAX_RETRIES + 1, classified,
+                )
+                if not _is_retryable(classified) or attempt >= MAX_RETRIES:
                     raise classified from http_err
                 attempt += 1
-                time.sleep(1)
+                time.sleep(RETRY_DELAY_SECONDS)
                 continue
 
             except URLError as net_err:
                 _LOGGER.error(
-                    "Network error fetching TTS audio (attempt %d): %s",
-                    attempt + 1, net_err,
+                    "Network error fetching TTS audio (attempt %d/%d): %s",
+                    attempt + 1, MAX_RETRIES + 1, net_err,
                 )
-                if attempt >= max_retries:
+                if attempt >= MAX_RETRIES:
                     raise OpenAINetworkError(
                         f"Network error fetching TTS audio: {net_err}"
                     ) from net_err
                 attempt += 1
-                time.sleep(1)
+                time.sleep(RETRY_DELAY_SECONDS)
                 continue
 
             except OpenAITTSError:
@@ -275,15 +505,15 @@ class OpenAITTSEngine:
 
             except Exception as exc:
                 _LOGGER.error(
-                    "Unknown error fetching TTS audio (attempt %d): %s",
-                    attempt + 1, exc,
+                    "Unknown error fetching TTS audio (attempt %d/%d): %s",
+                    attempt + 1, MAX_RETRIES + 1, exc,
                 )
-                if attempt >= max_retries:
+                if attempt >= MAX_RETRIES:
                     raise OpenAITTSError(
                         f"Unknown error fetching TTS audio: {exc}"
                     ) from exc
                 attempt += 1
-                time.sleep(1)
+                time.sleep(RETRY_DELAY_SECONDS)
 
     async def async_get_tts_stream(
         self,
@@ -294,14 +524,15 @@ class OpenAITTSEngine:
         model: str | None = None,
         instructions: str | None = None,
         extra_payload: str | None = None,
+        send_voice: bool = True,
     ) -> AsyncGenerator[bytes, None]:
         """Stream TTS audio from the OpenAI API.
 
         ``response_format`` defaults to ``mp3`` because that's what HA's
-        TTS proxy + Chromecast handle most reliably. Opus has known
-        receiver-side compatibility issues on older cast hardware,
-        which is why the entity always passes ``mp3`` explicitly - this
-        default just makes the engine safe to call directly.
+        TTS proxy and Chromecast handle most reliably; opus has known
+        receiver-side compatibility issues on older cast hardware. The
+        entity always passes the profile's configured format explicitly,
+        so this default only applies when the engine is called directly.
 
         Error responses are classified BEFORE any chunk is yielded,
         so a failed request can never leak partial bytes into the HA
@@ -315,10 +546,12 @@ class OpenAITTSEngine:
             model=model,
             instructions=instructions,
             extra_payload=extra_payload,
+            send_voice=send_voice,
         )
         _LOGGER.debug(
             "Streaming TTS API request: model=%s, voice=%s, speed=%s, format=%s",
-            payload["model"], payload["voice"], payload["speed"], response_format,
+            payload["model"], payload.get("voice"), payload.get("speed", 1.0),
+            response_format,
         )
 
         # Reuse HA's shared aiohttp session so we get connection
@@ -335,17 +568,26 @@ class OpenAITTSEngine:
             owns_session = True
 
         chunk_size = 4096 if response_format == "opus" else 8192
-        max_retries = 1
 
         try:
             response = await self._open_stream_with_retries(
-                session, payload, headers, max_retries
+                session, payload, headers, MAX_RETRIES
             )
             try:
-                _LOGGER.debug(
-                    "Response content type: %s",
-                    response.headers.get("Content-Type", ""),
-                )
+                content_type = response.headers.get("Content-Type", "")
+                _LOGGER.debug("Response content type: %s", content_type)
+
+                # OpenAI returns raw audio bytes; some compatible providers
+                # (Mistral Voxtral, etc.) wrap a base64 audio blob in a JSON
+                # envelope. Detect by Content-Type and yield decoded bytes
+                # in one go - the audio is small enough that this does not
+                # need a streaming decoder, and HA's pipeline buffers a
+                # 1KB header window upstream anyway.
+                if "application/json" in content_type.lower():
+                    audio_bytes = await self._decode_json_audio_response(response)
+                    if audio_bytes:
+                        yield audio_bytes
+                    return
 
                 chunks_received = 0
                 total_bytes = 0
@@ -399,6 +641,14 @@ class OpenAITTSEngine:
             if owns_session:
                 await session.close()
 
+    @staticmethod
+    async def _decode_json_audio_response(
+        response: aiohttp.ClientResponse,
+    ) -> bytes:
+        """Async wrapper that reads the body and delegates the unwrap."""
+        body = await response.read()
+        return _decode_json_audio_blob(body)
+
     async def _open_stream_with_retries(
         self,
         session: aiohttp.ClientSession,
@@ -431,34 +681,34 @@ class OpenAITTSEngine:
                 raise
             except aiohttp.ClientError as e:
                 _LOGGER.error(
-                    "Network error opening TTS stream (attempt %d): %s",
-                    attempt + 1, e,
+                    "Network error opening TTS stream (attempt %d/%d): %s",
+                    attempt + 1, max_retries + 1, e,
                 )
                 if attempt >= max_retries:
                     raise OpenAINetworkError(
                         f"Network error opening TTS stream: {e}"
                     ) from e
                 attempt += 1
-                await asyncio.sleep(1)
+                await asyncio.sleep(RETRY_DELAY_SECONDS)
                 continue
 
             if response.status < 400:
                 return response
 
             body_snippet = ""
-            try:
+            with contextlib.suppress(Exception):
                 body_snippet = (await response.content.read(2048)).decode(
                     "utf-8", errors="replace"
                 )
-            except Exception:
-                pass
             response.release()
-            classified = _classify_http_error(response.status, body_snippet)
+            classified = _classify_http_error(
+                response.status, body_snippet, voice=payload.get("voice"),
+            )
             if not _is_retryable(classified) or attempt >= max_retries:
                 raise classified
             _LOGGER.warning(
-                "TTS stream HTTP %s on attempt %d (retryable): %s",
-                response.status, attempt + 1, classified,
+                "TTS stream HTTP %s on attempt %d/%d (retryable): %s",
+                response.status, attempt + 1, max_retries + 1, classified,
             )
             attempt += 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(RETRY_DELAY_SECONDS)

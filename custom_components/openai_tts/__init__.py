@@ -5,222 +5,128 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from typing import Any
 
-import voluptuous as vol
-from homeassistant.components.media_player import DOMAIN as MP_DOMAIN
-from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigEntryState,
+    ConfigSubentry,
+)
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import config_validation as cv, device_registry as dr, entity_registry as er
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.start import async_at_started
+from homeassistant.helpers.storage import Store
+from homeassistant.helpers.typing import ConfigType
 
 from .api_health import OpenAITTSHealthTracker
 from .const import (
-    DOMAIN,
-    CONF_MODEL,
-    CONF_VOICE,
-    CONF_SPEED,
+    CONF_ANNOUNCE_MODE,
+    CONF_API_KEY,
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
-    CONF_NORMALIZE_AUDIO,
     CONF_INSTRUCTIONS,
-    CONF_EXTRA_PAYLOAD,
+    CONF_MODEL,
+    CONF_NORMALIZE_AUDIO,
+    CONF_PAUSE_PLAYBACK,
     CONF_PROFILE_NAME,
-    DEFAULT_URL,
-    CONF_API_KEY,
-    UNIQUE_ID,
+    CONF_SPEED,
     CONF_URL,
-    is_openai_endpoint,
-    voices_for_model,
+    CONF_VOICE,
+    DEFAULT_URL,
+    DOMAIN,
+    UNIQUE_ID,
+    migrating_flag,
 )
-from .volume_restore import announce
-from .utils import normalize_entity_ids, ensure_wav_chimes
-from homeassistant.exceptions import HomeAssistantError
+from .repairs import clear_repairs_for_entry
+from .services import async_setup_services
+from .tts import STORAGE_KEY, STORAGE_VERSION
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = [Platform.TTS, Platform.SENSOR]
-SERVICE_NAME = "say"
 SUBENTRY_TYPE_PROFILE = "profile"
-HEALTH_TRACKER_KEY = "_health_tracker"
 
-# Service Schema
-SAY_SCHEMA = vol.Schema(
-    {
-        vol.Required("tts_entity"): cv.entity_id,
-        vol.Required("message"): cv.string,
-        vol.Optional("language", default="en"): cv.string,
-        vol.Optional("voice"): cv.string,  # Allow any voice name for custom backends
-        vol.Optional("speed"): vol.All(vol.Coerce(float), vol.Range(min=0.25, max=4.0)),
-        vol.Optional("instructions"): cv.string,
-        vol.Optional(CONF_EXTRA_PAYLOAD): cv.string,  # JSON string for custom backend parameters
-        # No default= for chime/normalize_audio: voluptuous would inject the
-        # default into the validated dict and the handler's "key in data"
-        # probe (used to fall back to the TTS profile's defaults) would
-        # always see the key as "explicitly provided", silently shadowing
-        # profile-level chime / normalize settings.
-        vol.Optional("chime"): cv.boolean,
-        vol.Optional("chime_sound"): cv.string,
-        vol.Optional("normalize_audio"): cv.boolean,
-        vol.Optional("volume"): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
-        vol.Optional("pause_playback"): cv.boolean,  # Added pause_playback
-        vol.Optional("entity_id"): cv.entity_ids,  # For direct entity targeting
-        vol.Optional("device_id"): vol.Any(cv.string, vol.All(cv.ensure_list, [cv.string])),  # For device targeting
-        vol.Optional("area_id"): vol.Any(cv.string, vol.All(cv.ensure_list, [cv.string]))     # For area targeting
-    }, extra=vol.ALLOW_EXTRA
-)
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Delete the state files this entry's entities wrote.
 
-def _validate_voice_compatibility(
-    hass: HomeAssistant, tts_entity: str, voice_override: str | None
-) -> None:
-    """Reject the call early if the voice can't render on the entity's model.
+    Each TTS entity keeps a ``Store`` of measured durations keyed on its
+    unique id. Nothing removed those, so uninstalling the integration
+    left one file per profile in ``.storage`` for good.
 
-    No silent overrides: when the user picks a voice the configured
-    model doesn't support (e.g. ``marin`` on ``tts-1``) we surface a
-    HomeAssistantError naming the problem and listing valid voices.
-    The user keeps full control over which model their profile uses -
-    auto-promoting under the hood would change the API call without
-    their knowledge and complicate cost / model-version reasoning.
-
-    Skipped for non-OpenAI endpoints (custom backends decide their own
-    voice catalogues; we have no way to know what works there) and
-    for unknown / custom model strings (likewise opaque).
+    Home Assistant calls this before it clears the registries, so the
+    entities are still there to enumerate.
     """
-    entity_reg = er.async_get(hass)
-    entity_entry = entity_reg.async_get(tts_entity)
-    if entity_entry is None or entity_entry.config_entry_id is None:
-        return
-    parent = hass.config_entries.async_get_entry(entity_entry.config_entry_id)
-    if parent is None or not is_openai_endpoint(parent.data.get(CONF_URL)):
-        return
-
-    model: str | None = None
-    if entity_entry.config_subentry_id and getattr(parent, "subentries", None):
-        sub = parent.subentries.get(entity_entry.config_subentry_id)
-        if sub is not None:
-            model = sub.data.get(CONF_MODEL)
-    if model is None:
-        model = parent.data.get(CONF_MODEL) or parent.options.get(CONF_MODEL)
-    if model is None:
-        return
-
-    from .const import VOICES_BY_MODEL
-    if model not in VOICES_BY_MODEL:
-        return  # custom / unknown model - can't validate
-
-    voice = voice_override
-    if voice is None:
-        if entity_entry.config_subentry_id and getattr(parent, "subentries", None):
-            sub = parent.subentries.get(entity_entry.config_subentry_id)
-            if sub is not None:
-                voice = sub.data.get(CONF_VOICE)
-        if voice is None:
-            voice = parent.data.get(CONF_VOICE) or parent.options.get(CONF_VOICE)
-    if not voice:
-        return
-
-    allowed = voices_for_model(model)
-    if voice in allowed:
-        return
-    raise HomeAssistantError(
-        f"Voice '{voice}' is not supported by model '{model}'. "
-        f"Compatible voices: {', '.join(sorted(allowed))}. "
-        f"Switch the profile to 'gpt-4o-mini-tts' to use this voice."
-    )
+    registry = er.async_get(hass)
+    unique_ids = [
+        e.unique_id
+        for e in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if e.domain == Platform.TTS and e.unique_id
+    ]
+    for unique_id in unique_ids:
+        _LOGGER.info("Removing stored state for %s", unique_id)
+        await Store(hass, STORAGE_VERSION, f"{STORAGE_KEY}_{unique_id}").async_remove()
 
 
-def _get_entities_from_target(
-    hass: HomeAssistant, 
-    target: dict | None
-) -> list[str]:
+async def _async_prune_orphaned_state_files(hass: HomeAssistant) -> None:
+    """Delete state files that belong to no entity any more.
+
+    Deleting a single profile removes a subentry, and Home Assistant
+    offers integrations no hook for that, so the file that profile wrote
+    would stay behind. This also clears files left under the old
+    entity-id key by profiles deleted before the key moved to the unique
+    id.
+
+    Guarded twice. It only runs once Home Assistant has finished
+    starting, so every entity has been added and had its state
+    migrated, and it does nothing unless every entry of this integration
+    loaded, because an entry that failed to load would make its own
+    files look orphaned.
     """
-    Extract entity IDs from service target more efficiently.
-    
-    Args:
-        hass: Home Assistant instance
-        target: Service call target dictionary
-        
-    Returns:
-        List of entity IDs
+    entries = hass.config_entries.async_entries(DOMAIN)
+    if not entries or any(e.state is not ConfigEntryState.LOADED for e in entries):
+        _LOGGER.debug("Not pruning state files: not every entry is loaded")
+        return
+
+    registry = er.async_get(hass)
+    live = {
+        e.unique_id for e in registry.entities.values()
+        if e.platform == DOMAIN and e.unique_id
+    }
+    storage_dir = hass.config.path(".storage")
+    prefix = f"{STORAGE_KEY}_"
+
+    def _list_state_files() -> list[str]:
+        try:
+            return [n for n in os.listdir(storage_dir) if n.startswith(prefix)]
+        except OSError as err:  # pragma: no cover - defensive
+            _LOGGER.debug("Cannot list %s: %s", storage_dir, err)
+            return []
+
+    for name in await hass.async_add_executor_job(_list_state_files):
+        if name[len(prefix):] in live:
+            continue
+        _LOGGER.info("Removing orphaned state file %s", name)
+        await Store(hass, STORAGE_VERSION, name).async_remove()
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the ``say`` action, once, independently of any entry.
+
+    Home Assistant calls this before any config entry is set up and
+    never calls it again, which is what the action needs: it is
+    addressed by entity id and resolves everything it touches through
+    the registries, so it does not belong to a particular entry.
     """
-    if not target:
-        return []
-    
-    _LOGGER.debug("Target: %s", target)
-    entities = []
-    
-    # Handle direct entity_ids - normalize to always work with lists.
-    # Only accept media_player entities here; passing e.g. a light or
-    # input_boolean as a direct target would otherwise sail through to
-    # tts.speak and blow up deep inside HA's TTS layer.
-    if entity_ids := target.get("entity_id"):
-        for entity_id in normalize_entity_ids(entity_ids):
-            if entity_id.startswith(f"{MP_DOMAIN}."):
-                entities.append(entity_id)
-            else:
-                _LOGGER.warning(
-                    "Ignoring non-media_player target %s (only media_player entities are valid)",
-                    entity_id,
-                )
-        _LOGGER.debug("Added entity_ids from target: %s", entities)
+    async_setup_services(hass)
 
-    # Get entity registry only once if needed
-    entity_reg = None
-    device_reg = None
+    async def _prune(_event: Any) -> None:
+        await _async_prune_orphaned_state_files(hass)
 
-    if any(key in target for key in ["area_id", "device_id"]):
-        entity_reg = er.async_get(hass)
-        device_reg = dr.async_get(hass)
-    
-    # Handle area_ids
-    if area_ids := target.get("area_id"):
-        # Normalize to always work with lists
-        area_ids = normalize_entity_ids(area_ids)
-        _LOGGER.debug("Processing area_ids: %s", area_ids)
-        
-        if entity_reg:
-            # First, get all device IDs in these areas
-            area_device_ids = set()
-            
-            # Find devices in these areas
-            if device_reg:
-                for device in device_reg.devices.values():
-                    if device.area_id in area_ids:
-                        area_device_ids.add(device.id)
-                _LOGGER.debug("Found devices in areas: %s", area_device_ids)
-            
-            # Get all media player entities for devices in these areas
-            for entry in entity_reg.entities.values():
-                # Check if entity is directly in area
-                if (entry.area_id in area_ids and 
-                    entry.domain == MP_DOMAIN and 
-                    entry.entity_id not in entities):
-                    entities.append(entry.entity_id)
-                    _LOGGER.debug("Added entity %s from area %s", entry.entity_id, entry.area_id)
-                
-                # Also check if entity's device is in area
-                elif (entry.device_id in area_device_ids and
-                      entry.domain == MP_DOMAIN and
-                      entry.entity_id not in entities):
-                    entities.append(entry.entity_id)
-                    _LOGGER.debug("Added entity %s from device %s in area", entry.entity_id, entry.device_id)
-    
-    # Handle device_ids
-    if device_ids := target.get("device_id"):
-        # Normalize to always work with lists
-        device_ids = normalize_entity_ids(device_ids)
-        _LOGGER.debug("Processing device_ids: %s", device_ids)
-        
-        if entity_reg:
-            # Get all media player entities for specified devices
-            for entry in entity_reg.entities.values():
-                if (entry.device_id in device_ids and 
-                    entry.domain == MP_DOMAIN and 
-                    entry.entity_id not in entities):
-                    entities.append(entry.entity_id)
-                    _LOGGER.debug("Added entity %s from device %s", entry.entity_id, entry.device_id)
-    
-    _LOGGER.debug("Final entities from target: %s", entities)
-    return entities
+    async_at_started(hass, _prune)
+    return True
+
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old entry."""
@@ -260,17 +166,29 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             
             # Set migration flag to prevent reload during migration
             hass.data.setdefault(DOMAIN, {})
-            hass.data[DOMAIN][f"{config_entry.entry_id}_migrating"] = True
+            hass.data[DOMAIN][migrating_flag(config_entry.entry_id)] = True
             
-            # Extract voice configuration from the entry
-            model = config_entry.data.get(CONF_MODEL, "tts-1")
-            voice = config_entry.data.get(CONF_VOICE, "shimmer")
-            speed = config_entry.data.get(CONF_SPEED, 1.0)
+            # Extract voice configuration from the entry. Options win
+            # over data, the same way the legacy entity reads them and
+            # for the same reason: the old options flow wrote model,
+            # voice and speed into options, so an entry whose owner ever
+            # opened that dialog carries the real values there. Reading
+            # only data migrated such an entry back to whatever it was
+            # first created with, silently.
+            model = config_entry.options.get(
+                CONF_MODEL, config_entry.data.get(CONF_MODEL, "tts-1")
+            )
+            voice = config_entry.options.get(
+                CONF_VOICE, config_entry.data.get(CONF_VOICE, "shimmer")
+            )
+            speed = config_entry.options.get(
+                CONF_SPEED, config_entry.data.get(CONF_SPEED, 1.0)
+            )
             
             # Get options that should move to subentry
             chime = config_entry.options.get(CONF_CHIME_ENABLE, config_entry.data.get(CONF_CHIME_ENABLE, False))
             chime_sound = config_entry.options.get(CONF_CHIME_SOUND, config_entry.data.get(CONF_CHIME_SOUND, "threetone.mp3"))
-            normalize = config_entry.options.get(CONF_NORMALIZE_AUDIO, config_entry.data.get(CONF_NORMALIZE_AUDIO, False))
+            normalize = config_entry.options.get(CONF_NORMALIZE_AUDIO, config_entry.data.get(CONF_NORMALIZE_AUDIO, True))
             instructions = config_entry.options.get(CONF_INSTRUCTIONS, config_entry.data.get(CONF_INSTRUCTIONS))
 
             # Create parent entry data (only API config)
@@ -334,7 +252,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.info("Successfully migrated legacy entry to parent+subentry structure")
             
             # Clear migration flag
-            hass.data[DOMAIN].pop(f"{config_entry.entry_id}_migrating", None)
+            hass.data[DOMAIN].pop(migrating_flag(config_entry.entry_id), None)
             
             # Fix device registry associations after migration
             # Devices should only be associated with subentries, not parent entries
@@ -371,18 +289,50 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     return True
 
 
+def _seed_announce_mode_option(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Give ``announce_mode`` a starting value on pre-existing entries.
+
+    Announcement mode was introduced after ``pause_playback`` and
+    defaults to on. Turning it on unconditionally would change the
+    behaviour of installs where the user had deliberately left media
+    management off, so a saved ``pause_playback`` value carries over as
+    the initial ``announce_mode``. Entries that never saved either key
+    fall through to the default at read time.
+
+    Idempotent: once ``announce_mode`` is present the function does
+    nothing, so it is safe to call on every setup.
+    """
+    if CONF_ANNOUNCE_MODE in entry.options:
+        return
+    if CONF_PAUSE_PLAYBACK not in entry.options:
+        return
+
+    carried = bool(entry.options[CONF_PAUSE_PLAYBACK])
+    _LOGGER.info(
+        "Seeding announce_mode=%s on entry %s from its saved "
+        "pause_playback setting",
+        carried, entry.entry_id,
+    )
+    hass.config_entries.async_update_entry(
+        entry,
+        options={**entry.options, CONF_ANNOUNCE_MODE: carried},
+    )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up OpenAI TTS and register the openai_tts.say service."""
+    """Set up one config entry.
+
+    Per-entry runtime state lives on the entry itself. Two things stay in
+    ``hass.data``: the shared duration cache, which ``volume_restore``
+    reads without holding an entry, and the migration flag, which is set
+    before the entry is set up and therefore before it could carry
+    anything.
+    """
     _LOGGER.debug("async_setup_entry called for %s (version %s.%s)",
                  entry.entry_id, entry.version, entry.minor_version)
-    # Store entry for reference
     hass.data.setdefault(DOMAIN, {})
 
-    # Ensure WAV versions of chimes exist (only once per HA instance)
-    if "chimes_converted" not in hass.data[DOMAIN]:
-        chime_dir = os.path.join(os.path.dirname(__file__), "chime")
-        await hass.async_add_executor_job(ensure_wav_chimes, chime_dir)
-        hass.data[DOMAIN]["chimes_converted"] = True
+    _seed_announce_mode_option(hass, entry)
 
     # Migration is now handled during async_migrate_entry, no need for pending migration
     
@@ -432,14 +382,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if has_subentries:
         _LOGGER.debug("Entry has %d subentries", len(entry.subentries))
     
-    # Store entry reference
-    hass.data[DOMAIN][entry.entry_id] = entry
-
-    # Each parent entry owns one health tracker that the binary sensor and the
-    # TTS engine share. Subentries inherit their parent's tracker.
+    # Each parent entry owns one health tracker that the sensor and the
+    # TTS entity share, carried on the entry itself. Subentries inherit
+    # their parent's tracker and carry nothing of their own.
     if not is_subentry:
-        tracker = OpenAITTSHealthTracker(hass, entry)
-        hass.data[DOMAIN][f"{entry.entry_id}{HEALTH_TRACKER_KEY}"] = tracker
+        entry.runtime_data = OpenAITTSHealthTracker(hass, entry)
 
     # Forward to platforms based on entry type
     if is_subentry:
@@ -453,180 +400,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
         
         if is_modern_parent:
-            # Store as main entry for subentries to find
-            hass.data[DOMAIN]["main_entry"] = entry
             _LOGGER.info("Modern parent entry forwarded to platforms (will process subentries)")
     
     # Setup update listener following official Home Assistant patterns
     async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Handle config entry updates."""
         # Don't reload during migration - migration handles its own reload
-        if hass.data.get(DOMAIN, {}).get(f"{entry.entry_id}_migrating"):
+        if hass.data.get(DOMAIN, {}).get(migrating_flag(entry.entry_id)):
             _LOGGER.debug("Skipping reload during migration for entry %s", entry.entry_id)
             return
-        
+
         # Check if Home Assistant is still starting up
         # This prevents phantom reloads during startup
         if not hass.is_running:
             _LOGGER.debug("Skipping reload during Home Assistant startup for entry %s", entry.entry_id)
             return
-        
+
+        # Subentry reconfigures route through this listener too. Clear
+        # any per-subentry Repairs issues (e.g. voice_deleted) raised
+        # by an earlier failed TTS call - the next call recreates them
+        # if the new configuration is still broken.
+        clear_repairs_for_entry(hass, entry)
+
         _LOGGER.info("Config entry updated for OpenAI TTS entry %s, reloading", entry.entry_id)
         await hass.config_entries.async_reload(entry.entry_id)
     
     entry.async_on_unload(entry.add_update_listener(update_listener))
 
-    # Only register the service once - check if we should do it for this entry
-    should_register_service = False
-    
-    # Register service for:
-    # 1. First legacy entry encountered
-    # 2. Main entry (new style)
-    # But NOT for subentries
-    if not is_subentry and not hass.services.has_service(DOMAIN, SERVICE_NAME):
-        # Check if this is truly the first setup or a main entry
-        all_entries = hass.config_entries.async_entries(DOMAIN)
-        # Filter to only enabled main entries (not disabled, not subentries)
-        main_entries = [
-            e for e in all_entries
-            if (not hasattr(e, 'parent_entry_id') or e.parent_entry_id is None)
-            and e.disabled_by is None
-        ]
-
-        # Register if this is the first enabled main/legacy entry being set up
-        if main_entries and entry.entry_id == main_entries[0].entry_id:
-            should_register_service = True
-            _LOGGER.debug("This is the first enabled main/legacy entry, will register service")
-    
-    _LOGGER.debug("Service registration check - is_subentry: %s, is_legacy: %s, has_service: %s, should_register: %s", 
-                 is_subentry, is_legacy_entry, hass.services.has_service(DOMAIN, SERVICE_NAME), should_register_service)
-    
-    if should_register_service:
-        async def _handle_say(call: ServiceCall) -> None:
-            """Handle the say service call."""
-            data = call.data
-            
-            # Debug logging
-            _LOGGER.debug("Service call data: %s", data)
-            _LOGGER.debug("Service call target: %s", getattr(call, 'target', None))
-            
-            # Extract media players from target and data
-            media_players = []
-            
-            # Combine target from both places (call.target attribute and data)
-            target_data = {}
-            
-            # First check call.target attribute (preferred way)
-            if hasattr(call, "target") and call.target:
-                # Convert call.target to dict if it's not already
-                target_data = dict(call.target) if not isinstance(call.target, dict) else call.target
-                _LOGGER.debug("Processing target from call.target: %s", target_data)
-            
-            # Also check data for targeting parameters
-            for target_key in ["entity_id", "device_id", "area_id"]:
-                if target_key in data:
-                    target_data[target_key] = data[target_key]
-                    _LOGGER.debug("Found %s in data: %s", target_key, data[target_key])
-            
-            # Extract entities using our helper
-            if target_data:
-                media_players = _get_entities_from_target(hass, target_data)
-                _LOGGER.debug("Media players from target data: %s", media_players)
-            
-            # Validate TTS entity
-            tts_entity = data["tts_entity"]
-            tts_state = hass.states.get(tts_entity)
-            if not tts_state:
-                raise ValueError(f"TTS entity {tts_entity} not found")
-
-            # Get TTS entity's default options from its config
-            # Look up the entity to get its default_options property
-            entity_defaults = {}
-            entity_reg = er.async_get(hass)
-            entity_entry = entity_reg.async_get(tts_entity)
-            if entity_entry and entity_entry.config_subentry_id:
-                # This is a subentry-based entity - find the parent and subentry
-                for entry in hass.config_entries.async_entries(DOMAIN):
-                    if hasattr(entry, 'subentries') and entry.subentries:
-                        for subentry_id, subentry in entry.subentries.items():
-                            if subentry_id == entity_entry.config_subentry_id:
-                                entity_defaults = {
-                                    "chime": subentry.data.get(CONF_CHIME_ENABLE, False),
-                                    "chime_sound": subentry.data.get(CONF_CHIME_SOUND, "threetone.mp3"),
-                                    "normalize_audio": subentry.data.get(CONF_NORMALIZE_AUDIO, False),
-                                }
-                                _LOGGER.debug("Found entity defaults from subentry: %s", entity_defaults)
-                                break
-            elif entity_entry and entity_entry.config_entry_id:
-                # Legacy entry - get from config entry options
-                config_entry = hass.config_entries.async_get_entry(entity_entry.config_entry_id)
-                if config_entry:
-                    entity_defaults = {
-                        "chime": config_entry.options.get(CONF_CHIME_ENABLE, config_entry.data.get(CONF_CHIME_ENABLE, False)),
-                        "chime_sound": config_entry.options.get(CONF_CHIME_SOUND, config_entry.data.get(CONF_CHIME_SOUND, "threetone.mp3")),
-                        "normalize_audio": config_entry.options.get(CONF_NORMALIZE_AUDIO, config_entry.data.get(CONF_NORMALIZE_AUDIO, False)),
-                    }
-                    _LOGGER.debug("Found entity defaults from config entry: %s", entity_defaults)
-
-            # Get service data - use entity defaults for options not explicitly set
-            message = data["message"]
-            language = data.get("language", "en")
-
-            # For chime/normalize_audio: use service call value if provided, else entity default
-            # Note: data.get("chime") returns None if not in call, False if explicitly set to False
-            chime_value = data.get("chime") if "chime" in data else entity_defaults.get("chime", False)
-            normalize_value = data.get("normalize_audio") if "normalize_audio" in data else entity_defaults.get("normalize_audio", False)
-            chime_sound_value = data.get("chime_sound") if "chime_sound" in data else entity_defaults.get("chime_sound")
-
-            options = {
-                "voice": data.get("voice"),
-                "speed": data.get("speed"),
-                "instructions": data.get("instructions"),
-                CONF_EXTRA_PAYLOAD: data.get(CONF_EXTRA_PAYLOAD),
-                "chime": chime_value,
-                "chime_sound": chime_sound_value,
-                "normalize_audio": normalize_value,
-            }
-
-            # Remove None values
-            options = {k: v for k, v in options.items() if v is not None}
-
-            # Reject incompatible (model, voice) combos early so the
-            # user sees an actionable error rather than an opaque
-            # OpenAI 400. No silent model promotion - profile config
-            # is the source of truth.
-            _validate_voice_compatibility(hass, tts_entity, options.get("voice"))
-            
-            tts_volume = data.get("volume")
-            pause_playback = data.get("pause_playback")  # Get pause_playback from service call
-            
-            _LOGGER.debug(
-                "Calling announce with: tts_entity=%s, media_players=%s, message=%s, pause_playback=%s",
-                tts_entity, media_players, message, pause_playback
-            )
-            
-            # Call our helper with pause_playback parameter
-            await announce(
-                hass,
-                tts_entity=tts_entity,
-                media_players=media_players,
-                message=message,
-                language=language,
-                options=options,
-                tts_volume=tts_volume,
-                pause_playback=pause_playback,  # Pass the parameter
-            )
-
-        # Register service without advanced targeting options 
-        # (using simpler registration compatible with older HA versions)
-        hass.services.async_register(
-            DOMAIN,
-            SERVICE_NAME,
-            _handle_say,
-            schema=SAY_SCHEMA
-        )
-        
-        _LOGGER.info("OpenAI TTS service 'say' registered successfully")
 
     return True
 
@@ -636,56 +436,27 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     is_subentry = False
     
     # Method 1: Check subentry_type attribute
-    if hasattr(entry, 'subentry_type') and entry.subentry_type == SUBENTRY_TYPE_PROFILE:
+    if (hasattr(entry, 'subentry_type') and entry.subentry_type == SUBENTRY_TYPE_PROFILE) or (hasattr(entry, 'parent_entry_id') and entry.parent_entry_id is not None) or entry.data.get(CONF_PROFILE_NAME) is not None:
         is_subentry = True
     
-    # Method 2: Check if entry has parent_entry_id (for older HA versions)
-    elif hasattr(entry, 'parent_entry_id') and entry.parent_entry_id is not None:
-        is_subentry = True
-    
-    # Method 3: Check if data contains profile_name (our subentry marker)
-    elif entry.data.get(CONF_PROFILE_NAME) is not None:
-        is_subentry = True
-    
-    # Check if this entry has subentries (making it a parent)
-    has_subentries = hasattr(entry, 'subentries') and entry.subentries
-    
-    # Check if this is a legacy entry (has voice/model config but not a subentry AND no subentries AND version < 2.1)
-    is_legacy_entry = False
-    if (not is_subentry and not has_subentries and 
-        (entry.data.get(CONF_MODEL) or entry.data.get(CONF_VOICE)) and
-        (entry.version < 2 or (entry.version == 2 and entry.minor_version < 1))):
-        is_legacy_entry = True
-    
+    # Whether the entry is legacy or a modern parent no longer changes
+    # anything here: both unload the same platforms, and neither leaves
+    # anything behind to clean up.
+
     # Unload platforms first
     unload_ok = True
     if not is_subentry:
         # Unload platforms for both legacy entries and modern parents
         unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     
-    # Only remove service when unloading main entries or legacy entries (not subentries)
-    if not is_subentry and hass.services.has_service(DOMAIN, SERVICE_NAME):
-        # Check if there are other main/legacy entries that still need the service
-        other_entries = [
-            e for e in hass.config_entries.async_entries(DOMAIN)
-            if e.entry_id != entry.entry_id and 
-            not (hasattr(e, 'subentry_type') and e.subentry_type == SUBENTRY_TYPE_PROFILE)
-        ]
-        
-        if not other_entries:
-            hass.services.async_remove(DOMAIN, SERVICE_NAME)
-            _LOGGER.info("OpenAI TTS service 'say' unregistered")
-    
-    # Remove stored entry
-    if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
-        hass.data[DOMAIN].pop(entry.entry_id)
+    # The action is registered in ``async_setup`` and stays registered.
+    # Removing it here, as this used to, meant that reloading the only
+    # entry withdrew the action for the length of the reload and an
+    # automation firing in that window was told it did not exist.
 
-    # Drop the per-entry health tracker
-    if DOMAIN in hass.data:
-        hass.data[DOMAIN].pop(f"{entry.entry_id}{HEALTH_TRACKER_KEY}", None)
-
-    # If this is the main entry, check if we need to clean up
-    if not is_subentry and not is_legacy_entry and DOMAIN in hass.data and "main_entry" in hass.data[DOMAIN]:
-        hass.data[DOMAIN].pop("main_entry", None)
+    # Nothing to clear here any more. The health tracker lives on the
+    # entry, which Home Assistant discards with it, and the shared
+    # duration cache in ``hass.data`` is deliberately domain-wide:
+    # ``volume_restore`` reads it without holding an entry.
 
     return unload_ok

@@ -1,16 +1,23 @@
-"""Shared helpers for entity setup and config-entry classification.
+"""Shared helpers for entity setup.
 
-The ``is_subentry``/``is_legacy_entry`` checks are repeated in 6+ places
-across ``__init__.py``, ``tts.py`` and ``config_flow.py``. Centralizing
-them here makes the rules a single source of truth and prevents drift.
+This module once aimed to be the single source of truth for classifying
+config entries as legacy, parent or subentry. That never landed: the
+inline checks in ``__init__.py``, ``tts.py`` and ``config_flow.py`` are
+still there and have drifted apart, and the helpers written for them
+went unused and were removed. Anyone picking that work up again should
+know the copies are not equivalent, because ``config_flow`` deliberately
+skips the entry-version check that the others apply, so unifying them
+changes which entries offer subentries.
+
+What remains is what is actually used.
 """
 from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.util import slugify
 
-from .const import CONF_MODEL, CONF_PROFILE_NAME, CONF_VOICE
+from .const import CONF_PROFILE_NAME
 
 SUBENTRY_TYPE_PROFILE = "profile"
 
@@ -33,43 +40,32 @@ def is_subentry(config: Any) -> bool:
     return data.get(CONF_PROFILE_NAME) is not None
 
 
-def has_subentries(entry: ConfigEntry) -> bool:
-    """Return True when ``entry`` is a parent that owns at least one subentry."""
-    subs = getattr(entry, "subentries", None)
-    return bool(subs)
-
-
-def is_legacy_entry(entry: ConfigEntry) -> bool:
-    """Return True for pre-migration entries (model/voice in data, version < 2.1).
-
-    These keep their model/voice configuration directly on the parent entry
-    rather than in a subentry, and create their TTS entity inline.
-    """
-    has_model_or_voice = (
-        entry.data.get(CONF_MODEL) is not None
-        or entry.data.get(CONF_VOICE) is not None
-    )
-    if not has_model_or_voice:
-        return False
-    if has_subentries(entry):
-        return False
-    if entry.version < 2:
-        return True
-    if entry.version == 2 and entry.minor_version < 1:
-        return True
-    return False
-
-
-def is_modern_parent(entry: ConfigEntry) -> bool:
-    """Return True for fully-migrated parent entries (no profile data on parent)."""
-    if is_subentry(entry):
-        return False
-    if is_legacy_entry(entry):
-        return False
-    return True
-
-
 def sanitize_profile_name(profile_name: str) -> str:
-    """Return a profile name lowered/underscored and stripped of unsafe chars."""
+    """Return the entity-id fragment for a profile name, or "" if there is none.
+
+    Two passes, and the first one has to stay. It lowercases, maps spaces
+    and hyphens to underscores and drops everything else, which can leave
+    runs of underscores or non-ASCII letters: "Living Room - Main" came
+    out as "living_room___main". Home Assistant treats an entity id set
+    by an integration as a suggestion and slugifies it before use, so the
+    entity really was called ``tts.openai_tts_living_room_main`` all
+    along, but suggesting the invalid form logs a deprecation that
+    becomes an error in Home Assistant 2027.2.
+
+    Slugifying the first pass's output yields exactly the string Home
+    Assistant was deriving anyway, so no entity id changes. Slugifying
+    the raw name instead would not: slugify turns punctuation into a
+    separator where the first pass drops it, so "A+B" would move from
+    ``ab`` to ``a_b``.
+
+    The empty return matters. A name with nothing alphanumeric in it,
+    "!!!" or a run of spaces, leaves no fragment, and slugify answers
+    "unknown" for the second of those. Callers use the empty string to
+    fall back to the bare ``tts.openai_tts``, which is what Home
+    Assistant produces for those names today.
+    """
     safe = profile_name.lower().replace(" ", "_").replace("-", "_")
-    return "".join(c for c in safe if c.isalnum() or c == "_")
+    stripped = "".join(c for c in safe if c.isalnum() or c == "_")
+    if not any(c.isalnum() for c in stripped):
+        return ""
+    return slugify(stripped)

@@ -6,8 +6,10 @@ from typing import Any
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
-from .const import CONF_API_KEY, DOMAIN
+from .api_health import health_tracker_for
+from .const import CONF_API_KEY, DOMAIN, MESSAGE_DURATIONS_KEY
 
 # Keys to redact from diagnostics
 TO_REDACT = {CONF_API_KEY}
@@ -41,10 +43,21 @@ async def async_get_config_entry_diagnostics(
             }
             data["subentries"].append(subentry_info)
 
-    # Add TTS entity states
+    # Add TTS entity states, for this entry only. Matching on the
+    # entity_id prefix picked up every OpenAI TTS entity on the system,
+    # so a report downloaded for one entry carried the entities of every
+    # other entry as well.
+    entity_registry = er.async_get(hass)
+    own_entity_ids = {
+        entity.entity_id
+        for entity in er.async_entries_for_config_entry(
+            entity_registry, entry.entry_id
+        )
+        if entity.domain == "tts"
+    }
     tts_entities = []
     for state in hass.states.async_all("tts"):
-        if state.entity_id.startswith("tts.openai_tts"):
+        if state.entity_id in own_entity_ids:
             tts_entities.append({
                 "entity_id": state.entity_id,
                 "state": state.state,
@@ -56,11 +69,18 @@ async def async_get_config_entry_diagnostics(
 
     data["tts_entities"] = tts_entities
 
-    # Add integration domain data (without sensitive info)
-    domain_data = hass.data.get(DOMAIN, {})
-    data["domain_data"] = {
-        "entry_count": len([k for k in domain_data.keys() if not k.startswith("_")]),
-        "has_main_entry": "main_entry" in domain_data,
+    # Runtime state worth seeing in a report. The old version counted
+    # keys in ``hass.data`` and reported whether a ``main_entry`` slot
+    # existed; both described bookkeeping that no longer exists, and the
+    # count was of entry ids rather than anything a reader could act on.
+    tracker = health_tracker_for(entry)
+    data["runtime"] = {
+        "api_status": tracker.data.get("status") if tracker else None,
+        "last_error_at": tracker.data.get("last_error_at") if tracker else None,
+        "health_tracker_present": tracker is not None,
+        "cached_durations": len(
+            hass.data.get(DOMAIN, {}).get(MESSAGE_DURATIONS_KEY, {})
+        ),
     }
 
     return data

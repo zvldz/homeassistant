@@ -14,50 +14,53 @@ cards:
             }
 
       - type: custom:vacuum-card
-        entity: vacuum.xiaomi_vacuum_cleaner
+        entity: vacuum.saros_20
         stats:
           default:
-            - entity_id: sensor.vacuum_cleaner_filter_left
+            - entity_id: sensor.saros_20_filter_time_left_rounded
               unit: hours
               subtitle: Filter
-            - entity_id: sensor.vacuum_cleaner_side_brush_left
+            - entity_id: sensor.saros_20_side_brush_time_left_rounded
               unit: hours
               subtitle: Side brush
-            - entity_id: sensor.vacuum_cleaner_main_brush_left
+            - entity_id: sensor.saros_20_main_brush_time_left_rounded
               unit: hours
               subtitle: Main brush
-            - entity_id: sensor.vacuum_cleaner_sensor_dirty_left
+            - entity_id: sensor.saros_20_sensor_time_left_rounded
               unit: hours
               subtitle: Sensors
           cleaning:
-            - entity_id: sensor.xiaomi_vacuum_cleaner_last_clean_area
+            - entity_id: sensor.saros_20_cleaning_area
               unit: m2
               subtitle: Cleaning area
-            - entity_id: sensor.vacuum_cleaner_last_clean_duration
+            - entity_id: sensor.saros_20_cleaning_time_rounded
               unit: minutes
               subtitle: Cleaning time
         shortcuts:
           - name: Clean All
-            service: script.vacuum_all_except_balcony
+            service: script.saros_clean_all
             icon: "mdi:all-inclusive"
-          - name: Clean Entryway
-            service: script.vacuum_entryway
-            icon: "mdi:door-open"
-          - name: Clean Hallway
-            service: script.vacuum_hallway
+          - name: All Except Balcony
+            service: script.saros_clean_all_except_balcony
+            icon: "mdi:home-outline"
+          - name: Balcony
+            service: script.saros_clean_balcony
+            icon: "mdi:door-sliding"
+          - name: Hallway
+            service: script.saros_clean_hallway
             icon: "mdi:swap-vertical-variant"
-          - name: Clean Kitchen
-            service: script.vacuum_kitchen
-            icon: "mdi:silverware-fork-knife"
-          - name: Clean Living Room
-            service: script.vacuum_living_room
-            icon: "mdi:sofa"
-          - name: Clean Master Bedroom
-            service: script.vacuum_master_bedroom
+          - name: Master Bedroom
+            service: script.saros_clean_master_bedroom
             icon: "mdi:bed"
-          - name: Clean Bedroom
-            service: script.vacuum_bedroom
+          - name: Kitchen
+            service: script.saros_clean_kitchen
+            icon: "mdi:silverware-fork-knife"
+          - name: Bedroom
+            service: script.saros_clean_bedroom
             icon: "mdi:bed-empty"
+          - name: Living Room
+            service: script.saros_clean_living_room
+            icon: "mdi:sofa"
 
       - type: heading
         heading: "Reset Counters"
@@ -72,44 +75,52 @@ cards:
       - type: horizontal-stack
         cards:
           - type: tile
-            entity: script.vacuum_reset_filter
+            entity: button.saros_20_reset_air_filter_consumable
             name: "Filter"
             icon: "mdi:autorenew"
             vertical: true
             hide_state: true
             tap_action:
               action: perform-action
-              perform_action: script.vacuum_reset_filter
+              perform_action: button.press
+              target:
+                entity_id: button.saros_20_reset_air_filter_consumable
 
           - type: tile
-            entity: script.vacuum_reset_side_brush
+            entity: button.saros_20_reset_side_brush_consumable
             name: "Side Brush"
             icon: "mdi:autorenew"
             vertical: true
             hide_state: true
             tap_action:
               action: perform-action
-              perform_action: script.vacuum_reset_side_brush
+              perform_action: button.press
+              target:
+                entity_id: button.saros_20_reset_side_brush_consumable
 
           - type: tile
-            entity: script.vacuum_reset_main_brush
+            entity: button.saros_20_reset_main_brush_consumable
             name: "Main Brush"
             icon: "mdi:autorenew"
             vertical: true
             hide_state: true
             tap_action:
               action: perform-action
-              perform_action: script.vacuum_reset_main_brush
+              perform_action: button.press
+              target:
+                entity_id: button.saros_20_reset_main_brush_consumable
 
           - type: tile
-            entity: script.vacuum_reset_sensor
+            entity: button.saros_20_reset_sensor_consumable
             name: "Sensors"
             icon: "mdi:autorenew"
             vertical: true
             hide_state: true
             tap_action:
               action: perform-action
-              perform_action: script.vacuum_reset_sensor
+              perform_action: button.press
+              target:
+                entity_id: button.saros_20_reset_sensor_consumable
 
   - type: vertical-stack
     cards:
@@ -123,21 +134,116 @@ cards:
               background-color: #203040;
             }
 
-      - type: 'custom:valetudo-map-card'
-        vacuum: valetudo_rockrobo
-        rotate: -1
-        map_scale: 1.2
-        min_height: 0
-        crop:
-          top: 0
-          bottom: -0
-          left: 0
-          right: -0
+      # Map + rooms/calibration come from the roborock_custom_map integration
+      - type: custom:xiaomi-vacuum-map-card
+        vacuum_platform: Roborock
+        entity: vacuum.saros_20
+        map_source:
+          camera: image.saros_20_map_0_custom
+          # CSS px of the rendered card, not image px: left/right zoom in, top/bottom trim empty space
+          crop:
+            top: 170
+            bottom: 160
+            left: 105
+            right: 189
+        calibration_source:
+          camera: true
+        # Card defaults assume seconds, but core roborock sensors already report hours/minutes;
+        # append_tiles keeps the generated tiles so replace_config only patches them
+        append_tiles: true
+        tiles:
+          - {tile_id: main_brush_left, replace_config: true, multiplier: 1}
+          - {tile_id: side_brush_left, replace_config: true, multiplier: 1}
+          - {tile_id: filter_left, replace_config: true, multiplier: 1}
+          - {tile_id: sensor_dirty_left, replace_config: true, multiplier: 1}
+          - {tile_id: cleaning_time, replace_config: true, multiplier: 1}
+        map_modes:
+          - template: vacuum_clean_segment
+            predefined_selections:
+              - id: 1
+                outline: [[26950, 12300], [34150, 12300], [34150, 14200], [26950, 14200]]
+                label:
+                  text: "Балкон"
+                  x: 30550
+                  y: 13250
+                  offset_y: 35
+                icon:
+                  name: "mdi:door-sliding"
+                  x: 30550
+                  y: 13250
+              - id: 3
+                outline: [[24900, 13650], [27900, 13650], [27900, 20100], [24900, 20100]]
+                label:
+                  text: "Хазяйська спальня"
+                  x: 26400
+                  y: 16875
+                  offset_y: 35
+                icon:
+                  name: "mdi:bed"
+                  x: 26400
+                  y: 16875
+              - id: 7
+                outline: [[28100, 13800], [32100, 13800], [32100, 18550], [28100, 18550]]
+                label:
+                  text: "Вітальня"
+                  x: 30100
+                  y: 16175
+                  offset_y: 35
+                icon:
+                  name: "mdi:sofa"
+                  x: 30100
+                  y: 16175
+              - id: 4
+                outline: [[32300, 14250], [35250, 14250], [35250, 18550], [32300, 18550]]
+                label:
+                  text: "Кухня"
+                  x: 33775
+                  y: 16400
+                  offset_y: 35
+                icon:
+                  name: "mdi:silverware-fork-knife"
+                  x: 33775
+                  y: 16400
+              - id: 2
+                outline: [[26800, 18550], [33750, 18550], [33750, 22550], [26800, 22550]]
+                label:
+                  text: "Коридор"
+                  x: 30275
+                  y: 20550
+                  offset_y: 35
+                icon:
+                  name: "mdi:swap-vertical-variant"
+                  x: 30275
+                  y: 20550
+              - id: 6
+                outline: [[24900, 22600], [27800, 22600], [27800, 26500], [24900, 26500]]
+                label:
+                  text: "Спальня"
+                  x: 26350
+                  y: 24550
+                  offset_y: 35
+                icon:
+                  name: "mdi:bed-empty"
+                  x: 26350
+                  y: 24550
+
+  - type: vertical-stack
+    cards:
+      - type: heading
+        heading: "Details"
+        icon: "mdi:information-outline"
+        card_mod:
+          style: |
+            div.container {
+              justify-content: center;
+              background-color: #203040;
+            }
 
       - type: entities
         show_header_toggle: false
         entities:
-          - vacuum.xiaomi_vacuum_cleaner
-          - input_boolean.vacuum_schedule
-          - input_boolean.vacuum_notification
-
+          - vacuum.saros_20
+          - sensor.saros_20_status
+          - sensor.saros_20_current_room
+          - sensor.saros_20_battery
+          - switch.saros_20_do_not_disturb

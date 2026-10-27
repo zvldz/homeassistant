@@ -158,34 +158,6 @@
           </pre>
 
 # Device recovery automations live in includes/automations/recovery.yaml
-# ============================================================
-# DONE 2026-08-21 - the vacuum no-go zone around the cat bowls was removed and
-# this reminder is switched off. Not deleted on purpose: the zone may be needed
-# again, and re-creating it means only flipping initial_state back to true.
-# Zone: x 3390..3470, y 1820..1855 on the Valetudo map, units = cm.
-# ============================================================
-- alias: "TEMP: remove vacuum no-go zone (cat bowls)"
-  initial_state: false
-  trigger:
-    - platform: time
-      at: "09:00:00"
-  condition:
-    - condition: template
-      value_template: "{{ now().strftime('%Y-%m-%d') >= '2026-08-20' }}"
-  action:
-    - service: telegram_bot.send_message
-      data:
-        chat_id: !secret telegram_bot_allowed_chat_id1
-        parse_mode: html
-        message: |
-          <pre>
-          {{ "\U0001F5D3" }} TEMPORARY reminder
-          Time to drop the vacuum no-go zone (cat bowls)
-          Zone: x 3390..3470, y 1820..1855 (80x35 cm)
-
-          Remove: PUT restrictions_LATEST.json to 192.168.1.25
-          Then set initial_state: false here (TEMP in system.yaml)
-          </pre>
 
 # DONE 2026-08-21 - pump notifications on haf are back on and this reminder is
 # switched off. Kept as a template: the notifications get muted for weeks at a

@@ -27,70 +27,6 @@ cards:
           - sensor.delta_2_max_charge_remaining_time
           - sensor.delta_2_max_discharge_remaining_time
 
-      - type: heading
-        heading: "Gas"
-        icon: "mdi:gas-burner"
-        card_mod:
-          style: |
-            div.container{
-              justify-content: center;
-              background-color: #203040;
-            }
-
-      - type: horizontal-stack
-        cards:
-          - type: tile
-            entity: input_number.gas_counter
-
-          - type: tile
-            entity: binary_sensor.0x00158d000393f29a_contact
-
-      - type: horizontal-stack
-        cards:
-          - type: tile
-            entity: script.sync_gas_counter_with_ha1
-            name: "Sync with HA1"
-            icon: "mdi:autorenew"
-            hide_state: true
-            tap_action:
-              action: perform-action
-              perform_action: script.sync_gas_counter_with_ha1
-
-          - type: tile
-            entity: script.sync_gas_counter_with_ha2
-            name: "Sync with HA2"
-            icon: "mdi:autorenew"
-            hide_state: true
-            tap_action:
-              action: perform-action
-              perform_action: script.sync_gas_counter_with_ha2
-
-      - type: entities
-        entities:
-          - type: custom:fold-entity-row
-            head:
-              type: section
-              label: Details Graphs
-            entities:
-              - type: custom:mini-graph-card
-                hour24: true
-                points_per_hour: 1
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_hourly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_monthly
-
-              - type: custom:mini-graph-card
-                hours_to_show: 720
-                unit: "㎥"
-                entities:
-                  - entity: sensor.gas_yearly
-
   - type: vertical-stack
     cards:
       - type: heading
@@ -207,6 +143,8 @@ cards:
             name: "Power"
             hour24: true
             points_per_hour: 1
+            show:
+              legend: false
             entities:
               - entity: sensor.0xa46dd4fffe4f985d_power
               - entity: sensor.0x385cfbfffe850ea4_power
@@ -217,15 +155,17 @@ cards:
             name: "Current"
             hour24: true
             points_per_hour: 1
+            show:
+              legend: false
             entities:
+              - entity: sensor.0xa46dd4fffe4f985d_current
               - entity: sensor.0x385cfbfffe850ea4_current
-
-      - type: horizontal-stack
-        cards:
           - type: custom:mini-graph-card
             name: "Voltage"
             hour24: true
             points_per_hour: 1
+            show:
+              legend: false
             entities:
               - entity: sensor.sonoff_pump_voltage
 #             - entity: sensor.bw_plug_1_voltage

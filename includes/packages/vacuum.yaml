@@ -5,39 +5,6 @@ input_boolean:
   vacuum_notification:
     name: "Messages from the robot"
     icon: "mdi:bell"
-  # one automatic restart per cleaning run - see "Vacuum Retry After Error"
-  vacuum_retry_used:
-    name: "Vacuum retry already used"
-    icon: "mdi:restart-alert"
-
-template:
-  - sensor:
-      - name: "Vacuum Cleaner Status Sensor"
-        state: "{{ state_attr('vacuum.xiaomi_vacuum_cleaner', 'status') }}"
-
-      - name: "Vacuum Cleaner Error Sensor"
-        state: >
-          {% if state_attr('vacuum.xiaomi_vacuum_cleaner', 'error') is not none %}
-            {{ state_attr('vacuum.xiaomi_vacuum_cleaner', 'error') }}
-          {% else %}
-            No Error
-          {% endif %}
-
-      - name: "Vacuum Cleaner Filter Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_filter_left') | float(0) / 3600) | round }}"
-
-      - name: "Vacuum Cleaner Side Brush Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_side_brush_left') | float(0) / 3600) | round }}"
-
-      - name: "Vacuum Cleaner Main Brush Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_main_brush_left') | float(0) / 3600) | round }}"
-
-      - name: "Vacuum Cleaner Sensor Dirty Left"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_sensor_dirty_left') | float(0) / 3600) | round }}"
-
-      - name: "Vacuum Cleaner Last Clean Duration"
-        state: "{{ (states('sensor.xiaomi_vacuum_cleaner_last_clean_duration') | float(0) / 60) | round }}"
-
 
 automation:
   - alias: "Vacuum Time Clean 1"
@@ -58,8 +25,9 @@ automation:
         entity_id: group.persons
         state: 'not_home'
     action:
-      - service: script.vacuum_all_except_balcony
+      - service: script.saros_clean_all_except_balcony
 
+  # Tue/Thu: deep mop of kitchen + hallway
   - alias: "Vacuum Time Clean 2"
     initial_state: true
     trigger:
@@ -77,17 +45,16 @@ automation:
         entity_id: group.persons
         state: 'not_home'
     action:
-      - service: vacuum.send_command
-        data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-          params: [ [33000,28100,37750,32550,2], [31350,31300,33100,34150,2], [31350,26900,33100,31300,1], [28800,26900,31350,28100,1] ]
+      # turn_on so the automation does not wait for the whole run
+      - service: script.turn_on
+        target:
+          entity_id: script.saros_clean_kitchen_hallway_deep
 
   - alias: "Vacuum Cleaning"
     initial_state: true
     trigger:
       - platform: state
-        entity_id: vacuum.xiaomi_vacuum_cleaner
+        entity_id: vacuum.saros_20
         to: 'cleaning'
     condition:
       - condition: state
@@ -104,7 +71,7 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: vacuum.xiaomi_vacuum_cleaner
+        entity_id: vacuum.saros_20
         to: 'returning'
     condition:
       - condition: state
@@ -115,13 +82,13 @@ automation:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Vacuum cleaner has finished cleaning and is returning to the base. Cleaning time: {{ ( states('sensor.xiaomi_vacuum_cleaner_last_clean_duration') | float / 60 )| round }} min. Total cleaning area: {{ states('sensor.xiaomi_vacuum_cleaner_last_clean_area') | round(2) }} m²"
+          message: "Vacuum cleaner has finished cleaning and is returning to the base. Cleaning time: {{ states('sensor.saros_20_cleaning_time_rounded') }} min. Total cleaning area: {{ states('sensor.saros_20_cleaning_area') }} m²"
 
   - alias: "Vacuum Docked"
     initial_state: true
     trigger:
       - platform: state
-        entity_id: vacuum.xiaomi_vacuum_cleaner
+        entity_id: vacuum.saros_20
         to: 'docked'
     condition:
       - condition: state
@@ -138,88 +105,21 @@ automation:
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.vacuum_cleaner_status_sensor
-        to: 'Error'
-      - platform: state
-        entity_id: sensor.vacuum_cleaner_status_sensor
-        to: 'In Error'
-      - platform: state
-        entity_id: sensor.vacuum_cleaner_status_sensor
-        to: 'Charging Error'
+        entity_id: vacuum.saros_20
+        to: 'error'
     action:
       - service: notify.send_message
         data:
           entity_id: notify.telegram_vtel
           message: >-
-            {% set error = states('sensor.vacuum_cleaner_error_sensor') -%}
-            {% if error == 'No Error' -%}
-            {{ state_attr("vacuum.xiaomi_vacuum_cleaner", "status") or 'Vacuum status unknown' }}
-            {%- elif error in ['unknown', 'unavailable'] -%}
-            Vacuum error (test mode - sensors unavailable)
-            {%- else -%}
-            {{ error or 'Vacuum error (test mode)' }}
-            {%- endif -%}
-
-  # The main brush jams in one corner of the living room: 15 errors recorded
-  # since 2026-07-25, all inside x 3208..3755 / y 1743..2175, and half of them
-  # literally "Main brush jammed" / "Clean main brush". A manual restart has
-  # always cleared it, so do that automatically - but only once per run, so a
-  # real jam still stops the robot instead of looping.
-  - alias: "Vacuum Retry After Error"
-    initial_state: true
-    mode: single
-    trigger:
-      - platform: state
-        entity_id: vacuum.valetudo_rockrobo
-        to: "error"
-    condition:
-      - condition: state
-        entity_id: input_boolean.vacuum_retry_used
-        state: "off"
-    action:
-      # the error text lands ~50 ms after the state, so read it after a pause
-      - delay: "00:00:05"
-      # only the brush jam is known to clear on restart; LDS jammed, bumper etc.
-      # come straight back (2026-09-08: five restarts in five minutes on the dock)
-      - condition: template
-        value_template: "{{ 'brush' in states('sensor.vacuum_error_text') | lower }}"
-      - service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.vacuum_retry_used
-      # let the position sensor refresh and the robot settle
-      - delay: "00:00:15"
-      - service: vacuum.start
-        target:
-          entity_id: vacuum.valetudo_rockrobo
-      - service: notify.send_message
-        data:
-          entity_id: notify.telegram_vtel
-          message: >-
-            Vacuum restarted after error at {{ states('sensor.vacuum_robot_position') }}
-            ({{ states('sensor.vacuum_error_text') }})
-
-  # "once per run" lives here: resuming after the error must NOT clear the flag,
-  # only a real return to the dock does. An error on the dock itself flips
-  # error -> docked within a second, hence the hold time.
-  - alias: "Vacuum Retry Reset"
-    initial_state: true
-    trigger:
-      - platform: state
-        entity_id: vacuum.valetudo_rockrobo
-        to: "docked"
-        for:
-          minutes: 10
-    action:
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.vacuum_retry_used
+            Vacuum error: {{ states('sensor.saros_20_vacuum_error') }} (room: {{ states('sensor.saros_20_current_room') }})
 
   - alias: "Vacuum Cleaner Error Solved"
     initial_state: true
     trigger:
       - platform: state
-        entity_id: sensor.vacuum_cleaner_error_sensor
-        to: 'No Error'
+        entity_id: sensor.saros_20_vacuum_error
+        to: 'none'
     condition:
       condition: template
       value_template: "{{ states('sensor.ha_uptime') | int > 10 }}"
@@ -229,6 +129,27 @@ automation:
           entity_id: notify.telegram_vtel
           message: "Vacuum cleaner error solved"
 
+  # Time-left counters are "norm minus work time" and go negative once overdue
+  - alias: "Vacuum Consumable Worn Out"
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id:
+          - sensor.saros_20_filter_time_left
+          - sensor.saros_20_side_brush_time_left
+          - sensor.saros_20_main_brush_time_left
+          - sensor.saros_20_sensor_time_left
+          - sensor.saros_20_dock_strainer_time_left
+        below: 0.5
+    action:
+      - service: notify.send_message
+        data:
+          entity_id: notify.telegram_vtel
+          message: >-
+            {{ "\U0001F9F9" }} Saros 20: {{ trigger.to_state.name | replace('Saros 20 ', '') }} -
+            {{ trigger.to_state.state | float(0) | round(0) }} h left, clean or replace it
+            and reset the counter
+
   - alias: "Hallway Button Click Single"
     initial_state: true
     trigger:
@@ -236,7 +157,7 @@ automation:
         entity_id: sensor.0x00158d0002e22617_action
         to: 'single'
     action:
-      - service: script.vacuum_entryway
+      - service: script.saros_clean_hallway
 
   - alias: "Hallway Button Click Double"
     initial_state: true
@@ -245,7 +166,7 @@ automation:
         entity_id: sensor.0x00158d0002e22617_action
         to: 'double'
     action:
-      - service: script.vacuum_hallway
+      - service: script.saros_clean_all_except_balcony
 
   - alias: "Kitchen Button Click Long"
     initial_state: true
@@ -254,37 +175,19 @@ automation:
         entity_id: sensor.0x38398ffffe1ff367_action
         to: 'long'
     action:
-      - service: script.vacuum_kitchen
-
-  - alias: "Go To Kitchen"
-    initial_state: true
-    trigger:
-      - platform: time
-        at: '09:15:00'
-    condition:
-      - condition: state
-        entity_id: input_boolean.vacuum_schedule
-        state: 'on'
-      - condition: time
-        weekday:
-          - sat
-      - condition: state
-        entity_id: group.persons
-        state: 'home'
-    action:
-      - service: script.vacuum_goto_kitchen
+      - service: script.saros_clean_kitchen
 
 
+# vacuum.clean_area takes HA area ids; area -> Saros segment mapping lives in the
+# vacuum.saros_20 entity registry options. Areas: b210...=Balcony, 3c44...=Hallway,
+# a808...=Master Bedroom, 7a21...=Kitchen, ac10...=Bedroom, 7d45...=Livingroom.
 script:
-  vacuum_all_except_balcony:
-    alias: "Clean Up All Except Balcony"
+  saros_clean_all:
+    alias: "Saros: Clean All"
     sequence:
-      - service: vacuum.send_command
-        data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [32705,32955,37175,35580,2], [31035,31320,32875,34525,2], [33320,28625,37140,32785,2], [31170,27155,32910,31455,2], [33045,25145,37345,28385,2]]
-          params: [ [32905,32455,37875,35180,2], [31350,26900,33100,34100,1], [33000,28100,37750,32550,2], [33155,24670,37860,27955,1], [24400,25000,28800,28250,1]]
+      - service: vacuum.start
+        target:
+          entity_id: vacuum.saros_20
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -292,17 +195,21 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up All Except Balcony"
+          message: "Saros 20: Clean All"
 
-  vacuum_master_bedroom:
-    alias: "Clean Up Master Bedroom"
+  # Two passes per room; raw app_segment_clean because vacuum.clean_area has no repeat option.
+  # Segment ids: 4=Kitchen, 2=Hallway, 7=Livingroom, 3=Master Bedroom, 6=Bedroom.
+  saros_clean_all_except_balcony:
+    alias: "Saros: Clean All Except Balcony"
     sequence:
       - service: vacuum.send_command
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [33045,25145,37345,28385,1] ]
-          params: [ [33155,24670,37860,27955,1] ]
+          command: app_segment_clean
+          params:
+            - segments: [4, 2, 7, 3, 6]
+              repeat: 2
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -310,17 +217,17 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Master Bedroom"
+          message: "Saros 20: Clean All Except Balcony"
 
-  vacuum_bedroom:
-    alias: "Clean Up Bedroom"
+  saros_clean_balcony:
+    alias: "Saros: Clean Balcony"
     sequence:
-      - service: vacuum.send_command
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [24555,25215,28715,28250,1] ]
-          params: [ [24400,25000,28800,28250,1] ]
+          cleaning_area_id:
+            - b210ed64f7ff11eaae95a1aab327b97b
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -328,17 +235,17 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Bedroom"
+          message: "Saros 20: Clean Balcony"
 
-  vacuum_entryway:
-    alias: "Clean Up Entryway"
+  saros_clean_hallway:
+    alias: "Saros: Clean Hallway"
     sequence:
-      - service: vacuum.send_command
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [31035,31320,32875,34525,2] ]
-          params: [ [31350,31300,33100,34150,2] ]
+          cleaning_area_id:
+            - 3c44438b6f7145bfb5237492db72f827
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -346,17 +253,75 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Entryway"
+          message: "Saros 20: Clean Hallway"
 
-  vacuum_hallway:
-    alias: "Clean Up Hallway"
+  # Hard floors get a stronger mop setup and two passes; mop settings are global
+  # for the robot, so they are restored once the run is over. Raw
+  # app_segment_clean is used because vacuum.clean_area has no repeat option.
+  # Segment ids: 4=Kitchen, 2=Hallway.
+  saros_clean_kitchen_hallway_deep:
+    alias: "Saros: Deep Clean Kitchen + Hallway"
+    mode: single
+    fields:
+      segments:
+        description: "Saros segment ids to clean (default kitchen + hallway)"
+        example: "[2]"
     sequence:
-      - service: vacuum.send_command
+      - service: select.select_option
+        target:
+          entity_id: select.saros_20_mop_mode
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [31034,31317,32875,34523,2], [31170,27155,32910,31455,1], [28680,27155,31270,28145,1] ]
-          params: [ [31350,31300,33100,34150,2], [31350,26900,33100,31300,1], [28800,26900,31350,28100,1] ]
+          option: deep_plus
+      - service: select.select_option
+        target:
+          entity_id: select.saros_20_mop_intensity
+        data:
+          option: high
+      - service: vacuum.send_command
+        target:
+          entity_id: vacuum.saros_20
+        data:
+          command: app_segment_clean
+          params:
+            - segments: "{{ segments | default([4, 2]) }}"
+              repeat: 2
+      - if:
+          - condition: state
+            entity_id: input_boolean.vacuum_notification
+            state: 'on'
+        then:
+          - service: telegram_bot.send_message
+            data:
+              disable_notification: true
+              chat_id: !secret telegram_bot_allowed_chat_id1
+              message: "Saros 20: Deep Clean Kitchen + Hallway"
+      # binary_sensor.saros_20_cleaning stays on through mid-run mop washes at the dock
+      - wait_template: "{{ is_state('binary_sensor.saros_20_cleaning', 'on') }}"
+        timeout: "00:03:00"
+        continue_on_timeout: true
+      - wait_template: "{{ is_state('binary_sensor.saros_20_cleaning', 'off') }}"
+        timeout: "04:00:00"
+        continue_on_timeout: true
+      - service: select.select_option
+        target:
+          entity_id: select.saros_20_mop_mode
+        data:
+          option: standard
+      - service: select.select_option
+        target:
+          entity_id: select.saros_20_mop_intensity
+        data:
+          option: medium
+
+  saros_clean_master_bedroom:
+    alias: "Saros: Clean Master Bedroom"
+    sequence:
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
+        data:
+          cleaning_area_id:
+            - a8083040f7ff11eabdb0a5bf0547ce23
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -364,17 +329,17 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Hallway"
+          message: "Saros 20: Clean Master Bedroom"
 
-  vacuum_kitchen:
-    alias: "Clean Up Kitchen"
+  saros_clean_kitchen:
+    alias: "Saros: Clean Kitchen"
     sequence:
-      - service: vacuum.send_command
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [32705,32955,37175,35580,2] ]
-          params: [ [32905,32455,37875,35180,2] ]
+          cleaning_area_id:
+            - 7a21bf6d6f2f49cbb95dc979c4e08cd6
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -382,17 +347,17 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Kitchen"
+          message: "Saros 20: Clean Kitchen"
 
-  vacuum_living_room:
-    alias: "Clean Up Living Room"
+  saros_clean_bedroom:
+    alias: "Saros: Clean Bedroom"
     sequence:
-      - service: vacuum.send_command
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_zoned_clean
-#         params: [ [33320,28625,37140,32785,2] ]
-          params: [ [33000,28100,37750,32550,2] ]
+          cleaning_area_id:
+            - ac10aa96f7ff11ea915c6fd394ce1b8a
       - condition: state
         entity_id: input_boolean.vacuum_notification
         state: 'on'
@@ -400,49 +365,22 @@ script:
         data:
           disable_notification: true
           chat_id: !secret telegram_bot_allowed_chat_id1
-          message: "Clean Up Living Room"
+          message: "Saros 20: Clean Bedroom"
 
-  vacuum_reset_main_brush:
-    alias: "Reset Main Brush"
+  saros_clean_living_room:
+    alias: "Saros: Clean Living Room"
     sequence:
-      - service: vacuum.send_command
+      - service: vacuum.clean_area
+        target:
+          entity_id: vacuum.saros_20
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: reset_consumable
-          params: main_brush_work_time
-
-  vacuum_reset_side_brush:
-    alias: "Reset Side Brush"
-    sequence:
-      - service: vacuum.send_command
+          cleaning_area_id:
+            - 7d4532ff206a4949971d86119a1e3a99
+      - condition: state
+        entity_id: input_boolean.vacuum_notification
+        state: 'on'
+      - service: telegram_bot.send_message
         data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: reset_consumable
-          params: side_brush_work_time
-
-  vacuum_reset_filter:
-    alias: "Reset Filter"
-    sequence:
-      - service: vacuum.send_command
-        data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: reset_consumable
-          params: filter_work_time
-
-  vacuum_reset_sensor:
-    alias: "Reset Sensor"
-    sequence:
-      - service: vacuum.send_command
-        data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: reset_consumable
-          params: sensor_dirty_time
-
-  vacuum_goto_kitchen:
-    alias: "Go To Kitchen"
-    sequence:
-      - service: vacuum.send_command
-        data:
-          entity_id: vacuum.xiaomi_vacuum_cleaner
-          command: app_goto_target
-          params: [ 34660,33370 ]
+          disable_notification: true
+          chat_id: !secret telegram_bot_allowed_chat_id1
+          message: "Saros 20: Clean Living Room"

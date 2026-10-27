@@ -6,11 +6,19 @@ action asks before it rotates a key on an entry that already exists.
 Runtime code should not have to import the config flow, which is a user
 interface module and free to change its steps and selectors.
 
+The probe is a speech request with an empty text. Every provider
+checks the key before it looks at the body, so a bad key is refused with
+401 or 403, and a good one gets as far as the body and is refused for
+the empty text with 400 or 422. Nothing is synthesised and nothing is
+billed. Measured on 2026-10-01: OpenAI answers a good key with 400
+"String should have at least 1 character" and a bad one with 401, and
+OpenRouter answers 400 "Model tts-1 does not exist" and 401.
+
 The failures are reported with the integration's own exception classes
-rather than a second set defined next to the caller. Only 401 and 403
-mean the endpoint looked at the key and refused it; everything else,
-including a 400 because a self-hosted backend has never heard of the
-model this probe asks for, says nothing about the key itself.
+rather than a second set defined next to the caller. ``OpenAIAuthError``
+means the key was refused. Any other ``OpenAITTSError`` means the answer
+says nothing about the key, such as a timeout, a 5xx, a 429 or a 404
+from a wrong address, and the caller decides what that is worth.
 """
 from __future__ import annotations
 
@@ -29,21 +37,28 @@ from .exceptions import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# The smallest request that still exercises authentication. A single full
-# stop keeps the bill and the wait to the minimum on providers that
-# charge by the character.
+# A request that passes authentication and then fails on its body, so
+# that no audio is ever produced. The voice only makes the body look like
+# a speech request. The model has to be one the provider serves, because
+# Groq answers an unknown model with 404 even for a good key, and a 404
+# says nothing about the key. Callers therefore pass the preset's default
+# model, and ``tts-1`` is used only when there is none.
+_PROBE_MODEL = "tts-1"
 _PROBE_PAYLOAD = {
-    "model": "tts-1",
-    "input": ".",
+    "input": "",
     "voice": "alloy",
     "response_format": "mp3",
 }
+
+# Answers that mean the request got past authentication. 2xx covers a
+# server that accepts an empty text, 400 and 422 the usual refusal of it.
+_KEY_ACCEPTED_STATUSES = frozenset({400, 422})
 
 _TIMEOUT_S = 10
 
 
 async def async_validate_api_key(
-    hass: HomeAssistant, api_key: str, url: str
+    hass: HomeAssistant, api_key: str, url: str, model: str | None = None
 ) -> bool:
     """Return True when ``url`` accepts ``api_key``.
 
@@ -60,7 +75,7 @@ async def async_validate_api_key(
     try:
         async with session.post(
             url,
-            json=_PROBE_PAYLOAD,
+            json={**_PROBE_PAYLOAD, "model": model or _PROBE_MODEL},
             headers=headers,
             timeout=aiohttp.ClientTimeout(total=_TIMEOUT_S),
         ) as response:
@@ -79,14 +94,13 @@ async def async_validate_api_key(
                     response.status,
                 )
                 raise OpenAIServerError(f"API returned status {response.status}")
-            if not 200 <= response.status < 300:
-                # Everything that is neither an auth answer nor a server
-                # error lands here, and none of it says the key is bad. A
-                # backend that has never heard of the model this probe
-                # asks for answers 400, and a redirect aiohttp did not
-                # follow answers 3xx. Only a 2xx is taken as acceptance:
-                # falling through on anything else would call a key good
-                # without the endpoint ever having said so.
+            if (
+                not 200 <= response.status < 300
+                and response.status not in _KEY_ACCEPTED_STATUSES
+            ):
+                # A 404 from a wrong address, a 429, or a redirect
+                # aiohttp did not follow: none of these says whether the
+                # key is good, so none of them is taken as acceptance.
                 _LOGGER.error(
                     "API validation could not complete, HTTP %d",
                     response.status,
@@ -102,3 +116,26 @@ async def async_validate_api_key(
     except aiohttp.ClientError as err:
         _LOGGER.error("Connection error during API validation: %s", err)
         raise OpenAINetworkError(f"Cannot connect to API: {err}") from err
+
+
+async def async_ensure_key_not_rejected(
+    hass: HomeAssistant, api_key: str, url: str, model: str | None = None
+) -> None:
+    """Raise ``OpenAIAuthError`` if ``url`` refuses ``api_key``.
+
+    For the setup forms, where someone is looking. Only a refused key
+    stops the form. When the check cannot tell, because the endpoint is
+    slow, rate limited or answers with something unexpected, the key is
+    kept and the reason is logged: refusing a working key over a timeout
+    would leave the user unable to finish setup, and a key that really
+    is bad raises re-authentication at its first use.
+    """
+    try:
+        await async_validate_api_key(hass, api_key, url, model)
+    except OpenAIAuthError:
+        raise
+    except OpenAITTSError as err:
+        _LOGGER.warning(
+            "Could not check the API key against %s, keeping it: %s",
+            url, err,
+        )

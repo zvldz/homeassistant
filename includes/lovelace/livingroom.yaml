@@ -140,6 +140,8 @@ cards:
           - type: custom:mini-graph-card
             name: "Temperature"
             hour24: true
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d0002bfe958_temperature
                 name: Living Room

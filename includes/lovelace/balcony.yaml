@@ -115,6 +115,8 @@ cards:
         cards:
           - type: custom:mini-graph-card
             name: 'Temperature'
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d00027300cc_temperature
                 name: Balcony
@@ -126,6 +128,8 @@ cards:
         cards:
           - type: custom:mini-graph-card
             name: 'Humidity'
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d00027300cc_humidity
                 name: Balcony

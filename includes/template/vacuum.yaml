@@ -1,26 +1,18 @@
-# On a vacuum error: refresh the position (REST), then store coordinates + error + weekday.
+# On a vacuum error: store room + error + weekday.
 # Kept in the 'history' attribute (last 60 entries) - outlives the recorder purge (3 days).
 - trigger:
     - platform: state
-      entity_id: vacuum.valetudo_rockrobo
+      entity_id: vacuum.saros_20
       to: "error"
-  action:
-    - service: homeassistant.update_entity
-      target:
-        entity_id: sensor.vacuum_robot_position
-    - delay: "00:00:03"
   sensor:
     - name: "Vacuum Error Log"
       unique_id: vacuum_error_log
       icon: mdi:map-marker-alert
       state: >
-        {{ states('sensor.vacuum_error_text') }} @ {{ states('sensor.vacuum_robot_position') }}
+        {{ states('sensor.saros_20_vacuum_error') }} @ {{ states('sensor.saros_20_current_room') }}
       attributes:
-        last_error: "{{ states('sensor.vacuum_error_text') }}"
-        # both sources raw, so a mismatch between them stays visible
-        last_error_valetudo: "{{ states('sensor.valetudo_rockrobo_error') }}"
-        last_error_xiaomi: "{{ states('sensor.vacuum_cleaner_error_sensor') }}"
-        last_position: "{{ states('sensor.vacuum_robot_position') }}"
+        last_error: "{{ states('sensor.saros_20_vacuum_error') }}"
+        last_room: "{{ states('sensor.saros_20_current_room') }}"
         last_weekday: "{{ now().strftime('%A') }}"
         last_time: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
         history: >
@@ -28,28 +20,45 @@
           {% set entry = {
             't': now().strftime('%Y-%m-%d %H:%M'),
             'wd': now().strftime('%a'),
-            'pos': states('sensor.vacuum_robot_position'),
-            'err': states('sensor.vacuum_error_text') } %}
+            'room': states('sensor.saros_20_current_room'),
+            'err': states('sensor.saros_20_vacuum_error') } %}
           {{ (prev + [entry])[-60:] }}
 
-# Single error text: Valetudo often flaps between the real message and the
-# "Unknown error undefined" placeholder (2026-08-10: 8 switches in 20 seconds),
-# while the Xiaomi integration gives a stable human-readable one. Prefer Valetudo,
-# fall back to Xiaomi when it is the placeholder or empty.
+# Roborock exposes consumable time-left as floats with ~12 decimal digits
+# (e.g. 149.168888888889) which overflows the vacuum-card stats column.
+# Rounded display-only copies for the dashboard; raw sensors stay untouched.
 - sensor:
-    - name: "Vacuum Error Text"
-      unique_id: vacuum_error_text
-      icon: mdi:alert-circle-outline
-      state: >
-        {% set v = states('sensor.valetudo_rockrobo_error') %}
-        {% set x = states('sensor.vacuum_cleaner_error_sensor') %}
-        {% set bad = ['Unknown error undefined', 'unknown', 'unavailable', 'none', 'None', ''] %}
-        {% if v not in bad and v not in ['No error'] %}
-          {{ v }}
-        {% elif x not in bad and x != 'No Error' %}
-          {{ x }}
-        {% elif v == 'No error' or x == 'No Error' %}
-          No error
-        {% else %}
-          {{ v }}
-        {% endif %}
+    - name: "Saros 20 Filter Time Left (rounded)"
+      unique_id: saros_20_filter_time_left_rounded
+      unit_of_measurement: "h"
+      device_class: duration
+      state: "{{ states('sensor.saros_20_filter_time_left') | float(0) | round(0) }}"
+      availability: "{{ states('sensor.saros_20_filter_time_left') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Saros 20 Side Brush Time Left (rounded)"
+      unique_id: saros_20_side_brush_time_left_rounded
+      unit_of_measurement: "h"
+      device_class: duration
+      state: "{{ states('sensor.saros_20_side_brush_time_left') | float(0) | round(0) }}"
+      availability: "{{ states('sensor.saros_20_side_brush_time_left') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Saros 20 Main Brush Time Left (rounded)"
+      unique_id: saros_20_main_brush_time_left_rounded
+      unit_of_measurement: "h"
+      device_class: duration
+      state: "{{ states('sensor.saros_20_main_brush_time_left') | float(0) | round(0) }}"
+      availability: "{{ states('sensor.saros_20_main_brush_time_left') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Saros 20 Sensor Time Left (rounded)"
+      unique_id: saros_20_sensor_time_left_rounded
+      unit_of_measurement: "h"
+      device_class: duration
+      state: "{{ states('sensor.saros_20_sensor_time_left') | float(0) | round(0) }}"
+      availability: "{{ states('sensor.saros_20_sensor_time_left') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Saros 20 Cleaning Time (rounded)"
+      unique_id: saros_20_cleaning_time_rounded
+      unit_of_measurement: "min"
+      device_class: duration
+      state: "{{ states('sensor.saros_20_cleaning_time') | float(0) | round(0) | int }}"
+      availability: "{{ states('sensor.saros_20_cleaning_time') not in ['unknown', 'unavailable'] }}"

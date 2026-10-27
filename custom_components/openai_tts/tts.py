@@ -1,8 +1,8 @@
 """TTS entity for the OpenAI TTS integration.
 
 The entity implements the streaming ``async_stream_tts_audio`` contract
-introduced in HA 2025.7, which is the minimum version this integration
-supports. The legacy ``async_get_tts_audio`` contract is deliberately
+introduced in HA 2025.7. The minimum supported version is 2026.9.1, the
+oldest one this release was tested on (see ``hacs.json``). The legacy ``async_get_tts_audio`` contract is deliberately
 absent: Home Assistant only falls back to it when an entity does not
 override the streaming method, so on every supported version it was
 unreachable code.
@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from datetime import datetime
 from functools import partial
 from typing import Any, AsyncGenerator, AsyncIterable
@@ -34,16 +33,20 @@ from homeassistant.helpers.entity_platform import (
 )
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.storage import Store
+from homeassistant.loader import async_get_loaded_integration
 from homeassistant.util import slugify
 
 from .api_health import OpenAITTSHealthTracker, health_tracker_for
+from .audio_filters import DEFAULT_GAIN_DB, build_audio_filter, clamp_gain_db
 from .cache import MessageDurationCache
+from .chimes import USER_CHIME_DIR, chime_path
 from .const import (
     CONF_API_KEY,
     CONF_AUDIO_FORMAT,
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
     CONF_EXTRA_PAYLOAD,
+    CONF_GAIN_DB,
     CONF_INSTRUCTIONS,
     CONF_MODEL,
     CONF_NORMALIZE_AUDIO,
@@ -59,10 +62,14 @@ from .const import (
     DEFAULT_SEND_VOICE,
     DEFAULT_STREAM_AUDIO,
     DOMAIN,
-    SUPPORTED_LANGUAGES,
+    PROVIDER_CUSTOM,
+    PROVIDER_OPENAI,
+    PROVIDER_PRESETS,
+    SUPPORTED_LANGUAGES_WITH_REGIONS,
     UNIQUE_ID,
     is_openai_endpoint,
     preset_for,
+    voice_may_be_omitted,
     voices_for_model,
 )
 from .entity_helpers import is_subentry, sanitize_profile_name
@@ -74,8 +81,9 @@ from .exceptions import (
     OpenAITTSError,
     OpenAIVoiceDeletedError,
 )
-from .loudness import can_normalize_stream, normalize_stream
+from .loudness import can_filter_stream, filter_stream
 from .openaitts_engine import OpenAITTSEngine
+from .pcm_wav import delivery_format, pcm_as_wav
 from .repairs import create_voice_deleted_issue
 from .streaming import (
     PIPELINEABLE_FORMATS,
@@ -83,7 +91,6 @@ from .streaming import (
     pipelined_audio_stream,
 )
 from .utils import (
-    LOUDNESS_FILTER,
     is_valid_audio,
     measure_audio_duration,
     process_audio,
@@ -300,7 +307,14 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             profile_name = self._config.data.get(CONF_PROFILE_NAME, "profile")
             safe = sanitize_profile_name(profile_name)
             self.entity_id = f"tts.openai_tts_{safe}" if safe else "tts.openai_tts"
-            self._attr_name = f"OpenAI TTS {profile_name}"
+            # The friendly name is the profile name alone. With
+            # has_entity_name the entity name was appended to the device
+            # name, giving "Mistral TTS OpenAI TTS Mistral TTS". A name of
+            # None is not possible instead, because the tts component
+            # refuses an engine without a name ("TTS engine name is not
+            # set"), so the entity names itself.
+            self._attr_has_entity_name = False
+            self._attr_name = profile_name
             return
 
         model = self._config.data.get(CONF_MODEL)
@@ -462,6 +476,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             "current_normalize_audio": self._get_config_value(
                 CONF_NORMALIZE_AUDIO, True
             ),
+            "current_gain_db": clamp_gain_db(
+                self._get_config_value(CONF_GAIN_DB, DEFAULT_GAIN_DB)
+            ),
             "current_extra_payload": self._get_config_value(CONF_EXTRA_PAYLOAD),
         }
 
@@ -471,7 +488,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
     @property
     def supported_languages(self) -> list[str]:
-        return SUPPORTED_LANGUAGES
+        return SUPPORTED_LANGUAGES_WITH_REGIONS
 
     def _available_voice_ids(self) -> list[str]:
         """Voice names for the attribute, matching what the entity offers.
@@ -531,8 +548,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         Asking is the default. Only OpenAI opts out, and it does so
         because it demonstrably has no such endpoint.
         """
-        parent = self._parent_entry or self._config
-        provider = parent.data.get(CONF_PROVIDER) if parent is not None else None
+        provider = self._provider_key()
         if provider:
             return (
                 preset_for(provider).get("supports_voice_listing", True) is not False
@@ -575,8 +591,15 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 return
             parent = self._parent_entry or self._config
             api_key = parent.data.get(CONF_API_KEY) if parent is not None else None
+            provider = parent.data.get(CONF_PROVIDER) if parent is not None else None
+            # OpenRouter's voices depend on the model, so the profile's
+            # model goes along. Every other source ignores it.
             options = await async_fetch_voice_options(
-                self.hass, speech_url, api_key
+                self.hass,
+                speech_url,
+                api_key,
+                model=self._get_config_value(CONF_MODEL) or self._engine._model,
+                source=preset_for(provider).get("catalogue_source"),
             )
             if options is None:
                 # Keep whatever was there. A backend that is briefly
@@ -608,6 +631,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             CONF_CHIME_ENABLE,
             CONF_CHIME_SOUND,
             CONF_NORMALIZE_AUDIO,
+            CONF_GAIN_DB,
             CONF_INSTRUCTIONS,
             CONF_EXTRA_PAYLOAD,
             CONF_AUDIO_FORMAT,
@@ -632,7 +656,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         the content-type / extension mismatch.
         """
         audio_format = self._get_config_value(CONF_AUDIO_FORMAT, DEFAULT_AUDIO_FORMAT)
-        return {
+        options = {
             CONF_VOICE: self._get_config_value(CONF_VOICE) or self._engine._voice,
             CONF_MODEL: self._get_config_value(CONF_MODEL) or self._engine._model,
             CONF_SPEED: self._get_config_value(CONF_SPEED) or self._engine._speed,
@@ -642,8 +666,17 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             CONF_INSTRUCTIONS: self._get_config_value(CONF_INSTRUCTIONS),
             CONF_EXTRA_PAYLOAD: self._get_config_value(CONF_EXTRA_PAYLOAD),
             CONF_AUDIO_FORMAT: audio_format,
-            "preferred_format": audio_format,
+            "preferred_format": delivery_format(audio_format),
         }
+        # The gain joins the key only when it changes the audio. Home
+        # Assistant hashes every key it is given, so listing a gain of
+        # zero would give every profile a new key on the upgrade from
+        # 3.9, and every message cached until then would be synthesised
+        # and billed again.
+        gain_db = clamp_gain_db(self._get_config_value(CONF_GAIN_DB, DEFAULT_GAIN_DB))
+        if gain_db:
+            options[CONF_GAIN_DB] = gain_db
+        return options
 
     @property
     def device_info(self) -> dict[str, Any]:
@@ -661,16 +694,16 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
         info: dict[str, Any] = {
             "identifiers": {(DOMAIN, device_unique_id)},
-            "manufacturer": "OpenAI",
-            "sw_version": "1.0",
+            "manufacturer": self._provider_title_name(),
+            "sw_version": str(async_get_loaded_integration(self.hass, DOMAIN).version),
         }
 
         if is_subentry(self._config):
-            agent_name = self._config.data.get(CONF_PROFILE_NAME, "default")
-            model = self._config.data.get(CONF_MODEL, "tts-1")
-            voice = self._config.data.get(CONF_VOICE, "unknown")
-            info["name"] = f"{agent_name} ({model}-{voice})"
-            info["model"] = f"{model} ({voice})"
+            # The voice stays out of the name and the model. Mistral
+            # voices are UUIDs, and the device was shown as
+            # "Mistral TTS (voxtral-mini-tts-latest-e3596645-...)".
+            info["name"] = self._config.data.get(CONF_PROFILE_NAME, "default")
+            info["model"] = self._config.data.get(CONF_MODEL, "tts-1")
         else:
             info["name"] = "OpenAI TTS"
             info["model"] = self._config.data.get(CONF_MODEL, "TTS API")
@@ -687,9 +720,36 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         data_value = self._config.data.get(key)
         return data_value if data_value is not None else default
 
+    def _provider_title_name(self) -> str:
+        """Short provider name for the device, as used in entry titles.
+
+        An entry without a recorded provider is named after its
+        endpoint, the same way the config flow resolves it, instead of
+        being called OpenAI whatever it points at.
+        """
+        provider = self._provider_key()
+        if provider:
+            return preset_for(provider)["title_name"]
+        parent = self._parent_entry or self._config
+        url = parent.data.get(CONF_URL) if parent is not None else None
+        key = PROVIDER_OPENAI if is_openai_endpoint(url) else PROVIDER_CUSTOM
+        return PROVIDER_PRESETS[key]["title_name"]
+
+    def _provider_key(self) -> str | None:
+        """The provider preset recorded on the parent entry, if any.
+
+        Entries created before the presets existed have none, and
+        ``preset_for(None)`` answers OpenAI, so callers that must not
+        treat those entries as OpenAI check for ``None`` themselves.
+        """
+        parent = self._parent_entry or self._config
+        return parent.data.get(CONF_PROVIDER) if parent is not None else None
+
     # --- TTS generation ----------------------------------------------------
 
-    async def _get_audio_duration(self, audio_data: bytes) -> int:
+    async def _get_audio_duration(
+        self, audio_data: bytes, audio_format: str | None = None
+    ) -> int:
         """Return audio duration in milliseconds via ffprobe.
 
         The temporary file that ffprobe needs is written and deleted
@@ -698,49 +758,77 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         """
         _, ffprobe = resolve_ffmpeg_paths(self.hass)
         duration_seconds = await self.hass.async_add_executor_job(
-            partial(measure_audio_duration, audio_data, ffprobe=ffprobe)
+            partial(
+                measure_audio_duration,
+                audio_data,
+                ffprobe=ffprobe,
+                audio_format=audio_format,
+            )
         )
         return int(duration_seconds * 1000)
+
+    @staticmethod
+    def _audio_filter(resolved: dict[str, Any]) -> str | None:
+        """The ffmpeg filter chain this request needs, or ``None``.
+
+        Every decision about filtering goes through here, on both the
+        atomic and the streaming path, so the two cannot disagree about
+        whether normalisation or a gain applies.
+        """
+        return build_audio_filter(
+            bool(resolved.get("normalize_audio")),
+            resolved.get("gain_db", DEFAULT_GAIN_DB),
+        )
+
+    def _filter_blocks_streaming(
+        self, options: dict, audio_format: str
+    ) -> bool:
+        """True when a filter is wanted that this format cannot take on a pipe.
+
+        Such a request belongs on the atomic path, where the filter runs
+        against a finished file.
+        """
+        return (
+            self._audio_filter(self._resolve_options(options)) is not None
+            and not can_filter_stream(audio_format)
+        )
 
     def _will_filter_stream(
         self, resolved: dict[str, Any], audio_format: str
     ) -> bool:
-        """Whether a loudness filter goes in front of this stream."""
-        return bool(
-            resolved.get("normalize_audio")
-            and can_normalize_stream(audio_format)
+        """Whether a filter chain goes in front of this stream."""
+        return (
+            self._audio_filter(resolved) is not None
+            and can_filter_stream(audio_format)
         )
 
-    def _apply_loudness(
+    def _apply_audio_filter(
         self,
         source: AsyncGenerator[bytes, None],
         resolved: dict[str, Any],
         audio_format: str,
     ) -> AsyncGenerator[bytes, None]:
-        """Put the loudness filter in front of a stream when asked to.
+        """Put the filter chain in front of a stream when one is needed.
 
         Returns ``source`` untouched when nothing is to be done, so
         callers can wrap unconditionally.
         """
-        if not self._will_filter_stream(resolved, audio_format):
+        audio_filter = self._audio_filter(resolved)
+        if audio_filter is None or not can_filter_stream(audio_format):
             return source
         ffmpeg_bin, _ = resolve_ffmpeg_paths(self.hass)
-        return normalize_stream(
-            source, audio_format, ffmpeg_bin, LOUDNESS_FILTER
-        )
+        return filter_stream(source, audio_format, ffmpeg_bin, audio_filter)
 
     def _can_use_streaming(
         self, text: str, options: dict, audio_format: str
     ) -> bool:
         # A chime has to be attached to finished audio, so it still
-        # forces the atomic path. Normalisation no longer does: the
-        # filter corrects continuously and runs on a pipe, for the
-        # formats ``can_normalize_stream`` accepts.
+        # forces the atomic path. Normalisation and gain no longer do:
+        # the filter chain runs on a pipe, for the formats
+        # ``can_filter_stream`` accepts.
         if options.get(CONF_CHIME_ENABLE):
             return False
-        if options.get(CONF_NORMALIZE_AUDIO) and not can_normalize_stream(
-            audio_format
-        ):
+        if self._filter_blocks_streaming(options, audio_format):
             return False
         if audio_format in SELF_DESCRIBING_LENGTH_FORMATS:
             # The header would have to state a length that is not known
@@ -760,11 +848,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         # actually reach.
         if not self._get_config_value(CONF_STREAM_AUDIO, DEFAULT_STREAM_AUDIO):
             return False
-        parent = self._parent_entry or self._config
-        provider_key = (
-            parent.data.get(CONF_PROVIDER) if parent is not None else None
-        )
-        if not preset_for(provider_key).get("supports_streaming", True):
+        if not preset_for(self._provider_key()).get("supports_streaming", True):
             return False
         return len(text) >= MIN_STREAMING_TEXT_LENGTH
 
@@ -798,18 +882,14 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             # A chime is attached to finished audio, so there is nothing
             # to gain from producing that audio in pieces.
             return False
-        if options.get(CONF_NORMALIZE_AUDIO) and not can_normalize_stream(
-            audio_format
-        ):
-            # Normalisation itself streams, but not in every container.
+        if self._filter_blocks_streaming(options, audio_format):
+            # The filter chain itself streams, but not in every container.
             # A format it cannot filter on a pipe belongs on the atomic
             # path, where the filter runs against a finished file.
             return False
-        parent = self._parent_entry or self._config
-        provider_key = (
-            parent.data.get(CONF_PROVIDER) if parent is not None else None
+        return bool(
+            preset_for(self._provider_key()).get("supports_streaming", True)
         )
-        return bool(preset_for(provider_key).get("supports_streaming", True))
 
     async def _pipelined_stream(
         self,
@@ -867,7 +947,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             source = pipelined_audio_stream(
                 message_gen, _synthesize, audio_format, _spawn, stats
             )
-            async for chunk in self._apply_loudness(
+            async for chunk in self._apply_audio_filter(
                 source, resolved, audio_format
             ):
                 collected.append(chunk)
@@ -885,7 +965,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             raise
         except Exception as err:
             # Anything the engine did not raise itself, ffmpeg through
-            # ``_apply_loudness`` most likely. Without this the health
+            # ``_apply_audio_filter`` most likely. Without this the health
             # sensor never hears about it.
             self._mark_failed_pipelined(stats, resolved)
             if self._health_tracker is not None:
@@ -898,6 +978,28 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 await self._record_duration(
                     stats.get("raw_text", ""), b"".join(collected), resolved
                 )
+
+    def _resolve_send_voice(self, opts: dict) -> bool:
+        """Whether this request carries the ``voice`` key.
+
+        The profile form offers the switch only on presets that can do
+        without a voice, but a profile may still hold ``False`` from a
+        provider it used before. Sending no voice to a provider that
+        requires one fails every request, so the stored value is
+        overruled there.
+        """
+        send_voice = (
+            opts[CONF_SEND_VOICE]
+            if CONF_SEND_VOICE in opts
+            else self._get_config_value(CONF_SEND_VOICE, DEFAULT_SEND_VOICE)
+        )
+        if send_voice is False and not voice_may_be_omitted(self._provider_key()):
+            _LOGGER.debug(
+                "%s requires a voice, sending it although the profile "
+                "says not to", self._provider_key(),
+            )
+            return True
+        return bool(send_voice)
 
     def _resolve_options(self, options: dict | None) -> dict[str, Any]:
         """Merge service-call options with entity defaults."""
@@ -929,6 +1031,11 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             if CONF_NORMALIZE_AUDIO in opts
             else self._get_config_value(CONF_NORMALIZE_AUDIO, True)
         )
+        gain_db = clamp_gain_db(
+            opts[CONF_GAIN_DB]
+            if CONF_GAIN_DB in opts
+            else self._get_config_value(CONF_GAIN_DB, DEFAULT_GAIN_DB)
+        )
 
         return {
             "voice": (
@@ -953,11 +1060,8 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 or self._get_config_value(CONF_CHIME_SOUND)
             ),
             "normalize_audio": normalize_audio,
-            "send_voice": (
-                opts[CONF_SEND_VOICE]
-                if CONF_SEND_VOICE in opts
-                else self._get_config_value(CONF_SEND_VOICE, DEFAULT_SEND_VOICE)
-            ),
+            "gain_db": gain_db,
+            "send_voice": self._resolve_send_voice(opts),
             "audio_format": (
                 opts.get(CONF_AUDIO_FORMAT)
                 or self._get_config_value(CONF_AUDIO_FORMAT)
@@ -996,7 +1100,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
     async def _maybe_post_process(
         self, audio_data: bytes, resolved: dict[str, Any]
     ) -> bytes:
-        """Apply chime + normalization, and repair a declared length.
+        """Apply the chime and the filter chain, and repair a declared length.
 
         When there is nothing to apply the engine bytes are returned
         unchanged, and delivery is left to the streaming path or to
@@ -1016,28 +1120,33 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         for speed.
         """
         chime_enable = resolved["chime_enable"]
-        normalize_audio = resolved["normalize_audio"]
+        audio_filter = self._audio_filter(resolved)
         requested_format = resolved.get("audio_format", DEFAULT_AUDIO_FORMAT)
         repair_length = requested_format in SELF_DESCRIBING_LENGTH_FORMATS
 
-        if not (chime_enable or normalize_audio or repair_length):
+        if not (chime_enable or audio_filter or repair_length):
             return audio_data
 
-        chime_path = None
+        chime_file = None
         if chime_enable and resolved["chime_sound"]:
-            chime_folder = os.path.join(os.path.dirname(__file__), "chime")
-            candidate = os.path.join(chime_folder, resolved["chime_sound"])
-            if os.path.exists(candidate):
-                chime_path = candidate
-            else:
-                _LOGGER.warning("Chime file not found: %s", candidate)
+            chime_file = await self.hass.async_add_executor_job(
+                chime_path,
+                resolved["chime_sound"],
+                self.hass.config.path(USER_CHIME_DIR),
+            )
+            if chime_file is None:
+                _LOGGER.warning(
+                    "Chime %r not found in %s or among the built-in sounds",
+                    resolved["chime_sound"],
+                    self.hass.config.path(USER_CHIME_DIR),
+                )
 
         _, processed_audio, _ = await process_audio(
             self.hass,
             audio_data,
             chime_enabled=chime_enable,
-            chime_path=chime_path,
-            normalize_audio=normalize_audio,
+            chime_path=chime_file,
+            audio_filter=audio_filter,
             input_format=requested_format,
         )
         if not processed_audio:
@@ -1051,7 +1160,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         audio_data: bytes,
         resolved: dict[str, Any] | None = None,
     ) -> int:
-        duration_ms = await self._get_audio_duration(audio_data)
+        duration_ms = await self._get_audio_duration(
+            audio_data, (resolved or {}).get("audio_format")
+        )
         self._last_duration_ms = duration_ms
         # Persist measured duration so volume_restore can look it up
         # even on subsequent HA-cache hits where the engine doesn't run.
@@ -1222,10 +1333,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         )
 
         parent_entry = self._parent_entry or self._config
-        provider_key = (
-            parent_entry.data.get(CONF_PROVIDER) if parent_entry is not None else None
-        )
-        preset = preset_for(provider_key)
+        preset = preset_for(self._provider_key())
         endpoint_url = (
             parent_entry.data.get(CONF_URL) if parent_entry is not None else None
         )
@@ -1297,9 +1405,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 "mode: sentence-pipelined",
                 resolved["voice"], resolved["model"], pipeline_format,
             )
-            return TTSAudioResponse(
-                extension=pipeline_format,
-                data_gen=self._pipelined_stream(
+            return self._response(
+                pipeline_format,
+                self._pipelined_stream(
                     request.message_gen, resolved, pipeline_format
                 ),
             )
@@ -1325,11 +1433,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         )
 
         if can_stream:
-            return TTSAudioResponse(
-                extension=audio_format,
-                data_gen=self._validated_stream(
-                    full_text, resolved, audio_format
-                ),
+            return self._response(
+                audio_format,
+                self._validated_stream(full_text, resolved, audio_format),
             )
 
         # Atomic path: chime / normalize need the complete audio first.
@@ -1401,9 +1507,10 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             len(audio_data), duration_ms, delivered_format,
         )
 
-        return TTSAudioResponse(
-            extension=delivered_format,
-            data_gen=self._yield_in_chunks(audio_data),
+        return self._response(
+            delivered_format,
+            self._yield_in_chunks(audio_data),
+            data_size=len(audio_data),
         )
 
     async def _stream_with_validation(
@@ -1481,7 +1588,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         consumer the bytes that play are the filtered ones, and those
         are what the duration has to describe.
         """
-        duration_ms = await self._get_audio_duration(audio)
+        duration_ms = await self._get_audio_duration(
+            audio, (resolved or {}).get("audio_format")
+        )
         self._last_duration_ms = duration_ms
         r = resolved or {}
         self._duration_cache.store_duration(
@@ -1502,12 +1611,12 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
     async def _validated_stream(
         self, text: str, resolved: dict[str, Any], audio_format: str
     ) -> AsyncGenerator[bytes, None]:
-        """Validated provider stream, loudness-corrected when asked.
+        """Validated provider stream, filtered when asked.
 
         When nothing is put in front of the provider, the inner
         generator does its own bookkeeping and this adds no buffering.
 
-        When the loudness filter is in front, the bookkeeping moves out
+        When the filter chain is in front, the bookkeeping moves out
         here, because the inner generator finishes as soon as the last
         provider byte is read, which is before ffmpeg has produced,
         or failed to produce, anything. Recording success there marked
@@ -1523,7 +1632,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 yield chunk
             return
 
-        filtered = self._apply_loudness(
+        filtered = self._apply_audio_filter(
             self._stream_with_validation(
                 text, resolved, audio_format, record_success=False
             ),
@@ -1554,6 +1663,23 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             yield audio_data[i : i + chunk_size]
 
     @staticmethod
+    def _response(
+        audio_format: str,
+        data_gen: AsyncGenerator[bytes, None],
+        data_size: int | None = None,
+    ) -> TTSAudioResponse:
+        """Wrap ``data_gen`` for HA in a format its ffmpeg can read; see ``pcm_wav``.
+
+        ``data_size`` is the clip's length when known, for a pcm WAV
+        header; streams leave it out.
+        """
+        if audio_format == "pcm":
+            data_gen = pcm_as_wav(data_gen, data_size)
+        return TTSAudioResponse(
+            extension=delivery_format(audio_format), data_gen=data_gen
+        )
+
+    @staticmethod
     def _empty_response(audio_format: str) -> TTSAudioResponse:
         """Return a generator that raises so HA refuses to cache the failure.
 
@@ -1574,4 +1700,6 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             )
             yield b""  # pragma: no cover - keeps this an async generator
 
-        return TTSAudioResponse(extension=audio_format, data_gen=_fail())
+        return TTSAudioResponse(
+            extension=delivery_format(audio_format), data_gen=_fail()
+        )

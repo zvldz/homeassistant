@@ -5,7 +5,6 @@ Config flow for OpenAI TTS.
 from __future__ import annotations
 
 import logging
-import os
 import uuid
 from typing import Any
 from urllib.parse import urlparse
@@ -24,7 +23,16 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.selector import TemplateSelector, selector
 
-from .api_validation import async_validate_api_key
+from .api_validation import async_ensure_key_not_rejected
+from .audio_filters import (
+    DEFAULT_GAIN_DB,
+    GAIN_DB_MAX,
+    GAIN_DB_MIN,
+    GAIN_DB_STEP,
+    clamp_gain_db,
+)
+from .catalogue_parsers import voice_picker_allows_typing
+from .chimes import USER_CHIME_DIR, chime_options
 from .const import (
     CONF_ANNOUNCE_MODE,
     CONF_API_KEY,
@@ -32,6 +40,7 @@ from .const import (
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
     CONF_EXTRA_PAYLOAD,
+    CONF_GAIN_DB,
     CONF_INSTRUCTIONS,
     CONF_MODEL,
     CONF_NORMALIZE_AUDIO,
@@ -59,15 +68,34 @@ from .const import (
     audio_format_options_for,
     is_openai_endpoint,
     model_supports_instructions,
+    preset_for,
     voice_options,
     voices_for_model,
 )
+from .entry_titles import account_name_from_title, entry_title
 from .exceptions import OpenAIAuthError, OpenAITTSError
 from .selector_options import ensure_selectable
 from .streaming import PIPELINEABLE_FORMATS
-from .voice_listing import async_fetch_voice_options
+from .voice_listing import (
+    CATALOGUE_OPENROUTER,
+    async_fetch_model_catalogue,
+    async_fetch_voice_options,
+)
 
 SUBENTRY_TYPE_PROFILE = "profile"
+
+
+def _gain_selector() -> Any:
+    """The gain slider shared by the create and the reconfigure forms."""
+    return selector({
+        "number": {
+            "min": GAIN_DB_MIN,
+            "max": GAIN_DB_MAX,
+            "step": GAIN_DB_STEP,
+            "unit_of_measurement": "dB",
+            "mode": "slider",
+        }
+    })
 
 
 class _PipeliningConflict(Exception):
@@ -126,24 +154,11 @@ def validate_user_input(user_input: dict) -> str | None:
         return "api_key_required"
     return None
 
-def get_chime_options() -> list[dict[str, str]]:
-    """Scan chime folder and return dropdown options."""
-    chime_folder = os.path.join(os.path.dirname(__file__), "chime")
-    try:
-        files = os.listdir(chime_folder)
-    except Exception as err:
-        _LOGGER.error("Error listing chime folder: %s", err)
-        files = []
-    opts: list[dict[str,str]] = []
-    for file in files:
-        if file.lower().endswith(".mp3"):
-            opts.append({"value": file, "label": os.path.splitext(file)[0].title()})
-    opts.sort(key=lambda x: x["label"])
-    return opts
-
 async def async_get_chime_options(hass) -> list[dict[str, str]]:
-    """Scan chime folder and return dropdown options (async version)."""
-    return await hass.async_add_executor_job(get_chime_options)
+    """The built-in chimes and the user's own, as dropdown options."""
+    return await hass.async_add_executor_job(
+        chime_options, hass.config.path(USER_CHIME_DIR)
+    )
 
 class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for OpenAI TTS."""
@@ -236,7 +251,6 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                         description_placeholders={"provider": preset["label"]},
                     )
                 user_input[CONF_URL] = api_url
-                is_custom_endpoint = api_url != DEFAULT_URL
 
                 # Check for duplicate API key (only if API key is provided)
                 if api_key:
@@ -259,9 +273,12 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                                 description_placeholders={"provider": preset["label"]},
                             )
 
-                # Validate API key by making a test request (only for default OpenAI endpoint)
-                if api_key and not is_custom_endpoint:
-                    await async_validate_api_key(self.hass, api_key, api_url)
+                # Check the key on every provider. The probe synthesises
+                # nothing, see ``api_validation``.
+                if api_key:
+                    await async_ensure_key_not_rejected(
+                        self.hass, api_key, api_url, preset.get("default_model")
+                    )
 
                 # Generate unique ID
                 import hashlib
@@ -281,19 +298,8 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                 # (no API key to compare).
                 self._abort_if_unique_id_configured()
                 hostname = urlparse(user_input[CONF_URL]).hostname
-                # Title uses the provider label as the prefix when a
-                # known preset was picked, falls back to "OpenAI TTS"
-                # for custom / unknown providers. The optional account
-                # name still suffixes the title so multi-account setups
-                # ("OpenAI - Personal" / "OpenAI - Work") keep working.
-                provider_label = preset["label"]
-                custom_name = (user_input.get("name") or "").strip()
-                if custom_name:
-                    title = f"{provider_label} - {custom_name}"
-                else:
-                    title = f"{provider_label} ({hostname})"
                 return self.async_create_entry(
-                    title=title,
+                    title=entry_title(preset, user_input.get("name"), hostname),
                     data=user_input,
                 )
             except data_entry_flow.AbortFlow:
@@ -408,13 +414,10 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                 api_key = user_input.get(CONF_API_KEY)
                 api_url = self._reauth_entry.data.get(CONF_URL, "https://api.openai.com/v1/audio/speech")
 
-                # Only probe OpenAI, the same rule the create and
-                # reconfigure steps follow. The probe asks for tts-1 with
-                # alloy in mp3, and a backend that has never heard of any
-                # of those answers 400, which reads here as a rejected
-                # key. Groq is the documented case: it accepts wav only.
-                # Probing a custom endpoint therefore made reauth
-                # impossible to complete with a perfectly good key.
+                # Every provider is checked, the same rule the create and
+                # reconfigure steps follow. A backend that has never heard
+                # of the probe's model answers 400 after the key check,
+                # which counts as accepted, see ``api_validation``.
                 api_key = (api_key or "").strip()
                 if not api_key:
                     # Reauth exists to replace a key that stopped
@@ -423,23 +426,23 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                     # The parent reconfigure step has its own guard for
                     # this in ``validate_user_input``; reauth does not.
                     errors["base"] = "wrong_api_key"
-                elif api_url != DEFAULT_URL:
-                    _LOGGER.debug(
-                        "Storing the new API key without probing %s", api_url
-                    )
                 else:
-                    await async_validate_api_key(self.hass, api_key, api_url)
+                    await async_ensure_key_not_rejected(
+                        self.hass, api_key, api_url,
+                        preset_for(
+                            self._reauth_entry.data.get(CONF_PROVIDER)
+                        ).get("default_model"),
+                    )
 
                 if not errors:
-                    # Update the entry with new credentials
-                    self.hass.config_entries.async_update_entry(
+                    # The entry's update listener reloads it, so the flow
+                    # only writes. Reloading here as well loaded the
+                    # entry twice.
+                    return self.async_update_and_abort(
                         self._reauth_entry,
-                        data={**self._reauth_entry.data, CONF_API_KEY: api_key},
+                        data_updates={CONF_API_KEY: api_key},
+                        reason="reauth_successful",
                     )
-                    await self.hass.config_entries.async_reload(
-                        self._reauth_entry.entry_id
-                    )
-                    return self.async_abort(reason="reauth_successful")
 
             except OpenAIAuthError:
                 errors["base"] = "invalid_api_key"
@@ -495,7 +498,6 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                     errors["base"] = "url_required"
                 api_url = api_url or DEFAULT_URL
                 user_input[CONF_URL] = api_url
-                is_custom_endpoint = api_url != DEFAULT_URL
 
                 # Check for duplicate API key (exclude current entry)
                 if api_key:
@@ -512,8 +514,13 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Validate the new API key the same way initial setup does,
                 # so reconfigure can't quietly save an invalid key that
                 # would only fail at runtime.
-                if not errors and api_key and not is_custom_endpoint:
-                    await async_validate_api_key(self.hass, api_key, api_url)
+                if not errors and api_key:
+                    await async_ensure_key_not_rejected(
+                        self.hass, api_key, api_url,
+                        preset_for(
+                            reconfigure_entry.data.get(CONF_PROVIDER)
+                        ).get("default_model"),
+                    )
 
                 if not errors:
                     # Update the entry using the recommended helper
@@ -524,10 +531,8 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                     await self.async_set_unique_id(reconfigure_entry.unique_id)
                     self._abort_if_unique_id_mismatch()
 
-                    # Title prefix follows the entry's preset label
-                    # (Mistral, Groq, ...) instead of always saying
-                    # "OpenAI TTS", which made non-OpenAI entries
-                    # read as "OpenAI TTS - Mistral".
+                    # The title follows the entry's preset, see
+                    # entry_titles.py.
                     provider_key = reconfigure_entry.data.get(CONF_PROVIDER)
                     stored_preset = (
                         PROVIDER_PRESETS.get(provider_key) if provider_key
@@ -556,18 +561,22 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                         )
                         user_input[CONF_PROVIDER] = None
                         stored_preset = None
-                    preset = stored_preset or PROVIDER_PRESETS[PROVIDER_OPENAI]
-                    title_prefix = preset["label"]
-
-                    custom_name = (user_input.get("name") or "").strip()
-                    if custom_name:
-                        new_title = f"{title_prefix} - {custom_name}"
-                    else:
-                        new_title = f"{title_prefix} ({hostname})"
-                    return self.async_update_reload_and_abort(
+                    # Without a stored preset, pick the one the entry
+                    # will resolve to from now on, as _parent_preset
+                    # does, so that a moved endpoint is not titled
+                    # "OpenAI".
+                    preset = stored_preset or PROVIDER_PRESETS[
+                        PROVIDER_OPENAI if is_openai_endpoint(api_url)
+                        else PROVIDER_CUSTOM
+                    ]
+                    # The entry's update listener reloads it. Home
+                    # Assistant warns that async_update_reload_and_abort
+                    # on an entry with a listener stops working in
+                    # 2026.12.
+                    return self.async_update_and_abort(
                         reconfigure_entry,
                         data_updates=user_input,
-                        title=new_title,
+                        title=entry_title(preset, user_input.get("name"), hostname),
                     )
 
             except OpenAIAuthError:
@@ -589,19 +598,12 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         
         # Show the form with current values as suggested (not default)
         # Using suggested_value allows users to clear these fields.
-        # Pre-fill the name field by reverse-extracting it from the
-        # current title - keeps the disambiguation editable. Strip
-        # whichever known preset label currently fronts the title so
-        # both "OpenAI TTS - Foo" and "Mistral Voxtral - Foo" yield
-        # ``current_name == "Foo"``.
+        # Pre-fill the name field with the account name read back from
+        # the current title, so that reconfiguring keeps it.
         current_data = reconfigure_entry.data
-        current_title = reconfigure_entry.title or ""
-        current_name = ""
-        for _preset in PROVIDER_PRESETS.values():
-            prefix = f"{_preset['label']} - "
-            if current_title.startswith(prefix):
-                current_name = current_title[len(prefix):]
-                break
+        current_name = account_name_from_title(
+            reconfigure_entry.title or "", PROVIDER_PRESETS.values()
+        )
         schema = vol.Schema({
             vol.Optional("name", description={"suggested_value": current_name}): str,
             vol.Optional(CONF_API_KEY, description={"suggested_value": current_data.get(CONF_API_KEY, "")}): str,
@@ -686,8 +688,39 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         if not speech_url:
             return None
         return await async_fetch_voice_options(
-            self.hass, speech_url, parent_entry.data.get(CONF_API_KEY)
+            self.hass,
+            speech_url,
+            parent_entry.data.get(CONF_API_KEY),
+            model=self._step1_model,
+            source=preset.get("catalogue_source"),
         )
+
+    async def _model_options(self, keep: str | None) -> list[str]:
+        """Model ids for the picker, live when the provider publishes them.
+
+        ``keep`` is the value the form will default to. It is appended
+        when the list lacks it, because a select whose default is not
+        among its own options rewrites the saved value on submit.
+        """
+        preset = self._parent_preset()
+        catalogue: dict[str, list[str]] | None = None
+        parent_entry = self._get_entry()
+        speech_url = parent_entry.data.get(CONF_URL) if parent_entry else None
+        if parent_entry and speech_url:
+            catalogue = await async_fetch_model_catalogue(
+                self.hass,
+                speech_url,
+                parent_entry.data.get(CONF_API_KEY),
+                preset.get("catalogue_source"),
+            )
+        options = (
+            sorted(catalogue)
+            if catalogue
+            else list(preset.get("model_catalog") or MODELS)
+        )
+        if keep and keep not in options:
+            options.append(keep)
+        return options
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> SubentryFlowResult:
         """Step 1 of profile creation: profile name + model.
@@ -730,11 +763,12 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         # to the model name baked into the preset so users don't have to
         # remember the exact slug. OpenAI / unknown presets keep "tts-1".
         default_model = preset.get("default_model") or "tts-1"
-        # Model catalogue mirrors voice_catalog: presets that know
-        # their model list (Mistral, Groq) provide it, otherwise the
+        # Model catalogue mirrors voice_catalog: a provider that
+        # publishes its models (OpenRouter) is asked, presets that know
+        # their model list (Mistral, Groq) provide it, and otherwise the
         # OpenAI default ``MODELS`` is used. ``custom_value`` is on so
         # self-hosted users can still type their own model name.
-        model_options = preset.get("model_catalog") or MODELS
+        model_options = await self._model_options(keep=default_model)
         step1_schema = vol.Schema({
             vol.Required(CONF_PROFILE_NAME): str,
             vol.Required(CONF_MODEL, default=default_model): selector({
@@ -851,17 +885,15 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
             })
             default_voice = preset_voices[0]
         elif remote_voices:
-            # Live catalogue from the provider (Mistral's user-cloned
-            # voices). Submit the voice ID, show the user-given name.
-            # ``custom_value`` is OFF so the HA frontend renders the
-            # ``label`` ("Paul - Sad") in the selected state; with it
-            # ON the picker shows the raw UUID after a click.
+            # Live catalogue from the provider. Submit the voice ID,
+            # show the label. ``custom_value`` is on only when every
+            # label is its own value, see ``voice_picker_allows_typing``.
             voice_field = selector({
                 "select": {
                     "options": remote_voices,
                     "mode": "dropdown",
                     "sort": False,
-                    "custom_value": False,
+                    "custom_value": voice_picker_allows_typing(remote_voices),
                 }
             })
             default_voice = remote_voices[0]["value"]
@@ -870,9 +902,21 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
             # or Mistral account with no cloned voices yet - let the
             # user type whatever the backend understands.
             voice_field = selector({"text": {}})
+            # OpenRouter's voices belong to the model, and this branch
+            # means the catalogue had none for it, either because the
+            # listing failed or because the model was typed. OpenAI's
+            # voice is no better a guess than any other there, and one
+            # submit of it would fail every call, so the field starts
+            # empty and the user has to type one.
+            if preset.get("catalogue_source") == CATALOGUE_OPENROUTER:
+                default_voice = None
 
         step2_fields: dict[Any, Any] = {
-            vol.Required(CONF_VOICE, default=default_voice): voice_field,
+            (
+                vol.Required(CONF_VOICE)
+                if default_voice is None
+                else vol.Required(CONF_VOICE, default=default_voice)
+            ): voice_field,
         }
         # ``speed`` is OpenAI-style (0.25-4.0). Mistral hard-rejects
         # any non-default value with HTTP 422 ``extra_forbidden``;
@@ -897,6 +941,7 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                 "select": {"options": chime_opts}
             }),
             vol.Optional("normalize_audio", default=True): selector({"boolean": {}}),
+            vol.Optional(CONF_GAIN_DB, default=DEFAULT_GAIN_DB): _gain_selector(),
         })
         # ``extra_payload`` is the value-add of self-hosted / custom
         # presets (e.g. Chatterbox ``seed``, TTS Web UI speaker_id).
@@ -911,7 +956,7 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         # serving Chatterbox or VoxCPM2 rejects the request when the key
         # is present and rejects a null value too, leaving no way to
         # suppress it (#71).
-        if not is_openai:
+        if not is_openai and preset.get("voice_optional", False):
             step2_fields[
                 vol.Optional("send_voice", default=True)
             ] = selector({"boolean": {}})
@@ -993,13 +1038,10 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                 errors["base"] = "unknown_error"
 
         existing_model = existing_data.get(CONF_MODEL, "tts-1")
-        preset = self._parent_preset()
-        model_options = list(preset.get("model_catalog") or MODELS)
-        # Make sure the saved model is selectable so an entry that
-        # was created before the preset's catalogue existed (or
-        # whose model was renamed upstream) still loads cleanly.
-        if existing_model and existing_model not in model_options:
-            model_options.append(existing_model)
+        # The saved model is kept selectable so an entry that was
+        # created before the preset's catalogue existed (or whose model
+        # was renamed or withdrawn upstream) still loads cleanly.
+        model_options = await self._model_options(keep=existing_model)
         step1_schema = vol.Schema({
             vol.Required(CONF_MODEL, default=existing_model): selector({
                 "select": {
@@ -1140,30 +1182,55 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
             # value is appended when missing so an existing entry
             # whose voice was deleted upstream still loads instead of
             # tripping the schema; user can then pick a current one.
-            # ``custom_value`` stays OFF (frontend shows the label in
-            # the selected state) - the appended ``(saved)`` row
-            # already covers the "voice deleted upstream" edge case
-            # without needing free-text input.
+            # ``custom_value`` follows ``voice_picker_allows_typing``,
+            # decided before the ``(saved)`` row is added, because that
+            # row's label differs from its value on purpose.
+            #
+            # A model change keeps the saved voice too, such as a typed
+            # Kokoro voice mix, except on a provider whose voices
+            # depend on the model (OpenRouter). There a voice saved
+            # under the previous model is simply wrong for the new one,
+            # and defaulting to it lets one careless submit break the
+            # profile, so the new model's first voice is the default.
             options = list(remote_voices)
+            allows_typing = voice_picker_allows_typing(options)
             if not any(opt["value"] == existing_voice for opt in options):
-                options.append({
-                    "value": existing_voice,
-                    "label": f"{existing_voice} (saved)",
-                })
+                if existing_voice and (
+                    self._step1_model == existing_data.get(CONF_MODEL)
+                    or preset.get("catalogue_source") != CATALOGUE_OPENROUTER
+                ):
+                    options.append({
+                        "value": existing_voice,
+                        "label": f"{existing_voice} (saved)",
+                    })
+                else:
+                    default_voice = options[0]["value"]
             voice_field = selector({
                 "select": {
                     "options": options,
                     "mode": "dropdown",
                     "sort": False,
-                    "custom_value": False,
+                    "custom_value": allows_typing,
                 }
             })
         else:
             voice_field = selector({"text": {}})
+            # The same rule as the dropdown above, for a model that
+            # lists no voices: when voices depend on the model, the
+            # saved one belongs to the previous model, and the field is
+            # left empty so the user has to type one for the new model.
+            if (
+                preset.get("catalogue_source") == CATALOGUE_OPENROUTER
+                and self._step1_model != existing_data.get(CONF_MODEL)
+            ):
+                default_voice = None
 
-        step2_fields: dict[Any, Any] = {
-            vol.Required(CONF_VOICE, default=default_voice): voice_field,
-        }
+        voice_key = (
+            vol.Required(CONF_VOICE)
+            if default_voice is None
+            else vol.Required(CONF_VOICE, default=default_voice)
+        )
+        step2_fields: dict[Any, Any] = {voice_key: voice_field}
         # ``speed`` and ``extra_payload`` are gated by the preset
         # capability flags (see notes in async_step_voice_audio).
         # Saved values on profiles that switched to a non-supporting
@@ -1205,6 +1272,10 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                 "select": {"options": chime_options}
             }),
             vol.Optional("normalize_audio", default=existing_data.get(CONF_NORMALIZE_AUDIO, True)): selector({"boolean": {}}),
+            vol.Optional(
+                CONF_GAIN_DB,
+                default=clamp_gain_db(existing_data.get(CONF_GAIN_DB, DEFAULT_GAIN_DB)),
+            ): _gain_selector(),
         })
         if preset.get("supports_extra_payload", False):
             step2_fields[
@@ -1220,7 +1291,7 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         # serving Chatterbox or VoxCPM2 rejects the request when the key
         # is present and rejects a null value too, leaving no way to
         # suppress it (#71).
-        if not is_openai:
+        if not is_openai and preset.get("voice_optional", False):
             step2_fields[
                 vol.Optional(
                     "send_voice",

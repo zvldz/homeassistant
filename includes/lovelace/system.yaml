@@ -83,6 +83,8 @@ cards:
             name: "Traffic"
             hour24: true
             points_per_hour: 30
+            show:
+              legend: false
             entities:
               - entity: sensor.mikrotik_ether1_rx
                 name: RX
@@ -415,41 +417,41 @@ cards:
               confirmation:
                 text: Are you sure you want to toggle HAF power?
 
-      - type: horizontal-stack
-        cards:
-          - type: tile
-            entity: script.purge_db_0d
-            name: "Purge DB to 0 d"
-            icon: "mdi:database-refresh-outline"
-            hide_state: true
-            vertical: true
-            tap_action:
-              action: perform-action
-              perform_action: script.purge_db_0d
-              confirmation:
-                text: Are you sure you want to purge DB to 0 days?
+      # - type: horizontal-stack
+      #   cards:
+      #     - type: tile
+      #       entity: script.purge_db_0d
+      #       name: "Purge DB to 0 d"
+      #       icon: "mdi:database-refresh-outline"
+      #       hide_state: true
+      #       vertical: true
+      #       tap_action:
+      #         action: perform-action
+      #         perform_action: script.purge_db_0d
+      #         confirmation:
+      #           text: Are you sure you want to purge DB to 0 days?
 
-          - type: tile
-            entity: script.purge_db_1d
-            name: "Purge DB to 1 d"
-            icon: "mdi:database-refresh-outline"
-            hide_state: true
-            vertical: true
-            tap_action:
-              action: perform-action
-              perform_action: script.purge_db_1d
-              confirmation:
-                text: Are you sure you want to purge DB to 1 days?
+      #     - type: tile
+      #       entity: script.purge_db_1d
+      #       name: "Purge DB to 1 d"
+      #       icon: "mdi:database-refresh-outline"
+      #       hide_state: true
+      #       vertical: true
+      #       tap_action:
+      #         action: perform-action
+      #         perform_action: script.purge_db_1d
+      #         confirmation:
+      #           text: Are you sure you want to purge DB to 1 days?
 
-          - type: tile
-            entity: script.purge_db_2d
-            name: "Purge DB to 2 d"
-            icon: "mdi:database-refresh-outline"
-            hide_state: true
-            vertical: true
-            tap_action:
-              action: perform-action
-              perform_action: script.purge_db_2d
-              confirmation:
-                text: Are you sure you want to purge DB to 2 days?
+      #     - type: tile
+      #       entity: script.purge_db_2d
+      #       name: "Purge DB to 2 d"
+      #       icon: "mdi:database-refresh-outline"
+      #       hide_state: true
+      #       vertical: true
+      #       tap_action:
+      #         action: perform-action
+      #         perform_action: script.purge_db_2d
+      #         confirmation:
+      #           text: Are you sure you want to purge DB to 2 days?
 

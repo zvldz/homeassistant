@@ -51,8 +51,13 @@ DEFAULT_URL = "https://api.openai.com/v1/audio/speech"
 # typing the right URL, voice-field name, and audio_format defaults
 # from memory. Each entry is a recipe read by the config flow: the
 # endpoint URL, the voice and model catalogues, the audio formats the
-# backend accepts, and which fields to render. The engine reads none of
-# it; request shaping there is provider-agnostic. Add new providers by
+# backend accepts, and which fields to render. ``catalogue_source``
+# says where the live model and voice lists come from, and is absent for
+# every preset that uses the plain ``/v1/audio/voices`` listing.
+# ``title_name``, ``self_hosted`` and ``title_shows_host`` shape the
+# entry title, as described in ``entry_titles.py``. The
+# engine reads none of it; request shaping there is provider-agnostic.
+# Add new providers by
 # extending this dict; nothing else in the codebase should need a
 # branch on the provider key.
 PROVIDER_OPENAI = "openai"
@@ -61,12 +66,16 @@ PROVIDER_GROQ = "groq"
 PROVIDER_LEMONFOX = "lemonfox"
 PROVIDER_KOKORO = "kokoro"
 PROVIDER_CHATTERBOX = "chatterbox"
+PROVIDER_OPENROUTER = "openrouter"
 PROVIDER_CUSTOM = "custom"
 DEFAULT_PROVIDER = PROVIDER_OPENAI
 
 PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
     PROVIDER_OPENAI: {
         "label": "OpenAI",
+        "title_name": "OpenAI",
+        "self_hosted": False,
+        "title_shows_host": False,
         "url": DEFAULT_URL,
         "default_model": "gpt-4o-mini-tts",
         "default_format": "mp3",
@@ -99,6 +108,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
     },
     PROVIDER_MISTRAL: {
         "label": "Mistral Voxtral",
+        "title_name": "Mistral",
+        "self_hosted": False,
+        "title_shows_host": False,
         "url": "https://api.mistral.ai/v1/audio/speech",
         "default_model": "voxtral-mini-tts-latest",
         "model_catalog": ["voxtral-mini-tts-latest"],
@@ -142,6 +154,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         # (abdullah, fahad, sultan, lulwa, noura, aisha) via the
         # custom-voice free-text field.
         "label": "Groq (Orpheus TTS)",
+        "title_name": "Groq",
+        "self_hosted": False,
+        "title_shows_host": False,
         "url": "https://api.groq.com/openai/v1/audio/speech",
         "default_model": "canopylabs/orpheus-v1-english",
         "model_catalog": [
@@ -198,6 +213,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         # prefixed slugs covering ES/FR/IT/PT/JA/ZH/HI etc.) can type
         # the full id via the custom-value path on the voice picker.
         "label": "Lemonfox.ai (Kokoro TTS)",
+        "title_name": "Lemonfox",
+        "self_hosted": False,
+        "title_shows_host": False,
         "url": "https://api.lemonfox.ai/v1/audio/speech",
         # Lemonfox runs a single underlying model; ``tts-1`` is the
         # OpenAI-compatible alias they accept and the value is
@@ -238,6 +256,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         # K-RAD) explicitly asking for Kokoro-FastAPI integration;
         # this preset is the zero-config path that closes that loop.
         "label": "Kokoro-FastAPI (self-hosted Kokoro)",
+        "title_name": "Kokoro",
+        "self_hosted": True,
+        "title_shows_host": True,
         "url": "http://localhost:8880/v1/audio/speech",
         # Kokoro-FastAPI maps ``tts-1`` / ``tts-1-hd`` / ``kokoro`` to
         # the same underlying model in ``openai_mappings.json``. We
@@ -291,6 +312,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         #  - voices are published at ``/v1/audio/voices`` as file names
         #    such as ``Abigail.wav``.
         "label": "Chatterbox (self-hosted)",
+        "title_name": "Chatterbox",
+        "self_hosted": True,
+        "title_shows_host": True,
         "url": "http://localhost:8004/v1/audio/speech",
         "default_model": "chatterbox",
         "model_catalog": ["chatterbox"],
@@ -302,6 +326,50 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         "supports_streaming": True,
         "supports_speed": True,
         "supports_extra_payload": True,
+        # The request may leave the ``voice`` key out. Only self-hosted
+        # servers need that: audio.cpp serving Chatterbox or VoxCPM2
+        # rejects any request that carries it (#71). Every hosted
+        # provider requires a voice, OpenRouter with HTTP 400.
+        "voice_optional": True,
+        "supports_voice_listing": True,
+    },
+    PROVIDER_OPENROUTER: {
+        # OpenRouter routes one OpenAI compatible speech endpoint to many
+        # hosted models. Measured with a real key on 2026-09-30:
+        #  - ``response_format`` accepts mp3 and pcm only. Anything else
+        #    is refused with HTTP 400 naming the two.
+        #  - the body arrives progressively: an 11 second Kokoro clip
+        #    came in 17 chunks, the first after 0.43 s.
+        #  - ``speed`` is honoured by Kokoro (1.5 gave a clip 38% shorter)
+        #    and accepted without error by Voxtral.
+        #  - a voice is mandatory. Without one the answer is HTTP 400
+        #    "An explicit voice is required", so the send voice switch
+        #    must stay on.
+        #  - a bad key answers HTTP 401.
+        #  - ``/api/v1/audio/voices`` answers 404. Models and their voices
+        #    are published together at ``/api/v1/models``, which is what
+        #    ``catalogue_source`` below points the listing at.
+        # The model list below is only the fallback for when that listing
+        # cannot be reached.
+        "label": "OpenRouter",
+        "title_name": "OpenRouter",
+        "self_hosted": False,
+        "title_shows_host": False,
+        "url": "https://openrouter.ai/api/v1/audio/speech",
+        "default_model": "hexgrad/kokoro-82m",
+        "model_catalog": [
+            "hexgrad/kokoro-82m",
+            "mistralai/voxtral-mini-tts-2603",
+        ],
+        "catalogue_source": "openrouter_models",
+        "default_format": "mp3",
+        "voice_catalog": None,
+        "requires_api_key": True,
+        "allowed_formats": ["mp3", "pcm"],
+        "max_text_length": None,
+        "supports_streaming": True,
+        "supports_speed": True,
+        "supports_extra_payload": False,
         "supports_voice_listing": True,
     },
 
@@ -315,6 +383,9 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         # API key is optional because many self-hosted setups don't
         # gate the endpoint, while hosted proxies usually do.
         "label": "Custom / Self-hosted (any OpenAI-compatible endpoint)",
+        "title_name": "Custom",
+        "self_hosted": False,
+        "title_shows_host": True,
         "url": "",  # user enters
         "default_model": None,
         "model_catalog": None,
@@ -330,6 +401,11 @@ PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
         "supports_streaming": True,
         "supports_speed": True,
         "supports_extra_payload": True,
+        # The request may leave the ``voice`` key out. Only self-hosted
+        # servers need that: audio.cpp serving Chatterbox or VoxCPM2
+        # rejects any request that carries it (#71). Every hosted
+        # provider requires a voice, OpenRouter with HTTP 400.
+        "voice_optional": True,
     },
 }
 
@@ -343,6 +419,18 @@ def preset_for(provider_key: str | None) -> dict[str, Any]:
     if not provider_key:
         return PROVIDER_PRESETS[PROVIDER_OPENAI]
     return PROVIDER_PRESETS.get(provider_key, PROVIDER_PRESETS[PROVIDER_OPENAI])
+
+
+def voice_may_be_omitted(provider_key: str | None) -> bool:
+    """True unless ``provider_key`` names a preset that requires a voice.
+
+    An entry without a provider was created before the presets existed,
+    and its stored setting is honoured as it is, because the preset
+    cannot be known for certain.
+    """
+    if not provider_key:
+        return True
+    return bool(preset_for(provider_key).get("voice_optional", False))
 
 
 def audio_format_options_for(preset: dict[str, Any]) -> list[dict[str, str]]:
@@ -549,9 +637,86 @@ SUPPORTED_LANGUAGES = [
     "zh",  # Chinese
 ]
 
+# Region-qualified (BCP-47) tags accepted in addition to the base
+# ISO-639-1 codes above. Home Assistant validates a caller's language by
+# exact membership in ``supported_languages``, with no normalisation of
+# the tag (homeassistant/components/tts/__init__.py). A client that sends
+# a full tag, such as Music Assistant AI Radio sending the host language
+# "en-US", is otherwise rejected with ``Language 'en-US' not supported``,
+# although the backend detects the language from the text and never
+# receives the tag. Every tag maps to a base code already in the list,
+# so accepting them adds compatibility and no new capability.
+_REGION_TAGS: dict[str, tuple[str, ...]] = {
+    "af": ("af-ZA",),
+    "ar": ("ar-SA", "ar-EG", "ar-AE"),
+    "bg": ("bg-BG",),
+    "bn": ("bn-BD", "bn-IN"),
+    "bs": ("bs-BA",),
+    "ca": ("ca-ES",),
+    "cs": ("cs-CZ",),
+    "cy": ("cy-GB",),
+    "da": ("da-DK",),
+    "de": ("de-DE", "de-AT", "de-CH"),
+    "el": ("el-GR",),
+    "en": ("en-US", "en-GB", "en-AU", "en-CA", "en-IE", "en-IN", "en-NZ", "en-ZA"),
+    "es": ("es-ES", "es-MX", "es-AR", "es-US", "es-CO", "es-CL"),
+    "et": ("et-EE",),
+    "fa": ("fa-IR",),
+    "fi": ("fi-FI",),
+    "fr": ("fr-FR", "fr-CA", "fr-BE", "fr-CH"),
+    "gl": ("gl-ES",),
+    "he": ("he-IL",),
+    "hi": ("hi-IN",),
+    "hr": ("hr-HR",),
+    "hu": ("hu-HU",),
+    "id": ("id-ID",),
+    "is": ("is-IS",),
+    "it": ("it-IT", "it-CH"),
+    "ja": ("ja-JP",),
+    "kk": ("kk-KZ",),
+    "ko": ("ko-KR",),
+    "lt": ("lt-LT",),
+    "lv": ("lv-LV",),
+    "mk": ("mk-MK",),
+    "ml": ("ml-IN",),
+    "mr": ("mr-IN",),
+    "ms": ("ms-MY",),
+    "nb": ("nb-NO",),
+    "nl": ("nl-NL", "nl-BE"),
+    "pl": ("pl-PL",),
+    "pt": ("pt-BR", "pt-PT"),
+    "ro": ("ro-RO",),
+    "ru": ("ru-RU",),
+    "sk": ("sk-SK",),
+    "sl": ("sl-SI",),
+    "sr": ("sr-RS", "sr-Latn"),
+    "sv": ("sv-SE", "sv-FI"),
+    "sw": ("sw-KE", "sw-TZ"),
+    "ta": ("ta-IN", "ta-LK"),
+    "te": ("te-IN",),
+    "th": ("th-TH",),
+    "tl": ("tl-PH",),
+    "tr": ("tr-TR",),
+    "uk": ("uk-UA",),
+    "ur": ("ur-PK", "ur-IN"),
+    "vi": ("vi-VN",),
+    "zh": ("zh-CN", "zh-TW", "zh-HK", "zh-SG"),
+}
+
+# Base codes plus region-qualified variants, in stable order. Exposed so
+# the entity can advertise every tag Home Assistant will accept.
+SUPPORTED_LANGUAGES_WITH_REGIONS: list[str] = list(SUPPORTED_LANGUAGES)
+for _base, _variants in _REGION_TAGS.items():
+    for _tag in _variants:
+        if _tag not in SUPPORTED_LANGUAGES_WITH_REGIONS:
+            SUPPORTED_LANGUAGES_WITH_REGIONS.append(_tag)
+del _base, _variants, _tag
+
 CONF_CHIME_ENABLE = "chime"
 CONF_CHIME_SOUND = "chime_sound"
 CONF_NORMALIZE_AUDIO = "normalize_audio"
+# Per profile gain in dB. The range and the filter live in ``audio_filters``.
+CONF_GAIN_DB = "gain_db"
 CONF_INSTRUCTIONS = "instructions"
 CONF_EXTRA_PAYLOAD = "extra_payload"  # JSON string for custom TTS backend parameters
 CONF_AUDIO_FORMAT = "audio_format"   # mp3 (default) / wav / opus, for custom backends

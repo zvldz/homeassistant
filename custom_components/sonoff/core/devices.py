@@ -85,8 +85,10 @@ from ..sensor import (
     XHexVoltageTRVZB,
     XHumCorrection,
     XHumidityTH,
+    XMiniR4Key,
     XOutdoorTempNS,
     XSensor,
+    XSubSensor,
     XT5Action,
     XTempCorrection,
     XTemperatureTH,
@@ -102,6 +104,7 @@ from ..switch import (
     XPanelScreen,
     XSwitch,
     XSwitchPOWR3,
+    XSwitchSWV,
     XSwitchTH,
     XSwitches,
     XT5WorkMode,
@@ -436,7 +439,7 @@ DEVICES = {
         LED,
         RSSI,
         spec(XIntSwitch, param="relaySeparation", uid="detach", enabled=False),
-        spec(XButtonKey, uid="action"),
+        XMiniR4Key,
     ],
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],
@@ -643,6 +646,19 @@ DEVICES = {
         LED,
         RSSI,
     ],
+    # NSPanel86PB-Relay https://github.com/AlexxIT/SonoffLAN/issues/1908
+    278: SPEC_2CH,
+    # MINI-1GSP https://github.com/AlexxIT/SonoffLAN/issues/1876
+    283: [
+        Switch1,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+        EnergyDay,
+        EnergyMonth,
+        LED,
+        RSSI,
+    ],
     # zigbee_ON_OFF_SWITCH_1000
     1000: [XButtonKey, Battery],
     # ZCL_HA_DEVICEID_ON_OFF_LIGHT, https://github.com/AlexxIT/SonoffLAN/issues/1195
@@ -790,8 +806,13 @@ DEVICES = {
     7047: [spec(XBoolSwitch, param="switch_00", uid="switch"), Battery, ZRSSI],
     # SWV-ZF2E https://github.com/AlexxIT/SonoffLAN/issues/1859
     7048: [
-        spec(XToggle, param="switch_00", uid="1"),
-        spec(XToggle, param="switch_01", uid="2"),
+        spec(XSwitchSWV, param="switch_00", uid="a"),
+        spec(XSwitchSWV, param="switch_01", uid="b"),
+        spec(XSensor, param="todayWaterUsage", uid="water_today"),
+        spec(XSensor, param="totalTimeUsage_0", uid="time_total_a"),
+        spec(XSensor, param="totalTimeUsage_1", uid="time_total_b"),
+        spec(XSubSensor, param="lastRecord_0", sub="volume", uid="water_last_a"),
+        spec(XSubSensor, param="lastRecord_1", sub="volume", uid="water_last_b"),
         Battery,
         ZRSSI,
     ],
@@ -843,6 +864,10 @@ DEVICES = {
         ZRSSI,
     ],
 }
+
+# Not the best solution, but anyway. This may be fixed in the future.
+# TRV Gen2 https://github.com/AlexxIT/SonoffLAN/issues/1893
+DEVICES[7049] = DEVICES[7017]
 
 
 def get_spec(device: dict) -> list:

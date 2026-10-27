@@ -75,6 +75,7 @@
             "chime": "Povolit zvukový signál",
             "chime_sound": "Zvuk signálu",
             "normalize_audio": "Normalizovat hlasitost audia",
+            "gain_db": "Zesílení (gain)",
             "instructions": "Pokyny pro hlas",
             "extra_payload": "Extra JSON payload (pro custom TTS backends)",
             "audio_format": "Formát zvuku",
@@ -86,7 +87,9 @@
             "stream_pipelining": "Začne mluvit hned, jak je hotová první věta, místo čekání na dokončení celé odpovědi. Ovlivňuje pouze hlasového asistenta a vyžaduje MP3 nebo PCM.",
             "audio_format": "MP3 je bezpečná výchozí volba. Změňte ji jen pokud váš backend vyžaduje jiný formát.",
             "send_voice": "Ve výchozím nastavení zapnuto. Vypněte pro backend, který pole hlasu odmítá, například audio.cpp s Chatterbox nebo VoxCPM2.",
-            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje."
+            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje.",
+            "gain_db": "Zvýší nebo sníží hlasitost generované řeči v decibelech. Funguje s normalizací zvuku i bez ní a limiter zabrání přebuzení při zesílení. Hodnota 0 zvuk nemění.",
+            "chime_sound": "Vaše vlastní soubory mp3 ve složce /config/openai_tts/chime se zde zobrazují také, označené jako vlastní. Tato složka se při aktualizaci integrace zachová."
           }
         },
         "reconfigure": {
@@ -105,6 +108,7 @@
             "chime": "Povolit zvukový signál",
             "chime_sound": "Zvuk signálu",
             "normalize_audio": "Normalizovat hlasitost audia",
+            "gain_db": "Zesílení (gain)",
             "instructions": "Pokyny pro hlas",
             "extra_payload": "Extra JSON payload (pro custom TTS backends)",
             "audio_format": "Formát zvuku",
@@ -116,7 +120,9 @@
             "stream_pipelining": "Začne mluvit hned, jak je hotová první věta, místo čekání na dokončení celé odpovědi. Ovlivňuje pouze hlasového asistenta a vyžaduje MP3 nebo PCM.",
             "audio_format": "MP3 je bezpečná výchozí volba. Změňte ji jen pokud váš backend vyžaduje jiný formát.",
             "send_voice": "Ve výchozím nastavení zapnuto. Vypněte pro backend, který pole hlasu odmítá, například audio.cpp s Chatterbox nebo VoxCPM2.",
-            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje."
+            "stream_audio": "Přehrává zvuk, jak přichází, místo čekání na celou nahrávku. Vypněte, pokud backend na streamované čtení odpoví zvukem, který nelze dekódovat, zatímco stejný požadavek přečtený najednou funguje.",
+            "gain_db": "Zvýší nebo sníží hlasitost generované řeči v decibelech. Funguje s normalizací zvuku i bez ní a limiter zabrání přebuzení při zesílení. Hodnota 0 zvuk nemění.",
+            "chime_sound": "Vaše vlastní soubory mp3 ve složce /config/openai_tts/chime se zde zobrazují také, označené jako vlastní. Tato složka se při aktualizaci integrace zachová."
           }
         }
       },
@@ -179,6 +185,14 @@
     "voice_deleted": {
       "title": "TTS hlas byl smazán u poskytovatele",
       "description": "Hlas `{voice}` používaný TTS agentem `{profile}` již u poskytovatele neexistuje. Otevřete dialog Reconfigure tohoto agenta a vyberte aktuální hlas."
+    },
+    "model_retirement": {
+      "title": "OpenAI ukončuje model TTS agenta",
+      "description": "TTS agent `{profile}` používá model `{model}`, který OpenAI přestane poskytovat {date}. Po tomto datu agent přestane mluvit.\n\nOpenAI jako náhradu doporučuje `gpt-realtime-2.1-mini`, tento model ale běží přes Realtime API od OpenAI, které tato integrace nepoužívá. Pro své speech API OpenAI žádnou náhradu neohlásila.\n\nDo té doby zvažte převedení tohoto agenta na jiného poskytovatele."
+    },
+    "music_assistant_twin": {
+      "title": "Hlášení míří na reproduktor, do kterého hraje i Music Assistant",
+      "description": "`{entity}` a entita Music Assistant `{ma_entity}` jsou stejný reproduktor.\n\nHlášení na `{entity}` obchází Music Assistant. Podle typu reproduktoru se stane jedno z toho:\n\n- zastaví se celá skupina Music Assistant, nebo\n- tento reproduktor potom zůstane potichu, zatímco ho Music Assistant dál ukazuje jako hrající.\n\nŘešení: v automatizacích a skriptech použijte `{ma_entity}` místo `{entity}`.\n\nToto varování po restartu zmizí, jakmile se `{entity}` přestane pro hlášení používat."
     }
   },
   "selector": {
@@ -203,7 +217,7 @@
   "services": {
     "say": {
       "name": "OpenAI TTS Přehrát řeč",
-      "description": "Použije OpenAI TTS engine k vyslovení zprávy, s volitelným zvukem signálu, normalizací a ovládáním hlasitosti.",
+      "description": "Přehraje zprávu na přehrávačích médií pomocí jednoho z TTS agentů této integrace, volitelně se zvukem signálu, normalizací a nastavením hlasitosti.",
       "fields": {
         "tts_entity": {
           "name": "Entita TTS",
@@ -231,7 +245,7 @@
         },
         "language": {
           "name": "Jazyk",
-          "description": "Kód jazyka pro řeč."
+          "description": "Jazyk zprávy. Home Assistant podle něj hledá zvuk v mezipaměti. Poskytovateli se neodesílá, ten mluví jazykem, ve kterém je zpráva napsaná."
         },
         "chime": {
           "name": "Přehrát zvuk signálu",
@@ -239,7 +253,7 @@
         },
         "chime_sound": {
           "name": "Zvuk signálu",
-          "description": "Název souboru se zvukem signálu. Vypíná streaming, jako výše."
+          "description": "Název souboru se zvukem signálu, z vestavěných zvuků nebo z vlastních v /config/openai_tts/chime. Pokud není uveden, použije se nastavení profile."
         },
         "normalize_audio": {
           "name": "Normalizovat zvuk",
@@ -247,11 +261,11 @@
         },
         "volume": {
           "name": "Hlasitost",
-          "description": "Hlasitost pouze pro toto hlášení, 0.0 až 1.0, poté obnovena. Pokud ji nastavíte, hudba se pozastaví místo ztlumení."
+          "description": "Hlasitost pouze pro toto hlášení, 0.0 až 1.0. Reproduktory Sonos a Music Assistant přehrají hlášení v této hlasitosti a hudbu si poté obnoví samy. Ostatní reproduktory se pozastaví, nastaví na tuto hlasitost a poté obnoví."
         },
         "announce": {
           "name": "Režim hlášení",
-          "description": "Ve výchozím nastavení zapnuto: reproduktory s podporou hlášení hudbu ztlumí, ostatní se pozastaví a poté pokračují. Vypnuto odešle zvuk jako běžné přehrávání."
+          "description": "Ve výchozím nastavení zapnuto. Reproduktory s podporou hlášení si hudbu řídí vždy samy, bez ohledu na toto nastavení. U ostatních reproduktorů zapnuto hudbu pozastaví a poté obnoví, vypnuto přehraje zprávu místo toho, co hrálo, a původní přehrávání se neobnoví. Nastavená hlasitost tyto reproduktory pozastaví v obou případech."
         }
       }
     },

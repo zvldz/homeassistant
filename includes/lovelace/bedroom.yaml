@@ -78,6 +78,8 @@ cards:
           - type: custom:mini-graph-card
             name: "Temperature"
             hour24: true
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d0001ab2a27_temperature
 
@@ -86,6 +88,8 @@ cards:
           - type: custom:mini-graph-card
             name: "Humidity"
             hour24: true
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d0001ab2a27_humidity
 

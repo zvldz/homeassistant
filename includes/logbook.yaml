@@ -4,7 +4,7 @@ exclude:
     - sensor.time_date
     - sensor.date
     - sensor.date_time
-    - camera.valetudo_rockrobo_map_data
+    - image.bedroom_saros_20_map_0
     - sensor.map_segments
     - weather.openweathermap      
   domains:

@@ -9,14 +9,6 @@ input_boolean:
     name: "Boiler work on schedule (Winter)"
     icon: "mdi:timer-outline"
 
-input_number:
-  gas_counter:
-    name: "Gas Counter"
-    icon: "mdi:fire"
-    mode: box
-    min: 0.0
-    max: 99999.999
-
 climate:
   - platform: generic_thermostat
     name: "Gas Boiler"
@@ -77,27 +69,6 @@ template:
             {% endfor %}
             {{ ns.src }}
 
-rest:
-  - resource_template: "{{ states('input_text.ha1_url') }}api/states/input_number.gas_counter"
-    headers:
-      authorization: !secret ha1_token
-    sensor:
-      - name: ha1_gas_counter
-        value_template: >
-          {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
-            {{ value_json.state }}
-          {% endif %}
-
-  - resource_template: "{{ states('input_text.ha2_url') }}api/states/input_number.gas_counter"
-    headers:
-      authorization: !secret ha2_token
-    sensor:
-      - name: ha2_gas_counter
-        value_template: >
-          {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
-            {{ value_json.state }}
-          {% endif %}
-
 script:
   turn_on_all_ac:
     alias: Turn On All AC
@@ -116,22 +87,6 @@ script:
           - climate.ac_living_room_climate
           - climate.ac_master_bedroom_climate
           - climate.ac_bedroom_climate
-
-  sync_gas_counter_with_ha1:
-    alias: "Sync gas counter with ha1"
-    sequence:
-      - service: input_number.set_value
-        data:
-          entity_id: input_number.gas_counter
-          value: "{{ states('sensor.ha1_gas_counter') }}"
-
-  sync_gas_counter_with_ha2:
-    alias: "Sync gas counter with ha2"
-    sequence:
-      - service: input_number.set_value
-        data:
-          entity_id: input_number.gas_counter
-          value: "{{ states('sensor.ha2_gas_counter') }}"
 
 automation:
   - alias: "Sync TRV with Boiler"
@@ -225,21 +180,6 @@ automation:
           temperature: 17
           hvac_mode: heat
 
-  - alias: gas_counter
-    initial_state: true
-    trigger:
-      platform: state
-      entity_id: binary_sensor.0x00158d000393f29a_contact
-      from: 'on'
-      to: 'off'
-      for:
-        seconds: 3
-    action:
-      - service: input_number.set_value
-        data:
-          entity_id: input_number.gas_counter
-          value: "{{ (states('input_number.gas_counter') | float(0) + 0.01 ) | round(2) }}"
-
   - alias: "Kitchen button is pressed single"
     initial_state: true
     trigger:
@@ -277,18 +217,4 @@ automation:
           entity_id: climate.gas_boiler
           temperature: 17
           hvac_mode: heat
-
-utility_meter:
-  gas_hourly:
-    source: input_number.gas_counter
-    cycle: hourly
-  gas_daily:
-    source: input_number.gas_counter
-    cycle: daily
-  gas_monthly:
-    source: input_number.gas_counter
-    cycle: monthly
-  gas_yearly:
-    source: input_number.gas_counter
-    cycle: yearly
 

@@ -74,6 +74,8 @@ from .const import (
     WIREGUARD_STALE_SECONDS,
     CONF_SENSOR_ROUTE,
     DEFAULT_SENSOR_ROUTE,
+    CONF_SENSOR_LIVE_TRAFFIC,
+    DEFAULT_SENSOR_LIVE_TRAFFIC,
 )
 from .apiparser import parse_api
 from .mikrotikapi import MikrotikAPI
@@ -109,6 +111,21 @@ def utc_from_timestamp(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
 
+# /container print flags (RouterOS 7.x), checked in this order. A healthcheck
+# container reports `healthy`/`unhealthy` instead of `running` while it runs;
+# a stopped one reports `stopped` like any other container.
+_CONTAINER_STATE_FLAGS = ("stopped", "stopping", "starting", "unhealthy", "healthy", "running")
+_CONTAINER_RUNNING_STATES = frozenset({"running", "healthy", "unhealthy"})
+
+
+def _container_state_from_flags(entry: dict) -> str | None:
+    """Return the first container state flag set on a /container entry."""
+    for flag in _CONTAINER_STATE_FLAGS:
+        if entry.get(flag) in (True, "true", "yes"):
+            return flag
+    return None
+
+
 _UPTIME_UNITS = [("w", 604800), ("d", 86400), ("h", 3600), ("m", 60), ("s", 1)]
 _PPP_NOT_CONNECTED = "not connected"
 
@@ -131,6 +148,17 @@ def as_local(dattim: datetime) -> datetime:
         dattim = dattim.replace(tzinfo=timezone.utc)
 
     return dattim.astimezone(DEFAULT_TIME_ZONE)
+
+
+# /interface/wifi nests settings as dotted keys; flatten them onto the legacy
+# flat attribute names so wifi interfaces expose the same names as wlan.
+_WIFI_FLAT_MAP = {
+    "configuration.ssid": "ssid",
+    "configuration.mode": "mode",
+    "configuration.country": "country",
+    "channel.band": "band",
+    "channel.width": "channel-width",
+}
 
 
 @dataclass
@@ -253,6 +281,9 @@ class MikrotikTrackerCoordinator(DataUpdateCoordinator[None]):
 
 class MikrotikCoordinator(DataUpdateCoordinator[None]):
     """MikrotikCoordinator Class"""
+
+    # Interface names in the latest /interface reply (None until the first poll).
+    _interface_names_seen: set[str] | None = None
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry):
         """Initialize MikrotikCoordinator."""
@@ -499,6 +530,14 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
         return self.config_entry.options.get(CONF_SENSOR_ROUTE, DEFAULT_SENSOR_ROUTE)
 
     # ---------------------------
+    #   option_sensor_live_traffic
+    # ---------------------------
+    @property
+    def option_sensor_live_traffic(self):
+        """Config entry option for live interface rate sensors (monitor-traffic)."""
+        return self.config_entry.options.get(CONF_SENSOR_LIVE_TRAFFIC, DEFAULT_SENSOR_LIVE_TRAFFIC)
+
+    # ---------------------------
     #   option_sensor_scripts
     # ---------------------------
     @property
@@ -628,7 +667,7 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
 
     def _has_wifi_package(self, packages: dict) -> bool:
         """Check if a wifi package is enabled or version implies wifi module."""
-        if any(pkg in packages and packages[pkg]["enabled"] for pkg in ("wifi", "wifi-qcom", "wifi-qcom-ac")):
+        if any(pkg in packages and packages[pkg]["enabled"] for pkg in ("wifi", "wifi-qcom", "wifi-qcom-ac", "wifi-qcom-be", "wifi-mediatek")):
             return True
         # An explicitly enabled legacy `wireless` package wins over the
         # version heuristic: 7.13+ routers that still ship it are not on
@@ -753,6 +792,8 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
 
         for func in [self.get_system_health, self.get_dhcp_client, self.get_interface]:
             await self._run_if_enabled(func)
+
+        await self._run_if_enabled(self.get_interface_live_traffic, requires=self.option_sensor_live_traffic)
 
         if self.api.connected() and not self.ds["host_hass"]:
             await self.async_get_host_hass()
@@ -1003,6 +1044,95 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 iface[f"{direction}-previous"] = current
                 iface[f"{direction}-total"] = current
 
+    _LIVE_TRAFFIC_FIELDS = (
+        ("rx-live", "rx-bits-per-second"),
+        ("tx-live", "tx-bits-per-second"),
+        ("rx-packets-per-second", "rx-packets-per-second"),
+        ("tx-packets-per-second", "tx-packets-per-second"),
+        ("rx-drops-per-second", "rx-drops-per-second"),
+        ("tx-drops-per-second", "tx-drops-per-second"),
+        ("rx-errors-per-second", "rx-errors-per-second"),
+        ("tx-errors-per-second", "tx-errors-per-second"),
+    )
+
+    @staticmethod
+    def _to_float_or_none(value) -> float | None:
+        """Parse a monitor-traffic counter to float, None when absent/non-numeric."""
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _clear_live_fields(self, iface: dict) -> None:
+        """Reset the live-rate fields of one interface to None (null-not-guess)."""
+        for field, _source in self._LIVE_TRAFFIC_FIELDS:
+            iface[field] = None
+
+    def _apply_live_row(self, iface: dict, row: dict) -> None:
+        """Copy one monitor-traffic row onto an interface; absent/non-numeric -> None."""
+        for field, source in self._LIVE_TRAFFIC_FIELDS:
+            iface[field] = self._to_float_or_none(row.get(source))
+
+    def _split_stale_interfaces(self, interfaces: dict) -> tuple[dict, dict]:
+        """Split interfaces into (current, stale) by the latest /interface reply.
+
+        `ds["interface"]` only merges, so a deleted/renamed interface lingers.
+        A single unknown name makes RouterOS refuse the whole batched
+        monitor-traffic call, so only names seen in the current poll are batched.
+        Before the first /interface poll (None) nothing is treated as stale.
+        """
+        seen = self._interface_names_seen
+        if seen is None:
+            return interfaces, {}
+        current = {uid: i for uid, i in interfaces.items() if (i.get("name") or uid) in seen}
+        stale = {uid: i for uid, i in interfaces.items() if uid not in current}
+        return current, stale
+
+    def get_interface_live_traffic(self) -> None:
+        """Poll live per-interface rates via a single batched monitor-traffic call.
+
+        RouterOS `monitor-traffic` accepts a comma-separated `interface=` list
+        and returns one row per interface (`name=`), so one API round-trip
+        covers every non-bridge interface (verified on a hAP be3, ROS
+        7.25beta5). Interfaces missing from the reply resolve to None
+        (null-not-guess). Runs only when the sensor_live_traffic opt-in is
+        enabled. See ADR-024-live-interface-rates.
+        """
+        interfaces = {uid: iface for uid, iface in self.ds.get("interface", {}).items() if iface.get("type") != "bridge"}
+        if not interfaces:
+            _LOGGER.debug("Mikrotik %s monitor-traffic skipped: no interfaces", self.host)
+            return
+        interfaces, stale = self._split_stale_interfaces(interfaces)
+        for iface in stale.values():
+            self._clear_live_fields(iface)
+        if not interfaces:
+            _LOGGER.debug("Mikrotik %s monitor-traffic skipped: no current interfaces", self.host)
+            return
+        names = [iface.get("name") or uid for uid, iface in interfaces.items()]
+        rows = self.api.query(
+            "/interface",
+            command="monitor-traffic",
+            args={"interface": ",".join(names), "once": True},
+        )
+        if not rows:
+            _LOGGER.debug("Mikrotik %s monitor-traffic returned no data", self.host)
+            for iface in interfaces.values():
+                self._clear_live_fields(iface)
+            return
+        self._merge_live_rows(interfaces, rows)
+
+    def _merge_live_rows(self, interfaces: dict, rows: list) -> None:
+        """Apply each monitor-traffic row to its interface; a missing row clears it."""
+        by_name = {row.get("name"): row for row in rows}
+        for uid, iface in interfaces.items():
+            row = by_name.get(iface.get("name") or uid)
+            if row is None:
+                self._clear_live_fields(iface)
+            else:
+                self._apply_live_row(iface, row)
+
     def get_neighbor(self) -> None:
         """Map interface name -> advertised neighbour board(s) via /ip/neighbor.
 
@@ -1110,9 +1240,12 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
 
     def get_interface(self) -> None:
         """Get all interfaces data from Mikrotik"""
+        response = self.api.query("/interface")
+        if response is not None:
+            self._interface_names_seen = {row["name"] for row in response if row.get("name")}
         self.ds["interface"] = parse_api(
             data=self.ds["interface"],
-            source=self.api.query("/interface"),
+            source=response,
             key="default-name",
             key_secondary="name",
             vals=[
@@ -1147,6 +1280,14 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 {"name": "tx", "default": 0.0},
                 {"name": "rx-total", "default": 0.0},
                 {"name": "tx-total", "default": 0.0},
+                {"name": "rx-live", "default": None},
+                {"name": "tx-live", "default": None},
+                {"name": "rx-packets-per-second", "default": None},
+                {"name": "tx-packets-per-second", "default": None},
+                {"name": "rx-drops-per-second", "default": None},
+                {"name": "tx-drops-per-second", "default": None},
+                {"name": "rx-errors-per-second", "default": None},
+                {"name": "tx-errors-per-second", "default": None},
                 {"name": "poe-out-energy-delta-wh", "default": 0.0},
                 {"name": "poe-out-energy-source", "default": None},
                 {"name": "poe-out-energy-model", "default": None},
@@ -1639,9 +1780,10 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
     # ---------------------------
     def get_container(self) -> None:
         """Get container data from Mikrotik"""
+        source = self.api.query("/container")
         self.ds["container"] = parse_api(
             data=self.ds["container"],
-            source=self.api.query("/container"),
+            source=source,
             key=".id",
             vals=[
                 {"name": ".id"},
@@ -1664,8 +1806,16 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
             ],
         )
 
+        # RouterOS 7.x reports the container state as print flags (`running`,
+        # `stopped`, `healthy`, ...), not as a `status` property. The parsed
+        # `status` above is only a fallback for firmware that still sends it.
+        for entry in [source] if isinstance(source, dict) else source or []:
+            state = _container_state_from_flags(entry)
+            if state and entry.get(".id") in self.ds["container"]:
+                self.ds["container"][entry[".id"]]["status"] = state
+
         for uid in self.ds["container"]:
-            self.ds["container"][uid]["running"] = self.ds["container"][uid]["status"] == "running"
+            self.ds["container"][uid]["running"] = self.ds["container"][uid]["status"] in _CONTAINER_RUNNING_STATES
 
     # ---------------------------
     #   get_kidcontrol
@@ -2582,10 +2732,20 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
     #   get_dhcp
     # ---------------------------
     def get_dhcp(self) -> None:
-        """Get DHCP data from Mikrotik"""
+        """Get DHCP data from Mikrotik
+
+        Rebuilt fresh each poll (data={}) so a lease removed on the router drops
+        out of ds["dhcp"] and the per-server lease count (#160). query() returns
+        None both on failure and for an empty table; only a dropped connection
+        means failure, so keep the prior leases then rather than blanking hosts.
+        """
+        source = self.api.query("/ip/dhcp-server/lease")
+        if source is None and not self.api.connected():
+            return
+
         self.ds["dhcp"] = parse_api(
-            data=self.ds["dhcp"],
-            source=self.api.query("/ip/dhcp-server/lease"),
+            data={},
+            source=source,
             key="mac-address",
             vals=[
                 {"name": "mac-address"},
@@ -2817,6 +2977,24 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
             vals=vals,
         )
 
+    def _inherit_master_iface(self, uid) -> None:
+        """Back-fill `unknown` values of a virtual interface from its master interface."""
+        row = self.ds["wireless"][uid]
+        if not row["master-interface"]:
+            return
+        master = self.ds["wireless"][row["master-interface"]]
+        for tmp in row:
+            if row[tmp] == "unknown":
+                row[tmp] = master[tmp]
+
+    @staticmethod
+    def _flatten_wifi_keys(row: dict) -> None:
+        """Copy /interface/wifi dotted keys onto the legacy flat attribute names."""
+        for nested, flat in _WIFI_FLAT_MAP.items():
+            value = row.get(nested)
+            if value not in (None, "unknown"):
+                row[flat] = value
+
     # ---------------------------
     #   get_wireless
     # ---------------------------
@@ -2849,6 +3027,11 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 {"name": "wds-mode", "default": "unknown"},
                 {"name": "wds-default-bridge", "default": "unknown"},
                 {"name": "bridge-mode", "default": "unknown"},
+                {"name": "configuration.ssid", "default": "unknown"},
+                {"name": "configuration.mode", "default": "unknown"},
+                {"name": "configuration.country", "default": "unknown"},
+                {"name": "channel.band", "default": "unknown"},
+                {"name": "channel.width", "default": "unknown"},
                 {"name": "hide-ssid", "type": "bool"},
                 {"name": "running", "type": "bool"},
                 {"name": "disabled", "type": "bool"},
@@ -2856,10 +3039,10 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
         )
 
         for uid in self.ds["wireless"]:
-            if self.ds["wireless"][uid]["master-interface"]:
-                for tmp in self.ds["wireless"][uid]:
-                    if self.ds["wireless"][uid][tmp] == "unknown":
-                        self.ds["wireless"][uid][tmp] = self.ds["wireless"][self.ds["wireless"][uid]["master-interface"]][tmp]
+            self._inherit_master_iface(uid)
+
+            if self._wifimodule == "wifi":
+                self._flatten_wifi_keys(self.ds["wireless"][uid])
 
             if uid in self.ds["interface"]:
                 for tmp in self.ds["wireless"][uid]:
@@ -2880,11 +3063,21 @@ class MikrotikCoordinator(DataUpdateCoordinator[None]):
                 {"name": "ap", "type": "bool"},
                 {"name": "uptime"},
                 {"name": "signal-strength"},
+                {"name": "signal"},
                 {"name": "tx-ccq"},
                 {"name": "tx-rate"},
                 {"name": "rx-rate"},
+                {"name": "tx-bits-per-second"},
+                {"name": "rx-bits-per-second"},
+                {"name": "bytes"},
+                {"name": "band"},
             ],
         )
+        # wifi (wifi-qcom*, wifi-mediatek) reports `signal`; alias it onto the
+        # legacy `signal-strength` only when the legacy field is absent.
+        for host in self.ds["wireless_hosts"].values():
+            if not host.get("signal-strength") and host.get("signal"):
+                host["signal-strength"] = host["signal"]
 
     # ---------------------------
     #   _merge_capsman_hosts

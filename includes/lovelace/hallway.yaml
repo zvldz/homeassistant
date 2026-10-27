@@ -115,6 +115,10 @@ cards:
             name: "Temperature"
             hour24: true
             points_per_hour: 2
+            show:
+              legend: false
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d000231f03e_temperature
                 name: Hallway
@@ -128,6 +132,10 @@ cards:
             name: "Humidity"
             hour24: true
             points_per_hour: 2
+            show:
+              legend: false
+            show:
+              legend: false
             entities:
               - entity: sensor.0x00158d000231f03e_humidity
                 name: Hallway

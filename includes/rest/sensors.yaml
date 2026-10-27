@@ -19,6 +19,10 @@
     - name: ha1_uptime
       device_class: timestamp
       force_update: true
+      # a 5xx from nginx still is a response, so without this the sensor only
+      # went to "unknown" and the host-down alert (waits for "unavailable")
+      # never fired - haf was dead for 9 h on 2026-09-17 without a message
+      availability: "{{ value_json is defined and value_json.state is defined and value_json.state not in ['unknown', 'unavailable', None] }}"
       value_template: >
         {% if states('input_text.ha1_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
           {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
@@ -33,6 +37,10 @@
     - name: ha2_uptime
       device_class: timestamp
       force_update: true
+      # a 5xx from nginx still is a response, so without this the sensor only
+      # went to "unknown" and the host-down alert (waits for "unavailable")
+      # never fired - haf was dead for 9 h on 2026-09-17 without a message
+      availability: "{{ value_json is defined and value_json.state is defined and value_json.state not in ['unknown', 'unavailable', None] }}"
       value_template: >
         {% if states('input_text.ha2_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
           {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
@@ -47,6 +55,10 @@
     - name: has_uptime
       device_class: timestamp
       force_update: true
+      # a 5xx from nginx still is a response, so without this the sensor only
+      # went to "unknown" and the host-down alert (waits for "unavailable")
+      # never fired - haf was dead for 9 h on 2026-09-17 without a message
+      availability: "{{ value_json is defined and value_json.state is defined and value_json.state not in ['unknown', 'unavailable', None] }}"
       value_template: >
         {% if states('input_text.has_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
           {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}
@@ -61,6 +73,10 @@
     - name: ha_fazenda_uptime
       device_class: timestamp
       force_update: true
+      # a 5xx from nginx still is a response, so without this the sensor only
+      # went to "unknown" and the host-down alert (waits for "unavailable")
+      # never fired - haf was dead for 9 h on 2026-09-17 without a message
+      availability: "{{ value_json is defined and value_json.state is defined and value_json.state not in ['unknown', 'unavailable', None] }}"
       value_template: >
         {% if states('input_text.ha_fazenda_url') not in ['unknown', 'unavailable'] and value_json is defined and value_json.state not in ['unknown', 'unavailable', None] %}
           {{ (as_timestamp(now()) - (value_json.state | float(default=0) * 60)) | as_datetime }}

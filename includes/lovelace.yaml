@@ -17,6 +17,8 @@ resources:
     type: module
   - url: /hacsfiles/lovelace-valetudo-map-card/valetudo-map-card.js
     type: js
+  - url: /hacsfiles/lovelace-xiaomi-vacuum-map-card/xiaomi-vacuum-map-card.js
+    type: module
   - url: /hacsfiles/miflora-card/miflora-card.js
     type: js
   - url:  /hacsfiles/lovelace-template-entity-row/template-entity-row.js
